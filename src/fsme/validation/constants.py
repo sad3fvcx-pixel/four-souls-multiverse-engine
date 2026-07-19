@@ -1,0 +1,29 @@
+# src/fsme/validation/constants.py
+
+"""
+Constants for the validation subsystem.
+"""
+
+from __future__ import annotations
+
+DEFAULT_MAX_ERRORS = 100
+
+DEFAULT_MAX_WARNINGS = 100
+
+DEFAULT_STRICT_MODE = False
+
+DEFAULT_STOP_ON_ERROR = False
+
+DEFAULT_ALLOW_WARNINGS = True
+
+DEFAULT_ENCODING = "utf-8"
+
+DEFAULT_SCHEMA_VERSION = 1
+
+DEFAULT_VALIDATION_NAMESPACE = "core"
+
+DEFAULT_VALIDATION_PROFILE = "default"
+
+MAX_RULE_NAME_LENGTH = 128
+
+MAX_ERROR_MESSAGE_LENGTH = 1024
