@@ -1,0 +1,87 @@
+# src/fsme/runtime/execution_context.py
+
+"""
+The channel through which effects reach the game.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
+
+from fsme.events import Event, EventType
+from fsme.rng.rng import RNG
+from fsme.stack import StackItem
+from fsme.state import GameState
+
+
+class ExecutionContext:
+    """
+    The only object that lets gameplay code touch a running game.
+
+    Effects never see the Runtime itself. They receive this context, which
+    exposes exactly three powers — read state, queue an event, push onto the
+    stack — plus the engine RNG. Because only the Runtime constructs it, the
+    invariant "GameState changes only under the Runtime" holds by construction
+    rather than by discipline.
+    """
+
+    __slots__ = ("_state", "_rng", "_emit", "_push")
+
+    def __init__(
+        self,
+        state: GameState,
+        rng: RNG,
+        *,
+        emit: Callable[[Event], Event],
+        push: Callable[[StackItem], StackItem],
+    ) -> None:
+        self._state = state
+        self._rng = rng
+        self._emit = emit
+        self._push = push
+
+    @property
+    def state(self) -> GameState:
+        return self._state
+
+    @property
+    def rng(self) -> RNG:
+        return self._rng
+
+    def emit(
+        self,
+        event_type: EventType,
+        *,
+        source: Any | None = None,
+        controller: int | None = None,
+        targets: list[Any] | None = None,
+        **payload: Any,
+    ) -> Event:
+        """
+        Queue an event describing a change that just happened.
+        """
+        return self._emit(
+            Event(
+                type=event_type,
+                source=source,
+                controller=controller,
+                targets=list(targets or ()),
+                payload=dict(payload),
+            )
+        )
+
+    def push(self, item: StackItem) -> StackItem:
+        """
+        Place a pending action on the stack.
+        """
+        return self._push(item)
+
+    def roll(self, sides: int = 6) -> int:
+        """
+        Roll a die through the engine RNG.
+        """
+        if sides < 1:
+            raise ValueError("dice must have at least one side")
+
+        return self._rng.randint(1, sides)

@@ -24,14 +24,14 @@ class GameResult:
     executed_commands: list[str] = field(default_factory=list)
 
     @classmethod
-    def ok(cls, message: str = "") -> "GameResult":
+    def ok(cls, message: str = "") -> GameResult:
         return cls(
             success=True,
             message=message,
         )
 
     @classmethod
-    def failed(cls, message: str = "") -> "GameResult":
+    def failed(cls, message: str = "") -> GameResult:
         return cls(
             success=False,
             message=message,

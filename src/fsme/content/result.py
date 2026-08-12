@@ -24,14 +24,14 @@ class ContentResult:
     loaded_effects: list[str] = field(default_factory=list)
 
     @classmethod
-    def ok(cls, message: str = "") -> "ContentResult":
+    def ok(cls, message: str = "") -> ContentResult:
         return cls(
             success=True,
             message=message,
         )
 
     @classmethod
-    def failed(cls, message: str = "") -> "ContentResult":
+    def failed(cls, message: str = "") -> ContentResult:
         return cls(
             success=False,
             message=message,

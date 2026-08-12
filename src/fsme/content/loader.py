@@ -6,7 +6,7 @@ Content loader for Four Souls Multiverse Engine.
 
 from __future__ import annotations
 
-from fsme.cards import Card
+from fsme.cards import CardDefinition as Card
 
 from .registry import ContentRegistry
 
@@ -36,7 +36,7 @@ class ContentLoader:
         """
         Remove a previously loaded card.
         """
-        self._registry.unregister(card.card_id)
+        self._registry.unregister(card.id)
 
     def clear(self) -> None:
         """

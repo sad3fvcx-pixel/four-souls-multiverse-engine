@@ -6,10 +6,10 @@ Card type definitions for Four Souls Multiverse Engine.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class CardType(str, Enum):
+class CardType(StrEnum):
     """
     Top-level card categories.
     """

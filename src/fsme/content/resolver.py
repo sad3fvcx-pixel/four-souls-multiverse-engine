@@ -6,7 +6,7 @@ Content resolver for Four Souls Multiverse Engine.
 
 from __future__ import annotations
 
-from fsme.cards import Card
+from fsme.cards import CardDefinition as Card
 
 from .context import ContentContext
 from .handler import ContentHandler

@@ -21,7 +21,7 @@ class CommandResult:
     message: str | None = None
 
     @classmethod
-    def ok(cls, value: Any = None) -> "CommandResult":
+    def ok(cls, value: Any = None) -> CommandResult:
         """
         Create a successful result.
         """
@@ -31,7 +31,7 @@ class CommandResult:
         )
 
     @classmethod
-    def fail(cls, message: str) -> "CommandResult":
+    def fail(cls, message: str) -> CommandResult:
         """
         Create a failed result.
         """

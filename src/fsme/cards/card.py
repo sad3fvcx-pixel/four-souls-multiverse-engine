@@ -1,43 +1,79 @@
 # src/fsme/cards/card.py
 
 """
-Base card definition for Four Souls Multiverse Engine.
+Runtime card objects for Four Souls Multiverse Engine.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from uuid import uuid4
+from typing import Any
 
-from fsme.effects import Effect
+from .definition import CardDefinition
 
 
 @dataclass(slots=True)
-class Card:
+class CardInstance:
     """
-    Base class for every card in the game.
+    A card as it exists inside a running game.
+
+    The definition stays immutable and shared; everything that can change
+    during a game lives here.
     """
 
-    name: str
+    definition: CardDefinition
 
-    effects: list[Effect] = field(default_factory=list)
+    instance_id: str = ""
 
-    card_id: str = field(default_factory=lambda: uuid4().hex)
+    owner: int | None = None
+    controller: int | None = None
 
-    def add_effect(self, effect: Effect) -> None:
-        """
-        Attach an effect to this card.
-        """
-        self.effects.append(effect)
+    zone: str = ""
 
-    def remove_effect(self, effect: Effect) -> None:
-        """
-        Remove an effect from this card.
-        """
-        self.effects.remove(effect)
+    hp: int | None = None
+    tapped: bool = False
+    alive: bool = True
 
-    def clear_effects(self) -> None:
+    counters: dict[str, int] = field(default_factory=dict)
+    modifiers: list[Any] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if self.hp is None:
+            self.hp = self.definition.health
+
+    @property
+    def id(self) -> str:
         """
-        Remove all effects from this card.
+        Return the definition identifier.
         """
-        self.effects.clear()
+        return self.definition.id
+
+    @property
+    def name(self) -> str:
+        return self.definition.name
+
+    @property
+    def max_hp(self) -> int:
+        return self.definition.health or 0
+
+    def has_tag(self, tag: str) -> bool:
+        return self.definition.has_tag(tag)
+
+    def __str__(self) -> str:
+        return f"{self.definition.name}[{self.instance_id or '?'}]"
+
+
+@dataclass(slots=True)
+class SoulToken:
+    """
+    A soul held by a player that did not come from a card.
+
+    Souls are counted for victory the same way regardless of origin, so the
+    engine represents the ones it mints itself as tokens rather than inventing
+    card definitions for them.
+    """
+
+    token_id: str = ""
+
+    def __str__(self) -> str:
+        return f"soul[{self.token_id or '?'}]"

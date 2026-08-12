@@ -7,7 +7,6 @@ Command bus for Four Souls Multiverse Engine.
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
 
 from .base import Command
 from .result import CommandResult

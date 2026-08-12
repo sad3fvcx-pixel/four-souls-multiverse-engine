@@ -6,7 +6,7 @@ Content handler for Four Souls Multiverse Engine.
 
 from __future__ import annotations
 
-from fsme.cards import Card
+from fsme.cards import CardDefinition as Card
 
 from .context import ContentContext
 from .result import ContentResult
@@ -29,7 +29,7 @@ class ContentHandler:
 
         result = ContentResult.ok()
 
-        result.loaded_cards.append(card.card_id)
+        result.loaded_cards.append(card.id)
 
         return result
 
@@ -41,6 +41,6 @@ class ContentHandler:
         """
         Remove a card from the content registry.
         """
-        context.registry.unregister(card.card_id)
+        context.registry.unregister(card.id)
 
         return ContentResult.ok()

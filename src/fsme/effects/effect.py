@@ -1,27 +1,43 @@
 # src/fsme/effects/effect.py
 
 """
-Base effect definitions for Four Souls Multiverse Engine.
+Effect operations for Four Souls Multiverse Engine.
 """
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import Any
-from uuid import uuid4
+
+_EMPTY: Mapping[str, Any] = MappingProxyType({})
 
 
-@dataclass(slots=True)
-class Effect:
+@dataclass(frozen=True, slots=True)
+class EffectOp:
     """
-    Represents a single executable game effect.
+    One atomic operation produced by the interpreter.
+
+    An EffectOp is the executable unit of the Effect DSL. It is immutable:
+    the interpreter builds it once from a card definition and the executor
+    only reads it.
     """
 
     name: str
 
-    payload: dict[str, Any] = field(default_factory=dict)
+    params: Mapping[str, Any] = field(default_factory=lambda: _EMPTY)
 
-    effect_id: str = field(default_factory=lambda: uuid4().hex)
+    target: str | None = None
+
+    def param(self, key: str, default: Any = None) -> Any:
+        """
+        Read a parameter value.
+        """
+        return self.params.get(key, default)
 
     def __str__(self) -> str:
-        return self.name
+        if self.target is None:
+            return self.name
+
+        return f"{self.name}->{self.target}"

@@ -2,46 +2,95 @@
 
 """
 Core event types for Four Souls Multiverse Engine.
+
+Event type values are identical to the trigger names used by the Effect DSL.
+This keeps TRIGGER_REGISTRY.md and the engine event vocabulary as a single
+source of truth: a card that declares ``"trigger": "after_damage"`` reacts to
+``EventType.AFTER_DAMAGE`` with no translation table in between.
 """
 
 from __future__ import annotations
 
-from enum import Enum, auto
+from enum import StrEnum
 
 
-class EventType(Enum):
+class EventType(StrEnum):
     """
-    High-level event categories emitted by the engine.
+    Every event the engine is able to emit.
     """
 
-    TURN_STARTED = auto()
-    TURN_ENDED = auto()
+    # Game
+    GAME_START = "game_start"
+    GAME_END = "game_end"
+    WINNER_DECLARED = "winner_declared"
 
-    PHASE_CHANGED = auto()
+    # Turn
+    TURN_START = "turn_start"
+    TURN_END = "turn_end"
+    TURN_CLEANUP = "turn_cleanup"
+    PHASE_CHANGED = "phase_changed"
 
-    CARD_DRAWN = auto()
-    CARD_PLAYED = auto()
-    CARD_DISCARDED = auto()
+    # Card lifecycle
+    ON_ENTER = "on_enter"
+    ON_LEAVE = "on_leave"
+    ON_DESTROY = "on_destroy"
+    ON_DISCARD = "on_discard"
+    ON_GAIN = "on_gain"
+    ON_LOSE = "on_lose"
 
-    ATTACK_DECLARED = auto()
-    ATTACK_RESOLVED = auto()
+    # Activation
+    BEFORE_ACTIVATE = "before_activate"
+    ON_ACTIVATE = "on_activate"
+    AFTER_ACTIVATE = "after_activate"
 
-    DAMAGE_DEALT = auto()
-    HEAL_RECEIVED = auto()
+    # Attack
+    ATTACK_START = "attack_start"
+    BEFORE_ATTACK_ROLL = "before_attack_roll"
+    AFTER_ATTACK_ROLL = "after_attack_roll"
+    BEFORE_DAMAGE = "before_damage"
+    AFTER_DAMAGE = "after_damage"
+    ATTACK_END = "attack_end"
+    MONSTER_KILLED = "monster_killed"
+    PLAYER_DIED = "player_died"
 
-    PLAYER_DIED = auto()
-    PLAYER_REVIVED = auto()
+    # Dice
+    BEFORE_ROLL = "before_roll"
+    AFTER_ROLL = "after_roll"
+    ROLL_MODIFIED = "roll_modified"
+    REROLL = "reroll"
 
-    COINS_GAINED = auto()
-    COINS_SPENT = auto()
+    # Shop
+    BEFORE_PURCHASE = "before_purchase"
+    AFTER_PURCHASE = "after_purchase"
+    TREASURE_BOUGHT = "treasure_bought"
 
-    STACK_PUSHED = auto()
-    STACK_POPPED = auto()
+    # Loot
+    BEFORE_LOOT = "before_loot"
+    AFTER_LOOT = "after_loot"
+    LOOT_DRAWN = "loot_drawn"
+    LOOT_DISCARDED = "loot_discarded"
 
-    EFFECT_RESOLVED = auto()
+    # Treasure
+    TREASURE_CHARGED = "treasure_charged"
+    TREASURE_DEACTIVATED = "treasure_deactivated"
+    TREASURE_DESTROYED = "treasure_destroyed"
+    TREASURE_STOLEN = "treasure_stolen"
 
-    GAME_STARTED = auto()
-    GAME_ENDED = auto()
+    # Souls
+    SOUL_GAINED = "soul_gained"
+    SOUL_LOST = "soul_lost"
 
-    def __str__(self) -> str:
-        return self.name.lower()
+    # Stack
+    STACK_PUSH = "stack_push"
+    STACK_RESOLVE = "stack_resolve"
+    STACK_CANCEL = "stack_cancel"
+
+    # Economy
+    COINS_GAINED = "coins_gained"
+    COINS_LOST = "coins_lost"
+
+    # Health
+    DAMAGE_DEALT = "damage_dealt"
+    HEALED = "healed"
+    PLAYER_REVIVED = "player_revived"
+

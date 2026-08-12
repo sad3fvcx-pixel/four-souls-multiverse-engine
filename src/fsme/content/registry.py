@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from fsme.cards import Card
+from fsme.cards import CardDefinition as Card
 
 
 class ContentRegistry:
@@ -23,7 +23,7 @@ class ContentRegistry:
         """
         Register a card.
         """
-        self._cards[card.card_id] = card
+        self._cards[card.id] = card
 
     def unregister(self, card_id: str) -> None:
         """

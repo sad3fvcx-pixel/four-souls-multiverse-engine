@@ -7,6 +7,11 @@ Root game state for Four Souls Multiverse Engine.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
+
+from fsme.events import EventQueue
+from fsme.stack import Stack
+from fsme.util.ids import IdSequence
 
 from .player_state import PlayerState
 from .turn_state import TurnState
@@ -18,29 +23,45 @@ class GameState:
     """
     Root mutable game state.
 
-    Stores every mutable object required to run a game.
-    Does not implement game rules.
+    Stores every mutable object required to run a game and implements no game
+    rules. GAME_STATE.md requires the whole game to be reconstructible from a
+    single instance, which is why the stack, the event queue and the identifier
+    allocator live here rather than inside the Runtime: they must survive
+    save/load and replay exactly as they were.
+
+    Only the Runtime may mutate this object during gameplay.
     """
 
     players: list[PlayerState] = field(default_factory=list)
 
     turn: TurnState = field(default_factory=TurnState)
 
-    monster_deck: Zone = field(default_factory=lambda: Zone(ZoneType.DECK))
-    monster_discard: Zone = field(default_factory=lambda: Zone(ZoneType.DISCARD))
+    loot_deck: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DECK))
+    loot_discard: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DISCARD))
 
-    treasure_deck: Zone = field(default_factory=lambda: Zone(ZoneType.DECK))
-    treasure_discard: Zone = field(default_factory=lambda: Zone(ZoneType.DISCARD))
+    monster_deck: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DECK))
+    monster_discard: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DISCARD))
+    active_monsters: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.MONSTER))
 
-    room_deck: Zone = field(default_factory=lambda: Zone(ZoneType.DECK))
-    room_discard: Zone = field(default_factory=lambda: Zone(ZoneType.DISCARD))
+    treasure_deck: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DECK))
+    treasure_discard: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DISCARD))
+    treasure_shop: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.SHOP))
 
-    stack: list[object] = field(default_factory=list)
+    room_deck: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DECK))
+    room_discard: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DISCARD))
+    room_area: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.ROOM))
+
+    stack: Stack = field(default_factory=Stack)
+    events: EventQueue = field(default_factory=EventQueue)
+
+    ids: IdSequence = field(default_factory=IdSequence)
 
     seed: int = 0
+    rng_state: Any = None
+
+    souls_to_win: int = 4
 
     winner: int | None = None
-
     game_over: bool = False
 
     def player(self, player_id: int) -> PlayerState:
@@ -73,13 +94,10 @@ class GameState:
         self.game_over = True
         self.winner = winner
 
-    def reset_stack(self) -> None:
-        self.stack.clear()
+    def is_stable(self) -> bool:
+        """
+        Return True when no gameplay work is pending.
 
-    def push(self, item: object) -> None:
-        self.stack.append(item)
-
-    def pop(self) -> object:
-        if not self.stack:
-            raise IndexError("stack is empty")
-        return self.stack.pop()
+        ENGINE_EXECUTION_MODEL.md allows a new command only in this condition.
+        """
+        return self.events.is_empty() and self.stack.is_empty()

@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .serializer import Serializer
 from .deserializer import Deserializer
+from .serializer import Serializer
 
 
 def is_serializer(value: object) -> bool:

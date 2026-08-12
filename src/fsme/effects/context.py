@@ -1,38 +1,67 @@
 # src/fsme/effects/context.py
 
 """
-Effect execution context for Four Souls Multiverse Engine.
+Execution surface available to effect handlers.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Protocol
 
-from .effect import Effect
+from fsme.events import Event, EventType
+from fsme.rng.rng import RNG
+from fsme.stack import StackItem
+from fsme.state import GameState
 
 
-@dataclass(slots=True)
-class EffectContext:
+class EffectContext(Protocol):
     """
-    Context shared during effect execution.
+    Everything an effect is allowed to do, and nothing more.
+
+    This protocol is the boundary that keeps the dependency order intact.
+    Effects sit below the Runtime and must not import it, so the Runtime's
+    ExecutionContext satisfies this protocol structurally instead.
+
+    An effect changing GameState is therefore always doing so through an
+    object the Runtime created and handed to it.
     """
 
-    effect: Effect
+    @property
+    def state(self) -> GameState:
+        """
+        The single authoritative game state.
+        """
+        ...
 
-    values: dict[str, Any] = field(default_factory=dict)
+    @property
+    def rng(self) -> RNG:
+        """
+        The only source of randomness available to gameplay.
+        """
+        ...
 
-    def get(self, key: str, default: Any = None) -> Any:
-        return self.values.get(key, default)
+    def emit(
+        self,
+        event_type: EventType,
+        *,
+        source: Any | None = None,
+        controller: int | None = None,
+        targets: list[Any] | None = None,
+        **payload: Any,
+    ) -> Event:
+        """
+        Queue an event describing a change that just happened.
+        """
+        ...
 
-    def set(self, key: str, value: Any) -> None:
-        self.values[key] = value
+    def push(self, item: StackItem) -> StackItem:
+        """
+        Place a pending action on the stack.
+        """
+        ...
 
-    def has(self, key: str) -> bool:
-        return key in self.values
-
-    def remove(self, key: str) -> None:
-        self.values.pop(key, None)
-
-    def clear(self) -> None:
-        self.values.clear()
+    def roll(self, sides: int = 6) -> int:
+        """
+        Roll a die through the engine RNG.
+        """
+        ...

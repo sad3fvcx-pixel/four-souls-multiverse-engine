@@ -35,7 +35,7 @@ class ResourceResult:
         cls,
         resource: Resource | None = None,
         message: str = "",
-    ) -> "ResourceResult":
+    ) -> ResourceResult:
         """
         Create a successful result.
         """
@@ -49,7 +49,7 @@ class ResourceResult:
     def error(
         cls,
         message: str,
-    ) -> "ResourceResult":
+    ) -> ResourceResult:
         """
         Create a failed result.
         """

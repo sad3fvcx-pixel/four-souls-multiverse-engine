@@ -7,6 +7,7 @@ Player state for Four Souls Multiverse Engine.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from .zones import Zone, ZoneType
 
@@ -32,9 +33,9 @@ class PlayerState:
 
     alive: bool = True
 
-    hand: Zone = field(default_factory=lambda: Zone(ZoneType.HAND))
-    treasures: Zone = field(default_factory=lambda: Zone(ZoneType.TREASURE))
-    souls: Zone = field(default_factory=lambda: Zone(ZoneType.SOUL))
+    hand: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.HAND))
+    treasures: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.TREASURE))
+    souls: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.SOUL))
 
     def can_attack(self) -> bool:
         return self.alive and self.attacks_left > 0
