@@ -6,9 +6,10 @@ The channel through which effects reach the game.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Any
 
+from fsme.effects import EffectRegistry
 from fsme.events import Event, EventType
 from fsme.rng.rng import RNG
 from fsme.stack import StackItem
@@ -19,25 +20,28 @@ class ExecutionContext:
     """
     The only object that lets gameplay code touch a running game.
 
-    Effects never see the Runtime itself. They receive this context, which
-    exposes exactly three powers — read state, queue an event, push onto the
-    stack — plus the engine RNG. Because only the Runtime constructs it, the
-    invariant "GameState changes only under the Runtime" holds by construction
-    rather than by discipline.
+    Effects and rules never see the Runtime itself. They receive this context,
+    whose surface is the complete definition of what gameplay code may do: read
+    the state, queue an event, push onto the stack, roll a die, run another
+    registered effect. Because only the Runtime constructs it, the invariant
+    "GameState changes only under the Runtime" holds by construction rather
+    than by discipline.
     """
 
-    __slots__ = ("_state", "_rng", "_emit", "_push")
+    __slots__ = ("_state", "_rng", "_effects", "_emit", "_push")
 
     def __init__(
         self,
         state: GameState,
         rng: RNG,
+        effects: EffectRegistry,
         *,
         emit: Callable[[Event], Event],
         push: Callable[[StackItem], StackItem],
     ) -> None:
         self._state = state
         self._rng = rng
+        self._effects = effects
         self._emit = emit
         self._push = push
 
@@ -85,3 +89,14 @@ class ExecutionContext:
             raise ValueError("dice must have at least one side")
 
         return self._rng.randint(1, sides)
+
+    def apply(
+        self,
+        effect: str,
+        targets: Sequence[Any],
+        **params: Any,
+    ) -> Any:
+        """
+        Run another registered effect.
+        """
+        return self._effects.execute(effect, self, targets, **params)

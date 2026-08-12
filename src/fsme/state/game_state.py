@@ -13,7 +13,9 @@ from fsme.events import EventQueue
 from fsme.stack import Stack
 from fsme.util.ids import IdSequence
 
+from .combat_state import CombatState
 from .player_state import PlayerState
+from .priority import PriorityState
 from .turn_state import TurnState
 from .zones import Zone, ZoneType
 
@@ -54,6 +56,9 @@ class GameState:
     stack: Stack = field(default_factory=Stack)
     events: EventQueue = field(default_factory=EventQueue)
 
+    priority: PriorityState = field(default_factory=PriorityState)
+    combat: CombatState = field(default_factory=CombatState)
+
     ids: IdSequence = field(default_factory=IdSequence)
 
     seed: int = 0
@@ -61,6 +66,7 @@ class GameState:
 
     souls_to_win: int = 4
 
+    started: bool = False
     winner: int | None = None
     game_over: bool = False
 
@@ -93,6 +99,21 @@ class GameState:
     def finish(self, winner: int) -> None:
         self.game_over = True
         self.winner = winner
+
+    def next_player(self, after: int) -> int:
+        """
+        Return the seat that acts after the given one, skipping the dead.
+        """
+        if not self.players:
+            raise IndexError("game has no players")
+
+        for step in range(1, len(self.players) + 1):
+            candidate = (after + step) % len(self.players)
+
+            if self.players[candidate].alive:
+                return candidate
+
+        return after
 
     def is_stable(self) -> bool:
         """

@@ -6,6 +6,7 @@ Execution surface available to effect handlers.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any, Protocol
 
 from fsme.events import Event, EventType
@@ -63,5 +64,20 @@ class EffectContext(Protocol):
     def roll(self, sides: int = 6) -> int:
         """
         Roll a die through the engine RNG.
+        """
+        ...
+
+    def apply(
+        self,
+        effect: str,
+        targets: Sequence[Any],
+        **params: Any,
+    ) -> Any:
+        """
+        Run another registered effect.
+
+        This is how a rule such as combat deals damage: it goes through the
+        same effect library as a card would, so there is one implementation of
+        "deal damage" and one place it can be changed.
         """
         ...

@@ -1,35 +1,112 @@
 # src/fsme/game/game.py
 
 """
-Core game object for Four Souls Multiverse Engine.
+Session facade for Four Souls Multiverse Engine.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from typing import Any
 
-from fsme.commands import CommandBus
-from fsme.events import EventBus
-from fsme.stack import Stack
+from fsme.cards import CardRegistry
+from fsme.commands import Command, CommandResult, CommandType
+from fsme.events import Event, EventType
+from fsme.rng.rng import RNG
+from fsme.runtime import Runtime
 from fsme.state import GameState
 
 
-@dataclass(slots=True)
 class Game:
     """
-    Root object representing a running game.
+    One game, from the outside.
+
+    This is the object a user interface, an AI or a network layer talks to. It
+    owns nothing of its own: the state lives in GameState and the rules run in
+    the Runtime. Its whole job is to be a small, stable surface in front of
+    them, so that adding an engine capability does not change how a client
+    starts a game or submits a move.
     """
 
-    state: GameState = field(default_factory=GameState)
+    def __init__(
+        self,
+        state: GameState | None = None,
+        *,
+        cards: CardRegistry | None = None,
+        seed: int | None = None,
+        interactive_priority: bool = False,
+    ) -> None:
+        game_state = state if state is not None else GameState()
 
-    events: EventBus = field(default_factory=EventBus)
+        if seed is not None:
+            game_state.seed = seed
 
-    commands: CommandBus = field(default_factory=CommandBus)
+        self._runtime = Runtime(
+            game_state,
+            cards=cards,
+            rng=RNG(game_state.seed),
+            interactive_priority=interactive_priority,
+        )
 
-    stack: Stack = field(default_factory=Stack)
+    @property
+    def runtime(self) -> Runtime:
+        return self._runtime
 
-    def reset(self) -> None:
+    @property
+    def state(self) -> GameState:
+        return self._runtime.state
+
+    @property
+    def is_over(self) -> bool:
+        return self.state.game_over
+
+    @property
+    def winner(self) -> int | None:
+        return self.state.winner
+
+    @property
+    def awaiting_priority(self) -> bool:
+        return self._runtime.awaiting_priority
+
+    @property
+    def history(self) -> tuple[Event, ...]:
+        return self._runtime.history
+
+    @property
+    def command_log(self) -> tuple[CommandResult, ...]:
+        return self._runtime.command_log
+
+    def start(self, player: int = 0) -> CommandResult:
         """
-        Reset transient runtime state.
+        Begin the game.
         """
-        self.stack.clear()
+        return self.submit(Command(type=CommandType.START_GAME, player=player))
+
+    def submit(self, command: Command) -> CommandResult:
+        """
+        Send a command to the engine.
+        """
+        return self._runtime.submit(command)
+
+    def act(
+        self,
+        command_type: CommandType,
+        player: int,
+        **payload: Any,
+    ) -> CommandResult:
+        """
+        Build and submit a command in one step.
+        """
+        return self.submit(
+            Command(type=command_type, player=player, payload=payload)
+        )
+
+    def subscribe(
+        self,
+        event_type: EventType,
+        handler: Callable[[Event], Any],
+    ) -> None:
+        """
+        Observe engine events. Observers never change the game.
+        """
+        self._runtime.subscribe(event_type, handler)

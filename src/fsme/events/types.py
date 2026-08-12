@@ -38,7 +38,8 @@ class EventType(StrEnum):
     ON_GAIN = "on_gain"
     ON_LOSE = "on_lose"
 
-    # Activation
+    # Play and activation
+    ON_PLAY = "on_play"
     BEFORE_ACTIVATE = "before_activate"
     ON_ACTIVATE = "on_activate"
     AFTER_ACTIVATE = "after_activate"

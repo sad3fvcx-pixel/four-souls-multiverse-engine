@@ -1,47 +1,31 @@
 # src/fsme/commands/types.py
 
 """
-Core command types for Four Souls Multiverse Engine.
+Command vocabulary for Four Souls Multiverse Engine.
+
+A command is an intent, never a result. "Deal damage" is not a command: it is
+what happens after ``attack`` is validated and resolved. Keeping results out of
+this list is what stops external systems from reaching past validation.
 """
 
 from __future__ import annotations
 
-from enum import Enum, auto
+from enum import StrEnum
 
 
-class CommandType(Enum):
+class CommandType(StrEnum):
     """
-    High-level engine command categories.
+    Every action an external actor may request.
     """
 
-    START_GAME = auto()
-    END_GAME = auto()
+    START_GAME = "start_game"
 
-    START_TURN = auto()
-    END_TURN = auto()
+    PLAY_LOOT = "play_loot"
+    ACTIVATE_TREASURE = "activate_treasure"
+    ATTACK = "attack"
+    BUY_TREASURE = "buy_treasure"
+    END_PHASE = "end_phase"
+    END_TURN = "end_turn"
 
-    CHANGE_PHASE = auto()
-
-    DRAW_CARD = auto()
-    PLAY_CARD = auto()
-    DISCARD_CARD = auto()
-
-    PLAY_LOOT = auto()
-    PLAY_TREASURE = auto()
-
-    DECLARE_ATTACK = auto()
-    RESOLVE_ATTACK = auto()
-
-    DEAL_DAMAGE = auto()
-    HEAL = auto()
-
-    GAIN_COINS = auto()
-    SPEND_COINS = auto()
-
-    PUSH_STACK = auto()
-    POP_STACK = auto()
-
-    ACTIVATE_ITEM = auto()
-
-    def __str__(self) -> str:
-        return self.name.lower()
+    CHOOSE_TARGET = "choose_target"
+    PASS_PRIORITY = "pass_priority"
