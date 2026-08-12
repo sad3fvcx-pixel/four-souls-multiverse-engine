@@ -17,7 +17,7 @@ from fsme.commands import (
     CommandType,
     UnknownCommandError,
 )
-from fsme.effects import EffectRegistry, builtin_registry
+from fsme.effects import EffectOp, EffectRegistry, builtin_registry
 from fsme.events import Event, EventBus, EventType
 from fsme.rng.rng import RNG
 from fsme.rules import (
@@ -26,12 +26,12 @@ from fsme.rules import (
     default_procedure_registry,
 )
 from fsme.stack import StackItem, StackItemType
-from fsme.state import GameState
+from fsme.state import GameState, PendingDecision, PlayerState
 
 from .ability_context import AbilityContext
 from .condition_evaluator import ConditionEvaluator
 from .effect_executor import EffectExecutor
-from .errors import StabilityError
+from .errors import DecisionRequired, StabilityError
 from .execution_context import ExecutionContext
 from .interpreter import Interpreter
 from .target_resolver import TargetResolver
@@ -193,6 +193,13 @@ class Runtime:
         return tuple(self._command_log)
 
     @property
+    def awaiting_decision(self) -> PendingDecision | None:
+        """
+        The question the engine is waiting on, if any.
+        """
+        return self._state.pending_decision
+
+    @property
     def awaiting_priority(self) -> bool:
         """
         Return True while the engine is waiting for players to respond.
@@ -247,7 +254,13 @@ class Runtime:
 
         first_event = len(self._history)
 
-        handler.execute(command, self._context)
+        self._context._set_actor(command.player)
+
+        try:
+            handler.execute(command, self._context)
+        finally:
+            self._context._set_actor(None)
+
         self.run()
 
         return self._log(
@@ -260,6 +273,17 @@ class Runtime:
         """
         if not 0 <= command.player < len(self._state.players):
             return f"unknown player {command.player}"
+
+        decision = self._state.pending_decision
+
+        if decision is not None:
+            if command.type is CommandType.CHOOSE_TARGET:
+                return None
+
+            return (
+                f"'{command.type}' must wait: player {decision.player} "
+                f"is still choosing"
+            )
 
         if self.awaiting_priority:
             if command.type in RESPONSE_COMMANDS:
@@ -333,9 +357,22 @@ class Runtime:
         Process pending work until the game is stable or waiting on players.
         """
         for _ in range(self._max_iterations):
+            decision = self._state.pending_decision
+
+            if decision is not None:
+                if decision.chosen is None:
+                    return
+
+                self._resume(decision)
+                continue
+
             if not self._state.events.is_empty():
                 self._process_event(self._state.events.pop())
                 continue
+
+            if self._state.game_over:
+                self._abandon_pending_work()
+                return
 
             if not self._state.stack.is_empty():
                 if self.awaiting_priority:
@@ -389,6 +426,20 @@ class Runtime:
         self._open_priority_window()
 
         return item
+
+    def _abandon_pending_work(self) -> None:
+        """
+        Drop everything still pending once the game has been won.
+
+        A finished game does not finish resolving: the effects waiting on the
+        stack, the attack in progress and any open priority window are all
+        answers to a question nobody is asking any more. Queued events are
+        delivered first, so observers still see the game end.
+        """
+        self._state.stack.clear()
+        self._state.priority.close()
+        self._state.combat.end()
+        self._state.pending_decision = None
 
     def _open_priority_window(self) -> None:
         """
@@ -553,13 +604,21 @@ class Runtime:
         item.mark_resolving()
 
         if item.ability is not None:
-            self._resolve_ability(item, item.ability)
+            if not self._resolve_ability(item, item.ability):
+                return
+
         elif item.label in self._procedures:
             self._procedures.get(item.label)(item, self._context)
             item.mark_resolved()
         else:
             item.fizzle()
 
+        self._finish(item)
+
+    def _finish(self, item: StackItem) -> None:
+        """
+        Announce that a stack object is done with.
+        """
         self._context.emit(
             EventType.STACK_RESOLVE,
             source=item.source,
@@ -568,30 +627,105 @@ class Runtime:
             status=str(item.status),
         )
 
-    def _resolve_ability(self, item: StackItem, ability: Ability) -> None:
+    def _resolve_ability(
+        self,
+        item: StackItem,
+        ability: Ability,
+        *,
+        context: AbilityContext | None = None,
+        ops: list[EffectOp] | None = None,
+        index: int = 0,
+    ) -> bool:
         """
-        Run one ability: resolve its targets, build its queue, execute it.
+        Run one ability, or as much of it as can run right now.
+
+        Returns False when the ability stopped to ask a player something. The
+        stack object is then held by the pending decision rather than the
+        stack, and resumes from the exact operation it stopped on.
         """
-        context = AbilityContext(
-            source=item.source,
-            ability=ability,
-            controller=item.controller,
-            owner=getattr(item.source, "owner", None),
-            event=item.event,
-        )
+        if context is None:
+            context = AbilityContext(
+                source=item.source,
+                ability=ability,
+                controller=item.controller,
+                owner=getattr(item.source, "owner", None),
+                event=item.event,
+            )
 
-        self._target_resolver.resolve_all(
-            ability.targets, self._state, context, self._rng
-        )
+        self._context._set_actor(context.controller)
 
-        ops = self._interpreter.build(
-            ability.effects, self._state, context, self._rng
-        )
+        try:
+            if ops is None:
+                self._target_resolver.resolve_all(
+                    ability.targets, self._state, context, self._rng
+                )
 
-        for op in ops:
-            self._executor.execute(op, self._context, context)
+                ops = self._interpreter.build(
+                    ability.effects, self._state, context, self._rng
+                )
+
+            while index < len(ops):
+                self._executor.execute(ops[index], self._context, context)
+                index += 1
+
+        except DecisionRequired as request:
+            self._suspend(item, ability, context, ops, index, request)
+
+            return False
+
+        finally:
+            self._context._set_actor(None)
 
         item.mark_resolved()
+
+        return True
+
+    def _suspend(
+        self,
+        item: StackItem,
+        ability: Ability,
+        context: AbilityContext,
+        ops: list[EffectOp] | None,
+        index: int,
+        request: DecisionRequired,
+    ) -> None:
+        """
+        Park a half-resolved ability until a player answers.
+        """
+        player = request.player
+
+        if player is None or not 0 <= player < len(self._state.players):
+            player = self._state.turn.active_player
+
+        self._state.pending_decision = PendingDecision(
+            decision_id=self._state.ids.allocate("decision"),
+            player=player,
+            kind=request.kind,
+            options=list(request.options),
+            minimum=request.minimum,
+            maximum=request.maximum,
+            bind=request.bind,
+            prompt=request.prompt,
+            continuation=(item, ability, context, ops, index),
+        )
+
+    def _resume(self, decision: PendingDecision) -> None:
+        """
+        Carry on resolving now that a player has answered.
+
+        The binding goes into the ability's own context, so the target that
+        asked the question finds the answer waiting when it is resolved again.
+        """
+        item, ability, context, ops, index = decision.continuation
+
+        context.bind(decision.bind, list(decision.chosen or ()))
+
+        self._state.pending_decision = None
+
+        if self._resolve_ability(
+            item, ability, context=context, ops=ops, index=index
+        ):
+            self._finish(item)
 
     # ------------------------------------------------------------------
     # State-Based Actions
@@ -678,7 +812,7 @@ class Runtime:
         killer = (
             state.combat.attacker
             if state.combat.active and state.combat.monster is monster
-            else None
+            else monster.last_damaged_by
         )
 
         monster.alive = False
@@ -693,12 +827,33 @@ class Runtime:
             souls=monster.definition.souls,
         )
 
-        if killer is None:
+        if killer is None or not 0 <= killer < len(state.players):
             return
 
-        souls = monster.definition.souls
+        self._pay_rewards(monster, state.player(killer))
 
-        if souls > 0:
-            self._context.apply(
-                "gain_soul", [state.player(killer)], count=souls
-            )
+    def _pay_rewards(self, monster: CardInstance, player: PlayerState) -> None:
+        """
+        Hand a defeated monster's printed rewards to the player who beat it.
+        """
+        definition = monster.definition
+
+        if definition.souls > 0:
+            self._context.apply("gain_soul", [player], count=definition.souls)
+
+        rewards = definition.rewards
+
+        cents = int(rewards.get("cents", 0))
+
+        if cents > 0:
+            self._context.apply("gain_coins", [player], amount=cents)
+
+        loot = int(rewards.get("loot", 0))
+
+        if loot > 0:
+            self._context.apply("draw_loot", [player], count=loot)
+
+        treasure = int(rewards.get("treasure", 0))
+
+        if treasure > 0:
+            self._context.apply("gain_treasure", [player], count=treasure)

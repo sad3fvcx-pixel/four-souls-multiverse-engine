@@ -71,12 +71,17 @@ def test_a_rejected_command_gets_no_identifier() -> None:
 
 def test_unknown_command_types_are_rejected_safely() -> None:
     """
-    COMMAND_SYSTEM.md section 14: unknown commands are rejected, not guessed.
+    COMMAND_SYSTEM.md section 14: an expansion may add command types, and a
+    type this engine has no handler for is refused rather than guessed at.
     """
-    runtime, _ = make_game()
-    start(runtime)
+    from fsme.rules import StartGameHandler
 
-    result = runtime.submit(Command(type=CommandType.CHOOSE_TARGET, player=0))
+    partial = CommandRegistry()
+    partial.register(CommandType.START_GAME, StartGameHandler())
+
+    runtime = make_runtime(make_state(), commands=partial)
+
+    result = runtime.submit(Command(type=CommandType.ATTACK, player=0))
 
     assert result.rejected
     assert "no handler registered" in result.reason

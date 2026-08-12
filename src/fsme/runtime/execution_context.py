@@ -28,7 +28,7 @@ class ExecutionContext:
     than by discipline.
     """
 
-    __slots__ = ("_state", "_rng", "_effects", "_emit", "_push")
+    __slots__ = ("_state", "_rng", "_effects", "_emit", "_push", "_actor")
 
     def __init__(
         self,
@@ -44,6 +44,7 @@ class ExecutionContext:
         self._effects = effects
         self._emit = emit
         self._push = push
+        self._actor: int | None = None
 
     @property
     def state(self) -> GameState:
@@ -52,6 +53,25 @@ class ExecutionContext:
     @property
     def rng(self) -> RNG:
         return self._rng
+
+    @property
+    def actor(self) -> int | None:
+        """
+        The player on whose behalf the current work is being done.
+
+        An effect needs this to attribute what it does. Damage has to remember
+        who dealt it, or a monster that dies outside combat has nobody to pay
+        its reward to. Only the Runtime sets it, and only around one piece of
+        resolution at a time — gameplay is single-threaded, so there is exactly
+        one actor at any moment.
+        """
+        return self._actor
+
+    def _set_actor(self, player: int | None) -> None:
+        """
+        Runtime-only: name the player the next work is done for.
+        """
+        self._actor = player
 
     def emit(
         self,

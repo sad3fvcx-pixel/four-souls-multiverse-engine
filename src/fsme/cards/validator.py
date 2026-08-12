@@ -58,6 +58,18 @@ def validate_card(
                 f"{card_id}: field '{field_name}' must be an integer"
             )
 
+    rewards = data.get("rewards")
+
+    if rewards is not None:
+        if not isinstance(rewards, Mapping):
+            errors.append(f"{card_id}: 'rewards' must be an object")
+        else:
+            for key, value in rewards.items():
+                if not isinstance(value, int):
+                    errors.append(
+                        f"{card_id}: reward '{key}' must be an integer"
+                    )
+
     abilities = data.get("abilities", ())
 
     if not isinstance(abilities, (list, tuple)):

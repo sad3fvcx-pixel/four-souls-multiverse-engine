@@ -14,6 +14,7 @@ from fsme.stack import Stack
 from fsme.util.ids import IdSequence
 
 from .combat_state import CombatState
+from .decision import PendingDecision
 from .player_state import PlayerState
 from .priority import PriorityState
 from .turn_state import TurnState
@@ -58,6 +59,8 @@ class GameState:
 
     priority: PriorityState = field(default_factory=PriorityState)
     combat: CombatState = field(default_factory=CombatState)
+
+    pending_decision: PendingDecision | None = None
 
     ids: IdSequence = field(default_factory=IdSequence)
 
@@ -119,6 +122,12 @@ class GameState:
         """
         Return True when no gameplay work is pending.
 
-        ENGINE_EXECUTION_MODEL.md allows a new command only in this condition.
+        ENGINE_EXECUTION_MODEL.md allows a new command only in this condition,
+        and it names a pending player decision as one of the things that must
+        be settled first.
         """
-        return self.events.is_empty() and self.stack.is_empty()
+        return (
+            self.events.is_empty()
+            and self.stack.is_empty()
+            and self.pending_decision is None
+        )

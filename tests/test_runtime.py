@@ -226,4 +226,4 @@ def test_execution_context_exposes_only_the_intended_powers() -> None:
 
     public = {name for name in dir(context) if not name.startswith("_")}
 
-    assert public == {"state", "rng", "emit", "push", "roll", "apply"}
+    assert public == {"state", "rng", "actor", "emit", "push", "roll", "apply"}

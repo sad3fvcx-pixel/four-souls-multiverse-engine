@@ -29,6 +29,14 @@ def _controller_of(target: Any) -> int | None:
     return getattr(target, "controller", None)
 
 
+def _attribute(target: Any, actor: int | None) -> None:
+    """
+    Remember who damaged a card, so its reward can find them later.
+    """
+    if actor is not None and hasattr(target, "last_damaged_by"):
+        target.last_damaged_by = actor
+
+
 def _hit_points(target: Any) -> int:
     hp = getattr(target, "hp", None)
 
@@ -56,13 +64,15 @@ def deal_damage(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> 
         target.hp = after
         dealt += before - after
 
+        _attribute(target, ctx.actor)
+
         ctx.emit(
             EventType.DAMAGE_DEALT,
-            source=None,
             controller=_controller_of(target),
             targets=[target],
             amount=before - after,
             remaining_hp=after,
+            actor=ctx.actor,
         )
 
     return dealt
@@ -112,6 +122,8 @@ def kill(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
         target.hp = 0
         killed += 1
 
+        _attribute(target, ctx.actor)
+
         ctx.emit(
             EventType.DAMAGE_DEALT,
             controller=_controller_of(target),
@@ -119,6 +131,7 @@ def kill(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
             amount=before,
             remaining_hp=0,
             lethal=True,
+            actor=ctx.actor,
         )
 
     return killed

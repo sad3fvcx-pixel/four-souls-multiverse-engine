@@ -34,6 +34,14 @@ class CardInstance:
     tapped: bool = False
     alive: bool = True
 
+    last_damaged_by: int | None = None
+    """
+    The player who most recently damaged this card.
+
+    A monster pays its reward to whoever defeated it, and that is not always
+    the player who declared an attack.
+    """
+
     counters: dict[str, int] = field(default_factory=dict)
     modifiers: list[Any] = field(default_factory=list)
 

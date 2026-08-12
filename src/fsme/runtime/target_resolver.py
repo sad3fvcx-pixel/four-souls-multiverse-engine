@@ -3,11 +3,18 @@
 """
 Target resolution for Four Souls Multiverse Engine.
 
-A target returns objects; it never changes the game. The one deliberate
-exception is the ``random_*`` family: TARGET_REGISTRY.md defines random targets,
-and drawing one necessarily advances the engine RNG, whose state belongs to
-GameState. Randomness is therefore consumed here, in a documented and
-deterministic order, and nothing else about the game is touched.
+A target returns objects; it never changes the game.
+
+The ``target_*`` family does not return at all when a real choice exists: it
+raises DecisionRequired, and the Runtime suspends the ability until a player
+answers. That keeps the choosing out of the resolver, which stays a pure
+question about the state.
+
+The one deliberate exception to purity is the ``random_*`` family.
+TARGET_REGISTRY.md defines random targets, and drawing one necessarily advances
+the engine RNG, whose state belongs to GameState. Randomness is therefore
+consumed here, in a documented and deterministic order, and nothing else about
+the game is touched.
 """
 
 from __future__ import annotations
@@ -16,10 +23,10 @@ from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
 from fsme.rng.rng import RNG
-from fsme.state import GameState, PlayerState
+from fsme.state import DecisionKind, GameState, PlayerState
 
 from .ability_context import AbilityContext
-from .errors import UnknownTargetError
+from .errors import DecisionRequired, UnknownTargetError
 
 TargetFn = Callable[[GameState, AbilityContext, Mapping[str, Any], RNG], list[Any]]
 
@@ -103,13 +110,15 @@ class TargetResolver:
         register("another_player", _opponents)
         register("random_player", _random_player)
         register("player", _player_by_index)
-        register("target_player", _player_by_index)
+        register("target_player", _target_player)
 
         register("all_monsters", _all_monsters)
         register("current_monster", _current_monster)
         register("monster", _current_monster)
         register("random_monster", _random_monster)
+        register("target_monster", _target_monster)
 
+        register("target_treasure", _target_treasure)
         register("owned_treasure", _owned_treasure)
         register("all_treasures", _all_treasures)
 
@@ -238,6 +247,78 @@ def _player_by_index(
         return []
 
     return [state.player(index)]
+
+
+def _ask(
+    kind: DecisionKind,
+    options: list[Any],
+    context: AbilityContext,
+    params: Mapping[str, Any],
+    bind: str,
+) -> list[Any]:
+    """
+    Stop and ask the controller to pick, unless there is nothing to pick from.
+
+    A single option is not a choice, so the engine takes it rather than
+    interrupting the game to confirm the obvious. No options at all means the
+    ability simply has no target.
+    """
+    if not options:
+        return []
+
+    if len(options) == 1 and int(params.get("count", 1)) == 1:
+        return list(options)
+
+    count = int(params.get("count", 1))
+
+    raise DecisionRequired(
+        kind,
+        options,
+        bind=str(params.get("as", bind)),
+        player=context.controller,
+        minimum=int(params.get("minimum", count)),
+        maximum=int(params.get("maximum", count)),
+        prompt=str(params.get("prompt", "")),
+    )
+
+
+def _target_player(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    candidates: list[Any] = [
+        player
+        for player in state.living_players()
+        if not (
+            params.get("exclude_controller", False)
+            and player.player_id == context.controller
+        )
+    ]
+
+    return _ask(DecisionKind.CHOOSE_PLAYER, candidates, context, params, "target_player")
+
+
+def _target_monster(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    return _ask(
+        DecisionKind.CHOOSE_MONSTER,
+        _all_monsters(state, context, params, rng),
+        context,
+        params,
+        "target_monster",
+    )
+
+
+def _target_treasure(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    return _ask(
+        DecisionKind.CHOOSE_TREASURE,
+        _all_treasures(state, context, params, rng),
+        context,
+        params,
+        "target_treasure",
+    )
 
 
 def _all_monsters(

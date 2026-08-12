@@ -41,6 +41,13 @@ class EffectContext(Protocol):
         """
         ...
 
+    @property
+    def actor(self) -> int | None:
+        """
+        The player this work is being done for, when there is one.
+        """
+        ...
+
     def emit(
         self,
         event_type: EventType,

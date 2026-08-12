@@ -103,6 +103,15 @@ class CardDefinition:
 
     tags: frozenset[str] = frozenset()
 
+    rewards: Mapping[str, int] = field(default_factory=lambda: _EMPTY_MAP)
+    """
+    What defeating this card pays out, beyond its printed souls.
+
+    Keys the engine understands are ``cents``, ``loot`` and ``treasure``.
+    Unknown keys are ignored rather than rejected, so a future reward type does
+    not invalidate existing content.
+    """
+
     metadata: Mapping[str, Any] = field(default_factory=lambda: _EMPTY_MAP)
 
     @classmethod
@@ -124,6 +133,7 @@ class CardDefinition:
             cost=data.get("cost"),
             souls=int(data.get("souls", 0)),
             tags=frozenset(data.get("tags", ())),
+            rewards=freeze(data.get("rewards", {})),
             metadata=freeze(data.get("metadata", {})),
         )
 

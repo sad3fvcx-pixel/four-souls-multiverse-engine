@@ -123,6 +123,43 @@ def test_several_turns_stay_stable() -> None:
     assert all(result.accepted or result.reason for result in runtime.command_log)
 
 
+def test_a_game_runs_to_victory_without_intervention() -> None:
+    """
+    Stage 3 exit criterion: a game of several turns reaches its end through
+    commands alone. Nothing here writes to GameState.
+    """
+    from test_combat import FixedRNG
+
+    runtime, state = make_game(
+        loot_cards=60, monsters=8, rng=FixedRNG([6] * 200)
+    )
+
+    submit(runtime, CommandType.START_GAME)
+
+    turns = 0
+
+    while not state.game_over and turns < 40:
+        player = state.turn.active_player
+
+        if player == 0:
+            submit(runtime, CommandType.END_PHASE, player=player)
+            submit(runtime, CommandType.ATTACK, player=player, index=0)
+
+        submit(runtime, CommandType.END_TURN, player=player)
+        turns += 1
+
+        assert runtime.is_stable()
+
+    assert state.game_over is True
+    assert state.winner == 0
+    assert state.player(0).soul_count >= state.souls_to_win
+
+    types = [event.type for event in runtime.history]
+
+    assert EventType.WINNER_DECLARED in types
+    assert types[-1] is EventType.GAME_END
+
+
 def test_the_same_seed_produces_the_same_game_through_commands() -> None:
     def play(seed: int):
         runtime, state = make_game(seed=seed, loot_cards=40, monsters=2)

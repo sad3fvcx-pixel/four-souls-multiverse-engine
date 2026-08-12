@@ -28,6 +28,7 @@ from .constants import (
     STARTING_HAND_SIZE,
     TREASURE_COST,
 )
+from .decisions import ChooseTargetHandler
 from .errors import RuleError, RuleRegistrationError, UnknownRuleError
 from .loot import DISCARD_PLAYED_LOOT, PlayLootHandler, discard_played_loot
 from .priority import PassPriorityHandler
@@ -40,9 +41,6 @@ def default_command_registry() -> CommandRegistry:
     """
     Build the command registry of the official rule set.
 
-    ``choose_target`` is deliberately absent. It needs the pending-decision
-    machinery, and until that exists an unregistered type is rejected with a
-    clear reason rather than silently doing nothing.
     """
     registry = CommandRegistry()
 
@@ -54,6 +52,7 @@ def default_command_registry() -> CommandRegistry:
     registry.register(CommandType.BUY_TREASURE, BuyTreasureHandler())
     registry.register(CommandType.ATTACK, AttackHandler())
     registry.register(CommandType.PASS_PRIORITY, PassPriorityHandler())
+    registry.register(CommandType.CHOOSE_TARGET, ChooseTargetHandler())
 
     return registry
 
@@ -74,6 +73,7 @@ __all__ = [
     "ActivateTreasureHandler",
     "AttackHandler",
     "BuyTreasureHandler",
+    "ChooseTargetHandler",
     "EndPhaseHandler",
     "EndTurnHandler",
     "PassPriorityHandler",
