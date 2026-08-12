@@ -28,7 +28,16 @@ class ExecutionContext:
     than by discipline.
     """
 
-    __slots__ = ("_state", "_rng", "_effects", "_emit", "_push", "_actor")
+    __slots__ = (
+        "_state",
+        "_rng",
+        "_effects",
+        "_emit",
+        "_push",
+        "_propose",
+        "_actor",
+        "_event",
+    )
 
     def __init__(
         self,
@@ -38,13 +47,16 @@ class ExecutionContext:
         *,
         emit: Callable[[Event], Event],
         push: Callable[[StackItem], StackItem],
+        propose: Callable[[Event], Event],
     ) -> None:
         self._state = state
         self._rng = rng
         self._effects = effects
         self._emit = emit
         self._push = push
+        self._propose = propose
         self._actor: int | None = None
+        self._event: Event | None = None
 
     @property
     def state(self) -> GameState:
@@ -72,6 +84,48 @@ class ExecutionContext:
         Runtime-only: name the player the next work is done for.
         """
         self._actor = player
+
+    @property
+    def event(self) -> Event | None:
+        """
+        The event currently being offered for replacement, if any.
+
+        A replacement ability edits this object; that is the whole of what it
+        is allowed to do.
+        """
+        return self._event
+
+    def _set_event(self, event: Event | None) -> None:
+        """
+        Runtime-only: name the event open for replacement.
+        """
+        self._event = event
+
+    def propose(
+        self,
+        event_type: EventType,
+        *,
+        source: Any | None = None,
+        controller: int | None = None,
+        targets: list[Any] | None = None,
+        **payload: Any,
+    ) -> Event:
+        """
+        Offer an event for replacement before it happens.
+
+        The returned event carries whatever the replacements made of it, and
+        may be cancelled outright. The caller reads its payload back rather
+        than trusting what it asked for.
+        """
+        return self._propose(
+            Event(
+                type=event_type,
+                source=source,
+                controller=controller,
+                targets=list(targets or ()),
+                payload=dict(payload),
+            )
+        )
 
     def emit(
         self,

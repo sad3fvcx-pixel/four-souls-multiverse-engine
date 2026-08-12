@@ -48,6 +48,14 @@ class Event:
     event_id: str = ""
     sequence: int = 0
 
+    replacements_applied: list[str] = field(default_factory=list)
+    """
+    Replacement abilities that have already modified this event.
+
+    Each one applies at most once, or two cards that each halve damage could
+    bounce it between them forever.
+    """
+
     status: EventStatus = EventStatus.CREATED
 
     @property

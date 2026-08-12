@@ -123,6 +123,46 @@ Cards never execute code directly.
 
 ---
 
+# 8.1 Ability Fields
+
+Every ability is an object with the following fields.
+
+Required:
+
+- trigger
+
+Optional:
+
+- conditions
+- targets
+- effects
+- scope
+- replacement
+- optional
+- description
+
+## scope
+
+Determines which events an ability answers.
+
+"self" reacts only when the event concerns this very card.
+
+"any" reacts to every matching event.
+
+When omitted the engine derives it from the trigger: card lifecycle and
+activation triggers are self-scoped, everything else is not.
+
+## replacement
+
+When true, the ability changes an event before it happens instead of reacting
+to one after.
+
+A replacement applies immediately and never uses the stack.
+
+A replacement is not also a trigger: an ability is one or the other.
+
+---
+
 # 9. Effects
 
 Effects are represented by engine primitives.

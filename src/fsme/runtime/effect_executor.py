@@ -16,7 +16,7 @@ from fsme.effects import EffectOp, EffectRegistry, EffectResult
 from fsme.util.errors import EngineError
 
 from .ability_context import AbilityContext
-from .errors import AbilityResolutionError
+from .errors import AbilityResolutionError, StabilityError
 from .execution_context import ExecutionContext
 from .target_resolver import TargetResolver
 
@@ -44,6 +44,10 @@ class EffectExecutor:
 
         try:
             value = spec.handler(context, targets, **dict(op.params))
+        except StabilityError:
+            # The engine is stopping itself, not failing an effect. Wrapping it
+            # would bury the reason under one message per nesting level.
+            raise
         except EngineError as error:
             ability.record(EffectResult.failed(op.name, str(error)))
 

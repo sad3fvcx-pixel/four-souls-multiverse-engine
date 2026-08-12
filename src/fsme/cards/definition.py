@@ -51,6 +51,16 @@ class Ability:
 
     optional: bool = False
 
+    replacement: bool = False
+    """
+    Whether this ability changes an event instead of reacting to one.
+
+    A replacement applies immediately, before the event happens, and never
+    uses the stack. A triggered ability waits its turn and resolves after.
+    Preventing damage and reacting to damage are different things, and this
+    flag is the difference.
+    """
+
     scope: str | None = None
     """
     Which events this ability listens to.
@@ -74,6 +84,7 @@ class Ability:
             targets=tuple(freeze(item) for item in data.get("targets", ())),
             effects=tuple(freeze(item) for item in data.get("effects", ())),
             optional=bool(data.get("optional", False)),
+            replacement=bool(data.get("replacement", False)),
             scope=str(data["scope"]) if data.get("scope") else None,
             description=str(data.get("description", "")),
         )

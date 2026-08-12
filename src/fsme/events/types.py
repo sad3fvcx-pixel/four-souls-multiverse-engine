@@ -92,6 +92,7 @@ class EventType(StrEnum):
 
     # Health
     DAMAGE_DEALT = "damage_dealt"
+    BEFORE_HEAL = "before_heal"
     HEALED = "healed"
     PLAYER_REVIVED = "player_revived"
 

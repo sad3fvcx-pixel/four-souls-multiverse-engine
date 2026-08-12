@@ -58,8 +58,24 @@ def deal_damage(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> 
     dealt = 0
 
     for target in targets:
+        proposal = ctx.propose(
+            EventType.BEFORE_DAMAGE,
+            controller=_controller_of(target),
+            targets=[target],
+            amount=amount,
+            actor=ctx.actor,
+        )
+
+        if proposal.cancelled:
+            continue
+
+        incoming = max(0, int(proposal.get("amount", amount)))
+
+        if incoming == 0:
+            continue
+
         before = _hit_points(target)
-        after = max(0, before - amount)
+        after = max(0, before - incoming)
 
         target.hp = after
         dealt += before - after
@@ -73,6 +89,12 @@ def deal_damage(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> 
             amount=before - after,
             remaining_hp=after,
             actor=ctx.actor,
+        )
+        ctx.emit(
+            EventType.AFTER_DAMAGE,
+            controller=_controller_of(target),
+            targets=[target],
+            amount=before - after,
         )
 
     return dealt
@@ -88,6 +110,18 @@ def heal(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> int:
     healed = 0
 
     for target in targets:
+        proposal = ctx.propose(
+            EventType.BEFORE_HEAL,
+            controller=_controller_of(target),
+            targets=[target],
+            amount=amount,
+        )
+
+        if proposal.cancelled:
+            continue
+
+        amount = max(0, int(proposal.get("amount", amount)))
+
         before = _hit_points(target)
         maximum = int(getattr(target, "max_hp", before + amount))
         after = min(maximum, before + amount)

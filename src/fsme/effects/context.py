@@ -48,6 +48,27 @@ class EffectContext(Protocol):
         """
         ...
 
+    @property
+    def event(self) -> Event | None:
+        """
+        The event currently open for replacement, if any.
+        """
+        ...
+
+    def propose(
+        self,
+        event_type: EventType,
+        *,
+        source: Any | None = None,
+        controller: int | None = None,
+        targets: list[Any] | None = None,
+        **payload: Any,
+    ) -> Event:
+        """
+        Offer an event for replacement before making it happen.
+        """
+        ...
+
     def emit(
         self,
         event_type: EventType,

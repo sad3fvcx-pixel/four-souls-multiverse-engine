@@ -31,12 +31,21 @@ from fsme.state import GameState, PendingDecision, PlayerState
 from .ability_context import AbilityContext
 from .condition_evaluator import ConditionEvaluator
 from .effect_executor import EffectExecutor
-from .errors import DecisionRequired, StabilityError
+from .errors import AbilityResolutionError, DecisionRequired, StabilityError
 from .execution_context import ExecutionContext
 from .interpreter import Interpreter
 from .target_resolver import TargetResolver
 
 DEFAULT_MAX_ITERATIONS = 512
+
+MAX_REPLACEMENT_DEPTH = 8
+"""
+How deeply replacements may nest.
+
+A replacement that causes another event which is itself replaced is legal; an
+unbounded chain of them is a content bug, and the engine says so rather than
+hanging.
+"""
 
 SELF_SCOPED_TRIGGERS = frozenset(
     {
@@ -136,6 +145,7 @@ class Runtime:
             self._effects,
             emit=self._enqueue,
             push=self._push,
+            propose=self._propose,
         )
 
         self._interactive_priority = interactive_priority
@@ -143,6 +153,7 @@ class Runtime:
 
         self._history: list[Event] = []
         self._command_log: list[CommandResult] = []
+        self._replacement_depth = 0
 
     # ------------------------------------------------------------------
     # Access
@@ -441,6 +452,119 @@ class Runtime:
         self._state.combat.end()
         self._state.pending_decision = None
 
+    def _propose(self, event: Event) -> Event:
+        """
+        Let replacement abilities edit an event, then queue it.
+
+        EVENT_SYSTEM.md separates two ways of answering an event. A
+        replacement changes it before it happens and never touches the stack;
+        a triggered ability waits its turn and resolves afterwards. Both get
+        their chance here: replacements run immediately, and the event is then
+        queued so ordinary triggers still see it — modified, or cancelled and
+        recorded as such.
+        """
+        self._apply_replacements(event)
+
+        return self._enqueue(event)
+
+    def _apply_replacements(self, event: Event) -> None:
+        """
+        Run every replacement ability that applies to an event, once each.
+        """
+        if self._replacement_depth >= MAX_REPLACEMENT_DEPTH:
+            raise StabilityError(
+                f"replacement effects nested more than "
+                f"{MAX_REPLACEMENT_DEPTH} deep on {event.type}"
+            )
+
+        self._replacement_depth += 1
+
+        try:
+            for card, ability in self._replacements_for(event):
+                label = f"{card.instance_id}:{ability.trigger}"
+
+                if label in event.replacements_applied:
+                    continue
+
+                event.replacements_applied.append(label)
+
+                self._run_replacement(card, ability, event)
+
+                if event.cancelled:
+                    return
+        finally:
+            self._replacement_depth -= 1
+
+    def _replacements_for(self, event: Event) -> list[tuple[CardInstance, Ability]]:
+        """
+        Find the replacement abilities watching for an event.
+        """
+        matches: list[tuple[CardInstance, Ability]] = []
+
+        for card in self._candidates(event):
+            for ability in card.definition.abilities_for(str(event.type)):
+                if not ability.replacement:
+                    continue
+
+                if ability_scope(ability) == "self" and event.source is not card:
+                    continue
+
+                probe = AbilityContext(
+                    source=card,
+                    ability=ability,
+                    controller=self._controller_for(card, event),
+                    owner=card.owner,
+                    event=event,
+                )
+
+                if self._conditions.evaluate_all(
+                    ability.conditions, self._state, probe
+                ):
+                    matches.append((card, ability))
+
+        return matches
+
+    def _run_replacement(
+        self,
+        card: CardInstance,
+        ability: Ability,
+        event: Event,
+    ) -> None:
+        """
+        Execute one replacement ability against the event it is editing.
+        """
+        context = AbilityContext(
+            source=card,
+            ability=ability,
+            controller=self._controller_for(card, event),
+            owner=card.owner,
+            event=event,
+        )
+
+        self._context._set_event(event)
+
+        try:
+            self._target_resolver.resolve_all(
+                ability.targets, self._state, context, self._rng
+            )
+
+            for op in self._interpreter.build(
+                ability.effects, self._state, context, self._rng
+            ):
+                self._executor.execute(op, self._context, context)
+
+        except DecisionRequired:
+            # A replacement applies at once or not at all: there is no moment
+            # in which to stop and ask, because the event it is editing has
+            # not happened yet and nothing else can proceed until it has.
+            raise AbilityResolutionError(
+                f"replacement ability on '{card.id}' asked for a decision; "
+                f"replacements must resolve without input"
+            ) from None
+
+        finally:
+            self._context._set_event(None)
+
     def _open_priority_window(self) -> None:
         """
         Give players the chance to answer the top of the stack.
@@ -495,6 +619,12 @@ class Runtime:
 
         for card in self._candidates(event):
             for ability in card.definition.abilities_for(str(event.type)):
+                if ability.replacement:
+                    # A replacement already had its say before the event was
+                    # queued. It is not also a trigger, or preventing damage
+                    # would prevent it and then react to it.
+                    continue
+
                 if ability_scope(ability) == "self" and event.source is not card:
                     continue
 
