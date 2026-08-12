@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "id": "engine_demo.spare_parts",
+      "name": "Spare Parts",
+      "type": "starting_item",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [{ "draw_loot": 1 }],
+          "description": "Draw a loot card."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.coin_purse",
+      "name": "Coin Purse",
+      "type": "starting_item",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [{ "gain_coins": 3 }],
+          "description": "Gain 3 cents."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.worn_shield",
+      "name": "Worn Shield",
+      "type": "starting_item",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "replacement": true,
+          "scope": "any",
+          "conditions": [{ "player_hp": { "operator": "<=", "value": 1 } }],
+          "effects": [{ "prevent_damage": 1 }],
+          "description": "Prevent 1 damage while you are on your last hit point."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.lucky_die",
+      "name": "Lucky Die",
+      "type": "starting_item",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            { "roll_dice": 6 },
+            {
+              "if": [{ "dice_greater": 3 }],
+              "then": [{ "gain_coins": 3 }],
+              "else": [{ "gain_coins": 1 }]
+            }
+          ],
+          "description": "Roll a die. On 4 or higher gain 3 cents, otherwise 1."
+        }
+      ]
+    }
+  ]
+}

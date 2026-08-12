@@ -1,0 +1,99 @@
+{
+  "cards": [
+    {
+      "id": "engine_demo.tin_cup",
+      "name": "Tin Cup",
+      "type": "treasure",
+      "expansion": "engine_demo",
+      "cost": 10,
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [{ "gain_coins": 2 }],
+          "description": "Gain 2 cents."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.rusted_blade",
+      "name": "Rusted Blade",
+      "type": "treasure",
+      "expansion": "engine_demo",
+      "cost": 10,
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            { "effect": "deal_damage", "amount": 1, "target": "current_monster" }
+          ],
+          "description": "Deal 1 damage to the monster you are fighting."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.tithe_box",
+      "name": "Tithe Box",
+      "type": "treasure",
+      "expansion": "engine_demo",
+      "cost": 10,
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "effects": [{ "gain_coins": 2 }],
+          "description": "Whenever a monster dies, gain 2 cents."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.charm_of_mending",
+      "name": "Charm of Mending",
+      "type": "treasure",
+      "expansion": "engine_demo",
+      "cost": 10,
+      "abilities": [
+        {
+          "trigger": "turn_start",
+          "effects": [{ "heal": 1 }],
+          "description": "At the start of every turn, heal 1."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.iron_ward",
+      "name": "Iron Ward",
+      "type": "treasure",
+      "expansion": "engine_demo",
+      "cost": 10,
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "replacement": true,
+          "scope": "any",
+          "effects": [{ "prevent_damage": 1 }],
+          "description": "Prevent 1 damage dealt to you."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.gamblers_token",
+      "name": "Gambler's Token",
+      "type": "treasure",
+      "expansion": "engine_demo",
+      "cost": 10,
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            { "roll_dice": 6 },
+            {
+              "if": [{ "dice_equals": 6 }],
+              "then": [{ "draw_loot": 2 }],
+              "else": [{ "gain_coins": 1 }]
+            }
+          ],
+          "description": "Roll a die. On a 6 draw 2 loot, otherwise gain 1 cent."
+        }
+      ]
+    }
+  ]
+}

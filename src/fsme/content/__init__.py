@@ -2,76 +2,57 @@
 
 """
 Content subsystem exports.
+
+Official cards and somebody's homemade set load through the same pipeline and
+get the same scrutiny. The engine has no privileged content.
 """
 
 from .constants import (
+    BASE_GAME_DIRECTORY,
     CARD_FILE_EXTENSION,
-    CARDS_DIRECTORY_NAME,
-    CHARACTERS_DIRECTORY_NAME,
-    CONTENT_DIRECTORY_NAME,
-    CONTENT_MANIFEST_NAME,
-    DEFAULT_CONTENT_NAMESPACE,
-    DEFAULT_CONTENT_VERSION,
-    DEFAULT_ENCODING,
-    EFFECTS_DIRECTORY_NAME,
-    LOOT_DIRECTORY_NAME,
-    MONSTERS_DIRECTORY_NAME,
-    ROOMS_DIRECTORY_NAME,
-    STARTING_ITEMS_DIRECTORY_NAME,
-    TREASURES_DIRECTORY_NAME,
+    CONTENT_SCHEMA_VERSION,
+    CONTENT_SECTIONS,
+    CUSTOM_DIRECTORY,
+    EXPANSIONS_DIRECTORY,
+    MANIFEST_NAME,
+    USER_DIRECTORY,
 )
-from .context import ContentContext
-from .dispatcher import ContentDispatcher
 from .errors import (
     ContentError,
     ContentLoadError,
     ContentNotFoundError,
-    ContentUnloadError,
     DuplicateContentError,
     InvalidContentError,
+    MissingDependencyError,
 )
-from .handler import ContentHandler
+from .library import ContentLibrary, Expansion
 from .loader import ContentLoader
-from .registry import ContentRegistry
-from .resolver import ContentResolver
-from .result import ContentResult
-from .utils import (
-    content_name,
-    ensure_registry,
-    is_registry,
-    normalize_path,
-)
+from .manifest import Manifest, validate_manifest
+from .report import IssueCategory, ValidationIssue, ValidationReport
+from .vocabulary import Vocabulary
 
 __all__ = [
-    "ContentRegistry",
+    "ContentLibrary",
     "ContentLoader",
-    "ContentContext",
-    "ContentHandler",
-    "ContentResolver",
-    "ContentDispatcher",
-    "ContentResult",
+    "Expansion",
+    "IssueCategory",
+    "Manifest",
+    "ValidationIssue",
+    "ValidationReport",
+    "Vocabulary",
+    "validate_manifest",
     "ContentError",
     "ContentLoadError",
-    "ContentUnloadError",
-    "DuplicateContentError",
     "ContentNotFoundError",
+    "DuplicateContentError",
     "InvalidContentError",
-    "DEFAULT_CONTENT_NAMESPACE",
-    "DEFAULT_CONTENT_VERSION",
-    "DEFAULT_ENCODING",
+    "MissingDependencyError",
+    "BASE_GAME_DIRECTORY",
     "CARD_FILE_EXTENSION",
-    "CONTENT_MANIFEST_NAME",
-    "CONTENT_DIRECTORY_NAME",
-    "CARDS_DIRECTORY_NAME",
-    "EFFECTS_DIRECTORY_NAME",
-    "ROOMS_DIRECTORY_NAME",
-    "MONSTERS_DIRECTORY_NAME",
-    "TREASURES_DIRECTORY_NAME",
-    "LOOT_DIRECTORY_NAME",
-    "CHARACTERS_DIRECTORY_NAME",
-    "STARTING_ITEMS_DIRECTORY_NAME",
-    "is_registry",
-    "ensure_registry",
-    "content_name",
-    "normalize_path",
+    "CONTENT_SCHEMA_VERSION",
+    "CONTENT_SECTIONS",
+    "CUSTOM_DIRECTORY",
+    "EXPANSIONS_DIRECTORY",
+    "MANIFEST_NAME",
+    "USER_DIRECTORY",
 ]

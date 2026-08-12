@@ -33,6 +33,7 @@ from .errors import RuleError, RuleRegistrationError, UnknownRuleError
 from .loot import DISCARD_PLAYED_LOOT, PlayLootHandler, discard_played_loot
 from .priority import PassPriorityHandler
 from .procedures import ProcedureRegistry, StackProcedure
+from .setup import SetupError, new_game
 from .shop import BuyTreasureHandler, refill_shop
 from .turn import EndPhaseHandler, EndTurnHandler, StartGameHandler
 
@@ -78,6 +79,7 @@ __all__ = [
     "EndTurnHandler",
     "PassPriorityHandler",
     "PlayLootHandler",
+    "SetupError",
     "ProcedureRegistry",
     "StackProcedure",
     "StartGameHandler",
@@ -85,6 +87,7 @@ __all__ = [
     "DISCARD_PLAYED_LOOT",
     "combat_round",
     "default_command_registry",
+    "new_game",
     "default_procedure_registry",
     "discard_played_loot",
     "end_combat",

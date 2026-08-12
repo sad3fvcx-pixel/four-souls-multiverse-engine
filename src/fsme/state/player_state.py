@@ -33,6 +33,14 @@ class PlayerState:
 
     alive: bool = True
 
+    character: Any | None = None
+    """
+    The character card this player is playing.
+
+    Hit points, the starting item and any printed ability come from it, so a
+    player without one is a player the rules cannot fully describe.
+    """
+
     hand: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.HAND))
     treasures: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.TREASURE))
     souls: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.SOUL))

@@ -6,11 +6,12 @@ Session facade for Four Souls Multiverse Engine.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Any
 
 from fsme.cards import CardRegistry
 from fsme.commands import Command, CommandResult, CommandType
+from fsme.content import ContentLibrary
 from fsme.events import Event, EventType
 from fsme.rng.rng import RNG
 from fsme.runtime import Runtime
@@ -45,6 +46,31 @@ class Game:
             game_state,
             cards=cards,
             rng=RNG(game_state.seed),
+            interactive_priority=interactive_priority,
+        )
+
+    @classmethod
+    def from_content(
+        cls,
+        library: ContentLibrary,
+        players: Sequence[str],
+        *,
+        seed: int = 0,
+        interactive_priority: bool = False,
+    ) -> Game:
+        """
+        Lay out a game from loaded content and hand back the session.
+
+        This is the shortest honest path from a directory of card files to a
+        playable game: load, validate, deal, play.
+        """
+        from fsme.rules import new_game
+
+        state = new_game(library, players, seed=seed)
+
+        return cls(
+            state,
+            cards=library.registry(),
             interactive_priority=interactive_priority,
         )
 

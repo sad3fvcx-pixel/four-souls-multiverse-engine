@@ -25,6 +25,8 @@ def validate_card(
     *,
     known_effects: Collection[str] | None = None,
     known_triggers: Collection[str] | None = None,
+    known_conditions: Collection[str] | None = None,
+    known_targets: Collection[str] | None = None,
 ) -> list[str]:
     """
     Return every problem found in one raw card.
@@ -84,6 +86,8 @@ def validate_card(
                 index=index,
                 known_effects=known_effects,
                 known_triggers=known_triggers,
+                known_conditions=known_conditions,
+                known_targets=known_targets,
             )
         )
 
@@ -97,6 +101,8 @@ def _validate_ability(
     index: int,
     known_effects: Collection[str] | None,
     known_triggers: Collection[str] | None,
+    known_conditions: Collection[str] | None = None,
+    known_targets: Collection[str] | None = None,
 ) -> list[str]:
     location = f"{card_id}: ability {index}"
 
@@ -129,7 +135,110 @@ def _validate_ability(
                 if name not in known_effects and name not in _CONTROL_NAMES:
                     errors.append(f"{location}: unknown effect '{name}'")
 
+    conditions = ability.get("conditions", ())
+
+    if known_conditions is not None and isinstance(conditions, (list, tuple)):
+        for name in _node_names(conditions, _BOOLEAN_NAMES):
+            if name not in known_conditions and name not in _BOOLEAN_NAMES:
+                errors.append(f"{location}: unknown condition '{name}'")
+
+    if known_targets is not None:
+        for name in _target_names(ability):
+            if name not in known_targets:
+                errors.append(f"{location}: unknown target '{name}'")
+
     return errors
+
+
+_BOOLEAN_NAMES = frozenset({"and", "or", "not"})
+
+
+def _node_names(nodes: Any, nested: Collection[str]) -> list[str]:
+    """
+    Collect the names used by a list of condition nodes, including nested ones.
+    """
+    names: list[str] = []
+
+    if not isinstance(nodes, (list, tuple)):
+        return names
+
+    for node in nodes:
+        if isinstance(node, str):
+            names.append(node)
+            continue
+
+        if not isinstance(node, Mapping):
+            continue
+
+        if "condition" in node:
+            names.append(str(node["condition"]))
+            continue
+
+        for key, value in node.items():
+            names.append(str(key))
+
+            if key in nested:
+                names.extend(_node_names(value, nested))
+
+            break
+
+    return names
+
+
+def _target_names(ability: Mapping[str, Any]) -> list[str]:
+    """
+    Collect every target named by an ability, declared or used inline.
+    """
+    names: list[str] = []
+
+    declared = ability.get("targets", ())
+
+    if isinstance(declared, (list, tuple)):
+        for spec in declared:
+            if isinstance(spec, str):
+                names.append(spec)
+            elif isinstance(spec, Mapping):
+                if "target" in spec:
+                    names.append(str(spec["target"]))
+                else:
+                    for key in spec:
+                        if key != "as":
+                            names.append(str(key))
+                            break
+
+    names.extend(_inline_targets(ability.get("effects", ())))
+
+    return names
+
+
+def _inline_targets(nodes: Any) -> list[str]:
+    """
+    Collect targets written on individual effects.
+    """
+    names: list[str] = []
+
+    if not isinstance(nodes, (list, tuple)):
+        return names
+
+    for node in nodes:
+        if not isinstance(node, Mapping):
+            continue
+
+        target = node.get("target")
+
+        if isinstance(target, str) and not target.startswith("__"):
+            names.append(target)
+
+        for key in ("for_each", "of"):
+            value = node.get(key)
+
+            if isinstance(value, str):
+                names.append(value)
+
+        for branch in _BRANCH_KEYS:
+            names.extend(_inline_targets(node.get(branch, ())))
+
+    return names
 
 
 _CONTROL_NAMES = frozenset(
@@ -179,6 +288,8 @@ def validate_cards(
     *,
     known_effects: Collection[str] | None = None,
     known_triggers: Collection[str] | None = None,
+    known_conditions: Collection[str] | None = None,
+    known_targets: Collection[str] | None = None,
 ) -> list[str]:
     """
     Validate a collection of raw cards and report duplicate identifiers.
@@ -195,6 +306,8 @@ def validate_cards(
                 card,
                 known_effects=known_effects,
                 known_triggers=known_triggers,
+                known_conditions=known_conditions,
+                known_targets=known_targets,
             )
         )
 
