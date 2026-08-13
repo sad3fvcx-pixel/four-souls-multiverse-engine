@@ -157,10 +157,55 @@ def _remove_from_anywhere(state: GameState, card: Any) -> bool:
     return False
 
 
+def move_cards(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    deck: str = "loot",
+    position: str = "bottom",
+) -> int:
+    """
+    Put chosen cards on the top or the bottom of a deck.
+
+    The order of a deck is information, and this is the only effect allowed to
+    change it without shuffling. Cards are moved in the order they were chosen,
+    so "put these two on the bottom" leaves them in a knowable order rather than
+    an accidental one.
+    """
+    if position not in ("top", "bottom"):
+        raise EffectExecutionError(
+            f"unknown position '{position}'; use 'top' or 'bottom'"
+        )
+
+    state = ctx.state
+    zone = deck_zone(state, deck)
+
+    moved = 0
+
+    for card in targets:
+        if not _remove_from_anywhere(state, card):
+            continue
+
+        if position == "top":
+            zone.add_top(card)
+        else:
+            zone.cards.insert(0, card)
+
+        moved += 1
+
+    return moved
+
+
 def register(registry: EffectRegistry) -> None:
     """
     Register every deck effect.
     """
+    registry.register(
+        "move_cards",
+        move_cards,
+        needs_target=True,
+        primary="deck",
+        description="Put cards on the top or bottom of a deck.",
+    )
     registry.register(
         "shuffle_deck",
         shuffle_deck,

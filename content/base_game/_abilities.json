@@ -327,6 +327,289 @@
     ]
   },
 
+  "loot_deck-trinkets-base_game-swallowed_penny": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {"effect": "put_into_play", "target": "self"}
+        ],
+        "description": "This loot becomes an item under your control when it resolves."
+      },
+      {
+        "trigger": "after_damage",
+        "scope": "controller",
+        "effects": [
+          {"gain_coins": 1}
+        ],
+        "description": "Each time you take damage, gain 1¢."
+      }
+    ]
+  },
+
+  "loot_deck-trinkets-base_game-bloody_penny": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {"effect": "put_into_play", "target": "self"}
+        ],
+        "description": "This loot becomes an item under your control when it resolves."
+      },
+      {
+        "trigger": "player_died",
+        "scope": "any",
+        "effects": [
+          {"effect": "draw_loot", "count": 1, "target": "controller"}
+        ],
+        "description": "Each time a player dies, loot 1."
+      }
+    ]
+  },
+
+  "loot_deck-trinkets-base_game-counterfeit_penny": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {"effect": "put_into_play", "target": "self"}
+        ],
+        "description": "This loot becomes an item under your control when it resolves."
+      },
+      {
+        "trigger": "before_coins_gained",
+        "scope": "controller",
+        "replacement": true,
+        "effects": [
+          {"effect": "modify_event", "key": "amount", "delta": 1}
+        ],
+        "description": "If you would gain any number of ¢, gain that much +1¢ instead."
+      }
+    ]
+  },
+
+  "loot_deck-trinkets-base_game-guppy_s_hairball": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {"effect": "put_into_play", "target": "self"}
+        ],
+        "description": "This loot becomes an item under your control when it resolves."
+      },
+      {
+        "trigger": "before_damage",
+        "scope": "controller",
+        "replacement": true,
+        "effects": [
+          {"roll_dice": 6},
+          {
+            "if": [{"dice_equals": 6}],
+            "then": [{"prevent_damage": 1}]
+          }
+        ],
+        "description": "Each time you would take damage, roll- 6: Prevent 1 of that damage."
+      }
+    ]
+  },
+
+  "loot_deck-trinkets-base_game-curved_horn": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {"effect": "put_into_play", "target": "self"}
+        ],
+        "description": "This loot becomes an item under your control when it resolves."
+      }
+    ],
+    "statics": [
+      {
+        "stat": "attack",
+        "amount": 1,
+        "scope": "self",
+        "conditions": ["first_attack_roll"],
+        "description": "You have +1 AT for your first attack roll each turn."
+      }
+    ]
+  },
+
+  "loot_deck-trinkets-base_game-cain_s_eye": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {"effect": "put_into_play", "target": "self"}
+        ],
+        "description": "This loot becomes an item under your control when it resolves."
+      },
+      {
+        "trigger": "turn_start",
+        "scope": "controller",
+        "targets": [
+          {"deck_top": {"deck": "loot", "count": 1, "as": "top"}}
+        ],
+        "effects": [
+          {"effect": "reveal_cards", "deck": "loot", "count": 1},
+          {
+            "may": [
+              {"effect": "move_cards", "deck": "loot", "position": "bottom", "target": "top"}
+            ],
+            "prompt": "Put the top card of the loot deck on the bottom?"
+          }
+        ],
+        "description": "At the start of your turn, look at the top card of the loot deck. You may put it on the bottom."
+      }
+    ]
+  },
+
+  "loot_deck-trinkets-base_game-golden_horseshoe": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {"effect": "put_into_play", "target": "self"}
+        ],
+        "description": "This loot becomes an item under your control when it resolves."
+      },
+      {
+        "trigger": "turn_start",
+        "scope": "controller",
+        "targets": [
+          {"deck_top": {"deck": "treasure", "count": 1, "as": "top"}}
+        ],
+        "effects": [
+          {"effect": "reveal_cards", "deck": "treasure", "count": 1},
+          {
+            "may": [
+              {"effect": "move_cards", "deck": "treasure", "position": "bottom", "target": "top"}
+            ],
+            "prompt": "Put the top card of the treasure deck on the bottom?"
+          }
+        ],
+        "description": "At the start of your turn, look at the top card of the treasure deck. You may put it on the bottom."
+      }
+    ]
+  },
+
+  "loot_deck-trinkets-base_game-purple_heart": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {"effect": "put_into_play", "target": "self"}
+        ],
+        "description": "This loot becomes an item under your control when it resolves."
+      },
+      {
+        "trigger": "turn_start",
+        "scope": "controller",
+        "targets": [
+          {"deck_top": {"deck": "monster", "count": 1, "as": "top"}}
+        ],
+        "effects": [
+          {"effect": "reveal_cards", "deck": "monster", "count": 1},
+          {
+            "may": [
+              {"effect": "move_cards", "deck": "monster", "position": "bottom", "target": "top"}
+            ],
+            "prompt": "Put the top card of the monster deck on the bottom?"
+          }
+        ],
+        "description": "At the start of your turn, look at the top card of the monster deck. You may put it on the bottom."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-iv_the_emperor": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {"target_deck_card": {"deck": "monster", "from_top": 5, "as": "kept"}},
+          {"deck_top": {"deck": "monster", "count": 5, "exclude": "kept", "as": "rest"}}
+        ],
+        "effects": [
+          {"effect": "move_cards", "deck": "monster", "position": "bottom", "target": "rest"}
+        ],
+        "description": "Look at the top 5 cards of the monster deck. Put 1 on top and the rest on the bottom."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-ix_the_hermit": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {"target_deck_card": {"deck": "treasure", "from_top": 5, "as": "kept"}},
+          {"deck_top": {"deck": "treasure", "count": 5, "exclude": "kept", "as": "rest"}}
+        ],
+        "effects": [
+          {"effect": "move_cards", "deck": "treasure", "position": "bottom", "target": "rest"}
+        ],
+        "description": "Look at the top 5 cards of the treasure deck. Put 1 on the top and the rest on the bottom."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-xviii_the_moon": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {"target_deck_card": {"deck": "loot", "from_top": 5, "as": "kept"}},
+          {"deck_top": {"deck": "loot", "count": 5, "exclude": "kept", "as": "rest"}}
+        ],
+        "effects": [
+          {"effect": "move_cards", "deck": "loot", "position": "bottom", "target": "rest"}
+        ],
+        "description": "Look at the top 5 cards of the loot deck. Put 1 on top and the rest on the bottom."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-xii_the_hanged_man": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {"deck_top": {"deck": "loot", "count": 1, "as": "loot_top"}},
+          {"deck_top": {"deck": "treasure", "count": 1, "as": "treasure_top"}},
+          {"deck_top": {"deck": "monster", "count": 1, "as": "monster_top"}}
+        ],
+        "effects": [
+          {"effect": "reveal_cards", "deck": "loot", "count": 1},
+          {"effect": "reveal_cards", "deck": "treasure", "count": 1},
+          {"effect": "reveal_cards", "deck": "monster", "count": 1},
+          {
+            "may": [
+              {"effect": "move_cards", "deck": "loot", "position": "bottom", "target": "loot_top"}
+            ],
+            "as": "bury_loot",
+            "prompt": "Put the top card of the loot deck on the bottom?"
+          },
+          {
+            "may": [
+              {"effect": "move_cards", "deck": "treasure", "position": "bottom", "target": "treasure_top"}
+            ],
+            "as": "bury_treasure",
+            "prompt": "Put the top card of the treasure deck on the bottom?"
+          },
+          {
+            "may": [
+              {"effect": "move_cards", "deck": "monster", "position": "bottom", "target": "monster_top"}
+            ],
+            "as": "bury_monster",
+            "prompt": "Put the top card of the monster deck on the bottom?"
+          },
+          {"draw_loot": 2}
+        ],
+        "description": "Look at the top card of each deck. You may put any of those cards on the bottom of their deck, then loot 2."
+      }
+    ]
+  },
+
   "loot_deck-cards_miscellaneous-base_game-iii_the_empress": {
     "abilities": [
       {

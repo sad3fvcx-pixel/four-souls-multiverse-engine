@@ -100,6 +100,26 @@ def ability_scope(ability: Ability) -> str:
     return "self" if ability.trigger in SELF_SCOPED_TRIGGERS else "any"
 
 
+def in_scope(ability: Ability, card: CardInstance, event: Event) -> bool:
+    """
+    Decide whether an ability may react to an event at all.
+
+    ``self`` is the card's own business: activating one item does not fire
+    every item. ``controller`` is its holder's business, which is what a card
+    means by "you" — "each time you take damage" is not each time anybody does.
+    ``any`` is the whole table's.
+    """
+    scope = ability_scope(ability)
+
+    if scope == "self":
+        return event.source is card
+
+    if scope == "controller":
+        return card.controller is not None and event.controller == card.controller
+
+    return True
+
+
 class Runtime:
     """
     Owns a running game and is the only thing allowed to change it.
@@ -515,7 +535,7 @@ class Runtime:
                 if not ability.replacement:
                     continue
 
-                if ability_scope(ability) == "self" and event.source is not card:
+                if not in_scope(ability, card, event):
                     continue
 
                 probe = AbilityContext(
@@ -662,7 +682,7 @@ class Runtime:
                     # would prevent it and then react to it.
                     continue
 
-                if ability_scope(ability) == "self" and event.source is not card:
+                if not in_scope(ability, card, event):
                     continue
 
                 probe = AbilityContext(

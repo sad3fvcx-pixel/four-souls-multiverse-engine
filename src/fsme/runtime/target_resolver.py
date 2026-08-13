@@ -129,6 +129,7 @@ class TargetResolver:
         register("target_player_or_monster", _target_player_or_monster)
         register("target_loot", _target_loot)
         register("target_deck_card", _target_deck_card)
+        register("deck_top", _deck_top)
         register("target_treasure", _target_treasure)
         register("owned_treasure", _owned_treasure)
         register("all_treasures", _all_treasures)
@@ -365,7 +366,15 @@ def _target_deck_card(
     if zone is None:
         raise UnknownTargetError(f"unknown deck '{deck}'")
 
-    options: list[Any] = list(reversed(zone.cards))
+    # "Look at the top 5 cards and pick one" is a search of five cards, not of
+    # the deck. Without the limit the player would be shown everything.
+    depth = params.get("from_top")
+
+    options: list[Any] = (
+        list(reversed(zone.cards[-int(depth):]))
+        if depth is not None and int(depth) > 0
+        else list(reversed(zone.cards))
+    )
 
     card_type = params.get("card_type")
 
@@ -379,6 +388,35 @@ def _target_deck_card(
     return _ask(
         DecisionKind.CHOOSE_CARD, options, context, params, "target_deck_card"
     )
+
+
+def _deck_top(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    Return the top cards of a deck, without asking anybody anything.
+
+    ``exclude`` names a group already bound by this ability and leaves those
+    cards out. That is what "put the rest on the bottom" means: the rest is
+    what is left after the player has kept one.
+    """
+    deck = str(params.get("deck", "loot"))
+    zone = getattr(state, f"{deck}_deck", None)
+
+    if zone is None:
+        raise UnknownTargetError(f"unknown deck '{deck}'")
+
+    count = int(params.get("count", 1))
+    cards: list[Any] = list(reversed(zone.cards[-count:])) if count > 0 else []
+
+    excluded = params.get("exclude")
+
+    if excluded is not None:
+        kept = context.targets.get(str(excluded), ())
+
+        cards = [card for card in cards if card not in kept]
+
+    return cards
 
 
 def _target_treasure(

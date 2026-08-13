@@ -34,7 +34,10 @@ def test_gain_and_lose_coins() -> None:
     ctx_registry.execute("lose_coins", ctx, [player], amount=2)
     assert player.pennies == 3
 
+    # A gain is offered for replacement before it happens, so it announces
+    # itself twice: once as a proposal, once as a fact.
     assert queued_types(ctx.state) == [
+        EventType.BEFORE_COINS_GAINED,
         EventType.COINS_GAINED,
         EventType.COINS_LOST,
     ]

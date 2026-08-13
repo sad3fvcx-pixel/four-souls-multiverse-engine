@@ -58,6 +58,64 @@ def gain_treasure(ctx: EffectContext, targets: Sequence[Any], count: int = 1) ->
     return gained
 
 
+def put_into_play(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Put cards into their controller's play area as items.
+
+    A trinket is a loot card that says it becomes an item when it resolves, so
+    the card being resolved is usually its own target. It is on the stack and in
+    no zone at that moment, which is why nothing has to be taken out of one
+    first — and why the rule that discards a played loot card leaves alone
+    anything that has put itself somewhere.
+    """
+    state = ctx.state
+    owner = ctx.actor
+
+    if owner is None or not 0 <= owner < len(state.players):
+        return 0
+
+    player = state.player(owner)
+    entered = 0
+
+    for card in targets:
+        _detach(state, card)
+
+        card.owner = owner
+        card.controller = owner
+
+        player.treasures.add_top(card)
+        entered += 1
+
+        ctx.emit(
+            EventType.ON_GAIN,
+            source=card,
+            controller=owner,
+            targets=[player],
+        )
+        ctx.emit(
+            EventType.ON_ENTER,
+            source=card,
+            controller=owner,
+        )
+
+    return entered
+
+
+def _detach(state: Any, card: Any) -> None:
+    """
+    Take a card out of whichever zone holds it, if any holds it at all.
+    """
+    zones = [state.loot_deck, state.loot_discard, state.treasure_deck]
+
+    for player in state.players:
+        zones.append(player.hand)
+
+    for zone in zones:
+        if card in zone.cards:
+            zone.cards.remove(card)
+            return
+
+
 def _is_eternal(card: Any) -> bool:
     definition = getattr(card, "definition", None)
 
@@ -184,4 +242,10 @@ def register(registry: EffectRegistry) -> None:
         steal_treasure,
         needs_target=True,
         description="Take an item from another player.",
+    )
+    registry.register(
+        "put_into_play",
+        put_into_play,
+        needs_target=True,
+        description="Put a card into play as an item under your control.",
     )

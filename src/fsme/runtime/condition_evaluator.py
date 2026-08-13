@@ -187,6 +187,7 @@ class ConditionEvaluator:
         register("stack_size", _stack_size)
 
         register("first_turn", _first_turn)
+        register("first_attack_roll", _first_attack_roll)
         register("game_finished", _game_finished)
 
 
@@ -339,6 +340,18 @@ def _monster_hp(
         return False
 
     return _compare(int(monster.hp), params)
+
+
+def _first_attack_roll(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    True while the turn's first attack roll is being resolved.
+
+    The roll is counted as it is made, so the damage it leads to is still
+    looking at roll number one.
+    """
+    return state.turn.attack_rolls <= 1
 
 
 def _dice_value(context: AbilityContext) -> int | None:

@@ -78,6 +78,9 @@ class EventType(StrEnum):
     TREASURE_DESTROYED = "treasure_destroyed"
     TREASURE_STOLEN = "treasure_stolen"
 
+    # Coins
+    BEFORE_COINS_GAINED = "before_coins_gained"
+
     # Statistics
     STAT_MODIFIED = "stat_modified"
     STAT_EXPIRED = "stat_expired"

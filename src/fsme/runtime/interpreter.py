@@ -21,16 +21,30 @@ from typing import Any
 
 from fsme.effects import EffectOp, EffectRegistry
 from fsme.rng.rng import RNG
-from fsme.state import GameState
+from fsme.state import DecisionKind, GameState
 
 from .ability_context import AbilityContext
 from .condition_evaluator import ConditionEvaluator
-from .errors import InterpreterError
+from .errors import DecisionRequired, InterpreterError
 from .target_resolver import TargetResolver
 
-CONTROL_NAMES = frozenset({"sequence", "if", "repeat", "for_each", "stop"})
+CONTROL_NAMES = frozenset(
+    {"sequence", "if", "repeat", "for_each", "stop", "may", "choose"}
+)
 
-_MODIFIER_KEYS = frozenset({"target", "as", "optional", "description"})
+YES = "yes"
+NO = "no"
+
+MAY_OPTIONS = (YES, NO)
+"""
+The answer to "you may".
+
+A card that offers something optional asks a question with two answers, and the
+engine asks it the same way it asks every other question: by stopping and
+waiting. Nothing else about ``may`` is special.
+"""
+
+_MODIFIER_KEYS = frozenset({"target", "as", "optional", "description", "prompt"})
 
 DEFAULT_MAX_OPS = 512
 
@@ -144,7 +158,93 @@ class Interpreter:
                 False,
             )
 
+        if op.name == "may":
+            return self._expand_may(params, context, default_target), False
+
+        if op.name == "choose":
+            return self._expand_choose(params, context, default_target), False
+
         raise InterpreterError(f"unsupported control operation '{op.name}'")
+
+    def _expand_may(
+        self,
+        params: Mapping[str, Any],
+        context: AbilityContext,
+        default_target: str | None,
+    ) -> list[EffectOp]:
+        """
+        Open the contents of "you may" once the controller has said yes.
+
+        The answer is bound like a target, which is what makes the question
+        survive being asked: the ability is suspended, the player answers, and
+        resolution starts over from this operation and finds the answer waiting
+        instead of asking again.
+        """
+        name = str(params.get("as", "__may__"))
+        answer = context.targets.get(name)
+
+        if answer is None:
+            raise DecisionRequired(
+                DecisionKind.CHOOSE_OPTION,
+                list(MAY_OPTIONS),
+                bind=name,
+                player=context.controller,
+                prompt=str(params.get("prompt", "")),
+            )
+
+        if not answer or answer[0] != YES:
+            return []
+
+        return self.build(params.get("effects", params.get("may", ())), default_target)
+
+    def _expand_choose(
+        self,
+        params: Mapping[str, Any],
+        context: AbilityContext,
+        default_target: str | None,
+    ) -> list[EffectOp]:
+        """
+        Open one mode of a card that says "choose one".
+
+        Each mode is a description and the effects it stands for. The
+        description is what the player is offered, so a client can show the
+        choice without knowing anything about the effects behind it.
+        """
+        modes = params.get("modes", params.get("choose", ()))
+
+        if not isinstance(modes, (list, tuple)) or not modes:
+            raise InterpreterError("choose requires at least one mode")
+
+        name = str(params.get("as", "__choice__"))
+        answer = context.targets.get(name)
+
+        labels = [_mode_label(mode, index) for index, mode in enumerate(modes)]
+
+        if answer is None:
+            raise DecisionRequired(
+                DecisionKind.CHOOSE_OPTION,
+                labels,
+                bind=name,
+                player=context.controller,
+                prompt=str(params.get("prompt", "")),
+            )
+
+        if not answer:
+            return []
+
+        try:
+            chosen = labels.index(str(answer[0]))
+        except ValueError:
+            raise InterpreterError(
+                f"'{answer[0]}' is not one of this card's modes"
+            ) from None
+
+        mode = modes[chosen]
+
+        if not isinstance(mode, Mapping):
+            raise InterpreterError(f"invalid mode: {mode!r}")
+
+        return self.build(mode.get("effects", ()), default_target)
 
     def _expand_if(
         self,
@@ -249,6 +349,19 @@ class Interpreter:
             resolved.setdefault(spec.primary, shorthand)
 
         return EffectOp(name=name, params=resolved, target=target)
+
+
+def _mode_label(mode: Any, index: int) -> str:
+    """
+    What a mode is called when the player is offered it.
+    """
+    if isinstance(mode, Mapping):
+        description = mode.get("description")
+
+        if description:
+            return str(description)
+
+    return f"mode {index + 1}"
 
 
 def normalise(node: Any) -> tuple[str, Mapping[str, Any], str | None]:

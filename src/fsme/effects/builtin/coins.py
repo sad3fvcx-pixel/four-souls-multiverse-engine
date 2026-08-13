@@ -32,21 +32,42 @@ def _players(targets: Sequence[Any], effect: str) -> list[PlayerState]:
 def gain_coins(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> int:
     """
     Add coins to every target player.
+
+    A gain is offered for replacement before it happens, the way damage is. A
+    card that says "if you would gain any number of cents, gain that much +1
+    instead" has to be able to change the number before the player has it, and
+    the amount is settled per player: two players gaining from one card may have
+    different cards of their own to say so.
     """
     if amount < 0:
         raise EffectExecutionError("gain_coins amount must be non-negative")
 
-    for player in _players(targets, "gain_coins"):
-        player.pennies += amount
+    gained = 0
 
-        ctx.emit(
-            EventType.COINS_GAINED,
+    for player in _players(targets, "gain_coins"):
+        proposal = ctx.propose(
+            EventType.BEFORE_COINS_GAINED,
             controller=player.player_id,
             targets=[player],
             amount=amount,
         )
 
-    return amount
+        if proposal.cancelled:
+            continue
+
+        granted = max(0, int(proposal.get("amount", amount)))
+
+        player.pennies += granted
+        gained = max(gained, granted)
+
+        ctx.emit(
+            EventType.COINS_GAINED,
+            controller=player.player_id,
+            targets=[player],
+            amount=granted,
+        )
+
+    return gained
 
 
 def lose_coins(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> int:

@@ -275,18 +275,21 @@ def _inline_targets(nodes: Any) -> list[str]:
         for branch in _BRANCH_KEYS:
             names.extend(_inline_targets(node.get(branch, ())))
 
+        for mode in _modes(node):
+            names.extend(_inline_targets(mode.get("effects", ())))
+
     return names
 
 
 _CONTROL_NAMES = frozenset(
-    {"sequence", "if", "repeat", "for_each", "stop"}
+    {"sequence", "if", "repeat", "for_each", "stop", "may", "choose"}
 )
 
 _MODIFIER_KEYS = frozenset(
-    {"effect", "target", "targets", "optional", "description", "params"}
+    {"effect", "target", "targets", "optional", "description", "params", "as", "prompt"}
 )
 
-_BRANCH_KEYS = ("effects", "then", "else")
+_BRANCH_KEYS = ("effects", "then", "else", "may")
 
 
 def _effect_names(nodes: Any) -> list[str]:
@@ -317,7 +320,29 @@ def _effect_names(nodes: Any) -> list[str]:
             if isinstance(branch_value, (list, tuple)):
                 names.extend(_effect_names(branch_value))
 
+        for mode in _modes(node):
+            names.extend(_effect_names(mode.get("effects", ())))
+
     return names
+
+
+_MODE_KEYS = ("modes", "choose")
+
+
+def _modes(node: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    """
+    Return the modes of a "choose one" node.
+
+    Each mode carries its own effects, and they are content like any other:
+    a mode nobody picks in testing is still a mode that has to be valid.
+    """
+    for key in _MODE_KEYS:
+        value = node.get(key)
+
+        if isinstance(value, (list, tuple)):
+            return [mode for mode in value if isinstance(mode, Mapping)]
+
+    return []
 
 
 def validate_cards(

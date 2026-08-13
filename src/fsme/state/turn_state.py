@@ -30,6 +30,14 @@ class TurnState:
     loot_played: int = 0
     attacks_declared: int = 0
 
+    attack_rolls: int = 0
+    """
+    Attack rolls made this turn, counted as they are made.
+
+    A card that says "for your first attack roll each turn" needs to know which
+    roll it is looking at, and the roll itself is the only place that knows.
+    """
+
     def next_phase(self) -> None:
         """
         Advance to the next phase.
@@ -60,12 +68,16 @@ class TurnState:
         self.stack_depth = 0
         self.loot_played = 0
         self.attacks_declared = 0
+        self.attack_rolls = 0
 
     def record_loot_play(self) -> None:
         self.loot_played += 1
 
     def record_attack(self) -> None:
         self.attacks_declared += 1
+
+    def record_attack_roll(self) -> None:
+        self.attack_rolls += 1
 
     @property
     def is_action_phase(self) -> bool:

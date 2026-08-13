@@ -137,6 +137,8 @@ def combat_round(item: StackItem, context: EffectContext) -> None:
         round=combat.round_number,
     )
 
+    state.turn.record_attack_roll()
+
     roll = rolled(context, DICE_SIDES)
     required = _required_roll(monster)
 

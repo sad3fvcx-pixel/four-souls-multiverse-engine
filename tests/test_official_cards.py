@@ -670,6 +670,333 @@ def test_lost_hit_points_are_not_given_back_when_a_bonus_expires(
 
 
 # ----------------------------------------------------------------------
+# Cards that look through a deck
+# ----------------------------------------------------------------------
+
+
+def deck_of(game: Game, name: str) -> list[Any]:
+    """
+    A deck from the top down, which is the order a player thinks in.
+    """
+    return list(reversed(getattr(game.state, f"{name}_deck").cards))
+
+
+@pytest.mark.parametrize(
+    ("card_id", "deck"),
+    (
+        ("loot_deck-cards_miscellaneous-base_game-iv_the_emperor", "monster"),
+        ("loot_deck-cards_miscellaneous-base_game-ix_the_hermit", "treasure"),
+        ("loot_deck-cards_miscellaneous-base_game-xviii_the_moon", "loot"),
+    ),
+)
+def test_a_seeing_card_offers_the_top_five_and_no_more(
+    base_game: ContentLibrary, card_id: str, deck: str
+) -> None:
+    game = new_game(base_game)
+
+    top_five = deck_of(game, deck)[:5]
+
+    assert play(game, deal(game, card_id)).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert list(decision.options) == top_five
+
+
+@pytest.mark.parametrize(
+    ("card_id", "deck"),
+    (
+        ("loot_deck-cards_miscellaneous-base_game-iv_the_emperor", "monster"),
+        ("loot_deck-cards_miscellaneous-base_game-ix_the_hermit", "treasure"),
+        ("loot_deck-cards_miscellaneous-base_game-xviii_the_moon", "loot"),
+    ),
+)
+def test_the_kept_card_ends_on_top_and_the_rest_underneath(
+    base_game: ContentLibrary, card_id: str, deck: str
+) -> None:
+    """
+    "Put 1 on top and the rest on the bottom" is one instruction about order,
+    and order is the whole point of the card.
+    """
+    game = new_game(base_game)
+
+    before = deck_of(game, deck)
+    top_five = before[:5]
+    below = before[5:]
+
+    assert play(game, deal(game, card_id)).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+
+    kept = top_five[3]
+    rest = [card for card in top_five if card is not kept]
+
+    assert choose(game, 0, list(decision.options).index(kept)).accepted
+
+    after = deck_of(game, deck)
+
+    assert after[0] is kept
+    assert after[1 : 1 + len(below)] == below
+    assert after[-len(rest):] == rest
+
+
+def test_the_hanged_man_shows_three_cards_and_buries_the_ones_you_say(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    tops = {name: deck_of(game, name)[0] for name in ("loot", "treasure", "monster")}
+    hand = game.state.player(0).hand_size
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-xii_the_hanged_man")
+    ).accepted
+
+    # Bury the loot card, keep the treasure, bury the monster.
+    for answer in ("yes", "no", "yes"):
+        decision = game.runtime.awaiting_decision
+
+        assert decision is not None
+        assert decision.kind is DecisionKind.CHOOSE_OPTION
+        assert list(decision.options) == ["yes", "no"]
+
+        assert choose(game, 0, list(decision.options).index(answer)).accepted
+
+    assert deck_of(game, "loot")[-1] is tops["loot"]
+    assert deck_of(game, "treasure")[0] is tops["treasure"]
+    assert deck_of(game, "monster")[-1] is tops["monster"]
+
+    assert game.state.player(0).hand_size == hand + 2
+
+    # The card says "look", so each top card was announced. Events reach the
+    # log when the ability finishes, which is why this is checked at the end.
+    revealed = [
+        event.get("cards")[0]
+        for event in game.history
+        if event.type is EventType.REVEALED
+    ]
+
+    assert revealed == [tops["loot"], tops["treasure"], tops["monster"]]
+
+
+def test_the_hanged_man_may_be_answered_with_three_refusals(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    before = {name: deck_of(game, name) for name in ("loot", "treasure", "monster")}
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-xii_the_hanged_man")
+    ).accepted
+
+    for _ in range(3):
+        decision = game.runtime.awaiting_decision
+
+        assert decision is not None
+        assert choose(game, 0, list(decision.options).index("no")).accepted
+
+    for name in ("treasure", "monster"):
+        assert deck_of(game, name) == before[name]
+
+    # Two loot cards were drawn, so the loot deck is shorter by exactly those.
+    assert deck_of(game, "loot") == before["loot"][2:]
+
+
+# ----------------------------------------------------------------------
+# Trinkets
+# ----------------------------------------------------------------------
+
+TRINKETS = (
+    "loot_deck-trinkets-base_game-swallowed_penny",
+    "loot_deck-trinkets-base_game-bloody_penny",
+    "loot_deck-trinkets-base_game-counterfeit_penny",
+    "loot_deck-trinkets-base_game-guppy_s_hairball",
+    "loot_deck-trinkets-base_game-curved_horn",
+    "loot_deck-trinkets-base_game-cain_s_eye",
+    "loot_deck-trinkets-base_game-golden_horseshoe",
+    "loot_deck-trinkets-base_game-purple_heart",
+)
+
+
+@pytest.mark.parametrize("card_id", TRINKETS)
+def test_a_trinket_stays_in_play_instead_of_being_discarded(
+    base_game: ContentLibrary, card_id: str
+) -> None:
+    """
+    A trinket becomes an item when it resolves, so the rule that discards a
+    played loot card must leave it where it put itself.
+    """
+    game = new_game(base_game)
+
+    card = deal(game, card_id)
+
+    assert play(game, card).accepted
+
+    assert card in game.state.player(0).treasures.cards
+    assert card not in game.state.loot_discard.cards
+    assert card.controller == 0
+
+
+def test_the_swallowed_penny_pays_its_holder_for_being_hurt(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    assert play(game, deal(game, "loot_deck-trinkets-base_game-swallowed_penny")).accepted
+
+    coins = game.state.player(0).pennies
+
+    game.runtime.context.apply("deal_damage", [game.state.player(0)], amount=1)
+    game.runtime.run()
+
+    assert game.state.player(0).pennies == coins + 1
+
+
+def test_the_swallowed_penny_pays_nobody_else(base_game: ContentLibrary) -> None:
+    """
+    "Each time you take damage" is not each time anybody does.
+    """
+    game = new_game(base_game)
+
+    assert play(game, deal(game, "loot_deck-trinkets-base_game-swallowed_penny")).accepted
+
+    coins = game.state.player(0).pennies
+
+    game.runtime.context.apply("deal_damage", [game.state.player(1)], amount=1)
+    game.runtime.run()
+
+    assert game.state.player(0).pennies == coins
+
+
+def test_the_bloody_penny_pays_when_anybody_dies(base_game: ContentLibrary) -> None:
+    """
+    The printed card says "each time a player dies, before paying penalties,
+    loot 1". The engine has no death penalties yet, so the ordering has nothing
+    to be before; the loot itself is what is checked here.
+    """
+    game = new_game(base_game, players=3)
+
+    assert play(game, deal(game, "loot_deck-trinkets-base_game-bloody_penny")).accepted
+
+    hand = game.state.player(0).hand_size
+
+    game.runtime.context.apply("kill", [game.state.player(2)])
+    game.runtime.run()
+
+    assert not game.state.player(2).alive
+    assert game.state.player(0).hand_size == hand + 1
+
+
+def test_the_counterfeit_penny_adds_one_to_every_gain(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    assert play(
+        game, deal(game, "loot_deck-trinkets-base_game-counterfeit_penny")
+    ).accepted
+
+    coins = game.state.player(0).pennies
+
+    game.state.player(0).additional_loot_plays += 1
+
+    assert play(game, deal(game, "loot_deck-3-base_game-3_cents")).accepted
+
+    assert game.state.player(0).pennies == coins + 4
+
+
+def test_the_counterfeit_penny_leaves_other_players_alone(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    assert play(
+        game, deal(game, "loot_deck-trinkets-base_game-counterfeit_penny")
+    ).accepted
+
+    coins = game.state.player(1).pennies
+
+    game.runtime.context.apply("gain_coins", [game.state.player(1)], amount=3)
+    game.runtime.run()
+
+    assert game.state.player(1).pennies == coins + 3
+
+
+@pytest.mark.parametrize(("roll", "damage"), ((6, 1), (5, 2)))
+def test_guppys_hairball_prevents_damage_on_a_six(
+    base_game: ContentLibrary, roll: int, damage: int
+) -> None:
+    game = new_game(base_game, rolls=[roll])
+
+    assert play(
+        game, deal(game, "loot_deck-trinkets-base_game-guppy_s_hairball")
+    ).accepted
+
+    player = game.state.player(0)
+    player.hp = player.max_hp
+
+    before = player.hp
+
+    game.runtime.context.apply("deal_damage", [player], amount=2)
+    game.runtime.run()
+
+    assert player.hp == before - damage
+
+
+def test_the_curved_horn_only_helps_the_first_attack_roll(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    assert play(game, deal(game, "loot_deck-trinkets-base_game-curved_horn")).accepted
+
+    assert attack_bonus(game, 0) == 1
+
+    game.state.turn.attack_rolls = 2
+
+    assert attack_bonus(game, 0) == 0
+    assert attack_bonus(game, 1) == 0
+
+
+@pytest.mark.parametrize(
+    ("card_id", "deck"),
+    (
+        ("loot_deck-trinkets-base_game-cain_s_eye", "loot"),
+        ("loot_deck-trinkets-base_game-golden_horseshoe", "treasure"),
+        ("loot_deck-trinkets-base_game-purple_heart", "monster"),
+    ),
+)
+def test_a_looking_trinket_offers_the_top_card_each_of_its_turns(
+    base_game: ContentLibrary, card_id: str, deck: str
+) -> None:
+    game = new_game(base_game, players=2)
+
+    assert play(game, deal(game, card_id)).accepted
+
+    end_turn(game)
+
+    # The other player's turn: the trinket says "your turn", so it is silent.
+    assert game.runtime.awaiting_decision is None
+
+    top = deck_of(game, deck)[0]
+
+    end_turn(game)
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert decision.player == 0
+
+    assert choose(game, 0, list(decision.options).index("yes")).accepted
+
+    assert deck_of(game, deck)[-1] is top
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 
