@@ -521,8 +521,43 @@ class Runtime:
 
                 if event.cancelled:
                     return
+
+            self._spend_shield(event)
         finally:
             self._replacement_depth -= 1
+
+    def _spend_shield(self, event: Event) -> None:
+        """
+        Let a promised prevention meet the damage it was promised against.
+
+        A shield is not a card and has no ability, so it cannot be found among
+        the replacements; it is stored on the game and spent here, after the
+        cards have had their say. One instance of damage spends one shield,
+        which is what "the next instance of up to N damage" means.
+        """
+        if event.type is not EventType.BEFORE_DAMAGE:
+            return
+
+        for target in event.targets:
+            player_id = getattr(target, "player_id", None)
+
+            if player_id is None:
+                continue
+
+            for shield in self._state.shields:
+                if shield.player_id != player_id:
+                    continue
+
+                before = int(event.get("amount", 0))
+                after = max(0, before - shield.amount)
+
+                event.set("amount", after)
+                self._state.shields.remove(shield)
+
+                if after == 0:
+                    event.cancel()
+
+                return
 
     def _replacements_for(self, event: Event) -> list[tuple[CardInstance, Ability]]:
         """

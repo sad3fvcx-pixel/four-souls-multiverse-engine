@@ -150,7 +150,10 @@ def bonus(state: GameState, stat: str, player_id: int) -> int:
 
 def expire_turn_modifiers(state: GameState) -> list[TemporaryModifier]:
     """
-    Drop every modifier that only lasted for the turn, and return them.
+    Drop everything that only lasted for the turn, and return the modifiers.
+
+    Unspent damage shields go too: a promise to prevent the next damage this
+    turn is worth nothing once the turn is over.
 
     A hit point bonus is the one that cannot simply be forgotten. The engine
     stores hit points remaining rather than damage taken, so a player who gained
@@ -159,6 +162,10 @@ def expire_turn_modifiers(state: GameState) -> list[TemporaryModifier]:
     the damage where it was — and a player whose damage now exceeds their
     maximum dies, which is what the rules say happens.
     """
+    state.shields = [
+        shield for shield in state.shields if not shield.expires_at_end_of_turn()
+    ]
+
     expired = [modifier for modifier in state.modifiers if modifier.expires_at_end_of_turn()]
 
     if not expired:

@@ -89,16 +89,18 @@ def discard_played_loot(item: StackItem, context: EffectContext) -> None:
     """
     Move a resolved loot card to the discard pile.
 
-    A card that put itself into play — a curse attaching to a player — stays
-    where it went. Discarding it as well would leave the same card in two
-    places at once.
+    A card that put itself somewhere stays there. A curse attaches to a player,
+    a trinket becomes an item, Lost Soul becomes a soul and The Sun goes to the
+    bottom of the loot deck; discarding any of them as well would leave the same
+    card in two places at once. So the question is not "is it in play" but "is it
+    anywhere", and only a card that is nowhere is discarded.
     """
     card = item.source
 
     if card is None:
         return
 
-    if card in cards_in_play(context.state):
+    if _is_anywhere(context.state, card):
         return
 
     context.state.loot_discard.add_top(card)
@@ -108,3 +110,32 @@ def discard_played_loot(item: StackItem, context: EffectContext) -> None:
         source=card,
         controller=item.controller,
     )
+
+
+def _is_anywhere(state: GameState, card: object) -> bool:
+    """
+    Return True if some zone already holds this card.
+
+    Cheaper answers were tried and are wrong: "is it in play" misses a card that
+    went to a deck or a soul pile, and asking the card where it thinks it is
+    trusts a field nothing keeps honest.
+    """
+    if card in cards_in_play(state):
+        return True
+
+    zones = [
+        state.loot_deck,
+        state.loot_discard,
+        state.treasure_deck,
+        state.treasure_discard,
+        state.treasure_shop,
+        state.monster_deck,
+        state.monster_discard,
+        state.room_deck,
+        state.room_discard,
+    ]
+
+    for player in state.players:
+        zones.extend((player.hand, player.souls))
+
+    return any(card in zone.cards for zone in zones)

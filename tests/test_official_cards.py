@@ -124,6 +124,18 @@ class Snapshot:
     treasure_count: int
 
 
+def toughen(game: Game, player: Any, amount: int = 6) -> None:
+    """
+    Give a player enough hit points for the damage a test is about.
+
+    Writing max_hp by hand does not work and should not: the engine recomputes
+    it from the character card and clamps hit points to it, so a bonus has to
+    be granted the way a card grants one.
+    """
+    game.runtime.context.apply("add_modifier", [player], stat="max_hp", amount=amount)
+    game.runtime.run()
+
+
 def snapshot(player: Any) -> Snapshot:
     return Snapshot(
         hp=player.hp,
@@ -994,6 +1006,303 @@ def test_a_looking_trinket_offers_the_top_card_each_of_its_turns(
     assert choose(game, 0, list(decision.options).index("yes")).accepted
 
     assert deck_of(game, deck)[-1] is top
+
+
+# ----------------------------------------------------------------------
+# Choosing, shielding, and cards that move themselves
+# ----------------------------------------------------------------------
+
+
+def answer(game: Game, label: str, player: int = 0) -> None:
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert decision.kind is DecisionKind.CHOOSE_OPTION
+
+    assert choose(game, player, list(decision.options).index(label)).accepted
+
+
+def test_temperance_offers_two_prices_and_charges_the_one_chosen(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    before = snapshot(player)
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-xiv_temperance")
+    ).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert list(decision.options) == [
+        "Take 1 damage and gain 4¢.",
+        "Take 2 damage and gain 8¢.",
+    ]
+
+    answer(game, "Take 2 damage and gain 8¢.")
+
+    assert player.hp == before.hp - 2
+    assert player.pennies == before.pennies + 8
+
+
+def test_temperance_can_be_taken_cheaply(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    before = snapshot(player)
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-xiv_temperance")
+    ).accepted
+
+    answer(game, "Take 1 damage and gain 4¢.")
+
+    assert player.hp == before.hp - 1
+    assert player.pennies == before.pennies + 4
+
+
+@pytest.mark.parametrize("roll", (1, 4, 6))
+def test_the_high_priestess_deals_what_the_die_shows(
+    base_game: ContentLibrary, roll: int
+) -> None:
+    game = new_game(base_game, rolls=[roll])
+
+    victim = game.state.player(1)
+    toughen(game, victim)
+
+    hp = victim.hp
+
+    assert play(
+        game,
+        deal(game, "loot_deck-cards_miscellaneous-base_game-ii_the_high_priestess"),
+    ).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, list(decision.options).index(victim)).accepted
+
+    assert victim.hp == hp - roll
+
+
+def test_the_hierophant_absorbs_the_next_damage_only(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    shielded = game.state.player(1)
+    toughen(game, shielded)
+
+    hp = shielded.hp
+
+    bless(game, "loot_deck-cards_miscellaneous-base_game-v_the_hierophant")
+
+    assert game.state.shields
+
+    game.runtime.context.apply("deal_damage", [shielded], amount=3)
+    game.runtime.run()
+
+    assert shielded.hp == hp - 1
+    assert game.state.shields == []
+
+    game.runtime.context.apply("deal_damage", [shielded], amount=3)
+    game.runtime.run()
+
+    assert shielded.hp == hp - 4
+
+
+def test_a_soul_heart_stops_a_single_point(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3)
+
+    shielded = game.state.player(1)
+    toughen(game, shielded)
+
+    hp = shielded.hp
+
+    bless(game, "loot_deck-dice_shards_soul_hearts-base_game-soul_heart")
+
+    game.runtime.context.apply("deal_damage", [shielded], amount=1)
+    game.runtime.run()
+
+    assert shielded.hp == hp
+
+
+def test_an_unspent_shield_expires_with_the_turn(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3)
+
+    bless(game, "loot_deck-dice_shards_soul_hearts-base_game-soul_heart")
+
+    assert game.state.shields
+
+    end_turn(game)
+
+    assert game.state.shields == []
+
+
+def test_dagaz_can_shield_or_lift_a_curse(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3)
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-dagaz")).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert len(decision.options) == 2
+
+    answer(game, str(decision.options[1]))
+
+    target = game.runtime.awaiting_decision
+
+    assert target is not None
+    assert target.kind is DecisionKind.CHOOSE_PLAYER
+
+    assert choose(game, 0, list(target.options).index(game.state.player(2))).accepted
+
+    assert [shield.player_id for shield in game.state.shields] == [2]
+
+
+def test_lost_soul_becomes_a_soul_rather_than_a_discard(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    card = deal(game, "loot_deck-lost_soul-base_game-lost_soul")
+
+    souls = game.state.player(0).soul_count
+
+    assert play(game, card).accepted
+
+    assert card in game.state.player(0).souls.cards
+    assert card not in game.state.loot_discard.cards
+    assert game.state.player(0).soul_count == souls + 1
+
+
+def test_the_sun_buries_itself_and_buys_another_turn(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    card = deal(game, "loot_deck-cards_miscellaneous-base_game-xix_the_sun")
+
+    assert play(game, card).accepted
+
+    assert card is game.state.loot_deck.cards[0]
+    assert card not in game.state.loot_discard.cards
+    assert game.state.turn.extra_turn_for == 0
+
+    end_turn(game)
+
+    assert game.state.turn.active_player == 0
+    assert game.state.turn.extra_turn_for is None
+
+    end_turn(game)
+
+    assert game.state.turn.active_player == 1
+
+
+def test_mega_battery_recharges_everything_one_player_has(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    theirs = game.state.player(1).treasures.cards
+    mine = game.state.player(0).treasures.cards
+
+    for card in list(theirs) + list(mine):
+        card.tapped = True
+
+    bless(game, "loot_deck-batteries-base_game-mega_battery")
+
+    assert [card.tapped for card in theirs] == [False] * len(theirs)
+    assert [card.tapped for card in mine] == [True] * len(mine)
+
+
+def test_the_world_shows_every_hand_before_drawing(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3)
+
+    hands = [list(player.hand.cards) for player in game.state.players]
+    before = game.state.player(0).hand_size
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-xxi_the_world")
+    ).accepted
+
+    shown = [
+        event.get("cards")
+        for event in game.history
+        if event.type is EventType.REVEALED and event.get("zone") == "hand"
+    ]
+
+    assert len(shown) == 3
+    assert shown[1] == hands[1]
+    assert game.state.player(0).hand_size == before + 2
+
+
+def test_judgement_only_offers_the_players_with_the_most_souls(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    game.runtime.context.apply("gain_soul", [game.state.player(1)], count=2)
+    game.runtime.context.apply("gain_soul", [game.state.player(2)], count=2)
+    game.runtime.run()
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-xx_judgement")
+    ).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert list(decision.options) == [game.state.player(1), game.state.player(2)]
+
+    assert choose(game, 0, list(decision.options).index(game.state.player(2))).accepted
+
+    assert game.state.player(2).soul_count == 1
+    assert game.state.player(1).soul_count == 2
+
+
+def test_the_devil_pays_an_item_for_an_item(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=2)
+
+    # The starting item is eternal and cannot be destroyed, so the Devil needs
+    # something else to give up.
+    game.runtime.context.apply("gain_treasure", [game.state.player(0)], count=1)
+    game.runtime.context.apply("gain_treasure", [game.state.player(1)], count=1)
+    game.runtime.run()
+
+    sacrifice = game.state.player(0).treasures.cards[-1]
+    theirs = game.state.player(1).treasures.cards[-1]
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-xv_the_devil")
+    ).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert sacrifice in decision.options
+    assert theirs not in decision.options
+
+    assert choose(game, 0, list(decision.options).index(sacrifice)).accepted
+
+    spoils = game.runtime.awaiting_decision
+
+    assert spoils is not None
+    assert theirs in spoils.options
+    assert all(card in spoils.options for card in game.state.treasure_shop.cards)
+
+    assert choose(game, 0, list(spoils.options).index(theirs)).accepted
+
+    assert sacrifice in game.state.treasure_discard.cards
+    assert theirs in game.state.player(0).treasures.cards
 
 
 # ----------------------------------------------------------------------

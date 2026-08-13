@@ -28,7 +28,16 @@ class EffectOp:
 
     params: Mapping[str, Any] = field(default_factory=lambda: _EMPTY)
 
-    target: str | None = None
+    target: Any | None = None
+    """
+    What this operation applies to.
+
+    Usually a name — of a group the ability bound, or of a target in the engine
+    vocabulary. It may also be a whole target specification, which is how a card
+    asks its question at the moment the effect runs rather than before the
+    ability starts: "destroy an item, and if you do, steal one" must not ask
+    which item to steal until the first item is destroyed.
+    """
 
     def param(self, key: str, default: Any = None) -> Any:
         """

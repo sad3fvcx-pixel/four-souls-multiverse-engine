@@ -10,6 +10,7 @@ the interpreter fixed.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
 from fsme.effects import EffectOp, EffectRegistry, EffectResult
@@ -41,9 +42,10 @@ class EffectExecutor:
         """
         spec = self._effects.spec(op.name)
         targets = self._resolve_targets(op, context, ability, needs=spec.needs_target)
+        params = _resolve_params(op.params, ability)
 
         try:
-            value = spec.handler(context, targets, **dict(op.params))
+            value = spec.handler(context, targets, **params)
         except StabilityError:
             # The engine is stopping itself, not failing an effect. Wrapping it
             # would bury the reason under one message per nesting level.
@@ -98,3 +100,32 @@ class EffectExecutor:
             return []
 
         return [state.player(ability.controller)]
+
+
+def _resolve_params(
+    params: Mapping[str, Any], ability: AbilityContext
+) -> dict[str, Any]:
+    """
+    Fill in the values an ability only learns while it is running.
+
+    A card that says "deal damage equal to the result" cannot state a number
+    when it is written, so it names one instead::
+
+        {"effect": "deal_damage", "amount": {"from": "dice"}, "target": "victim"}
+
+    ``from`` reads what an earlier effect stored under that name — the die roll,
+    in this case — and ``plus`` shifts it. A name nothing has stored yet reads
+    as zero, which is what "equal to a roll that did not happen" is worth.
+    """
+    resolved: dict[str, Any] = {}
+
+    for key, value in params.items():
+        if isinstance(value, Mapping) and "from" in value:
+            stored = ability.get(str(value["from"]))
+            number = int(stored) if isinstance(stored, int) else 0
+
+            resolved[key] = number + int(value.get("plus", 0))
+        else:
+            resolved[key] = value
+
+    return resolved

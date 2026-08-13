@@ -16,11 +16,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **9**. Осталось: **1005**.
+Импортировано официальных карт: **1014**. Реализовано: **44**. Осталось: **970**.
 
 | Набор | Карт | Реализовано | Осталось |
 |---|---:|---:|---:|
-| `base_game` | 287 | 9 | 278 |
+| `base_game` | 287 | 44 | 243 |
 | `requiem` | 246 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 99 |
 | `four_souls` | 90 | 0 | 90 |
@@ -43,7 +43,7 @@
 | `challenges` | 1 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 1 |
 | `star` | 1 | 0 | 1 |
-| **всего** | **1014** | **9** | **1005** |
+| **всего** | **1014** | **44** | **970** |
 
 ---
 
@@ -53,7 +53,7 @@
 |---|---:|---:|
 | treasure | 105 | 0 |
 | monster | 85 | 0 |
-| loot | 51 | 9 |
+| loot | 51 | 44 |
 | event | 17 | 0 |
 | character | 11 | 0 |
 | starting_item | 10 | 0 |
@@ -212,51 +212,51 @@
 | A Dime!! | 🟩 |  |
 | A Nickel! | 🟩 | ×5 |
 | A Penny! | 🟩 | ×6 |
-| Blank Rune | ⬜ |  |
-| Bloody Penny | ⬜ |  |
+| Blank Rune | 🟩 |  |
+| Bloody Penny | 🟩 |  |
 | Bomb! | 🟩 | ×4 |
 | Broken Ankh | ⬜ |  |
 | Butter Bean! | ⬜ | ×3 |
-| Cain's Eye | ⬜ |  |
-| Counterfeit Penny | ⬜ |  |
-| Curved Horn | ⬜ |  |
-| Dagaz | ⬜ |  |
+| Cain's Eye | 🟩 |  |
+| Counterfeit Penny | 🟩 |  |
+| Curved Horn | 🟩 |  |
+| Dagaz | 🟩 |  |
 | Dice Shard | ⬜ | ×3 |
 | Ehwaz | ⬜ |  |
 | Gold Bomb!! | 🟩 |  |
-| Golden Horseshoe | ⬜ |  |
-| Guppy's Hairball | ⬜ |  |
+| Golden Horseshoe | 🟩 |  |
+| Guppy's Hairball | 🟩 |  |
 | I. The Magician | ⬜ |  |
-| II. The High Priestess | ⬜ |  |
-| III. The Empress | ⬜ |  |
-| IV. The Emperor | ⬜ |  |
-| IX. The Hermit | ⬜ |  |
+| II. The High Priestess | 🟩 |  |
+| III. The Empress | 🟩 |  |
+| IV. The Emperor | 🟩 |  |
+| IX. The Hermit | 🟩 |  |
 | Lil Battery | 🟩 | ×4 |
-| Lost Soul | ⬜ |  |
-| Mega Battery | ⬜ |  |
+| Lost Soul | 🟩 |  |
+| Mega Battery | 🟩 |  |
 | O. The Fool | ⬜ |  |
-| Pills! | ⬜ |  |
-| Pills! | ⬜ |  |
-| Pills! | ⬜ |  |
-| Purple Heart | ⬜ |  |
-| Soul Heart | ⬜ | ×2 |
-| Swallowed Penny | ⬜ |  |
-| V. The Hierophant | ⬜ |  |
-| VI. The Lovers | ⬜ |  |
-| VII. The Chariot | ⬜ |  |
+| Pills! | 🟩 |  |
+| Pills! | 🟩 |  |
+| Pills! | 🟩 |  |
+| Purple Heart | 🟩 |  |
+| Soul Heart | 🟩 | ×2 |
+| Swallowed Penny | 🟩 |  |
+| V. The Hierophant | 🟩 |  |
+| VI. The Lovers | 🟩 |  |
+| VII. The Chariot | 🟩 |  |
 | VIII. Justice | ⬜ |  |
-| X. Wheel of Fortune | ⬜ |  |
-| XI. Strength | ⬜ |  |
-| XII. The Hanged Man | ⬜ |  |
-| XIII. Death | ⬜ |  |
-| XIV. Temperance | ⬜ |  |
-| XIX. The Sun | ⬜ |  |
-| XV. The Devil | ⬜ |  |
-| XVI. The Tower | ⬜ |  |
-| XVII. The Stars | ⬜ |  |
-| XVIII. The Moon | ⬜ |  |
-| XX. Judgement | ⬜ |  |
-| XXI. The World | ⬜ |  |
+| X. Wheel of Fortune | 🟩 |  |
+| XI. Strength | 🟩 |  |
+| XII. The Hanged Man | 🟩 |  |
+| XIII. Death | 🟩 |  |
+| XIV. Temperance | 🟩 |  |
+| XIX. The Sun | 🟩 |  |
+| XV. The Devil | 🟩 |  |
+| XVI. The Tower | 🟩 |  |
+| XVII. The Stars | 🟩 |  |
+| XVIII. The Moon | 🟩 |  |
+| XX. Judgement | 🟩 |  |
+| XXI. The World | 🟩 |  |
 
 ## Monsters
 

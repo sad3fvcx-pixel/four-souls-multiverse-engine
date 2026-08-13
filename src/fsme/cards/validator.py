@@ -265,6 +265,8 @@ def _inline_targets(nodes: Any) -> list[str]:
 
         if isinstance(target, str) and not target.startswith("__"):
             names.append(target)
+        elif isinstance(target, Mapping):
+            names.extend(_spec_names(target))
 
         for key in ("for_each", "of"):
             value = node.get(key)
@@ -324,6 +326,20 @@ def _effect_names(nodes: Any) -> list[str]:
             names.extend(_effect_names(mode.get("effects", ())))
 
     return names
+
+
+def _spec_names(spec: Mapping[str, Any]) -> list[str]:
+    """
+    Name the target a written-out specification asks for.
+    """
+    if "target" in spec:
+        return [str(spec["target"])]
+
+    for key in spec:
+        if key not in ("as", "prompt"):
+            return [str(key)]
+
+    return []
 
 
 _MODE_KEYS = ("modes", "choose")

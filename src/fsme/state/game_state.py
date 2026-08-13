@@ -15,7 +15,7 @@ from fsme.util.ids import IdSequence
 
 from .combat_state import CombatState
 from .decision import PendingDecision
-from .modifiers import TemporaryModifier
+from .modifiers import DamageShield, TemporaryModifier
 from .player_state import PlayerState
 from .priority import PriorityState
 from .turn_state import TurnState
@@ -60,6 +60,11 @@ class GameState:
 
     priority: PriorityState = field(default_factory=PriorityState)
     combat: CombatState = field(default_factory=CombatState)
+
+    shields: list[DamageShield] = field(default_factory=list)
+    """
+    Damage waiting to be prevented, in the order it was promised.
+    """
 
     modifiers: list[TemporaryModifier] = field(default_factory=list)
     """

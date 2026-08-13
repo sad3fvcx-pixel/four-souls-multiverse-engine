@@ -103,6 +103,26 @@ def _apply_now(player: PlayerState, stat: str, amount: int) -> None:
         )
 
 
+def take_extra_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Promise a player another turn after this one.
+
+    Only one extra turn is outstanding at a time: a second promise replaces the
+    first rather than stacking, because the turn that grants it is the turn that
+    pays it, and there is only one of those.
+    """
+    granted = 0
+
+    for player in targets:
+        if not isinstance(player, PlayerState):
+            raise EffectExecutionError("take_extra_turn expects player targets")
+
+        ctx.state.turn.extra_turn_for = player.player_id
+        granted += 1
+
+    return granted
+
+
 def _cards(targets: Sequence[Any], effect: str) -> list[Any]:
     for target in targets:
         if not hasattr(target, "tapped"):
@@ -189,6 +209,12 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="counter",
         description="Change a counter on a card.",
+    )
+    registry.register(
+        "take_extra_turn",
+        take_extra_turn,
+        needs_target=True,
+        description="Give a player another turn after this one.",
     )
     registry.register(
         "add_modifier",

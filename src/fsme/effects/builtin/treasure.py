@@ -198,10 +198,18 @@ def steal_treasure(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
 
         holder = _holder(state, card)
 
-        if holder is None or holder.player_id == thief_id:
-            continue
+        if holder is None:
+            # An item in the shop belongs to nobody, and a card that offers it
+            # alongside the players' items means taking it rather than buying
+            # it. The shop is left one short until the rules refill it.
+            if card not in state.treasure_shop.cards:
+                continue
 
-        holder.treasures.cards.remove(card)
+            state.treasure_shop.cards.remove(card)
+        elif holder.player_id == thief_id:
+            continue
+        else:
+            holder.treasures.cards.remove(card)
 
         card.controller = thief_id
         card.tapped = True
@@ -213,8 +221,8 @@ def steal_treasure(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
             EventType.TREASURE_STOLEN,
             source=card,
             controller=thief_id,
-            targets=[holder],
-            stolen_from=holder.player_id,
+            targets=[holder] if holder is not None else [],
+            stolen_from=holder.player_id if holder is not None else None,
         )
 
     return stolen

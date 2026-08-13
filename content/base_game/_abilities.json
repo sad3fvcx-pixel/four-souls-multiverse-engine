@@ -327,6 +327,220 @@
     ]
   },
 
+  "loot_deck-lost_soul-base_game-lost_soul": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {"effect": "claim_soul", "target": "controller"}
+        ],
+        "description": "When this enters play, it becomes a soul."
+      }
+    ]
+  },
+
+  "loot_deck-batteries-base_game-mega_battery": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {"target_player": {"as": "who"}},
+          {"owned_treasure": {"of": "who", "as": "their_items"}}
+        ],
+        "effects": [
+          {"effect": "recharge", "target": "their_items"}
+        ],
+        "description": "Choose a player. Recharge each item they control."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-xiv_temperance": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Take 1 damage and gain 4¢.",
+                "effects": [
+                  {"effect": "deal_damage", "amount": 1, "target": "controller"},
+                  {"gain_coins": 4}
+                ]
+              },
+              {
+                "description": "Take 2 damage and gain 8¢.",
+                "effects": [
+                  {"effect": "deal_damage", "amount": 2, "target": "controller"},
+                  {"gain_coins": 8}
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Choose one- Take 1 damage and gain 4¢, or take 2 damage and gain 8¢."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-ii_the_high_priestess": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {"target_player_or_monster": {"as": "victim"}}
+        ],
+        "effects": [
+          {"roll_dice": 6},
+          {
+            "effect": "deal_damage",
+            "amount": {"from": "dice"},
+            "target": "victim"
+          }
+        ],
+        "description": "Choose a player or monster, then roll- Deal damage to them equal to the result."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-xxi_the_world": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {"effect": "reveal_hand", "target": "all_players"},
+          {"draw_loot": 2}
+        ],
+        "description": "Look at each player's hand, then loot 2."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-xx_judgement": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {"target_player": {"most": "souls", "as": "richest"}}
+        ],
+        "effects": [
+          {"effect": "lose_soul", "count": 1, "target": "richest"}
+        ],
+        "description": "Choose a player who controls the most souls or tied for the most. That player destroys a soul they control."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-xv_the_devil": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {"target_treasure": {"owner": "controller", "as": "sacrifice"}}
+        ],
+        "effects": [
+          {"effect": "destroy_treasure", "target": "sacrifice"},
+          {
+            "if": ["last_effect_did"],
+            "then": [
+              {
+                "effect": "steal_treasure",
+                "target": {
+                  "target_treasure": {
+                    "owner": "opponents",
+                    "include_shop": true,
+                    "exclude_eternal": true,
+                    "as": "spoils"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "description": "Destroy an item you control. If you do, steal a non-eternal item from a player or from the shop."
+      }
+    ]
+  },
+
+  "loot_deck-pills_runes-base_game-dagaz": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Destroy a curse.",
+                "effects": [
+                  {
+                    "effect": "remove_curse",
+                    "target": {"target_curse": {"as": "doomed_curse"}}
+                  }
+                ]
+              },
+              {
+                "description": "Choose a player. Prevent the next 1 damage they would take this turn.",
+                "effects": [
+                  {
+                    "effect": "prevent_next_damage",
+                    "amount": 1,
+                    "target": {"target_player": {"as": "shielded"}}
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Choose one- Destroy a curse, or choose a player and prevent the next 1 damage they would take this turn."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-v_the_hierophant": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {"target_player": {"as": "shielded"}}
+        ],
+        "effects": [
+          {"effect": "prevent_next_damage", "amount": 2, "target": "shielded"}
+        ],
+        "description": "Choose a player or monster. Prevent the next instance of up to 2 damage they would take this turn."
+      }
+    ]
+  },
+
+  "loot_deck-dice_shards_soul_hearts-base_game-soul_heart": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {"target_player": {"as": "shielded"}}
+        ],
+        "effects": [
+          {"effect": "prevent_next_damage", "amount": 1, "target": "shielded"}
+        ],
+        "description": "Choose a player. Prevent the next 1 damage they would take this turn."
+      }
+    ]
+  },
+
+  "loot_deck-cards_miscellaneous-base_game-xix_the_sun": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "conditions": ["player_active"],
+        "effects": [
+          {"effect": "move_cards", "deck": "loot", "position": "bottom", "target": "self"},
+          {"effect": "take_extra_turn", "target": "controller"}
+        ],
+        "description": "Put this on the bottom of the loot deck. If you do, take an extra turn after this one if it's your turn."
+      }
+    ]
+  },
+
   "loot_deck-trinkets-base_game-swallowed_penny": {
     "abilities": [
       {

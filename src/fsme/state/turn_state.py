@@ -30,6 +30,14 @@ class TurnState:
     loot_played: int = 0
     attacks_declared: int = 0
 
+    extra_turn_for: int | None = None
+    """
+    Who takes another turn when this one ends.
+
+    A card that grants an extra turn resolves long before the turn is over, so
+    the promise has to wait somewhere until the turn actually ends.
+    """
+
     attack_rolls: int = 0
     """
     Attack rolls made this turn, counted as they are made.

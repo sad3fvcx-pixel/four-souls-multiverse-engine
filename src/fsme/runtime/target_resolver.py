@@ -64,10 +64,14 @@ class TargetResolver:
         """
         name, params = normalise(spec)
 
-        bound = context.targets.get(name)
+        # A specification written on an effect names the group it will bind,
+        # and that name is where the answer will be waiting when the ability
+        # resumes. Looking only under the target's own name would ask again.
+        for key in (str(params.get("as", name)), name):
+            bound = context.targets.get(key)
 
-        if bound is not None:
-            return list(bound)
+            if bound is not None:
+                return list(bound)
 
         try:
             target = self._targets[name]
@@ -125,6 +129,7 @@ class TargetResolver:
         register("monster", _current_monster)
         register("random_monster", _random_monster)
         register("target_monster", _target_monster)
+        register("target_curse", _target_curse)
 
         register("target_player_or_monster", _target_player_or_monster)
         register("target_loot", _target_loot)
@@ -306,7 +311,63 @@ def _target_player(
         )
     ]
 
+    candidates = _with_the_most(candidates, params)
+
     return _ask(DecisionKind.CHOOSE_PLAYER, candidates, context, params, "target_player")
+
+
+_COUNTABLE: dict[str, Callable[[Any], int]] = {
+    "souls": lambda player: player.soul_count,
+    "coins": lambda player: player.pennies,
+    "loot": lambda player: player.hand_size,
+    "treasures": lambda player: player.treasure_count,
+}
+
+
+def _with_the_most(candidates: list[Any], params: Mapping[str, Any]) -> list[Any]:
+    """
+    Narrow a list of players to those tied for the most of something.
+
+    "A player who controls the most souls or tied for the most" is a
+    restriction on who may be chosen, not a separate kind of choosing, so it
+    belongs here rather than in a target of its own.
+    """
+    most = params.get("most")
+
+    if most is None or not candidates:
+        return candidates
+
+    try:
+        count = _COUNTABLE[str(most)]
+    except KeyError:
+        raise UnknownTargetError(
+            f"cannot count '{most}'; countable things are "
+            f"{', '.join(sorted(_COUNTABLE))}"
+        ) from None
+
+    best = max(count(player) for player in candidates)
+
+    return [player for player in candidates if count(player) == best]
+
+
+def _target_curse(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    Let the controller pick a curse to be rid of.
+
+    A curse afflicts a player but is not theirs to keep, so every curse on the
+    table is a candidate unless the card says otherwise.
+    """
+    curses: list[Any] = []
+
+    for player in state.players:
+        if params.get("owner") == "controller" and player.player_id != context.controller:
+            continue
+
+        curses.extend(player.curses.cards)
+
+    return _ask(DecisionKind.CHOOSE_CARD, curses, context, params, "target_curse")
 
 
 def _target_monster(
@@ -431,6 +492,34 @@ def _target_treasure(
     )
 
 
+def _holders(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> list[Any]:
+    """
+    Whose items a treasure target is about.
+
+    ``of`` names a group this ability has already chosen — "choose a player,
+    recharge each item they control" — and without it the answer is the
+    controller's own items, which is what "an item you control" means.
+    """
+    named = params.get("of")
+
+    if named is None:
+        if context.controller is None or not 0 <= context.controller < len(state.players):
+            return []
+
+        return [state.player(context.controller)]
+
+    if named == "all_players":
+        return list(state.players)
+
+    return [
+        player
+        for player in context.targets.get(str(named), ())
+        if isinstance(player, PlayerState)
+    ]
+
+
 def _all_monsters(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
@@ -463,19 +552,56 @@ def _random_monster(
 def _owned_treasure(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
-    if context.controller is None or not 0 <= context.controller < len(state.players):
-        return []
+    treasures: list[Any] = []
 
-    return list(state.player(context.controller).treasures.cards)
+    for player in _holders(state, context, params):
+        treasures.extend(player.treasures.cards)
+
+    return treasures
 
 
 def _all_treasures(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
+    """
+    Every item that can be pointed at.
+
+    ``owner`` narrows the list the way a card does: "an item you control" is
+    ``controller``, "an item another player controls" is ``opponents``.
+    ``include_shop`` adds the items for sale, which some cards may take.
+    ``exclude_eternal`` leaves out the ones no effect may touch.
+    """
+    owner = params.get("owner")
+
+    if owner == "controller":
+        players = [
+            player
+            for player in state.players
+            if player.player_id == context.controller
+        ]
+    elif owner == "opponents":
+        players = [
+            player
+            for player in state.players
+            if player.player_id != context.controller
+        ]
+    else:
+        players = list(state.players)
+
     treasures: list[Any] = []
 
-    for player in state.players:
+    for player in players:
         treasures.extend(player.treasures.cards)
+
+    if params.get("include_shop", False):
+        treasures.extend(state.treasure_shop.cards)
+
+    if params.get("exclude_eternal", False):
+        treasures = [
+            card
+            for card in treasures
+            if not getattr(getattr(card, "definition", None), "is_eternal", False)
+        ]
 
     return treasures
 

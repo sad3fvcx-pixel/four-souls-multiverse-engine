@@ -64,6 +64,29 @@ class Duration(StrEnum):
 
 
 @dataclass(slots=True)
+class DamageShield:
+    """
+    Damage a player will not take, waiting for the damage to arrive.
+
+    "Prevent the next instance of up to 2 damage they would take this turn" is
+    not a replacement ability on a card: the card is in the discard pile, and
+    the shield outlives it exactly as a temporary modifier does. It is spent by
+    the first instance of damage it meets — the whole instance, however small —
+    and what is left of it expires with the turn.
+    """
+
+    player_id: int
+    amount: int
+    duration: Duration = Duration.END_OF_TURN
+
+    def expires_at_end_of_turn(self) -> bool:
+        return self.duration is Duration.END_OF_TURN
+
+    def __str__(self) -> str:
+        return f"prevent {self.amount} damage to player {self.player_id}"
+
+
+@dataclass(slots=True)
 class TemporaryModifier:
     """
     One stored change to one player's statistic.

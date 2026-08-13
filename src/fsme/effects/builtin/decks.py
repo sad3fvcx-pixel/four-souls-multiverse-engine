@@ -78,6 +78,32 @@ def reveal_cards(
     return revealed
 
 
+def reveal_hand(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Show target players' hands to the table.
+
+    Looking at a hand changes nothing about the game, only about what is known,
+    so the cards stay where they are and the fact is announced.
+    """
+    shown = 0
+
+    for player in targets:
+        if not isinstance(player, PlayerState):
+            raise EffectExecutionError("reveal_hand expects player targets")
+
+        ctx.emit(
+            EventType.REVEALED,
+            controller=player.player_id,
+            targets=[player],
+            zone="hand",
+            cards=list(player.hand.cards),
+        )
+
+        shown += 1
+
+    return shown
+
+
 def take_card(
     ctx: EffectContext,
     targets: Sequence[Any],
@@ -138,20 +164,43 @@ def _destination(player: PlayerState, to: str) -> Zone[Any]:
     )
 
 
-def _remove_from_anywhere(state: GameState, card: Any) -> bool:
+def _zones_holding_cards(state: GameState) -> list[Zone[Any]]:
     """
-    Take a card out of whichever deck or pile currently holds it.
+    Every zone a card could be sitting in, deck first.
     """
+    zones: list[Zone[Any]] = []
+
     for name in DECKS:
         zone = getattr(state, f"{name}_deck", None)
 
-        if zone is not None and card in zone.cards:
-            zone.cards.remove(card)
-            return True
+        if zone is not None:
+            zones.append(zone)
+
+    zones.extend(
+        (
+            state.loot_discard,
+            state.treasure_discard,
+            state.treasure_shop,
+            state.monster_discard,
+            state.active_monsters,
+            state.room_area,
+            state.room_discard,
+        )
+    )
 
     for player in state.players:
-        if card in player.hand.cards:
-            player.hand.cards.remove(card)
+        zones.extend((player.hand, player.treasures, player.curses))
+
+    return zones
+
+
+def _remove_from_anywhere(state: GameState, card: Any) -> bool:
+    """
+    Take a card out of whichever zone currently holds it.
+    """
+    for zone in _zones_holding_cards(state):
+        if card in zone.cards:
+            zone.cards.remove(card)
             return True
 
     return False
@@ -170,6 +219,10 @@ def move_cards(
     change it without shuffling. Cards are moved in the order they were chosen,
     so "put these two on the bottom" leaves them in a knowable order rather than
     an accidental one.
+
+    A card that is in no zone at all is still moved: a loot card that says "put
+    this on the bottom of the loot deck" is resolving, which means it is on the
+    stack and nowhere else.
     """
     if position not in ("top", "bottom"):
         raise EffectExecutionError(
@@ -182,8 +235,7 @@ def move_cards(
     moved = 0
 
     for card in targets:
-        if not _remove_from_anywhere(state, card):
-            continue
+        _remove_from_anywhere(state, card)
 
         if position == "top":
             zone.add_top(card)
@@ -217,6 +269,12 @@ def register(registry: EffectRegistry) -> None:
         reveal_cards,
         primary="count",
         description="Show the top cards of a deck.",
+    )
+    registry.register(
+        "reveal_hand",
+        reveal_hand,
+        needs_target=True,
+        description="Show a player's hand.",
     )
     registry.register(
         "take_card",

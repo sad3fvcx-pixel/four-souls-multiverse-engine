@@ -188,6 +188,7 @@ class ConditionEvaluator:
 
         register("first_turn", _first_turn)
         register("first_attack_roll", _first_attack_roll)
+        register("last_effect_did", _last_effect_did)
         register("game_finished", _game_finished)
 
 
@@ -340,6 +341,22 @@ def _monster_hp(
         return False
 
     return _compare(int(monster.hp), params)
+
+
+def _last_effect_did(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    True when the effect just before this one actually did something.
+
+    "Destroy an item you control. If you do, steal an item" turns on whether
+    the destruction happened, and an effect reports that by what it returns:
+    zero items destroyed is an instruction that could not be carried out.
+    """
+    value = context.last_value
+    done = int(value) if isinstance(value, int) else 0
+
+    return _compare(done, dict(params) or {"operator": ">", "value": 0})
 
 
 def _first_attack_roll(

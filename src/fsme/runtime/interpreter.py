@@ -82,7 +82,7 @@ class Interpreter:
     def build(
         self,
         nodes: Sequence[Any],
-        default_target: str | None = None,
+        default_target: Any | None = None,
     ) -> list[EffectOp]:
         """
         Turn a list of DSL nodes into operations, one level deep.
@@ -170,7 +170,7 @@ class Interpreter:
         self,
         params: Mapping[str, Any],
         context: AbilityContext,
-        default_target: str | None,
+        default_target: Any | None,
     ) -> list[EffectOp]:
         """
         Open the contents of "you may" once the controller has said yes.
@@ -201,7 +201,7 @@ class Interpreter:
         self,
         params: Mapping[str, Any],
         context: AbilityContext,
-        default_target: str | None,
+        default_target: Any | None,
     ) -> list[EffectOp]:
         """
         Open one mode of a card that says "choose one".
@@ -251,7 +251,7 @@ class Interpreter:
         params: Mapping[str, Any],
         state: GameState,
         context: AbilityContext,
-        default_target: str | None,
+        default_target: Any | None,
     ) -> list[EffectOp]:
         conditions = params.get("if", params.get("conditions", ()))
 
@@ -269,7 +269,7 @@ class Interpreter:
     def _expand_repeat(
         self,
         params: Mapping[str, Any],
-        default_target: str | None,
+        default_target: Any | None,
     ) -> list[EffectOp]:
         times = int(params.get("repeat", params.get("times", 0)))
 
@@ -295,7 +295,7 @@ class Interpreter:
         state: GameState,
         context: AbilityContext,
         rng: RNG,
-        default_target: str | None,
+        default_target: Any | None,
     ) -> list[EffectOp]:
         """
         Expand a loop over a target group.
@@ -329,7 +329,7 @@ class Interpreter:
         self,
         name: str,
         params: Mapping[str, Any],
-        target: str | None,
+        target: Any | None,
     ) -> EffectOp:
         """
         Build one effect operation, expanding the shorthand parameter.
@@ -364,7 +364,7 @@ def _mode_label(mode: Any, index: int) -> str:
     return f"mode {index + 1}"
 
 
-def normalise(node: Any) -> tuple[str, Mapping[str, Any], str | None]:
+def normalise(node: Any) -> tuple[str, Mapping[str, Any], Any | None]:
     """
     Reduce every accepted effect spelling to a name, parameters and target.
 
@@ -389,7 +389,9 @@ def normalise(node: Any) -> tuple[str, Mapping[str, Any], str | None]:
         raise InterpreterError(f"invalid effect node: {node!r}")
 
     target = node.get("target")
-    target = str(target) if target is not None else None
+
+    if target is not None and not isinstance(target, Mapping):
+        target = str(target)
 
     if "effect" in node:
         params = {

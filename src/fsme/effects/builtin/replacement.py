@@ -13,6 +13,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+from fsme.state import DamageShield
+
 from ..context import EffectContext
 from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
@@ -54,6 +56,39 @@ def prevent_damage(
         event.cancel()
 
     return before - after
+
+
+def prevent_next_damage(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    amount: int = 1,
+) -> int:
+    """
+    Promise that the next damage a player takes will be reduced.
+
+    This is the other kind of prevention. ``prevent_damage`` edits damage that
+    is happening now; this one is written on a card played before the damage
+    exists, so it is recorded on the game and spent by the first instance of
+    damage that arrives.
+    """
+    if amount < 0:
+        raise EffectExecutionError("prevent_next_damage amount must be non-negative")
+
+    promised = 0
+
+    for player in targets:
+        player_id = getattr(player, "player_id", None)
+
+        if player_id is None:
+            raise EffectExecutionError("prevent_next_damage expects player targets")
+
+        ctx.state.shields.append(
+            DamageShield(player_id=int(player_id), amount=int(amount))
+        )
+
+        promised += 1
+
+    return promised
 
 
 def cancel_event(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> bool:
@@ -99,6 +134,13 @@ def register(registry: EffectRegistry) -> None:
         prevent_damage,
         primary="amount",
         description="Reduce incoming damage before it lands.",
+    )
+    registry.register(
+        "prevent_next_damage",
+        prevent_next_damage,
+        needs_target=True,
+        primary="amount",
+        description="Promise to reduce the next damage a player takes.",
     )
     registry.register(
         "cancel_event",

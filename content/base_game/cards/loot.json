@@ -154,7 +154,31 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "who"
+              }
+            },
+            {
+              "owned_treasure": {
+                "of": "who",
+                "as": "their_items"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "their_items"
+            }
+          ],
+          "description": "Choose a player. Recharge each item they control."
+        }
+      ],
       "metadata": {
         "text": "Choose a player.\nRecharge each item\nthey control.",
         "set": "Base Game",
@@ -285,7 +309,31 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "effect": "deal_damage",
+              "amount": {
+                "from": "dice"
+              },
+              "target": "victim"
+            }
+          ],
+          "description": "Choose a player or monster, then roll- Deal damage to them equal to the result."
+        }
+      ],
       "metadata": {
         "text": "Choose a player or\nmonster, then roll-\nDeal damage to\nthem equal to\nthe result.",
         "set": "Base Game",
@@ -461,7 +509,26 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "shielded"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "prevent_next_damage",
+              "amount": 2,
+              "target": "shielded"
+            }
+          ],
+          "description": "Choose a player or monster. Prevent the next instance of up to 2 damage they would take this turn."
+        }
+      ],
       "metadata": {
         "text": "Choose a player\nor monster. Prevent\nthe next instance\nof up to 2 damage\nthey would take\nthis turn.",
         "set": "Base Game",
@@ -863,7 +930,44 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Take 1 damage and gain 4¢.",
+                  "effects": [
+                    {
+                      "effect": "deal_damage",
+                      "amount": 1,
+                      "target": "controller"
+                    },
+                    {
+                      "gain_coins": 4
+                    }
+                  ]
+                },
+                {
+                  "description": "Take 2 damage and gain 8¢.",
+                  "effects": [
+                    {
+                      "effect": "deal_damage",
+                      "amount": 2,
+                      "target": "controller"
+                    },
+                    {
+                      "gain_coins": 8
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Choose one- Take 1 damage and gain 4¢, or take 2 damage and gain 8¢."
+        }
+      ],
       "metadata": {
         "text": "Choose one-\nTake 1 damage\nand gain 4¢.\n------------------------------\nTake 2 damage\nand gain 8¢.",
         "set": "Base Game",
@@ -881,7 +985,27 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "conditions": [
+            "player_active"
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "loot",
+              "position": "bottom",
+              "target": "self"
+            },
+            {
+              "effect": "take_extra_turn",
+              "target": "controller"
+            }
+          ],
+          "description": "Put this on the bottom of the loot deck. If you do, take an extra turn after this one if it's your turn."
+        }
+      ],
       "metadata": {
         "text": "Put this on the\nbottom of the loot\ndeck. If you do, take\nan extra turn after\nthis one if it's\nyour turn.",
         "set": "Base Game",
@@ -899,7 +1023,44 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_treasure": {
+                "owner": "controller",
+                "as": "sacrifice"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "destroy_treasure",
+              "target": "sacrifice"
+            },
+            {
+              "if": [
+                "last_effect_did"
+              ],
+              "then": [
+                {
+                  "effect": "steal_treasure",
+                  "target": {
+                    "target_treasure": {
+                      "owner": "opponents",
+                      "include_shop": true,
+                      "exclude_eternal": true,
+                      "as": "spoils"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "description": "Destroy an item you control. If you do, steal a non-eternal item from a player or from the shop."
+        }
+      ],
       "metadata": {
         "text": "Destroy an item\nyou control. If you\ndo, steal a non-\neternal item from\na player or from\nthe shop.",
         "set": "Base Game",
@@ -1070,7 +1231,27 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "most": "souls",
+                "as": "richest"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "lose_soul",
+              "count": 1,
+              "target": "richest"
+            }
+          ],
+          "description": "Choose a player who controls the most souls or tied for the most. That player destroys a soul they control."
+        }
+      ],
       "metadata": {
         "text": "Choose a player\nwho controls the\nmost souls or tied\nfor the most. That\nplayer destroys a\nsoul they control.",
         "set": "Base Game",
@@ -1088,7 +1269,21 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "reveal_hand",
+              "target": "all_players"
+            },
+            {
+              "draw_loot": 2
+            }
+          ],
+          "description": "Look at each player's hand, then loot 2."
+        }
+      ],
       "metadata": {
         "text": "Look at each\nplayer's hand,\nthen loot 2.",
         "set": "Base Game",
@@ -1124,7 +1319,26 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "shielded"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "prevent_next_damage",
+              "amount": 1,
+              "target": "shielded"
+            }
+          ],
+          "description": "Choose a player. Prevent the next 1 damage they would take this turn."
+        }
+      ],
       "metadata": {
         "text": "Choose a player.\nPrevent the next 1\ndamage they would\ntake this turn.",
         "set": "Base Game",
@@ -1142,7 +1356,18 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "claim_soul",
+              "target": "controller"
+            }
+          ],
+          "description": "When this enters play, it becomes a soul."
+        }
+      ],
       "tags": [
         "trinket"
       ],
@@ -1331,7 +1556,45 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Destroy a curse.",
+                  "effects": [
+                    {
+                      "effect": "remove_curse",
+                      "target": {
+                        "target_curse": {
+                          "as": "doomed_curse"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Choose a player. Prevent the next 1 damage they would take this turn.",
+                  "effects": [
+                    {
+                      "effect": "prevent_next_damage",
+                      "amount": 1,
+                      "target": {
+                        "target_player": {
+                          "as": "shielded"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Choose one- Destroy a curse, or choose a player and prevent the next 1 damage they would take this turn."
+        }
+      ],
       "metadata": {
         "text": "Choose one-\n•Destroy a curse.\n------------------------------\n•Choose a player.\nPrevent the next 1\ndamage they would\ntake this turn.",
         "set": "Base Game",

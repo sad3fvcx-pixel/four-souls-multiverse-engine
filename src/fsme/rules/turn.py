@@ -198,6 +198,15 @@ def advance_turn(item: StackItem, context: EffectContext) -> None:
 
     following = state.next_player(item.controller)
 
+    promised = state.turn.extra_turn_for
+
+    if promised is not None and state.player(promised).alive:
+        # An extra turn is the same turn structure over again, not a special
+        # case: the seat simply does not pass.
+        following = promised
+
+    state.turn.extra_turn_for = None
+
     state.turn.reset_for_new_turn(following)
 
     _begin_turn(context, active_player=following)
