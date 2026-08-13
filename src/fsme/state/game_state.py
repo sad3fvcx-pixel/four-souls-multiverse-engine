@@ -15,6 +15,7 @@ from fsme.util.ids import IdSequence
 
 from .combat_state import CombatState
 from .decision import PendingDecision
+from .modifiers import TemporaryModifier
 from .player_state import PlayerState
 from .priority import PriorityState
 from .turn_state import TurnState
@@ -59,6 +60,14 @@ class GameState:
 
     priority: PriorityState = field(default_factory=PriorityState)
     combat: CombatState = field(default_factory=CombatState)
+
+    modifiers: list[TemporaryModifier] = field(default_factory=list)
+    """
+    Bonuses that outlive the card that granted them.
+
+    A card in play carries its own static modifiers and needs no record here;
+    "till end of turn" has nowhere else to live.
+    """
 
     pending_decision: PendingDecision | None = None
 

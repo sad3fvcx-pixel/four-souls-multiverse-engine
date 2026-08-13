@@ -17,7 +17,15 @@ from typing import Any
 from fsme.cards import CardInstance, Static
 from fsme.runtime.ability_context import AbilityContext
 from fsme.runtime.condition_evaluator import ConditionEvaluator
-from fsme.state import GameState
+from fsme.state import GameState, TemporaryModifier
+from fsme.state.modifiers import (
+    ATTACK,
+    ATTACKS,
+    LOOT_PLAYS,
+    MAX_HP,
+    ROLL,
+    STATS,
+)
 
 _CONDITIONS = ConditionEvaluator()
 """
@@ -27,19 +35,19 @@ It holds no game state — only the table of condition implementations — so
 sharing it is safe and rebuilding it for every value read would be waste.
 """
 
-ATTACK = "attack"
-"""Damage a player deals on a successful attack roll."""
-
-MAX_HP = "max_hp"
-"""A player's hit point maximum."""
-
-ATTACKS = "attacks"
-"""Attacks a player may declare per turn."""
-
-LOOT_PLAYS = "loot_plays"
-"""Loot cards a player may play per turn."""
-
-STATS = (ATTACK, MAX_HP, ATTACKS, LOOT_PLAYS)
+__all__ = [
+    "ATTACK",
+    "ATTACKS",
+    "LOOT_PLAYS",
+    "MAX_HP",
+    "ROLL",
+    "STATS",
+    "bonus",
+    "cards_in_play",
+    "expire_turn_modifiers",
+    "refresh_derived",
+    "static_value",
+]
 
 
 def cards_in_play(state: GameState) -> list[CardInstance]:
@@ -117,6 +125,11 @@ def _in_scope(static: Static, source: CardInstance, player_id: int) -> bool:
 def bonus(state: GameState, stat: str, player_id: int) -> int:
     """
     Return the total modifier to a stat for one player.
+
+    Printed statics and temporary bonuses are added up together, because they
+    are the same thing to whoever is asking: a card that says "you have +1
+    attack" and a card that says "+1 attack till end of turn" must not be able
+    to disagree about what a player's attack is.
     """
     total = 0
 
@@ -128,7 +141,43 @@ def bonus(state: GameState, stat: str, player_id: int) -> int:
             if _applies_to(static, card, player_id, state):
                 total += static.amount
 
+    for modifier in state.modifiers:
+        if modifier.stat == stat and modifier.player_id == player_id:
+            total += modifier.amount
+
     return total
+
+
+def expire_turn_modifiers(state: GameState) -> list[TemporaryModifier]:
+    """
+    Drop every modifier that only lasted for the turn, and return them.
+
+    A hit point bonus is the one that cannot simply be forgotten. The engine
+    stores hit points remaining rather than damage taken, so a player who gained
+    +2 HP and then took two damage looks unhurt; letting the bonus lapse without
+    lowering their hit points would heal them. Taking the bonus back off keeps
+    the damage where it was — and a player whose damage now exceeds their
+    maximum dies, which is what the rules say happens.
+    """
+    expired = [modifier for modifier in state.modifiers if modifier.expires_at_end_of_turn()]
+
+    if not expired:
+        return []
+
+    state.modifiers = [
+        modifier for modifier in state.modifiers if not modifier.expires_at_end_of_turn()
+    ]
+
+    for modifier in expired:
+        if modifier.stat != MAX_HP or modifier.amount <= 0:
+            continue
+
+        player = state.player(modifier.player_id)
+        player.hp = max(0, player.hp - modifier.amount)
+
+    refresh_derived(state)
+
+    return expired
 
 
 def static_value(state: GameState, stat: str, player_id: int, base: int) -> int:

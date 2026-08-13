@@ -23,7 +23,7 @@ from .constants import (
     LOOT_PLAYS_PER_TURN,
     STARTING_HAND_SIZE,
 )
-from .statics import ATTACKS, LOOT_PLAYS, static_value
+from .statics import ATTACKS, LOOT_PLAYS, expire_turn_modifiers, static_value
 
 ADVANCE_TURN = "advance_turn"
 
@@ -187,6 +187,14 @@ def advance_turn(item: StackItem, context: EffectContext) -> None:
 
     context.emit(EventType.TURN_END, controller=item.controller)
     context.emit(EventType.TURN_CLEANUP, controller=item.controller)
+
+    for modifier in expire_turn_modifiers(state):
+        context.emit(
+            EventType.STAT_EXPIRED,
+            controller=modifier.player_id,
+            stat=modifier.stat,
+            amount=modifier.amount,
+        )
 
     following = state.next_player(item.controller)
 

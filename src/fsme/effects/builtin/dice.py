@@ -14,6 +14,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from fsme.events import EventType
+from fsme.state.modifiers import ROLL
 
 from ..context import EffectContext
 from ..errors import EffectExecutionError
@@ -37,7 +38,7 @@ def rolled(ctx: EffectContext, sides: int = 6) -> int:
     proposal = ctx.propose(
         EventType.ROLL_MODIFIED,
         sides=sides,
-        value=natural,
+        value=natural + _roll_bonus(ctx),
         natural=natural,
     )
 
@@ -45,6 +46,30 @@ def rolled(ctx: EffectContext, sides: int = 6) -> int:
         return natural
 
     return max(1, min(sides, int(proposal.get("value", natural))))
+
+
+def _roll_bonus(ctx: EffectContext) -> int:
+    """
+    What the roller adds to the die before anybody replaces the result.
+
+    A card that says "+1 to your dice rolls" is not a replacement ability
+    waiting for a window; it is a number the roller simply has. Offering the
+    already-adjusted value for replacement keeps the two kinds in the right
+    order: a bonus applies, and then anything that edits rolls edits the roll
+    the player actually made.
+    """
+    roller = ctx.actor
+
+    if roller is None or not 0 <= roller < len(ctx.state.players):
+        return 0
+
+    total = 0
+
+    for modifier in ctx.state.modifiers:
+        if modifier.stat == ROLL and modifier.player_id == roller:
+            total += modifier.amount
+
+    return total
 
 
 def roll_dice(ctx: EffectContext, targets: Sequence[Any], sides: int = 6) -> int:

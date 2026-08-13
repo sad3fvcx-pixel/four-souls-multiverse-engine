@@ -303,7 +303,33 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "blessed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "blessed"
+            },
+            {
+              "effect": "add_modifier",
+              "stat": "roll",
+              "amount": 1,
+              "target": "blessed"
+            }
+          ],
+          "description": "Choose a player. They gain +1 AT and +1 to dice rolls till end of turn."
+        }
+      ],
       "metadata": {
         "text": "Choose a player.\nThey gain +1 AT and\n+1 to dice rolls\ntill end of turn.",
         "set": "Base Game",
@@ -393,7 +419,27 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "blessed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "max_hp",
+              "amount": 2,
+              "target": "blessed"
+            }
+          ],
+          "description": "Choose a player. They gain +2 HP till end of turn."
+        }
+      ],
       "metadata": {
         "text": "Choose a player.\nThey gain +2 HP\ntill end of turn.",
         "set": "Base Game",
@@ -411,7 +457,33 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "blessed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "blessed"
+            },
+            {
+              "effect": "add_modifier",
+              "stat": "max_hp",
+              "amount": 1,
+              "target": "blessed"
+            }
+          ],
+          "description": "Choose a player. They gain +1 AT and +1 HP till end of turn."
+        }
+      ],
       "metadata": {
         "text": "Choose a player.\nThey gain +1 AT\nand +1 HP till\nend of turn.",
         "set": "Base Game",
@@ -447,7 +519,91 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 1
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 2
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "controller"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 3
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 3
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 4
+                }
+              ],
+              "then": [
+                {
+                  "lose_coins": 4
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 5
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 5
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 6
+                }
+              ],
+              "then": [
+                {
+                  "gain_treasure": 1
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1 gain 1¢, 2 take 2 damage, 3 loot 3, 4 lose 4¢, 5 gain 5¢, 6 gain +1 treasure."
+        }
+      ],
       "metadata": {
         "text": "Roll-\n1: Gain 1¢.\n------------------------------\n2: Take 2 damage.\n------------------------------\n3: Loot 3.\n------------------------------\n4: Lose 4¢.  5: Gain 5¢.\n------------------------------\n6: Gain +1 treasure.",
         "set": "Base Game",
@@ -465,7 +621,33 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "blessed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "blessed"
+            },
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "blessed"
+            }
+          ],
+          "description": "Choose a player. They gain +1 AT till end of turn and may attack an additional time this turn."
+        }
+      ],
       "metadata": {
         "text": "Choose a player.\nThey gain +1 AT till\nend of turn and\nmay attack an\nadditional time\nthis turn.",
         "set": "Base Game",
@@ -501,7 +683,25 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "doomed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "kill",
+              "target": "doomed"
+            }
+          ],
+          "description": "Kill a player."
+        }
+      ],
       "metadata": {
         "text": "Kill a player.",
         "set": "Base Game",
@@ -573,7 +773,66 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "all_monsters"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "all_players"
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 each player takes 1 damage, 3-4 each monster takes 1 damage, 5-6 each player takes 2 damage."
+        }
+      ],
       "metadata": {
         "text": "Roll-\n1-2: Each player takes\n1 damage.\n------------------------------\n3-4: Each monster takes\n1 damage.\n------------------------------\n5-6: Each player takes\n2 damage.",
         "set": "Base Game",
@@ -591,7 +850,17 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_treasure": 1
+            }
+          ],
+          "description": "Gain +1 treasure."
+        }
+      ],
       "metadata": {
         "text": "Gain +1\ntreasure.",
         "set": "Base Game",
@@ -776,7 +1045,101 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 1
+                }
+              ],
+              "then": [
+                {
+                  "effect": "gain_coins",
+                  "amount": 1,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 2
+                }
+              ],
+              "then": [
+                {
+                  "effect": "draw_loot",
+                  "count": 2,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 3
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 3,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "gain_coins",
+                  "amount": 4,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 5
+                }
+              ],
+              "then": [
+                {
+                  "effect": "draw_loot",
+                  "count": 5,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 6
+                }
+              ],
+              "then": [
+                {
+                  "effect": "gain_coins",
+                  "amount": 6,
+                  "target": "all_players"
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1 each player gains 1¢, 2 each player loots 2, 3 each player takes 3 damage, 4 each player gains 4¢, 5 each player loots 5, 6 each player gains 6¢."
+        }
+      ],
       "metadata": {
         "text": "Roll-\n1: Each player gains 1¢.\n------------------------------\n2: Each player loots 2.\n------------------------------\n3: Each player takes 3 damage.\n------------------------------\n4: Each player gains 4¢.\n------------------------------\n5: Each player loots 5.\n------------------------------\n6: Each player gains 6¢.",
         "set": "Base Game",
@@ -831,7 +1194,60 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 4
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 7
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "lose_coins": 4
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 gain 4¢, 3-4 gain 7¢, 5-6 lose 4¢."
+        }
+      ],
       "metadata": {
         "text": "Roll-\n1-2: Gain 4¢.\n------------------------------\n3-4: Gain 7¢.\n------------------------------\n5-6: Lose 4¢.",
         "set": "Base Game",
@@ -849,7 +1265,61 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 3
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "discard_cards",
+                  "target": "target_loot"
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 loot 1, 3-4 loot 3, 5-6 discard 1 loot card."
+        }
+      ],
       "metadata": {
         "text": "Roll-\n1-2: Loot 1.\n------------------------------\n3-4: Loot 3.\n------------------------------\n5-6: Discard 1\nloot card.",
         "set": "Base Game",
@@ -867,7 +1337,66 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "effect": "add_modifier",
+                  "stat": "attack",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "effect": "add_modifier",
+                  "stat": "max_hp",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "controller"
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 you gain +1 AT till end of turn, 3-4 you gain +1 HP till end of turn, 5-6 take 1 damage."
+        }
+      ],
       "metadata": {
         "text": "Roll:\n1-2: You gain +1 AT\ntill end of turn.\n------------------------------\n3-4: You gain +1 HP\ntill end of turn.\n------------------------------\n5-6: Take 1 damage.",
         "set": "Base Game",

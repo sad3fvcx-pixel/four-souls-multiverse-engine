@@ -768,7 +768,16 @@ class Runtime:
                 return
 
         elif item.label in self._procedures:
-            self._procedures.get(item.label)(item, self._context)
+            # An engine procedure belongs to a player just as an ability does:
+            # the attack being resolved is somebody's attack, and the dice it
+            # rolls are that player's dice.
+            self._context._set_actor(item.controller)
+
+            try:
+                self._procedures.get(item.label)(item, self._context)
+            finally:
+                self._context._set_actor(None)
+
             item.mark_resolved()
         else:
             item.fizzle()

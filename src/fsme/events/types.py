@@ -78,6 +78,10 @@ class EventType(StrEnum):
     TREASURE_DESTROYED = "treasure_destroyed"
     TREASURE_STOLEN = "treasure_stolen"
 
+    # Statistics
+    STAT_MODIFIED = "stat_modified"
+    STAT_EXPIRED = "stat_expired"
+
     # Souls
     SOUL_GAINED = "soul_gained"
     SOUL_LOST = "soul_lost"

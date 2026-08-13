@@ -10,10 +10,97 @@ from collections.abc import Sequence
 from typing import Any
 
 from fsme.events import EventType
+from fsme.state import Duration, PlayerState, TemporaryModifier
+from fsme.state.modifiers import STATS
 
 from ..context import EffectContext
 from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
+
+
+def add_modifier(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    stat: str = "",
+    amount: int = 1,
+    duration: str = str(Duration.END_OF_TURN),
+) -> int:
+    """
+    Give players a bonus that outlives the card granting it.
+
+    "+1 attack till end of turn" belongs to nobody once the loot card is in the
+    discard pile, so the bonus is recorded on the game itself and the turn is
+    what takes it away.
+
+    A hit point bonus raises the player's hit points as well as their maximum.
+    The engine stores hit points remaining rather than damage taken, so raising
+    only the maximum would give a hurt player nothing until they healed — which
+    is not what a card that says "+2 HP" does.
+    """
+    if not stat:
+        raise EffectExecutionError("add_modifier requires a stat")
+
+    if stat not in STATS:
+        raise EffectExecutionError(
+            f"unknown stat '{stat}'; the stats are {', '.join(sorted(STATS))}"
+        )
+
+    try:
+        lifetime = Duration(duration)
+    except ValueError:
+        raise EffectExecutionError(f"unknown duration '{duration}'") from None
+
+    granted = 0
+
+    for player in targets:
+        if not isinstance(player, PlayerState):
+            raise EffectExecutionError("add_modifier expects player targets")
+
+        ctx.state.modifiers.append(
+            TemporaryModifier(
+                stat=stat,
+                amount=int(amount),
+                player_id=player.player_id,
+                duration=lifetime,
+            )
+        )
+
+        _apply_now(player, stat, int(amount))
+
+        granted += 1
+
+        ctx.emit(
+            EventType.STAT_MODIFIED,
+            controller=player.player_id,
+            targets=[player],
+            stat=stat,
+            amount=int(amount),
+            duration=str(lifetime),
+        )
+
+    return granted
+
+
+def _apply_now(player: PlayerState, stat: str, amount: int) -> None:
+    """
+    Change what a bonus cannot change by being merely recorded.
+
+    Attack and roll bonuses are read when they are needed, so recording them is
+    enough. A player's remaining attacks and loot plays were counted out at the
+    start of the turn and will not be counted again, and hit points are stored;
+    those have to be handed over now.
+    """
+    if stat == "max_hp" and amount > 0:
+        player.max_hp += amount
+        player.hp += amount
+
+    elif stat == "attacks":
+        player.attacks_left = max(0, player.attacks_left + amount)
+
+    elif stat == "loot_plays":
+        player.additional_loot_plays = max(
+            0, player.additional_loot_plays + amount
+        )
 
 
 def _cards(targets: Sequence[Any], effect: str) -> list[Any]:
@@ -102,4 +189,11 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="counter",
         description="Change a counter on a card.",
+    )
+    registry.register(
+        "add_modifier",
+        add_modifier,
+        needs_target=True,
+        primary="stat",
+        description="Give a player a bonus that lasts beyond its card.",
     )

@@ -36,6 +36,7 @@ class Game:
         cards: CardRegistry | None = None,
         seed: int | None = None,
         interactive_priority: bool = False,
+        rng: RNG | None = None,
     ) -> None:
         game_state = state if state is not None else GameState()
 
@@ -45,7 +46,7 @@ class Game:
         self._runtime = Runtime(
             game_state,
             cards=cards,
-            rng=RNG(game_state.seed),
+            rng=rng if rng is not None else RNG(game_state.seed),
             interactive_priority=interactive_priority,
         )
 
@@ -57,12 +58,18 @@ class Game:
         *,
         seed: int = 0,
         interactive_priority: bool = False,
+        rng: RNG | None = None,
     ) -> Game:
         """
         Lay out a game from loaded content and hand back the session.
 
         This is the shortest honest path from a directory of card files to a
         playable game: load, validate, deal, play.
+
+        The deal always comes from the seed. ``rng`` replaces the generator the
+        game runs on afterwards, which is how a test scripts the dice and how a
+        restored game carries on from a saved generator state; leaving it out
+        is the ordinary case, where the seed is the whole story.
         """
         from fsme.rules import new_game
 
@@ -72,6 +79,7 @@ class Game:
             state,
             cards=library.registry(),
             interactive_priority=interactive_priority,
+            rng=rng,
         )
 
     @property
