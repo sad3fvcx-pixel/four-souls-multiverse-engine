@@ -7,7 +7,7 @@ The engine's execution core.
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from fsme.cards import Ability, CardInstance, CardRegistry
 from fsme.commands import (
@@ -20,23 +20,24 @@ from fsme.commands import (
 from fsme.effects import EffectOp, EffectRegistry, builtin_registry
 from fsme.events import Event, EventBus, EventType
 from fsme.rng.rng import RNG
-from fsme.rules import (
-    ProcedureRegistry,
-    cards_in_play,
-    default_command_registry,
-    default_procedure_registry,
-    refresh_derived,
-)
 from fsme.stack import StackItem, StackItemType
 from fsme.state import GameState, PendingDecision, PlayerState
 
 from .ability_context import AbilityContext
 from .condition_evaluator import ConditionEvaluator
 from .effect_executor import EffectExecutor
-from .errors import AbilityResolutionError, DecisionRequired, StabilityError
+from .errors import (
+    AbilityResolutionError,
+    DecisionRequired,
+    InterpreterError,
+    StabilityError,
+)
 from .execution_context import ExecutionContext
 from .interpreter import Interpreter
 from .target_resolver import TargetResolver
+
+if TYPE_CHECKING:
+    from fsme.rules import ProcedureRegistry
 
 DEFAULT_MAX_ITERATIONS = 512
 
@@ -122,6 +123,12 @@ class Runtime:
         interactive_priority: bool = False,
         max_iterations: int = DEFAULT_MAX_ITERATIONS,
     ) -> None:
+        # Imported here rather than at module level: the rules read the
+        # Runtime's condition evaluator, and the Runtime reads the rules for
+        # its defaults. Deferring one direction lets either package be
+        # imported first without the other being half-built.
+        from fsme.rules import default_command_registry, default_procedure_registry
+
         self._state = state
         self._cards = cards if cards is not None else CardRegistry()
         self._effects = effects if effects is not None else builtin_registry()
@@ -551,10 +558,7 @@ class Runtime:
                 ability.targets, self._state, context, self._rng
             )
 
-            for op in self._interpreter.build(
-                ability.effects, self._state, context, self._rng
-            ):
-                self._executor.execute(op, self._context, context)
+            self._run_replacement_ops(ability, context)
 
         except DecisionRequired:
             # A replacement applies at once or not at all: there is no moment
@@ -568,6 +572,35 @@ class Runtime:
         finally:
             self._context._set_event(None)
             self._context._set_source(None)
+
+    def _run_replacement_ops(
+        self,
+        ability: Ability,
+        context: AbilityContext,
+    ) -> None:
+        """
+        Run a replacement's operations, opening control flow as it goes.
+        """
+        ops = self._interpreter.build(ability.effects)
+        index = 0
+
+        while index < len(ops):
+            op = ops[index]
+
+            if self._interpreter.is_control(op):
+                expansion, stopped = self._interpreter.expand(
+                    op, self._state, context, self._rng
+                )
+
+                if stopped:
+                    ops[index:] = expansion
+                else:
+                    ops[index : index + 1] = expansion
+
+                continue
+
+            self._executor.execute(op, self._context, context)
+            index += 1
 
     def _open_priority_window(self) -> None:
         """
@@ -695,6 +728,8 @@ class Runtime:
         determinism: players by seat, then their cards in zone order, then the
         shared board.
         """
+        from fsme.rules import cards_in_play
+
         yield from cards_in_play(self._state)
 
     def _push_ability(
@@ -786,12 +821,36 @@ class Runtime:
                     ability.targets, self._state, context, self._rng
                 )
 
-                ops = self._interpreter.build(
-                    ability.effects, self._state, context, self._rng
-                )
+                ops = self._interpreter.build(ability.effects)
+
+            steps = 0
 
             while index < len(ops):
-                self._executor.execute(ops[index], self._context, context)
+                steps += 1
+
+                if steps > self._interpreter.max_ops:
+                    raise InterpreterError(
+                        f"ability ran more than {self._interpreter.max_ops} steps"
+                    )
+
+                op = ops[index]
+
+                if self._interpreter.is_control(op):
+                    # A branch opens now, not when the queue was built: the
+                    # effects before it have run, and it may be asking about
+                    # what they did.
+                    expansion, stopped = self._interpreter.expand(
+                        op, self._state, context, self._rng
+                    )
+
+                    if stopped:
+                        ops[index:] = expansion
+                    else:
+                        ops[index : index + 1] = expansion
+
+                    continue
+
+                self._executor.execute(op, self._context, context)
                 index += 1
 
         except DecisionRequired as request:
@@ -892,6 +951,8 @@ class Runtime:
         Returns True when something changed, which tells the loop to run
         another pass: a death may award a soul, and that soul may win the game.
         """
+        from fsme.rules import refresh_derived
+
         changed = refresh_derived(self._state)
 
         for player in self._state.players:

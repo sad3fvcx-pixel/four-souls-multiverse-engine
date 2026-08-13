@@ -12,8 +12,10 @@ from __future__ import annotations
 from ..registry import EffectRegistry
 from . import (
     coins,
+    copying,
     curses,
     damage,
+    decks,
     dice,
     loot,
     modifiers,
@@ -24,8 +26,10 @@ from . import (
 
 _MODULES = (
     coins,
+    copying,
     curses,
     damage,
+    decks,
     dice,
     loot,
     modifiers,

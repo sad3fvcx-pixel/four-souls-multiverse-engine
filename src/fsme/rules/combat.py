@@ -16,6 +16,7 @@ from typing import Any
 
 from fsme.commands import Command
 from fsme.effects import EffectContext
+from fsme.effects.builtin.dice import rolled
 from fsme.events import EventType
 from fsme.stack import StackItem, StackItemType
 from fsme.state import GamePhase, GameState
@@ -136,7 +137,7 @@ def combat_round(item: StackItem, context: EffectContext) -> None:
         round=combat.round_number,
     )
 
-    roll = context.roll(DICE_SIDES)
+    roll = rolled(context, DICE_SIDES)
     required = _required_roll(monster)
 
     context.emit(

@@ -15,7 +15,17 @@ from __future__ import annotations
 from typing import Any
 
 from fsme.cards import CardInstance, Static
+from fsme.runtime.ability_context import AbilityContext
+from fsme.runtime.condition_evaluator import ConditionEvaluator
 from fsme.state import GameState
+
+_CONDITIONS = ConditionEvaluator()
+"""
+One evaluator, built once.
+
+It holds no game state — only the table of condition implementations — so
+sharing it is safe and rebuilding it for every value read would be waste.
+"""
 
 ATTACK = "attack"
 """Damage a player deals on a successful attack roll."""
@@ -65,10 +75,33 @@ def cards_in_play(state: GameState) -> list[CardInstance]:
     return cards
 
 
-def _applies_to(static: Static, source: CardInstance, player_id: int) -> bool:
+def _applies_to(
+    static: Static,
+    source: CardInstance,
+    player_id: int,
+    state: GameState,
+) -> bool:
     """
-    Decide whether one card's static reaches one player.
+    Decide whether one card's static reaches one player right now.
     """
+    if not _in_scope(static, source, player_id):
+        return False
+
+    if not static.conditions:
+        return True
+
+    return _CONDITIONS.evaluate_all(
+        static.conditions,
+        state,
+        AbilityContext(
+            source=source,
+            controller=player_id,
+            owner=source.owner,
+        ),
+    )
+
+
+def _in_scope(static: Static, source: CardInstance, player_id: int) -> bool:
     if static.scope == "all_players":
         return True
 
@@ -92,7 +125,7 @@ def bonus(state: GameState, stat: str, player_id: int) -> int:
             if static.stat != stat:
                 continue
 
-            if _applies_to(static, card, player_id):
+            if _applies_to(static, card, player_id, state):
                 total += static.amount
 
     return total

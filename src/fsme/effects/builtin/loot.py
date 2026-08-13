@@ -172,6 +172,67 @@ def gain_soul(
     return gained
 
 
+def claim_soul(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    card: Any | None = None,
+) -> int:
+    """
+    Give a soul card itself to the players who earned it.
+
+    A bonus soul is a card that becomes a soul rather than granting one, so it
+    moves out of play and into the winner's pile. Which is the difference
+    between it and a token: it can be taken away again.
+    """
+    soul = card if card is not None else ctx.source
+
+    if soul is None:
+        raise EffectExecutionError(
+            "claim_soul needs a card; none was given and there is no source"
+        )
+
+    state = ctx.state
+    claimed = 0
+
+    for player in _players(targets, "claim_soul"):
+        _detach(state, soul)
+
+        player.souls.add_top(soul)
+        claimed += 1
+
+        ctx.emit(
+            EventType.SOUL_GAINED,
+            source=soul,
+            controller=player.player_id,
+            targets=[player],
+            soul=soul,
+        )
+
+    return claimed
+
+
+def _detach(state: Any, card: Any) -> None:
+    """
+    Take a card out of whichever zone currently holds it.
+    """
+    zones = [
+        state.loot_deck,
+        state.loot_discard,
+        state.treasure_deck,
+        state.treasure_shop,
+        state.room_area,
+        state.room_deck,
+    ]
+
+    for player in state.players:
+        zones.extend((player.hand, player.treasures, player.curses))
+
+    for zone in zones:
+        if card in zone.cards:
+            zone.cards.remove(card)
+            return
+
+
 def lose_soul(ctx: EffectContext, targets: Sequence[Any], count: int = 1) -> int:
     """
     Remove souls from each target player.
@@ -229,6 +290,12 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="count",
         description="Gain souls."
+    )
+    registry.register(
+        "claim_soul",
+        claim_soul,
+        needs_target=True,
+        description="Give a bonus soul card itself to a player.",
     )
     registry.register(
         "lose_soul",

@@ -70,6 +70,7 @@ class EventType(StrEnum):
     AFTER_LOOT = "after_loot"
     LOOT_DRAWN = "loot_drawn"
     LOOT_DISCARDED = "loot_discarded"
+    REVEALED = "revealed"
 
     # Treasure
     TREASURE_CHARGED = "treasure_charged"

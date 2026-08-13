@@ -127,6 +127,7 @@ class TargetResolver:
         register("target_monster", _target_monster)
 
         register("target_loot", _target_loot)
+        register("target_deck_card", _target_deck_card)
         register("target_treasure", _target_treasure)
         register("owned_treasure", _owned_treasure)
         register("all_treasures", _all_treasures)
@@ -327,6 +328,38 @@ def _target_loot(
     hand = list(state.player(context.controller).hand.cards)
 
     return _ask(DecisionKind.CHOOSE_LOOT, hand, context, params, "target_loot")
+
+
+def _target_deck_card(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    Let the controller pick a card out of a named deck.
+
+    Searching a deck is a choice like any other, which is why it is a target
+    rather than an effect: the machinery that stops the game and asks already
+    exists, and a search is one more question.
+    """
+    deck = str(params.get("deck", "loot"))
+    zone = getattr(state, f"{deck}_deck", None)
+
+    if zone is None:
+        raise UnknownTargetError(f"unknown deck '{deck}'")
+
+    options: list[Any] = list(reversed(zone.cards))
+
+    card_type = params.get("card_type")
+
+    if card_type is not None:
+        options = [
+            card
+            for card in options
+            if str(getattr(getattr(card, "definition", None), "type", "")) == card_type
+        ]
+
+    return _ask(
+        DecisionKind.CHOOSE_CARD, options, context, params, "target_deck_card"
+    )
 
 
 def _target_treasure(

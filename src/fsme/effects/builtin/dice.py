@@ -20,16 +20,40 @@ from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
 
 
+def rolled(ctx: EffectContext, sides: int = 6) -> int:
+    """
+    Roll a die and let anything that changes rolls have its say.
+
+    The natural result is offered for replacement before it counts, so a card
+    that adds one to a roll works the same whether the roll came from an
+    ability or from an attack. The final value is kept on the die's own face:
+    a six-sided die cannot show a seven, however much is added to it.
+    """
+    if sides < 1:
+        raise EffectExecutionError("a die must have at least one side")
+
+    natural = ctx.roll(sides)
+
+    proposal = ctx.propose(
+        EventType.ROLL_MODIFIED,
+        sides=sides,
+        value=natural,
+        natural=natural,
+    )
+
+    if proposal.cancelled:
+        return natural
+
+    return max(1, min(sides, int(proposal.get("value", natural))))
+
+
 def roll_dice(ctx: EffectContext, targets: Sequence[Any], sides: int = 6) -> int:
     """
     Roll a die and announce the result.
     """
-    if sides < 1:
-        raise EffectExecutionError("roll_dice sides must be positive")
-
     ctx.emit(EventType.BEFORE_ROLL, sides=sides)
 
-    value = ctx.roll(sides)
+    value = rolled(ctx, sides)
 
     ctx.emit(EventType.AFTER_ROLL, sides=sides, value=value)
 
@@ -40,13 +64,28 @@ def reroll(ctx: EffectContext, targets: Sequence[Any], sides: int = 6) -> int:
     """
     Roll again, replacing a previous result.
     """
-    if sides < 1:
-        raise EffectExecutionError("reroll sides must be positive")
-
-    value = ctx.roll(sides)
+    value = rolled(ctx, sides)
 
     ctx.emit(EventType.REROLL, sides=sides, value=value)
     ctx.emit(EventType.AFTER_ROLL, sides=sides, value=value)
+
+    return value
+
+
+def modify_roll(ctx: EffectContext, targets: Sequence[Any], amount: int = 0) -> int:
+    """
+    Shift the roll currently being offered for modification.
+    """
+    event = ctx.event
+
+    if event is None:
+        raise EffectExecutionError(
+            "'modify_roll' may only be used while a roll is being modified"
+        )
+
+    value = int(event.get("value", 0)) + int(amount)
+
+    event.set("value", value)
 
     return value
 
@@ -68,4 +107,10 @@ def register(registry: EffectRegistry) -> None:
         primary="sides",
         stores="dice",
         description="Roll a die again, replacing the stored result.",
+    )
+    registry.register(
+        "modify_roll",
+        modify_roll,
+        primary="amount",
+        description="Change a roll while it is being modified.",
     )

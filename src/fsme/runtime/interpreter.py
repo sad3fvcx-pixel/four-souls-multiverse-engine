@@ -3,11 +3,15 @@
 """
 Effect DSL interpreter for Four Souls Multiverse Engine.
 
-The interpreter turns a card's declarative ability into a flat queue of effect
-operations. It decides *what will run*; it never runs anything. Control flow is
-resolved here because branching questions are pure — conditions may be asked
-without changing the game — so by the time the executor starts, the sequence of
-operations is already fixed and can be logged, replayed and reasoned about.
+The interpreter turns a card's declarative ability into a queue of effect
+operations. It decides *what will run*; it never runs anything.
+
+Control flow is expanded as the queue is consumed rather than all at once. A
+card that says "roll a die, and if you rolled a six, draw two loot" asks its
+question after the die has landed — which it could not do if the branch had
+been decided when the queue was built, before anything had happened. So a
+branch stays in the queue as an operation and opens only when the operations
+before it are done.
 """
 
 from __future__ import annotations
@@ -29,12 +33,19 @@ CONTROL_NAMES = frozenset({"sequence", "if", "repeat", "for_each", "stop"})
 _MODIFIER_KEYS = frozenset({"target", "as", "optional", "description"})
 
 DEFAULT_MAX_OPS = 512
-DEFAULT_MAX_DEPTH = 16
+
+DEFAULT_TARGET_KEY = "__default_target__"
+"""
+Where a control operation remembers the target its contents inherit.
+
+``for_each`` binds one object at a time and the effects inside it point at that
+binding without naming it, so the binding has to travel with them.
+"""
 
 
 class Interpreter:
     """
-    Builds the effect queue of one ability.
+    Builds and expands the effect queue of one ability.
     """
 
     def __init__(
@@ -44,43 +55,27 @@ class Interpreter:
         effects: EffectRegistry,
         *,
         max_ops: int = DEFAULT_MAX_OPS,
-        max_depth: int = DEFAULT_MAX_DEPTH,
     ) -> None:
         self._conditions = conditions
         self._targets = targets
         self._effects = effects
         self._max_ops = max_ops
-        self._max_depth = max_depth
+
+    @property
+    def max_ops(self) -> int:
+        return self._max_ops
 
     def build(
         self,
         nodes: Sequence[Any],
-        state: GameState,
-        context: AbilityContext,
-        rng: RNG,
+        default_target: str | None = None,
     ) -> list[EffectOp]:
         """
-        Flatten an ability's effect list into executable operations.
+        Turn a list of DSL nodes into operations, one level deep.
+
+        Control nodes stay whole. They are opened later, by :meth:`expand`,
+        when the operations before them have already run.
         """
-        ops, _ = self._build(nodes, state, context, rng, depth=0, default_target=None)
-
-        return ops
-
-    def _build(
-        self,
-        nodes: Sequence[Any],
-        state: GameState,
-        context: AbilityContext,
-        rng: RNG,
-        *,
-        depth: int,
-        default_target: str | None,
-    ) -> tuple[list[EffectOp], bool]:
-        if depth > self._max_depth:
-            raise InterpreterError(
-                f"effect nesting exceeded {self._max_depth} levels"
-            )
-
         if not isinstance(nodes, (list, tuple)):
             raise InterpreterError(f"expected a list of effects, got {nodes!r}")
 
@@ -90,24 +85,13 @@ class Interpreter:
             name, params, target = normalise(node)
             target = target or default_target
 
-            if name == "stop":
-                return ops, True
-
             if name in CONTROL_NAMES:
-                nested, stopped = self._expand_control(
-                    name,
-                    params,
-                    state,
-                    context,
-                    rng,
-                    depth=depth,
-                    default_target=target,
-                )
-                ops.extend(nested)
+                control = dict(params)
 
-                if stopped:
-                    return ops, True
+                if target is not None:
+                    control[DEFAULT_TARGET_KEY] = target
 
+                ops.append(EffectOp(name=name, params=control))
             else:
                 ops.append(self._operation(name, params, target))
 
@@ -116,80 +100,94 @@ class Interpreter:
                     f"ability produced more than {self._max_ops} operations"
                 )
 
-        return ops, False
+        return ops
 
-    def _expand_control(
+    def is_control(self, op: EffectOp) -> bool:
+        """
+        Return True if this operation is a branch, a loop or a stop.
+        """
+        return op.name in CONTROL_NAMES
+
+    def expand(
         self,
-        name: str,
-        params: Mapping[str, Any],
+        op: EffectOp,
         state: GameState,
         context: AbilityContext,
         rng: RNG,
-        *,
-        depth: int,
-        default_target: str | None,
     ) -> tuple[list[EffectOp], bool]:
-        if name == "sequence":
-            return self._build(
-                params.get("effects", params.get("sequence", ())),
-                state,
-                context,
-                rng,
-                depth=depth + 1,
-                default_target=default_target,
+        """
+        Open one control operation into the operations it stands for.
+
+        Returns the replacement operations and whether the ability should stop
+        after them.
+        """
+        params = op.params
+        default_target = params.get(DEFAULT_TARGET_KEY)
+
+        if op.name == "stop":
+            return [], True
+
+        if op.name == "sequence":
+            return self.build(
+                params.get("effects", params.get("sequence", ())), default_target
+            ), False
+
+        if op.name == "if":
+            return self._expand_if(params, state, context, default_target), False
+
+        if op.name == "repeat":
+            return self._expand_repeat(params, default_target), False
+
+        if op.name == "for_each":
+            return (
+                self._expand_for_each(params, state, context, rng, default_target),
+                False,
             )
 
-        if name == "if":
-            conditions = params.get("if", params.get("conditions", ()))
+        raise InterpreterError(f"unsupported control operation '{op.name}'")
 
-            if not isinstance(conditions, (list, tuple)):
-                conditions = [conditions]
+    def _expand_if(
+        self,
+        params: Mapping[str, Any],
+        state: GameState,
+        context: AbilityContext,
+        default_target: str | None,
+    ) -> list[EffectOp]:
+        conditions = params.get("if", params.get("conditions", ()))
 
-            branch = (
-                params.get("then", ())
-                if self._conditions.evaluate_all(conditions, state, context)
-                else params.get("else", ())
-            )
+        if not isinstance(conditions, (list, tuple)):
+            conditions = [conditions]
 
-            return self._build(
-                branch,
-                state,
-                context,
-                rng,
-                depth=depth + 1,
-                default_target=default_target,
-            )
+        branch = (
+            params.get("then", ())
+            if self._conditions.evaluate_all(conditions, state, context)
+            else params.get("else", ())
+        )
 
-        if name == "repeat":
-            times = int(params.get("repeat", params.get("times", 0)))
+        return self.build(branch, default_target)
 
-            if times < 0:
-                raise InterpreterError("repeat count must be non-negative")
+    def _expand_repeat(
+        self,
+        params: Mapping[str, Any],
+        default_target: str | None,
+    ) -> list[EffectOp]:
+        times = int(params.get("repeat", params.get("times", 0)))
 
-            ops: list[EffectOp] = []
+        if times < 0:
+            raise InterpreterError("repeat count must be non-negative")
 
-            for _ in range(times):
-                nested, stopped = self._build(
-                    params.get("effects", ()),
-                    state,
-                    context,
-                    rng,
-                    depth=depth + 1,
-                    default_target=default_target,
+        body = params.get("effects", ())
+        ops: list[EffectOp] = []
+
+        for _ in range(times):
+            ops.extend(self.build(body, default_target))
+
+            if len(ops) > self._max_ops:
+                raise InterpreterError(
+                    f"ability produced more than {self._max_ops} operations"
                 )
-                ops.extend(nested)
 
-                if stopped:
-                    return ops, True
-
-            return ops, False
-
-        if name == "for_each":
-            return self._expand_for_each(
-                params, state, context, rng, depth=depth, default_target=default_target
-            )
-
-        raise InterpreterError(f"unsupported control node '{name}'")
+        return ops
 
     def _expand_for_each(
         self,
@@ -197,10 +195,8 @@ class Interpreter:
         state: GameState,
         context: AbilityContext,
         rng: RNG,
-        *,
-        depth: int,
         default_target: str | None,
-    ) -> tuple[list[EffectOp], bool]:
+    ) -> list[EffectOp]:
         """
         Expand a loop over a target group.
 
@@ -216,24 +212,18 @@ class Interpreter:
 
         ops: list[EffectOp] = []
 
-        for index, obj in enumerate(objects):
-            binding = f"__each:{depth}:{index}"
+        for obj in objects:
+            binding = f"__each:{len(context.targets)}"
             context.bind(binding, [obj])
 
-            nested, stopped = self._build(
-                params.get("effects", ()),
-                state,
-                context,
-                rng,
-                depth=depth + 1,
-                default_target=binding,
-            )
-            ops.extend(nested)
+            ops.extend(self.build(params.get("effects", ()), binding))
 
-            if stopped:
-                return ops, True
+            if len(ops) > self._max_ops:
+                raise InterpreterError(
+                    f"ability produced more than {self._max_ops} operations"
+                )
 
-        return ops, False
+        return ops
 
     def _operation(
         self,

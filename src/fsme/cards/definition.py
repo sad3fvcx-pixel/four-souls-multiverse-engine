@@ -112,6 +112,15 @@ class Static:
     ``all_players``.
     """
 
+    conditions: tuple[Any, ...] = ()
+    """
+    When the modifier applies, beyond its card being in play.
+
+    Conditions are asked every time a value is read, so a modifier that depends
+    on the state of the game turns itself on and off without anything having to
+    notice that it did.
+    """
+
     description: str = ""
 
     @classmethod
@@ -120,6 +129,9 @@ class Static:
             stat=str(data["stat"]),
             amount=int(data.get("amount", 0)),
             scope=str(data.get("scope", "controller")),
+            conditions=tuple(
+                freeze(item) for item in data.get("conditions", ())
+            ),
             description=str(data.get("description", "")),
         )
 
