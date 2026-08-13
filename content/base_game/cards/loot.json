@@ -270,7 +270,29 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_stack_item": {
+                "triggers": [
+                  "on_play",
+                  "on_activate"
+                ],
+                "as": "cancelled"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "cancel_stack",
+              "target": "cancelled"
+            }
+          ],
+          "description": "Cancel the ↷ or $ ability of an item or a loot being played."
+        }
+      ],
       "tags": [
         "activated"
       ],
@@ -491,7 +513,21 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "cancel_stack",
+              "target": "all_stack"
+            },
+            {
+              "end_turn": {}
+            }
+          ],
+          "description": "End the turn. Cancel everything that hasn't resolved."
+        }
+      ],
       "metadata": {
         "text": "End the turn.\nCancel everything\nthat hasn't resolved.",
         "set": "Base Game",
@@ -628,7 +664,38 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "exclude_controller": true,
+                "as": "rival"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "draw_loot",
+              "count": {
+                "count": "loot",
+                "of": "rival",
+                "minus": "controller"
+              }
+            },
+            {
+              "effect": "gain_coins",
+              "amount": {
+                "count": "coins",
+                "of": "rival",
+                "minus": "controller"
+              }
+            }
+          ],
+          "description": "Choose a player. Loot and gain ¢ until you have the same number of each as they do."
+        }
+      ],
       "metadata": {
         "text": "Choose a player.\nLoot and gain ¢\nuntil you have the\nsame number of\neach as they do.",
         "set": "Base Game",
@@ -1612,7 +1679,26 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "all_monsters": {
+                "exclude_attacked": true,
+                "as": "bystanders"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "discard_monsters",
+              "target": "bystanders"
+            }
+          ],
+          "description": "Put each monster not being attacked into discard and replace each with the top card of the monster deck."
+        }
+      ],
       "metadata": {
         "text": "Put each monster not\nbeing attacked into\ndiscard and replace\neach with the top card\nof the monster deck.",
         "set": "Base Game",

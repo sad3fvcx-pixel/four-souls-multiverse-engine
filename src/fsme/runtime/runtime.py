@@ -1015,7 +1015,7 @@ class Runtime:
         Returns True when something changed, which tells the loop to run
         another pass: a death may award a soul, and that soul may win the game.
         """
-        from fsme.rules import refresh_derived
+        from fsme.rules import refill_monsters, refresh_derived
 
         changed = refresh_derived(self._state)
 
@@ -1038,6 +1038,13 @@ class Runtime:
                 continue
 
             self._kill_monster(monster)
+            changed = True
+
+        before_refill = len(self._state.active_monsters)
+
+        refill_monsters(self._context)
+
+        if len(self._state.active_monsters) != before_refill:
             changed = True
 
         if not self._state.game_over:

@@ -16,9 +16,19 @@ from .errors import (
     StackResolutionError,
 )
 from .item import StackItem, StackItemStatus, StackItemType
+from .labels import (
+    ADVANCE_TURN,
+    COMBAT_ROUND,
+    DISCARD_PLAYED_LOOT,
+    DISCARD_TO_HAND_LIMIT,
+)
 from .stack import Stack
 
 __all__ = [
+    "ADVANCE_TURN",
+    "COMBAT_ROUND",
+    "DISCARD_PLAYED_LOOT",
+    "DISCARD_TO_HAND_LIMIT",
     "Stack",
     "StackItem",
     "StackItemStatus",

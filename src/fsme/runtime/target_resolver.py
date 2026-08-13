@@ -140,6 +140,8 @@ class TargetResolver:
         register("all_treasures", _all_treasures)
 
         register("top_stack", _top_stack)
+        register("all_stack", _all_stack)
+        register("target_stack_item", _target_stack_item)
         register("event_source", _event_source)
         register("previous_target", _previous_target)
         register("previous_result", _previous_result)
@@ -523,11 +525,19 @@ def _holders(
 def _all_monsters(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
-    return [
+    """
+    Every monster in play, optionally leaving out the one under attack.
+    """
+    monsters = [
         monster
         for monster in state.active_monsters.cards
         if getattr(monster, "alive", True)
     ]
+
+    if params.get("exclude_attacked", False) and state.combat.active:
+        monsters = [monster for monster in monsters if monster is not state.combat.monster]
+
+    return monsters
 
 
 def _current_monster(
@@ -610,6 +620,58 @@ def _top_stack(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
     return [] if state.stack.is_empty() else [state.stack.peek()]
+
+
+def _stack_items(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> list[Any]:
+    """
+    Everything waiting on the stack, top first, optionally by kind.
+
+    The ability doing the asking has already been popped, so a card can never
+    cancel itself by cancelling "everything on the stack".
+    """
+    items = list(reversed(list(state.stack)))
+
+    kinds = params.get("kinds")
+
+    if isinstance(kinds, (list, tuple)):
+        wanted = {str(kind) for kind in kinds}
+        items = [item for item in items if str(item.kind) in wanted]
+
+    triggers = params.get("triggers")
+
+    if isinstance(triggers, (list, tuple)):
+        # A loot card being played and an item being activated are both
+        # abilities on the stack; what tells them apart from a triggered
+        # ability nobody played is what set them off.
+        answered = {str(trigger) for trigger in triggers}
+
+        items = [
+            item
+            for item in items
+            if item.ability is not None and str(item.ability.trigger) in answered
+        ]
+
+    return items
+
+
+def _all_stack(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    return _stack_items(state, context, params)
+
+
+def _target_stack_item(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    return _ask(
+        DecisionKind.CHOOSE_CARD,
+        _stack_items(state, context, params),
+        context,
+        params,
+        "target_stack_item",
+    )
 
 
 def _event_source(

@@ -31,6 +31,14 @@ class PlayerState:
     attacks_left: int = 1
     additional_loot_plays: int = 0
 
+    loot_played: int = 0
+    """
+    Loot cards this player has played during the current turn.
+
+    Counted per player rather than per turn: a player who answers somebody
+    else's card has spent their own allowance, not the turn's.
+    """
+
     alive: bool = True
 
     character: Any | None = None
@@ -68,6 +76,7 @@ class PlayerState:
         """
         self.attacks_left = 1
         self.additional_loot_plays = 0
+        self.loot_played = 0
 
     @property
     def soul_count(self) -> int:

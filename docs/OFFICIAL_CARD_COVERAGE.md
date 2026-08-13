@@ -16,11 +16,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **44**. Осталось: **970**.
+Импортировано официальных карт: **1014**. Реализовано: **48**. Осталось: **966**.
 
 | Набор | Карт | Реализовано | Осталось |
 |---|---:|---:|---:|
-| `base_game` | 287 | 44 | 243 |
+| `base_game` | 287 | 48 | 239 |
 | `requiem` | 246 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 99 |
 | `four_souls` | 90 | 0 | 90 |
@@ -43,7 +43,7 @@
 | `challenges` | 1 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 1 |
 | `star` | 1 | 0 | 1 |
-| **всего** | **1014** | **44** | **970** |
+| **всего** | **1014** | **48** | **966** |
 
 ---
 
@@ -53,7 +53,7 @@
 |---|---:|---:|
 | treasure | 105 | 0 |
 | monster | 85 | 0 |
-| loot | 51 | 44 |
+| loot | 51 | 48 |
 | event | 17 | 0 |
 | character | 11 | 0 |
 | starting_item | 10 | 0 |
@@ -216,13 +216,13 @@
 | Bloody Penny | 🟩 |  |
 | Bomb! | 🟩 | ×4 |
 | Broken Ankh | ⬜ |  |
-| Butter Bean! | ⬜ | ×3 |
+| Butter Bean! | 🟩 | ×3 |
 | Cain's Eye | 🟩 |  |
 | Counterfeit Penny | 🟩 |  |
 | Curved Horn | 🟩 |  |
 | Dagaz | 🟩 |  |
 | Dice Shard | ⬜ | ×3 |
-| Ehwaz | ⬜ |  |
+| Ehwaz | 🟩 |  |
 | Gold Bomb!! | 🟩 |  |
 | Golden Horseshoe | 🟩 |  |
 | Guppy's Hairball | 🟩 |  |
@@ -234,7 +234,7 @@
 | Lil Battery | 🟩 | ×4 |
 | Lost Soul | 🟩 |  |
 | Mega Battery | 🟩 |  |
-| O. The Fool | ⬜ |  |
+| O. The Fool | 🟩 |  |
 | Pills! | 🟩 |  |
 | Pills! | 🟩 |  |
 | Pills! | 🟩 |  |
@@ -244,7 +244,7 @@
 | V. The Hierophant | 🟩 |  |
 | VI. The Lovers | 🟩 |  |
 | VII. The Chariot | 🟩 |  |
-| VIII. Justice | ⬜ |  |
+| VIII. Justice | 🟩 |  |
 | X. Wheel of Fortune | 🟩 |  |
 | XI. Strength | 🟩 |  |
 | XII. The Hanged Man | 🟩 |  |

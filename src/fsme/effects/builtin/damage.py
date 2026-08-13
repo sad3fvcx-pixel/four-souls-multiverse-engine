@@ -200,6 +200,34 @@ def revive(ctx: EffectContext, targets: Sequence[Any], hp: int = 1) -> int:
     return revived
 
 
+def discard_monsters(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Send monsters away without defeating them.
+
+    Nobody killed them, so nobody is paid: souls and rewards belong to whoever
+    beats a monster, and a monster swept off the table was not beaten. The empty
+    slots are refilled by the rules, the same way they are after a kill.
+    """
+    state = ctx.state
+    discarded = 0
+
+    for monster in targets:
+        if monster not in state.active_monsters.cards:
+            continue
+
+        state.active_monsters.cards.remove(monster)
+        state.monster_discard.add_top(monster)
+        discarded += 1
+
+        ctx.emit(
+            EventType.ON_LEAVE,
+            source=monster,
+            targets=[monster],
+        )
+
+    return discarded
+
+
 def register(registry: EffectRegistry) -> None:
     """
     Register every health effect.
@@ -217,6 +245,12 @@ def register(registry: EffectRegistry) -> None:
     )
     registry.register(
         "kill", kill, needs_target=True, description="Reduce a target to zero hit points."
+    )
+    registry.register(
+        "discard_monsters",
+        discard_monsters,
+        needs_target=True,
+        description="Put monsters into the discard pile undefeated.",
     )
     registry.register(
         "revive",

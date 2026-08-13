@@ -21,6 +21,7 @@ from . import (
     modifiers,
     replacement,
     rooms,
+    stack,
     treasure,
 )
 
@@ -35,6 +36,7 @@ _MODULES = (
     modifiers,
     replacement,
     rooms,
+    stack,
     treasure,
 )
 

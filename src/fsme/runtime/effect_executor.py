@@ -10,7 +10,7 @@ the interpreter fixed.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from fsme.effects import EffectOp, EffectRegistry, EffectResult
@@ -42,7 +42,7 @@ class EffectExecutor:
         """
         spec = self._effects.spec(op.name)
         targets = self._resolve_targets(op, context, ability, needs=spec.needs_target)
-        params = _resolve_params(op.params, ability)
+        params = _resolve_params(op.params, ability, context)
 
         try:
             value = spec.handler(context, targets, **params)
@@ -103,7 +103,9 @@ class EffectExecutor:
 
 
 def _resolve_params(
-    params: Mapping[str, Any], ability: AbilityContext
+    params: Mapping[str, Any],
+    ability: AbilityContext,
+    context: ExecutionContext,
 ) -> dict[str, Any]:
     """
     Fill in the values an ability only learns while it is running.
@@ -114,18 +116,94 @@ def _resolve_params(
         {"effect": "deal_damage", "amount": {"from": "dice"}, "target": "victim"}
 
     ``from`` reads what an earlier effect stored under that name — the die roll,
-    in this case — and ``plus`` shifts it. A name nothing has stored yet reads
-    as zero, which is what "equal to a roll that did not happen" is worth.
+    in this case — and ``plus`` shifts it. ``count`` counts what a player has::
+
+        {"count": "loot", "of": "rival", "minus": "controller"}
+
+    which is how "loot until you have as many as they do" states its number.
+    A name nothing has stored yet reads as zero, which is what "equal to a roll
+    that did not happen" is worth.
     """
     resolved: dict[str, Any] = {}
 
     for key, value in params.items():
-        if isinstance(value, Mapping) and "from" in value:
+        if not isinstance(value, Mapping):
+            resolved[key] = value
+
+        elif "from" in value:
             stored = ability.get(str(value["from"]))
             number = int(stored) if isinstance(stored, int) else 0
 
             resolved[key] = number + int(value.get("plus", 0))
+
+        elif "count" in value:
+            resolved[key] = _counted(value, ability, context)
+
         else:
             resolved[key] = value
 
     return resolved
+
+
+_COUNTS: dict[str, Callable[[Any], int]] = {
+    "loot": lambda player: int(player.hand_size),
+    "coins": lambda player: int(player.pennies),
+    "souls": lambda player: int(player.soul_count),
+    "treasures": lambda player: int(player.treasure_count),
+    "hp": lambda player: int(player.hp),
+}
+
+
+def _counted(
+    spec: Mapping[str, Any],
+    ability: AbilityContext,
+    context: ExecutionContext,
+) -> int:
+    """
+    Count something across a group of players, optionally less another group.
+    """
+    what = str(spec["count"])
+
+    try:
+        counter = _COUNTS[what]
+    except KeyError:
+        raise AbilityResolutionError(
+            f"cannot count '{what}'; countable things are "
+            f"{', '.join(sorted(_COUNTS))}"
+        ) from None
+
+    total = sum(counter(player) for player in _group(spec.get("of"), ability, context))
+
+    if "minus" in spec:
+        total -= sum(
+            counter(player)
+            for player in _group(spec["minus"], ability, context)
+        )
+
+    return max(int(spec.get("floor", 0)), total)
+
+
+def _group(
+    name: Any,
+    ability: AbilityContext,
+    context: ExecutionContext,
+) -> list[Any]:
+    """
+    Return the players a counting specification is talking about.
+    """
+    if name is None:
+        return []
+
+    if str(name) in ("controller", "self"):
+        controller = ability.controller
+
+        if controller is None or not 0 <= controller < len(context.state.players):
+            return []
+
+        return [context.state.player(controller)]
+
+    return [
+        target
+        for target in ability.targets.get(str(name), ())
+        if hasattr(target, "player_id")
+    ]

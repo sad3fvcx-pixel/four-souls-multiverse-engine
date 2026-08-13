@@ -9,13 +9,11 @@ from __future__ import annotations
 from fsme.commands import Command
 from fsme.effects import EffectContext
 from fsme.events import EventType
-from fsme.stack import StackItem, StackItemType
+from fsme.stack import DISCARD_PLAYED_LOOT, StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
 from .constants import LOOT_PLAYS_PER_TURN
 from .statics import cards_in_play
-
-DISCARD_PLAYED_LOOT = "discard_played_loot"
 
 
 class PlayLootHandler:
@@ -30,7 +28,9 @@ class PlayLootHandler:
         if state.game_over:
             return "the game is over"
 
-        if command.player != state.turn.active_player:
+        responding = state.priority.is_open and state.priority.holder == command.player
+
+        if command.player != state.turn.active_player and not responding:
             return "only the active player may play loot"
 
         player = state.player(command.player)
@@ -38,12 +38,16 @@ class PlayLootHandler:
         if not player.alive:
             return "a dead player may not play loot"
 
-        if state.turn.phase not in (GamePhase.LOOT, GamePhase.ACTION):
+        # STACK.md section 9 counts playing a loot card among the things a
+        # player may do while holding priority, so a player answering somebody
+        # else's card is not bound by the phase — the phase belongs to the
+        # player whose turn it is.
+        if not responding and state.turn.phase not in (GamePhase.LOOT, GamePhase.ACTION):
             return f"loot may not be played during the {state.turn.phase} phase"
 
         allowance = LOOT_PLAYS_PER_TURN + player.additional_loot_plays
 
-        if state.turn.loot_played >= allowance:
+        if player.loot_played >= allowance:
             return "no loot plays remaining this turn"
 
         index = command.get("index", 0)
@@ -60,6 +64,7 @@ class PlayLootHandler:
         card = player.hand.cards.pop(int(command.get("index", 0)))
 
         state.turn.record_loot_play()
+        player.loot_played += 1
 
         context.emit(
             EventType.BEFORE_LOOT,

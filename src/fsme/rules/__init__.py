@@ -12,9 +12,20 @@ played in.
 from __future__ import annotations
 
 from fsme.commands import CommandRegistry, CommandType
+from fsme.stack import (
+    ADVANCE_TURN,
+    COMBAT_ROUND,
+    DISCARD_PLAYED_LOOT,
+    DISCARD_TO_HAND_LIMIT,
+)
 
 from .activation import ActivateTreasureHandler
-from .combat import COMBAT_ROUND, AttackHandler, combat_round, end_combat
+from .combat import (
+    AttackHandler,
+    combat_round,
+    end_combat,
+    refill_monsters,
+)
 from .constants import (
     ATTACKS_PER_TURN,
     BASE_PLAYER_ATTACK,
@@ -30,7 +41,7 @@ from .constants import (
 )
 from .decisions import ChooseTargetHandler
 from .errors import RuleError, RuleRegistrationError, UnknownRuleError
-from .loot import DISCARD_PLAYED_LOOT, PlayLootHandler, discard_played_loot
+from .loot import PlayLootHandler, discard_played_loot
 from .priority import PassPriorityHandler
 from .procedures import ProcedureRegistry, StackProcedure
 from .setup import SetupError, new_game
@@ -49,8 +60,6 @@ from .statics import (
     static_value,
 )
 from .turn import (
-    ADVANCE_TURN,
-    DISCARD_TO_HAND_LIMIT,
     EndPhaseHandler,
     EndTurnHandler,
     StartGameHandler,
@@ -128,6 +137,7 @@ __all__ = [
     "default_procedure_registry",
     "discard_played_loot",
     "end_combat",
+    "refill_monsters",
     "refill_shop",
     "RuleError",
     "RuleRegistrationError",

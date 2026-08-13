@@ -1306,6 +1306,167 @@ def test_the_devil_pays_an_item_for_an_item(base_game: ContentLibrary) -> None:
 
 
 # ----------------------------------------------------------------------
+# Cards that act on the stack and the board
+# ----------------------------------------------------------------------
+
+
+def test_the_fool_sweeps_the_stack_and_ends_the_turn(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    # Something slow to interrupt: a bomb waiting for its target is on the
+    # stack, and the Fool is played while it waits.
+    assert play(game, deal(game, "loot_deck-bombs-base_game-bomb")).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, 0).accepted
+
+    game.state.player(0).additional_loot_plays += 1
+
+    monsters = [monster.hp for monster in game.state.active_monsters.cards]
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-o_the_fool")
+    ).accepted
+
+    assert game.state.stack.is_empty()
+    assert game.state.turn.active_player == 1
+    assert [monster.hp for monster in game.state.active_monsters.cards] == monsters
+
+
+def test_butter_bean_cancels_the_card_it_answers(base_game: ContentLibrary) -> None:
+    """
+    The bean is played in response, so the engine must be letting players
+    respond: with priority open, a loot card waits on the stack for an answer.
+    """
+    game = Game.from_content(
+        base_game, ["Ann", "Bo"], seed=1234, interactive_priority=True
+    )
+
+    assert game.start().accepted
+
+    coins = game.state.player(0).pennies
+
+    penny = deal(game, "loot_deck-nickels-base_game-a_dime")
+    bean = deal(game, "loot_deck-butter_beans-base_game-butter_bean", player=1)
+
+    assert play(game, penny).accepted
+    assert not game.state.stack.is_empty()
+
+    # Priority starts with the player who acted, so the bean waits its turn.
+    assert game.act(CommandType.PASS_PRIORITY, 0).accepted
+    assert game.state.priority.holder == 1
+
+    assert play(game, bean, player=1).accepted
+
+    # The bean sits above the card it answers and resolves first, once
+    # everybody has stopped responding. The dime's ability is then the only
+    # thing left that a bean may cancel, so the engine takes it rather than
+    # interrupting the game to confirm the obvious.
+    while game.runtime.awaiting_priority:
+        assert game.act(
+            CommandType.PASS_PRIORITY, game.state.priority.holder or 0
+        ).accepted
+
+    assert game.state.stack.is_empty()
+    assert game.state.player(0).pennies == coins
+
+    # Cancelled, not undone: the card was still played and still goes away.
+    assert penny in game.state.loot_discard.cards
+
+
+def test_justice_catches_you_up_with_the_player_you_choose(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    rival = game.state.player(2)
+
+    game.runtime.context.apply("draw_loot", [rival], count=4)
+    game.runtime.context.apply("gain_coins", [rival], amount=9)
+    game.runtime.run()
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-viii_justice")
+    ).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert game.state.player(0) not in decision.options
+
+    assert choose(game, 0, list(decision.options).index(rival)).accepted
+
+    assert game.state.player(0).hand_size == rival.hand_size
+    assert game.state.player(0).pennies == rival.pennies
+
+
+def test_justice_gives_nothing_to_a_player_already_ahead(
+    base_game: ContentLibrary,
+) -> None:
+    """
+    "Until you have the same number" is a floor, not a swap: a player who
+    already has more keeps what they have.
+    """
+    game = new_game(base_game, players=3)
+
+    game.runtime.context.apply("draw_loot", [game.state.player(0)], count=5)
+    game.runtime.context.apply("gain_coins", [game.state.player(0)], amount=12)
+    game.runtime.run()
+
+    before = snapshot(game.state.player(0))
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-viii_justice")
+    ).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, list(decision.options).index(game.state.player(2))).accepted
+
+    assert game.state.player(0).hand_size == before.hand_size
+    assert game.state.player(0).pennies == before.pennies
+
+
+def test_ehwaz_replaces_the_monsters_nobody_is_fighting(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    before = list(game.state.active_monsters.cards)
+    waiting = len(game.state.monster_deck)
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-ehwaz")).accepted
+
+    after = list(game.state.active_monsters.cards)
+
+    assert len(after) == len(before)
+    assert all(monster not in before for monster in after)
+    assert all(monster in game.state.monster_discard.cards for monster in before)
+    assert len(game.state.monster_deck) == waiting - len(before)
+
+
+def test_a_defeated_monster_is_replaced(base_game: ContentLibrary) -> None:
+    """
+    The slots stay full: the same refill that Ehwaz relies on is the one the
+    rules run after a kill.
+    """
+    game = new_game(base_game)
+
+    monster = game.state.active_monsters.cards[0]
+
+    game.runtime.context.apply("kill", [monster])
+    game.runtime.run()
+
+    assert monster not in game.state.active_monsters.cards
+    assert len(game.state.active_monsters) == 2
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

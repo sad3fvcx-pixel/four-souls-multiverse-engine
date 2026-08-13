@@ -18,13 +18,11 @@ from fsme.commands import Command
 from fsme.effects import EffectContext
 from fsme.effects.builtin.dice import rolled
 from fsme.events import EventType
-from fsme.stack import StackItem, StackItemType
+from fsme.stack import COMBAT_ROUND, StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
-from .constants import BASE_PLAYER_ATTACK, DICE_SIDES
+from .constants import BASE_PLAYER_ATTACK, DICE_SIDES, MONSTER_SLOTS
 from .statics import ATTACK, static_value
-
-COMBAT_ROUND = "combat_round"
 
 DEFAULT_MONSTER_ROLL = 4
 """Roll a player must meet when a monster card does not print one."""
@@ -199,3 +197,23 @@ def _monster_attack(monster: Any) -> int:
     attack = getattr(definition, "attack", None)
 
     return int(attack) if attack else DEFAULT_MONSTER_ATTACK
+
+
+def refill_monsters(context: EffectContext) -> None:
+    """
+    Reveal monsters until the slots are full again.
+
+    A monster that leaves — defeated, discarded, replaced by a card — leaves a
+    hole, and the rules fill it from the top of the monster deck. Doing it here
+    rather than in whatever removed the monster means every way of removing one
+    is followed by the same refill.
+    """
+    state = context.state
+
+    while len(state.active_monsters) < MONSTER_SLOTS and state.monster_deck.cards:
+        state.active_monsters.add_top(state.monster_deck.draw())
+
+        context.emit(
+            EventType.ON_ENTER,
+            source=state.active_monsters.cards[-1],
+        )

@@ -14,7 +14,12 @@ from fsme.cards import Ability
 from fsme.commands import Command
 from fsme.effects import EffectContext
 from fsme.events import EventType
-from fsme.stack import StackItem, StackItemType
+from fsme.stack import (
+    ADVANCE_TURN,
+    DISCARD_TO_HAND_LIMIT,
+    StackItem,
+    StackItemType,
+)
 from fsme.state import GamePhase, GameState
 
 from .constants import (
@@ -24,10 +29,6 @@ from .constants import (
     STARTING_HAND_SIZE,
 )
 from .statics import ATTACKS, LOOT_PLAYS, expire_turn_modifiers, static_value
-
-ADVANCE_TURN = "advance_turn"
-
-DISCARD_TO_HAND_LIMIT = "discard_to_hand_limit"
 
 
 class StartGameHandler:
@@ -222,6 +223,11 @@ def _begin_turn(context: EffectContext, *, active_player: int) -> None:
     """
     state = context.state
     player = state.player(active_player)
+
+    for seat in state.players:
+        # Every player's allowance refreshes, not only the active one's: a
+        # player may answer a card on somebody else's turn.
+        seat.loot_played = 0
 
     player.reset_turn()
 
