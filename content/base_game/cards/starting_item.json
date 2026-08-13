@@ -245,7 +245,75 @@
       "type": "starting_item",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Look at the top 5 cards of the loot deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "loot",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "loot",
+                          "from_top": 5,
+                          "minimum": 5,
+                          "maximum": 5,
+                          "as": "ordered"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top 5 cards of the treasure deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "treasure",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "treasure",
+                          "from_top": 5,
+                          "minimum": 5,
+                          "maximum": 5,
+                          "as": "ordered"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top 5 cards of the monster deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "monster",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "monster",
+                          "from_top": 5,
+                          "minimum": 5,
+                          "maximum": 5,
+                          "as": "ordered"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Look at the top 5 cards of a deck. Put them back in any order."
+        }
+      ],
       "tags": [
         "activated",
         "eternal"

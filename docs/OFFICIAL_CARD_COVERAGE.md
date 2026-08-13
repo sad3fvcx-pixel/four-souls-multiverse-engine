@@ -21,11 +21,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **209**. Без правил: **17**. Осталось: **788**.
+Импортировано официальных карт: **1014**. Реализовано: **216**. Без правил: **17**. Осталось: **781**.
 
 | Набор | Карт | Реализовано | Без правил | Осталось |
 |---|---:|---:|---:|---:|
-| `base_game` | 287 | 209 | 17 | 61 |
+| `base_game` | 287 | 216 | 17 | 54 |
 | `requiem` | 246 | 0 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 0 | 99 |
 | `four_souls` | 90 | 0 | 0 | 90 |
@@ -48,7 +48,7 @@
 | `challenges` | 1 | 0 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 0 | 1 |
 | `star` | 1 | 0 | 0 | 1 |
-| **всего** | **1014** | **209** | **17** | **788** |
+| **всего** | **1014** | **216** | **17** | **781** |
 
 ---
 
@@ -56,12 +56,12 @@
 
 | Тип | Карт | Реализовано | Без правил |
 |---|---:|---:|---:|
-| treasure | 105 | 61 | 0 |
+| treasure | 105 | 66 | 0 |
 | monster | 85 | 63 | 17 |
 | loot | 51 | 48 | 0 |
-| event | 17 | 15 | 0 |
+| event | 17 | 16 | 0 |
 | character | 11 | 9 | 0 |
-| starting_item | 10 | 5 | 0 |
+| starting_item | 10 | 6 | 0 |
 | curse | 5 | 5 | 0 |
 | bonus_soul | 3 | 3 | 0 |
 
@@ -91,7 +91,7 @@
 | Forever Alone | 🟩 |  |
 | Incubus | ⬜ |  |
 | Lazarus' Rags | 🟩 |  |
-| Sleight of Hand | ⬜ |  |
+| Sleight of Hand | 🟩 |  |
 | The Bone | ⬜ |  |
 | The Curse | 🟩 |  |
 | The D6 | ⬜ |  |
@@ -103,14 +103,14 @@
 |------|--------|-------|
 | Baby Haunt | ⬜ |  |
 | Battery Bum | 🟩 |  |
-| Belly Button | ⬜ |  |
+| Belly Button | 🟩 |  |
 | Blank Card | ⬜ |  |
 | Bob's Brain | 🟩 |  |
 | Book of Sin | 🟩 |  |
 | Boomerang | 🟩 |  |
 | Box! | ⬜ |  |
 | Breakfast | 🟩 |  |
-| Brimstone | ⬜ |  |
+| Brimstone | 🟩 |  |
 | Bum Friend | 🟩 |  |
 | Bum-bo! | 🟩 |  |
 | Cambion Conception | 🟩 |  |
@@ -188,16 +188,16 @@
 | Tarot Cloth | ⬜ |  |
 | Tech X | 🟩 |  |
 | The Battery | 🟩 |  |
-| The Blue Map | ⬜ |  |
+| The Blue Map | 🟩 |  |
 | The Chest | ⬜ |  |
-| The Compass | ⬜ |  |
+| The Compass | 🟩 |  |
 | The D10 | ⬜ |  |
 | The D100 | 🟩 |  |
 | The D20 | 🟩 |  |
 | The D4 | 🟩 |  |
 | The Dead Cat | 🟩 |  |
 | The Habit | ⬜ |  |
-| The Map | ⬜ |  |
+| The Map | 🟩 |  |
 | The Midas Touch | 🟩 |  |
 | The Polaroid | 🟩 |  |
 | The Poop | 🟩 |  |
@@ -367,7 +367,7 @@
 | Gold Chest | 🟩 |  |
 | Gold Chest | 🟩 |  |
 | Greed! | 🟩 |  |
-| I Can See Forever! | ⬜ |  |
+| I Can See Forever! | 🟩 |  |
 | Mega Troll Bomb! | 🟩 |  |
 | Secret Room! | 🟩 |  |
 | Shop Upgrade! | 🟩 |  |

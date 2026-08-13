@@ -178,6 +178,7 @@ class ConditionEvaluator:
         register("combat_damage", _combat_damage)
         register("is_damage_source", _is_damage_source)
         register("is_damage_target", _is_damage_target)
+        register("is_damage_actor", _is_damage_actor)
         register("dice_equals", _dice_equals)
         register("dice_not_equals", _dice_not_equals)
         register("dice_greater", _dice_greater)
@@ -475,6 +476,22 @@ def _is_damage_target(
         context.event is not None
         and context.source is not None
         and any(target is context.source for target in context.event.targets)
+    )
+
+
+def _is_damage_actor(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    True when this card's controller is who dealt the damage.
+
+    "Each time you deal combat damage to a monster" is about the player holding
+    the card, not about the card itself: the item does not swing, its owner does.
+    """
+    return bool(
+        context.event is not None
+        and context.controller is not None
+        and context.event.get("actor") == context.controller
     )
 
 

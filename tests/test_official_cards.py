@@ -2922,6 +2922,66 @@ def test_the_curse_buries_a_card_every_turn(base_game: ContentLibrary) -> None:
 
 
 # ----------------------------------------------------------------------
+# Putting a deck back in the order you like
+# ----------------------------------------------------------------------
+
+
+def test_the_compass_lets_its_holder_choose_the_order(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-the_compass")
+
+    top_four = deck_of(game, "loot")[:4]
+
+    end_turn(game)
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert list(decision.options) == top_four
+    assert decision.minimum == 4
+    assert decision.maximum == 4
+
+    # Chosen in this order, the last one chosen ends up on top.
+    assert choose(game, 0, 1, 2, 3, 0).accepted
+
+    assert deck_of(game, "loot")[:4] == [
+        top_four[0],
+        top_four[3],
+        top_four[2],
+        top_four[1],
+    ]
+
+
+def test_brimstone_splashes_the_damage_its_holder_deals(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3, rolls=[6])
+
+    give(game, "treasure_deck-passive_items-base_game-brimstone")
+
+    monster = only_monster(game, "monster_deck-basic_enemies-base_game-dip", hp=1)
+
+    for player in game.state.players:
+        toughen(game, player)
+
+    hp = game.state.player(1).hp
+
+    fight(game)
+
+    assert not monster.alive
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, list(decision.options).index(game.state.player(1))).accepted
+
+    assert game.state.player(1).hp == hp - 1
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

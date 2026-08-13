@@ -706,7 +706,35 @@
       "type": "event",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "loot",
+                "from_top": 6,
+                "minimum": 6,
+                "maximum": 6,
+                "as": "ordered",
+                "prompt": "Put the top 6 cards of the loot deck back in any order, last chosen on top."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "loot",
+              "position": "top",
+              "target": "ordered"
+            },
+            {
+              "draw_loot": 1
+            }
+          ],
+          "description": "Look at the top 6 cards of the loot deck. Put them back in any order, then loot 1."
+        }
+      ],
       "metadata": {
         "text": "Look at the top 6\ncards of the loot\ndeck. Put them back\nin any order, then\nloot 1.",
         "set": "Base Game",

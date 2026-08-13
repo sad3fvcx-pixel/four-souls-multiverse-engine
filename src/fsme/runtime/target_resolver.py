@@ -121,6 +121,7 @@ class TargetResolver:
         register("opponents", _opponents)
         register("another_player", _opponents)
         register("random_player", _random_player)
+        register("character", _character)
         register("player_left", _player_left)
         register("player_right", _player_right)
         register("random_loot", _random_loot)
@@ -246,6 +247,20 @@ def _opponents(
         for player in state.living_players()
         if player.player_id != context.controller
     ]
+
+
+def _character(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    The controller's character card, which taps and recharges like an item.
+    """
+    if context.controller is None or not 0 <= context.controller < len(state.players):
+        return []
+
+    character = state.player(context.controller).character
+
+    return [character] if character is not None else []
 
 
 def _neighbour(state: GameState, seat: int, step: int) -> list[Any]:

@@ -2089,7 +2089,24 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "controller",
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "recharge",
+                  "target": "character"
+                }
+              ],
+              "prompt": "Recharge your character?"
+            }
+          ],
+          "description": "Each time you take damage, you may recharge your character."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -2102,7 +2119,15 @@
         "subcategory": "Passive Items",
         "version": "Original",
         "artist": "TAR_HEAD"
-      }
+      },
+      "statics": [
+        {
+          "stat": "loot_plays",
+          "amount": 1,
+          "scope": "self",
+          "description": "You may play an additional loot card on your turn."
+        }
+      ]
     },
     {
       "id": "treasure_deck-passive_items-base_game-bob_s_brain",
@@ -2228,7 +2253,29 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "any",
+          "conditions": [
+            "is_damage_actor",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": {
+                "target_player": {
+                  "exclude_controller": true,
+                  "as": "splashed"
+                }
+              }
+            }
+          ],
+          "description": "Each time you deal combat damage to a monster, deal 1 damage to another player."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -2242,7 +2289,15 @@
         "version": "Original",
         "artist": "@KrystalFlamingo",
         "effect_3p_plus": true
-      }
+      },
+      "statics": [
+        {
+          "stat": "attack",
+          "amount": 1,
+          "scope": "self",
+          "description": "+1 AT"
+        }
+      ]
     },
     {
       "id": "treasure_deck-passive_items-base_game-bum_bo",
@@ -3653,7 +3708,33 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "treasure",
+                "from_top": 4,
+                "minimum": 4,
+                "maximum": 4,
+                "as": "ordered",
+                "prompt": "Put the top 4 cards of the treasure deck back in any order, last chosen on top."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "treasure",
+              "position": "top",
+              "target": "ordered"
+            }
+          ],
+          "description": "At the end of your turn, look at the top 4 cards of the treasure deck. Put them back in any order."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -3674,7 +3755,33 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "loot",
+                "from_top": 4,
+                "minimum": 4,
+                "maximum": 4,
+                "as": "ordered",
+                "prompt": "Put the top 4 cards of the loot deck back in any order, last chosen on top."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "loot",
+              "position": "top",
+              "target": "ordered"
+            }
+          ],
+          "description": "At the end of your turn, look at the top 4 cards of the loot deck. Put them back in any order."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -3804,7 +3911,33 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "monster",
+                "from_top": 4,
+                "minimum": 4,
+                "maximum": 4,
+                "as": "ordered",
+                "prompt": "Put the top 4 cards of the monster deck back in any order, last chosen on top."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "monster",
+              "position": "top",
+              "target": "ordered"
+            }
+          ],
+          "description": "At the end of your turn, look at the top 4 cards of the monster deck. Put them back in any order."
+        }
+      ],
       "tags": [
         "passive"
       ],
