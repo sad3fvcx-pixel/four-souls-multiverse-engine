@@ -21,11 +21,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **149**. Без правил: **17**. Осталось: **848**.
+Импортировано официальных карт: **1014**. Реализовано: **183**. Без правил: **17**. Осталось: **814**.
 
 | Набор | Карт | Реализовано | Без правил | Осталось |
 |---|---:|---:|---:|---:|
-| `base_game` | 287 | 149 | 17 | 121 |
+| `base_game` | 287 | 183 | 17 | 87 |
 | `requiem` | 246 | 0 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 0 | 99 |
 | `four_souls` | 90 | 0 | 0 | 90 |
@@ -48,7 +48,7 @@
 | `challenges` | 1 | 0 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 0 | 1 |
 | `star` | 1 | 0 | 0 | 1 |
-| **всего** | **1014** | **149** | **17** | **848** |
+| **всего** | **1014** | **183** | **17** | **814** |
 
 ---
 
@@ -57,7 +57,7 @@
 | Тип | Карт | Реализовано | Без правил |
 |---|---:|---:|---:|
 | treasure | 105 | 46 | 0 |
-| monster | 85 | 29 | 17 |
+| monster | 85 | 63 | 17 |
 | loot | 51 | 48 | 0 |
 | event | 17 | 10 | 0 |
 | character | 11 | 9 | 0 |
@@ -267,87 +267,87 @@
 
 | Card | Status | Notes |
 |------|--------|-------|
-| Big Spider | ⬜ |  |
+| Big Spider | 🟩 |  |
 | Black Bony | 🟩 |  |
 | Boom Fly | 🟩 |  |
-| Carrion Queen | ⬜ |  |
+| Carrion Queen | 🟩 |  |
 | Chub | 🟩 |  |
 | Clotty | ▪️ | нет правил на карте |
 | Cod Worm | ▪️ | нет правил на карте |
 | Conjoined Fatty | ▪️ | нет правил на карте |
-| Conquest | ⬜ |  |
+| Conquest | 🟩 |  |
 | Cursed Fatty | 🟩 |  |
 | Cursed Gaper | 🟩 |  |
 | Cursed Horf | 🟩 |  |
 | Cursed Keeper Head | 🟩 |  |
-| Cursed Mom's Hand | ⬜ |  |
+| Cursed Mom's Hand | 🟩 |  |
 | Cursed Psy Horf | 🟩 |  |
 | Daddy Long Legs | 🟩 |  |
-| Dank Globin | ⬜ |  |
+| Dank Globin | 🟩 |  |
 | Dark One | 🟩 |  |
 | Death | 🟩 |  |
-| Delirium | ⬜ |  |
+| Delirium | 🟩 |  |
 | Dinga | ⬜ |  |
 | Dip | ▪️ | нет правил на карте |
-| Dople | ⬜ |  |
-| Envy | ⬜ |  |
-| Evil Twin | ⬜ |  |
-| Famine | ⬜ |  |
+| Dople | 🟩 |  |
+| Envy | 🟩 |  |
+| Evil Twin | 🟩 |  |
+| Famine | 🟩 |  |
 | Fat Bat | ▪️ | нет правил на карте |
 | Fatty | ▪️ | нет правил на карте |
 | Fly | ▪️ | нет правил на карте |
 | Gemini | 🟩 |  |
-| Gluttony | ⬜ |  |
-| Greed | ⬜ |  |
+| Gluttony | 🟩 |  |
+| Greed | 🟩 |  |
 | Greedling | 🟩 |  |
 | Gurdy | ▪️ | нет правил на карте |
-| Gurdy Jr. | ⬜ |  |
-| Hanger | ⬜ |  |
+| Gurdy Jr. | 🟩 |  |
+| Hanger | 🟩 |  |
 | Holy Dinga | 🟩 |  |
 | Holy Dip | 🟩 |  |
 | Holy Keeper Head | 🟩 |  |
 | Holy Mom's Eye | 🟩 |  |
 | Holy Squirt | 🟩 |  |
-| Hopper | ⬜ |  |
-| Horf | ⬜ |  |
-| Keeper Head | ⬜ |  |
+| Hopper | 🟩 |  |
+| Horf | 🟩 |  |
+| Keeper Head | 🟩 |  |
 | Larry Jr. | 🟩 |  |
-| Leaper | ⬜ |  |
+| Leaper | 🟩 |  |
 | Leech | ▪️ | нет правил на карте |
 | Little Horn | ▪️ | нет правил на карте |
-| Lust | ⬜ |  |
+| Lust | 🟩 |  |
 | Mask of Infamy | 🟩 |  |
-| Mega Fatty | ⬜ |  |
-| Mom! | ⬜ |  |
+| Mega Fatty | 🟩 |  |
+| Mom! | 🟩 |  |
 | Mom's Dead Hand | 🟩 |  |
 | Mom's Eye | 🟩 |  |
-| Mom's Hand | ⬜ |  |
+| Mom's Hand | 🟩 |  |
 | Monstro | ▪️ | нет правил на карте |
 | Mulliboom | 🟩 |  |
-| Mulligan | ⬜ |  |
+| Mulligan | 🟩 |  |
 | Pale Fatty | ▪️ | нет правил на карте |
 | Peep | ⬜ |  |
 | Pestilence | ⬜ |  |
-| Pin | ⬜ |  |
+| Pin | 🟩 |  |
 | Pooter | ▪️ | нет правил на карте |
-| Portal | ⬜ |  |
-| Pride | ⬜ |  |
+| Portal | 🟩 |  |
+| Pride | 🟩 |  |
 | Psy Horf | 🟩 |  |
-| Rag Man | ⬜ |  |
-| Rage Creep | ⬜ |  |
+| Rag Man | 🟩 |  |
+| Rage Creep | 🟩 |  |
 | Red Host | ▪️ | нет правил на карте |
-| Ring of Flies | ⬜ |  |
-| Satan! | ⬜ |  |
-| Scolex | ⬜ |  |
+| Ring of Flies | 🟩 |  |
+| Satan! | 🟩 |  |
+| Scolex | 🟩 |  |
 | Sloth | 🟩 |  |
 | Spider | ▪️ | нет правил на карте |
 | Squirt | ▪️ | нет правил на карте |
 | Stoney | ⬜ |  |
 | Swarm of Flies | 🟩 |  |
-| The Bloat | ⬜ |  |
-| The Duke of Flies | ⬜ |  |
+| The Bloat | 🟩 |  |
+| The Duke of Flies | 🟩 |  |
 | The Haunt | ⬜ |  |
-| The Lamb | ⬜ |  |
+| The Lamb | 🟩 |  |
 | Trite | ▪️ | нет правил на карте |
 | War | 🟩 |  |
 | Wizoob | 🟩 |  |

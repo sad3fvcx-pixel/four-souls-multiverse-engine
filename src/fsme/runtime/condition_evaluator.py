@@ -175,6 +175,9 @@ class ConditionEvaluator:
         register("attack_roll", _attack_roll)
         register("is_attacked", _is_attacked)
         register("card_counters", _card_counters)
+        register("combat_damage", _combat_damage)
+        register("is_damage_source", _is_damage_source)
+        register("is_damage_target", _is_damage_target)
         register("dice_equals", _dice_equals)
         register("dice_not_equals", _dice_not_equals)
         register("dice_greater", _dice_greater)
@@ -411,12 +414,48 @@ def _dice_value(context: AbilityContext) -> int | None:
         return value
 
     if context.event is not None:
-        rolled = context.event.get("value")
+        for key in ("value", "roll"):
+            rolled = context.event.get(key)
 
-        if isinstance(rolled, int):
-            return rolled
+            if isinstance(rolled, int):
+                return rolled
 
     return None
+
+
+def _combat_damage(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    True when the damage being answered came from an attack.
+    """
+    return bool(context.event is not None and context.event.get("combat", False))
+
+
+def _is_damage_source(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    True when this card is what dealt the damage.
+    """
+    return bool(
+        context.event is not None
+        and context.source is not None
+        and context.event.source is context.source
+    )
+
+
+def _is_damage_target(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    True when this card is what the damage landed on.
+    """
+    return bool(
+        context.event is not None
+        and context.source is not None
+        and any(target is context.source for target in context.event.targets)
+    )
 
 
 def _card_counters(

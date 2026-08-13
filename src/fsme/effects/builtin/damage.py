@@ -48,9 +48,21 @@ def _hit_points(target: Any) -> int:
     return int(hp)
 
 
-def deal_damage(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> int:
+def deal_damage(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    amount: int = 1,
+    combat: bool = False,
+    dealt_by: Any | None = None,
+    roll: int | None = None,
+) -> int:
     """
     Deal damage to players or monsters.
+
+    Damage carries who dealt it and whether it was combat damage. Cards
+    distinguish both — "each time this deals combat damage" is neither "each
+    time this is damaged" nor "each time anybody is damaged" — and only the
+    thing dealing it knows.
     """
     if amount < 0:
         raise EffectExecutionError("deal_damage amount must be non-negative")
@@ -60,10 +72,13 @@ def deal_damage(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> 
     for target in targets:
         proposal = ctx.propose(
             EventType.BEFORE_DAMAGE,
+            source=dealt_by,
             controller=_controller_of(target),
             targets=[target],
             amount=amount,
             actor=ctx.actor,
+            combat=combat,
+            roll=roll,
         )
 
         if proposal.cancelled:
@@ -84,17 +99,23 @@ def deal_damage(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> 
 
         ctx.emit(
             EventType.DAMAGE_DEALT,
+            source=dealt_by,
             controller=_controller_of(target),
             targets=[target],
             amount=before - after,
             remaining_hp=after,
             actor=ctx.actor,
+            combat=combat,
+            roll=roll,
         )
         ctx.emit(
             EventType.AFTER_DAMAGE,
+            source=dealt_by,
             controller=_controller_of(target),
             targets=[target],
             amount=before - after,
+            combat=combat,
+            roll=roll,
         )
 
     return dealt

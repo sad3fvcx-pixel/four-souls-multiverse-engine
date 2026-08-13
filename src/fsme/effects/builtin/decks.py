@@ -206,11 +206,19 @@ def _remove_from_anywhere(state: GameState, card: Any) -> bool:
     return False
 
 
+def params_depth(depth: int | None) -> int | None:
+    """
+    Normalise a depth, treating a missing or negative one as no depth at all.
+    """
+    return depth if depth is not None and depth >= 0 else None
+
+
 def move_cards(
     ctx: EffectContext,
     targets: Sequence[Any],
     deck: str = "loot",
     position: str = "bottom",
+    depth_from: int | None = None,
 ) -> int:
     """
     Put chosen cards on the top or the bottom of a deck.
@@ -236,11 +244,17 @@ def move_cards(
 
     moved = 0
 
+    depth = params_depth(depth_from)
+
     for card in targets:
         _remove_from_anywhere(state, card)
 
         if position == "bottom":
             zone.cards.insert(0, card)
+        elif depth is not None:
+            # Counted from the top, which is how a card says it: "six cards
+            # from the top" is six cards that stay above it.
+            zone.cards.insert(max(0, len(zone.cards) - depth), card)
         else:
             zone.add_top(card)
 

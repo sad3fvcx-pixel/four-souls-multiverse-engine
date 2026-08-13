@@ -174,12 +174,13 @@ def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
     total = base
 
     for static in monster.definition.statics:
-        if static.stat != stat:
+        if static.stat != stat or static.scope == "other_monsters":
+            # A monster's own static reaches itself unless it says otherwise,
+            # and "other monsters" says otherwise.
             continue
 
-        if static.scope in MONSTER_SCOPES or static.scope in (None, "", "self"):
-            if _monster_conditions(static, monster, state):
-                total += static.amount
+        if _monster_conditions(static, monster, state):
+            total += static.amount
 
     for card in cards_in_play(state):
         if card is monster:

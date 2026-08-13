@@ -4402,5 +4402,767 @@
         "description": "Look at the top card of a deck. You may put that card on the bottom of that deck."
       }
     ]
+  },
+  "monster_deck-bosses-base_game-greed": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "self",
+        "conditions": [
+          "is_damage_source",
+          "combat_damage"
+        ],
+        "effects": [
+          {
+            "effect": "lose_coins",
+            "amount": 4,
+            "target": "all_players"
+          }
+        ],
+        "description": "Each time this deals combat damage, each player loses 4¢."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-mega_fatty": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "self",
+        "conditions": [
+          "is_damage_source",
+          "combat_damage"
+        ],
+        "effects": [
+          {
+            "effect": "heal",
+            "amount": 1,
+            "target": "self"
+          }
+        ],
+        "description": "Each time this deals combat damage, it heals 1 HP."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-the_bloat": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "self",
+        "conditions": [
+          "is_damage_source",
+          "combat_damage"
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "opponents"
+          }
+        ],
+        "description": "Each time this deals combat damage, it deals 1 damage to each non-active player."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-keeper_head": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "self",
+        "conditions": [
+          "is_damage_source",
+          "combat_damage"
+        ],
+        "effects": [
+          {
+            "effect": "lose_coins",
+            "amount": 2,
+            "target": "event_player"
+          }
+        ],
+        "description": "Each time this deals combat damage to a player, they lose 2¢."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-scolex": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "self",
+        "conditions": [
+          "is_damage_source",
+          "combat_damage"
+        ],
+        "effects": [
+          {
+            "effect": "discard_loot",
+            "count": 1,
+            "target": "event_player"
+          }
+        ],
+        "description": "Each time this deals combat damage to a player, they discard a loot card."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-lust": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "self",
+        "conditions": [
+          "is_damage_target",
+          "combat_damage"
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "active_player"
+          }
+        ],
+        "description": "Each time this takes combat damage, it deals 1 damage to the attacking player."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-gluttony": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "self",
+        "conditions": [
+          "is_damage_target",
+          "combat_damage",
+          {
+            "dice_equals": 6
+          }
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "player_left"
+          }
+        ],
+        "description": "Each time this takes combat damage on an attack roll of 6, deal 1 damage to the player to the active player's left."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-dople": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "self",
+        "conditions": [
+          "is_damage_target"
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": {
+              "from_event": "amount"
+            },
+            "target": "player_right"
+          }
+        ],
+        "description": "Damage dealt to this is also dealt to the player to the active player's right."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-evil_twin": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "self",
+        "conditions": [
+          "is_damage_target"
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": {
+              "from_event": "amount"
+            },
+            "target": "player_left"
+          }
+        ],
+        "description": "Damage dealt to this is also dealt to the player to the active player's left."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-rage_creep": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "self",
+        "conditions": [
+          "is_damage_source"
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": {
+              "from_event": "amount"
+            },
+            "target": "player_left"
+          }
+        ],
+        "description": "Damage this deals to the active player is also dealt to the player to their left."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-hopper": {
+    "abilities": [
+      {
+        "trigger": "before_damage",
+        "scope": "self",
+        "replacement": true,
+        "conditions": [
+          "is_damage_target",
+          "combat_damage",
+          {
+            "dice_equals": 6
+          }
+        ],
+        "effects": [
+          {
+            "cancel_event": {}
+          }
+        ],
+        "description": "This takes no combat damage on attack rolls of 6."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-pin": {
+    "abilities": [
+      {
+        "trigger": "before_damage",
+        "scope": "self",
+        "replacement": true,
+        "conditions": [
+          "is_damage_target",
+          "combat_damage",
+          {
+            "dice_equals": 6
+          }
+        ],
+        "effects": [
+          {
+            "cancel_event": {}
+          }
+        ],
+        "description": "This takes no combat damage on attack rolls of 6."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-carrion_queen": {
+    "abilities": [
+      {
+        "trigger": "before_damage",
+        "scope": "self",
+        "replacement": true,
+        "conditions": [
+          "is_damage_target",
+          "combat_damage",
+          {
+            "and": [
+              {
+                "dice_greater": 3
+              },
+              {
+                "dice_less": 6
+              }
+            ]
+          }
+        ],
+        "effects": [
+          {
+            "cancel_event": {}
+          }
+        ],
+        "description": "This takes no combat damage on attack rolls of 4 or 5."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-horf": {
+    "abilities": [
+      {
+        "trigger": "before_damage",
+        "scope": "self",
+        "replacement": true,
+        "conditions": [
+          "is_damage_source",
+          "combat_damage",
+          {
+            "dice_equals": 2
+          }
+        ],
+        "effects": [
+          {
+            "effect": "modify_event",
+            "key": "amount",
+            "delta": 1
+          }
+        ],
+        "description": "Combat damage this deals is increased by 1 on attack rolls of 2."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-leaper": {
+    "abilities": [
+      {
+        "trigger": "before_damage",
+        "scope": "self",
+        "replacement": true,
+        "conditions": [
+          "is_damage_source",
+          "combat_damage",
+          {
+            "dice_equals": 1
+          }
+        ],
+        "effects": [
+          {
+            "effect": "modify_event",
+            "key": "amount",
+            "factor": 2
+          }
+        ],
+        "description": "Combat damage this deals is doubled on attack rolls of 1."
+      }
+    ]
+  },
+  "monster_deck-epic_boss-base_game-mom": {
+    "abilities": [
+      {
+        "trigger": "before_damage",
+        "scope": "self",
+        "replacement": true,
+        "conditions": [
+          "is_damage_source",
+          "combat_damage",
+          {
+            "dice_equals": 1
+          }
+        ],
+        "effects": [
+          {
+            "effect": "modify_event",
+            "key": "amount",
+            "factor": 2
+          }
+        ],
+        "description": "Combat damage this deals is doubled on attack rolls of 1."
+      },
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "expand_slots",
+            "area": "monster",
+            "amount": 1
+          }
+        ],
+        "description": "When this dies, expand monster slots by 1."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-the_duke_of_flies": {
+    "abilities": [
+      {
+        "trigger": "before_damage",
+        "scope": "self",
+        "replacement": true,
+        "conditions": [
+          "is_damage_target"
+        ],
+        "effects": [
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 1
+              }
+            ],
+            "then": [
+              {
+                "cancel_event": {}
+              }
+            ]
+          }
+        ],
+        "description": "Each time this would take damage, the active player rolls- 1: prevent that damage."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-mulligan": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "expand_slots",
+            "area": "monster",
+            "amount": 1
+          }
+        ],
+        "description": "When this dies, expand monster slots by 1."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-hanger": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "expand_slots",
+            "area": "shop",
+            "amount": 1
+          }
+        ],
+        "description": "When this dies, expand the shop slots by 1."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-famine": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "skip_next_turn",
+            "target": "active_player"
+          }
+        ],
+        "description": "When this dies, the active player skips their next turn."
+      }
+    ]
+  },
+  "monster_deck-epic_boss-base_game-the_lamb": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "may": [
+              {
+                "effect": "steal_soul",
+                "target": {
+                  "target_player": {
+                    "exclude_controller": true,
+                    "as": "giver"
+                  }
+                }
+              }
+            ],
+            "prompt": "Take a soul from another player?"
+          }
+        ],
+        "description": "When this dies, the active player may choose another player. They give you a soul they control."
+      }
+    ]
+  },
+  "monster_deck-epic_boss-base_game-delirium": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "move_cards",
+            "deck": "monster",
+            "position": "top",
+            "depth_from": 6,
+            "target": "self"
+          }
+        ],
+        "description": "When this dies, put it in the monster deck 6 cards from the top."
+      }
+    ],
+    "statics": [
+      {
+        "stat": "difficulty",
+        "amount": 1,
+        "scope": "other_monsters",
+        "description": "Other monsters have +1 DC."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-rag_man": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "or": [
+                  {
+                    "dice_equals": 1
+                  },
+                  {
+                    "dice_equals": 6
+                  }
+                ]
+              }
+            ],
+            "then": [
+              {
+                "effect": "move_cards",
+                "deck": "monster",
+                "position": "top",
+                "target": "self"
+              }
+            ]
+          }
+        ],
+        "description": "When this dies, the active player rolls- 1 or 6: put this on top of the monster deck."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-gurdy_jr": {
+    "abilities": [
+      {
+        "trigger": "after_activate",
+        "scope": "any",
+        "conditions": [
+          "is_attacked"
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "event_player"
+          }
+        ],
+        "description": "Each time the attacking player activates an item, they take 1 damage."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-ring_of_flies": {
+    "abilities": [
+      {
+        "trigger": "after_attack_roll",
+        "scope": "any",
+        "conditions": [
+          "is_attacked",
+          {
+            "dice_equals": 3
+          }
+        ],
+        "effects": [
+          {
+            "effect": "take_card",
+            "to": "hand",
+            "target": {
+              "random_loot": {
+                "as": "snatched"
+              }
+            }
+          }
+        ],
+        "description": "Each time the attacking player rolls an attack roll of 3, they steal a loot card from another player at random."
+      }
+    ]
+  },
+  "monster_deck-epic_boss-base_game-satan": {
+    "abilities": [
+      {
+        "trigger": "after_attack_roll",
+        "scope": "any",
+        "conditions": [
+          "is_attacked",
+          {
+            "dice_equals": 6
+          }
+        ],
+        "targets": [
+          {
+            "target_player": {
+              "as": "doomed"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "kill",
+            "target": "doomed"
+          }
+        ],
+        "description": "Each time the attacking player rolls an attack roll of 6, they choose a living player. That player dies."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-mom_s_hand": {
+    "abilities": [
+      {
+        "trigger": "after_attack_roll",
+        "scope": "any",
+        "conditions": [
+          "is_attacked",
+          {
+            "dice_equals": 6
+          }
+        ],
+        "effects": [
+          {
+            "effect": "cancel_stack",
+            "target": "all_stack"
+          },
+          {
+            "end_turn": {}
+          }
+        ],
+        "description": "When the attacking player rolls an attack roll of 6, cancel everything that hasn't resolved and end the turn."
+      }
+    ]
+  },
+  "monster_deck-cursed_enemies-base_game-cursed_mom_s_hand": {
+    "abilities": [
+      {
+        "trigger": "after_attack_roll",
+        "scope": "any",
+        "conditions": [
+          "is_attacked",
+          {
+            "dice_equals": 6
+          }
+        ],
+        "effects": [
+          {
+            "effect": "cancel_stack",
+            "target": "all_stack"
+          },
+          {
+            "end_turn": {}
+          }
+        ],
+        "description": "When the active player rolls a 6, cancel everything that hasn't resolved and end the turn."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-pride": {
+    "abilities": [
+      {
+        "trigger": "attack_start",
+        "scope": "self",
+        "targets": [
+          {
+            "target_player": {
+              "as": "victim"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "discard_loot",
+            "count": 2,
+            "target": "victim"
+          }
+        ],
+        "description": "When an attack is declared on this, the active player chooses a player. That player discards 2 loot cards."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-dank_globin": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "targets": [
+          {
+            "target_player": {
+              "as": "victim"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "discard_loot",
+            "count": 2,
+            "target": "victim"
+          }
+        ],
+        "description": "When this dies, the active player forces a player to discard 2 loot cards."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-conquest": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "attacks",
+            "amount": 1,
+            "target": "active_player"
+          }
+        ],
+        "description": "When this dies, the active player makes an additional attack."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-envy": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "attacks",
+            "amount": 1,
+            "target": "active_player"
+          }
+        ],
+        "description": "When this dies, the active player makes an additional attack."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-portal": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "attacks",
+            "amount": 1,
+            "target": "active_player"
+          }
+        ],
+        "description": "When this dies, the active player makes an additional attack."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-big_spider": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "attacks",
+            "amount": 1,
+            "target": "active_player"
+          }
+        ],
+        "description": "When this dies, the active player may attack an additional time."
+      }
+    ]
   }
 }

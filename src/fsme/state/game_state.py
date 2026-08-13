@@ -83,6 +83,21 @@ class GameState:
 
     souls_to_win: int = 4
 
+    monster_slots: int = 2
+    shop_slots: int = 2
+    """
+    How many monsters and shop items are face up.
+
+    Cards expand both, so the number belongs to the game rather than to the
+    rules: a constant cannot be changed mid-game and a game that was expanded
+    has to reload expanded.
+    """
+
+    skipped_players: list[int] = field(default_factory=list)
+    """
+    Players whose next turn is taken away from them.
+    """
+
     started: bool = False
     winner: int | None = None
     game_over: bool = False

@@ -113,11 +113,13 @@ def modify_event(
     key: str = "",
     value: Any = None,
     delta: int | None = None,
+    factor: int | None = None,
 ) -> Any:
     """
     Change one value carried by the event.
 
-    ``delta`` shifts a number, ``value`` replaces it outright.
+    ``delta`` shifts a number, ``factor`` multiplies it — "damage this deals is
+    doubled" — and ``value`` replaces it outright.
     """
     if not key:
         raise EffectExecutionError("modify_event requires a key")
@@ -126,6 +128,8 @@ def modify_event(
 
     if delta is not None:
         event.set(key, int(event.get(key, 0)) + int(delta))
+    elif factor is not None:
+        event.set(key, int(event.get(key, 0)) * int(factor))
     else:
         event.set(key, value)
 

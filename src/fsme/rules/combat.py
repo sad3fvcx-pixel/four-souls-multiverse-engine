@@ -22,7 +22,7 @@ from fsme.events import EventType
 from fsme.stack import COMBAT_ROUND, StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
-from .constants import BASE_PLAYER_ATTACK, DICE_SIDES, MONSTER_SLOTS
+from .constants import BASE_PLAYER_ATTACK, DICE_SIDES
 from .statics import ATTACK, DIFFICULTY, monster_value, static_value
 
 DEFAULT_MONSTER_ROLL = 4
@@ -156,10 +156,17 @@ def combat_round(item: StackItem, context: EffectContext) -> None:
             state, ATTACK, attacker.player_id, BASE_PLAYER_ATTACK
         )
 
-        context.apply("deal_damage", [monster], amount=damage)
+        context.apply(
+            "deal_damage", [monster], amount=damage, combat=True, roll=roll
+        )
     else:
         context.apply(
-            "deal_damage", [attacker], amount=_monster_attack(monster, state)
+            "deal_damage",
+            [attacker],
+            amount=_monster_attack(monster, state),
+            combat=True,
+            dealt_by=monster,
+            roll=roll,
         )
 
     # The next round waits behind anything the damage triggered. If either side
@@ -220,7 +227,7 @@ def refill_monsters(context: EffectContext) -> None:
     """
     state = context.state
 
-    while len(state.active_monsters) < MONSTER_SLOTS and state.monster_deck.cards:
+    while len(state.active_monsters) < state.monster_slots and state.monster_deck.cards:
         card = state.monster_deck.draw()
         kind = getattr(getattr(card, "definition", None), "type", None)
 

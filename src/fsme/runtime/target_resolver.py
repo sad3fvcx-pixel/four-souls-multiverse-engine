@@ -121,6 +121,9 @@ class TargetResolver:
         register("opponents", _opponents)
         register("another_player", _opponents)
         register("random_player", _random_player)
+        register("player_left", _player_left)
+        register("player_right", _player_right)
+        register("random_loot", _random_loot)
         register("player", _player_by_index)
         register("target_player", _target_player)
 
@@ -242,6 +245,74 @@ def _opponents(
         for player in state.living_players()
         if player.player_id != context.controller
     ]
+
+
+def _neighbour(state: GameState, seat: int, step: int) -> list[Any]:
+    """
+    Return the living player that many seats away, going round the table.
+    """
+    if not state.players:
+        return []
+
+    size = len(state.players)
+
+    for distance in range(1, size + 1):
+        candidate = state.player((seat + step * distance) % size)
+
+        if candidate.alive:
+            return [candidate]
+
+    return []
+
+
+def _player_left(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    The player to the left of the active player, who takes the next turn.
+    """
+    return _neighbour(state, state.turn.active_player, 1)
+
+
+def _player_right(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    The player to the right of the active player, who took the last turn.
+    """
+    return _neighbour(state, state.turn.active_player, -1)
+
+
+def _random_loot(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    One card taken blindly from a hand.
+
+    "At random" is the engine's business, not a player's: nobody chooses, so
+    nobody is asked, and the RNG is consumed here in a documented order.
+    """
+    named = params.get("of")
+
+    holders = [
+        target
+        for target in context.targets.get(str(named), ())
+        if isinstance(target, PlayerState)
+    ] if named is not None else [
+        player
+        for player in state.living_players()
+        if player.player_id != context.controller
+    ]
+
+    cards: list[Any] = []
+
+    for holder in holders:
+        if not holder.hand.cards:
+            continue
+
+        cards.append(holder.hand.cards[rng.randint(0, len(holder.hand.cards) - 1)])
+
+    return cards
 
 
 def _random_player(

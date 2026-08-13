@@ -2538,6 +2538,205 @@ def test_flush_sweeps_the_side_it_is_told_to(base_game: ContentLibrary) -> None:
 
 
 # ----------------------------------------------------------------------
+# Monsters that answer combat
+# ----------------------------------------------------------------------
+
+
+def only_monster(game: Game, card_id: str, hp: int | None = None) -> CardInstance:
+    """
+    Clear the board and put one named monster in the first slot.
+    """
+    game.state.active_monsters.cards.clear()
+
+    monster = summon(game, card_id)
+
+    if hp is not None:
+        monster.hp = hp
+
+    return monster
+
+
+def fight(game: Game) -> None:
+    """
+    Reach the action phase and attack the first monster.
+    """
+    while game.state.turn.phase is not GamePhase.ACTION:
+        assert game.act(CommandType.END_PHASE, game.state.turn.active_player).accepted
+
+    assert game.act(CommandType.ATTACK, game.state.turn.active_player, index=0).accepted
+
+
+def test_greed_charges_the_table_when_it_lands_a_hit(
+    base_game: ContentLibrary,
+) -> None:
+    # One miss, then three hits: a scripted die that always misses would keep
+    # the fight going until somebody died.
+    game = new_game(base_game, players=3, rolls=[1, 6, 6, 6])
+
+    only_monster(game, "monster_deck-bosses-base_game-greed")
+
+    for player in game.state.players:
+        toughen(game, player)
+        player.pennies = 10
+
+    fight(game)
+
+    assert [player.pennies for player in game.state.players[1:]] == [6, 6]
+
+
+def test_lust_answers_only_the_damage_it_takes(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, rolls=[6])
+
+    lust = only_monster(game, "monster_deck-bosses-base_game-lust", hp=1)
+
+    attacker = game.state.player(0)
+    toughen(game, attacker)
+
+    hp = attacker.hp
+
+    fight(game)
+
+    assert not lust.alive, "the attack landed"
+    assert attacker.hp == hp - 1, "and was answered once"
+
+
+@pytest.mark.parametrize(
+    ("card_id", "roll"),
+    (
+        ("monster_deck-basic_enemies-base_game-hopper", 6),
+        ("monster_deck-bosses-base_game-pin", 6),
+        ("monster_deck-bosses-base_game-carrion_queen", 4),
+    ),
+)
+def test_a_monster_that_shrugs_off_a_roll_takes_nothing(
+    base_game: ContentLibrary, card_id: str, roll: int
+) -> None:
+    game = new_game(base_game, rolls=[roll])
+
+    monster = only_monster(game, card_id, hp=9)
+
+    # The roll hits but the monster shrugs it off, so the fight goes on until
+    # the attacker falls; what matters is that the monster never lost a point.
+    fight(game)
+
+    assert monster.hp == 9
+
+
+def test_leaper_doubles_what_it_deals_on_a_one(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, rolls=[1, 6])
+
+    only_monster(game, "monster_deck-basic_enemies-base_game-leaper", hp=1)
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    hp = player.hp
+
+    fight(game)
+
+    assert player.hp == hp - 2, "one printed damage, doubled"
+
+
+def test_evil_twin_shares_the_damage_it_takes(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3, rolls=[6])
+
+    twin = only_monster(game, "monster_deck-basic_enemies-base_game-evil_twin", hp=1)
+
+    for player in game.state.players:
+        toughen(game, player)
+
+    neighbour = game.state.player(1)
+    hp = neighbour.hp
+
+    fight(game)
+
+    assert not twin.alive
+    assert neighbour.hp == hp - 1
+
+
+def test_mulligan_leaves_the_board_wider_than_it_found_it(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    mulligan = summon(game, "monster_deck-basic_enemies-base_game-mulligan")
+
+    assert game.state.monster_slots == 2
+
+    slay(game, mulligan)
+
+    assert game.state.monster_slots == 3
+    assert len(game.state.active_monsters) == 3
+
+
+def test_famine_costs_the_player_who_killed_it_a_turn(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    famine = summon(game, "monster_deck-bosses-base_game-famine")
+
+    slay(game, famine)
+
+    assert game.state.skipped_players == [0]
+
+    end_turn(game)
+
+    assert game.state.turn.active_player == 1
+
+    end_turn(game)
+
+    assert game.state.turn.active_player == 2
+
+    end_turn(game)
+
+    assert game.state.turn.active_player == 1, "player 0 was passed over"
+    assert game.state.skipped_players == []
+
+
+def test_delirium_makes_its_neighbours_harder_and_buries_itself(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    delirium = summon(game, "monster_deck-epic_boss-base_game-delirium")
+    other = game.state.active_monsters.cards[-1]
+
+    printed = other.definition.roll or 4
+
+    assert difficulty_of(game, other) == printed + 1
+    assert difficulty_of(game, delirium) == (delirium.definition.roll or 4)
+
+    slay(game, delirium)
+
+    assert delirium in game.state.monster_deck.cards
+    assert deck_of(game, "monster").index(delirium) == 6
+
+
+def test_the_lamb_hands_a_soul_to_whoever_killed_it(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    lamb = summon(game, "monster_deck-epic_boss-base_game-the_lamb")
+
+    game.runtime.context.apply("gain_soul", [game.state.player(2)], count=1)
+    game.runtime.run()
+
+    slay(game, lamb, killer=0)
+
+    answer(game, "yes")
+
+    decision = game.runtime.awaiting_decision
+
+    if decision is not None:
+        assert choose(game, 0, list(decision.options).index(game.state.player(2))).accepted
+
+    assert game.state.player(2).soul_count == 0
+    assert game.state.player(0).soul_count >= 1
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

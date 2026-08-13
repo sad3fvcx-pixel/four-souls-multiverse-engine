@@ -785,6 +785,11 @@ class Runtime:
         has not yet reached the discard pile, and it still has to be able to do
         what it says. Coming first also puts it lowest on the stack, so any
         response to it resolves before it does.
+
+        The cards the event happened *to* come next, for the same reason: a
+        monster that answers the damage it takes must still answer the damage
+        that killed it, and by the time triggers are matched the killing blow
+        has already swept it off the table.
         """
         seen: set[int] = set()
 
@@ -793,6 +798,11 @@ class Runtime:
         if isinstance(source, CardInstance):
             seen.add(id(source))
             yield source
+
+        for target in event.targets:
+            if isinstance(target, CardInstance) and id(target) not in seen:
+                seen.add(id(target))
+                yield target
 
         for card in self._ability_sources():
             if id(card) in seen:
@@ -1068,6 +1078,7 @@ class Runtime:
             changed = True
 
         before_refill = len(self._state.active_monsters)
+
 
         refill_monsters(self._context)
 

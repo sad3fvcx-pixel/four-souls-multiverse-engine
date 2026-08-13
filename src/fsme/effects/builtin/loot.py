@@ -233,6 +233,45 @@ def _detach(state: Any, card: Any) -> None:
             return
 
 
+def steal_soul(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Move a soul from each target player to whoever is doing the stealing.
+
+    A soul taken is not a soul destroyed: it keeps counting, for somebody else.
+    """
+    state = ctx.state
+    thief_id = ctx.actor
+
+    if thief_id is None or not 0 <= thief_id < len(state.players):
+        return 0
+
+    thief = state.player(thief_id)
+    stolen = 0
+
+    for player in _players(targets, "steal_soul"):
+        if player.player_id == thief_id or not player.souls.cards:
+            continue
+
+        soul = player.souls.draw()
+        thief.souls.add_top(soul)
+        stolen += 1
+
+        ctx.emit(
+            EventType.SOUL_LOST,
+            controller=player.player_id,
+            targets=[player],
+            soul=soul,
+        )
+        ctx.emit(
+            EventType.SOUL_GAINED,
+            controller=thief_id,
+            targets=[thief],
+            soul=soul,
+        )
+
+    return stolen
+
+
 def lose_soul(ctx: EffectContext, targets: Sequence[Any], count: int = 1) -> int:
     """
     Remove souls from each target player.
@@ -296,6 +335,12 @@ def register(registry: EffectRegistry) -> None:
         claim_soul,
         needs_target=True,
         description="Give a bonus soul card itself to a player.",
+    )
+    registry.register(
+        "steal_soul",
+        steal_soul,
+        needs_target=True,
+        description="Take a soul from another player.",
     )
     registry.register(
         "lose_soul",

@@ -6,7 +6,21 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "When this dies, the active player may attack an additional time."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 4,
@@ -194,7 +208,27 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "targets": [
+            {
+              "target_player": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "discard_loot",
+              "count": 2,
+              "target": "victim"
+            }
+          ],
+          "description": "When this dies, the active player forces a player to discard 2 loot cards."
+        }
+      ],
       "health": 2,
       "attack": 2,
       "roll": 4,
@@ -273,7 +307,25 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_target"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": {
+                "from_event": "amount"
+              },
+              "target": "player_right"
+            }
+          ],
+          "description": "Damage dealt to this is also dealt to the player to the active player's right."
+        }
+      ],
       "health": 2,
       "attack": 2,
       "roll": 4,
@@ -301,7 +353,25 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_target"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": {
+                "from_event": "amount"
+              },
+              "target": "player_left"
+            }
+          ],
+          "description": "Damage dealt to this is also dealt to the player to the active player's left."
+        }
+      ],
       "health": 3,
       "attack": 2,
       "roll": 5,
@@ -460,7 +530,20 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "expand_slots",
+              "area": "shop",
+              "amount": 1
+            }
+          ],
+          "description": "When this dies, expand the shop slots by 1."
+        }
+      ],
       "health": 2,
       "attack": 2,
       "roll": 4,
@@ -487,7 +570,26 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_target",
+            "combat_damage",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "cancel_event": {}
+            }
+          ],
+          "description": "This takes no combat damage on attack rolls of 6."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 3,
@@ -514,7 +616,28 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_source",
+            "combat_damage",
+            {
+              "dice_equals": 2
+            }
+          ],
+          "effects": [
+            {
+              "effect": "modify_event",
+              "key": "amount",
+              "delta": 1
+            }
+          ],
+          "description": "Combat damage this deals is increased by 1 on attack rolls of 2."
+        }
+      ],
       "health": 1,
       "attack": 1,
       "roll": 4,
@@ -541,7 +664,24 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "lose_coins",
+              "amount": 2,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time this deals combat damage to a player, they lose 2¢."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -565,7 +705,28 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_source",
+            "combat_damage",
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "effect": "modify_event",
+              "key": "amount",
+              "factor": 2
+            }
+          ],
+          "description": "Combat damage this deals is doubled on attack rolls of 1."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -718,7 +879,28 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "effect": "cancel_stack",
+              "target": "all_stack"
+            },
+            {
+              "end_turn": {}
+            }
+          ],
+          "description": "When the attacking player rolls an attack roll of 6, cancel everything that hasn't resolved and end the turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -792,7 +974,20 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "expand_slots",
+              "area": "monster",
+              "amount": 1
+            }
+          ],
+          "description": "When this dies, expand monster slots by 1."
+        }
+      ],
       "health": 1,
       "attack": 1,
       "roll": 3,
@@ -875,7 +1070,21 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "When this dies, the active player makes an additional attack."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -941,7 +1150,25 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": {
+                "from_event": "amount"
+              },
+              "target": "player_left"
+            }
+          ],
+          "description": "Damage this deals to the active player is also dealt to the player to their left."
+        }
+      ],
       "health": 1,
       "attack": 1,
       "roll": 5,
@@ -997,7 +1224,30 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 3
+            }
+          ],
+          "effects": [
+            {
+              "effect": "take_card",
+              "to": "hand",
+              "target": {
+                "random_loot": {
+                  "as": "snatched"
+                }
+              }
+            }
+          ],
+          "description": "Each time the attacking player rolls an attack roll of 3, they steal a loot card from another player at random."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 3,
@@ -1229,7 +1479,33 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_target",
+            "combat_damage",
+            {
+              "and": [
+                {
+                  "dice_greater": 3
+                },
+                {
+                  "dice_less": 6
+                }
+              ]
+            }
+          ],
+          "effects": [
+            {
+              "cancel_event": {}
+            }
+          ],
+          "description": "This takes no combat damage on attack rolls of 4 or 5."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 4,
@@ -1304,7 +1580,21 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "When this dies, the active player makes an additional attack."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 3,
@@ -1469,7 +1759,21 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "When this dies, the active player makes an additional attack."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 5,
@@ -1497,7 +1801,19 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "skip_next_turn",
+              "target": "active_player"
+            }
+          ],
+          "description": "When this dies, the active player skips their next turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 3,
@@ -1569,7 +1885,27 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_target",
+            "combat_damage",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "player_left"
+            }
+          ],
+          "description": "Each time this takes combat damage on an attack roll of 6, deal 1 damage to the player to the active player's left."
+        }
+      ],
       "health": 4,
       "attack": 1,
       "roll": 3,
@@ -1597,7 +1933,24 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "lose_coins",
+              "amount": 4,
+              "target": "all_players"
+            }
+          ],
+          "description": "Each time this deals combat damage, each player loses 4¢."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 4,
@@ -1654,7 +2007,23 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_activate",
+          "scope": "any",
+          "conditions": [
+            "is_attacked"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time the attacking player activates an item, they take 1 damage."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 5,
@@ -1755,7 +2124,24 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_target",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "Each time this takes combat damage, it deals 1 damage to the attacking player."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -1827,7 +2213,24 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "heal",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time this deals combat damage, it heals 1 HP."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 3,
@@ -1940,7 +2343,26 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_target",
+            "combat_damage",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "cancel_event": {}
+            }
+          ],
+          "description": "This takes no combat damage on attack rolls of 6."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -1968,7 +2390,27 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "attack_start",
+          "scope": "self",
+          "targets": [
+            {
+              "target_player": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "discard_loot",
+              "count": 2,
+              "target": "victim"
+            }
+          ],
+          "description": "When an attack is declared on this, the active player chooses a player. That player discards 2 loot cards."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -1996,7 +2438,40 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "or": [
+                    {
+                      "dice_equals": 1
+                    },
+                    {
+                      "dice_equals": 6
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "effect": "move_cards",
+                  "deck": "monster",
+                  "position": "top",
+                  "target": "self"
+                }
+              ]
+            }
+          ],
+          "description": "When this dies, the active player rolls- 1 or 6: put this on top of the monster deck."
+        }
+      ],
       "health": 2,
       "attack": 2,
       "roll": 3,
@@ -2024,7 +2499,24 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "discard_loot",
+              "count": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time this deals combat damage to a player, they discard a loot card."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 5,
@@ -2096,7 +2588,24 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "opponents"
+            }
+          ],
+          "description": "Each time this deals combat damage, it deals 1 damage to each non-active player."
+        }
+      ],
       "health": 4,
       "attack": 2,
       "roll": 4,
@@ -2124,7 +2633,34 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_target"
+          ],
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 1
+                }
+              ],
+              "then": [
+                {
+                  "cancel_event": {}
+                }
+              ]
+            }
+          ],
+          "description": "Each time this would take damage, the active player rolls- 1: prevent that damage."
+        }
+      ],
       "health": 4,
       "attack": 1,
       "roll": 3,
@@ -2468,7 +3004,28 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "effect": "cancel_stack",
+              "target": "all_stack"
+            },
+            {
+              "end_turn": {}
+            }
+          ],
+          "description": "When the active player rolls a 6, cancel everything that hasn't resolved and end the turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -2535,7 +3092,22 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "monster",
+              "position": "top",
+              "depth_from": 6,
+              "target": "self"
+            }
+          ],
+          "description": "When this dies, put it in the monster deck 6 cards from the top."
+        }
+      ],
       "health": 5,
       "attack": 3,
       "roll": 4,
@@ -2556,7 +3128,15 @@
         "version": "Original",
         "artist": "@MikeBurnsAlive",
         "notes": "Unlocked to celebrate the culmination of all the community's contributions during the original Kickstarter."
-      }
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 1,
+          "scope": "other_monsters",
+          "description": "Other monsters have +1 DC."
+        }
+      ]
     },
     {
       "id": "monster_deck-epic_boss-base_game-mom",
@@ -2564,7 +3144,40 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_source",
+            "combat_damage",
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "effect": "modify_event",
+              "key": "amount",
+              "factor": 2
+            }
+          ],
+          "description": "Combat damage this deals is doubled on attack rolls of 1."
+        },
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "expand_slots",
+              "area": "monster",
+              "amount": 1
+            }
+          ],
+          "description": "When this dies, expand monster slots by 1."
+        }
+      ],
       "health": 5,
       "attack": 2,
       "roll": 4,
@@ -2593,7 +3206,32 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "targets": [
+            {
+              "target_player": {
+                "as": "doomed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "kill",
+              "target": "doomed"
+            }
+          ],
+          "description": "Each time the attacking player rolls an attack roll of 6, they choose a living player. That player dies."
+        }
+      ],
       "health": 6,
       "attack": 2,
       "roll": 4,
@@ -2623,7 +3261,29 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "steal_soul",
+                  "target": {
+                    "target_player": {
+                      "exclude_controller": true,
+                      "as": "giver"
+                    }
+                  }
+                }
+              ],
+              "prompt": "Take a soul from another player?"
+            }
+          ],
+          "description": "When this dies, the active player may choose another player. They give you a soul they control."
+        }
+      ],
       "health": 6,
       "attack": 6,
       "roll": 3,

@@ -145,6 +145,49 @@ def take_extra_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int
     return granted
 
 
+def expand_slots(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    area: str = "monster",
+    amount: int = 1,
+) -> int:
+    """
+    Make room for another monster or another item for sale.
+
+    The number of slots belongs to the game rather than to the rules, because
+    cards change it and a saved game has to reload with the change intact. The
+    new slot fills itself the next time the rules top the area up.
+    """
+    state = ctx.state
+
+    if area == "monster":
+        state.monster_slots = max(0, state.monster_slots + int(amount))
+    elif area == "shop":
+        state.shop_slots = max(0, state.shop_slots + int(amount))
+    else:
+        raise EffectExecutionError(
+            f"unknown area '{area}'; use 'monster' or 'shop'"
+        )
+
+    return int(amount)
+
+
+def skip_next_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Take a player's next turn away from them.
+    """
+    skipped = 0
+
+    for player in targets:
+        if not isinstance(player, PlayerState):
+            raise EffectExecutionError("skip_next_turn expects player targets")
+
+        ctx.state.skipped_players.append(player.player_id)
+        skipped += 1
+
+    return skipped
+
+
 def _cards(targets: Sequence[Any], effect: str) -> list[Any]:
     for target in targets:
         if not hasattr(target, "tapped"):
@@ -237,6 +280,18 @@ def register(registry: EffectRegistry) -> None:
         take_extra_turn,
         needs_target=True,
         description="Give a player another turn after this one.",
+    )
+    registry.register(
+        "expand_slots",
+        expand_slots,
+        primary="area",
+        description="Add a monster slot or a shop slot.",
+    )
+    registry.register(
+        "skip_next_turn",
+        skip_next_turn,
+        needs_target=True,
+        description="Take away a player's next turn.",
     )
     registry.register(
         "add_modifier",

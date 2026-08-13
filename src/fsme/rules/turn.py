@@ -199,6 +199,12 @@ def advance_turn(item: StackItem, context: EffectContext) -> None:
 
     following = state.next_player(item.controller)
 
+    while following in state.skipped_players:
+        # A skipped turn is a turn nobody takes: the seat is passed over once
+        # and the debt is paid.
+        state.skipped_players.remove(following)
+        following = state.next_player(following)
+
     promised = state.turn.extra_turn_for
 
     if promised is not None and state.player(promised).alive:

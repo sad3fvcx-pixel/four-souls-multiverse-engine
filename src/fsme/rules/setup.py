@@ -49,7 +49,12 @@ def new_game(
     if not players:
         raise SetupError("a game needs at least one player")
 
-    state = GameState(seed=seed, souls_to_win=souls_to_win)
+    state = GameState(
+        seed=seed,
+        souls_to_win=souls_to_win,
+        monster_slots=monster_slots,
+        shop_slots=shop_slots,
+    )
     rng = RNG(seed)
 
     index = _index(library)

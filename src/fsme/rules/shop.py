@@ -11,7 +11,7 @@ from fsme.effects import EffectContext
 from fsme.events import EventType
 from fsme.state import GamePhase, GameState
 
-from .constants import SHOP_SLOTS, TREASURE_COST
+from .constants import TREASURE_COST
 
 
 class BuyTreasureHandler:
@@ -92,5 +92,5 @@ def refill_shop(context: EffectContext) -> None:
     """
     state = context.state
 
-    while len(state.treasure_shop) < SHOP_SLOTS and state.treasure_deck.cards:
+    while len(state.treasure_shop) < state.shop_slots and state.treasure_deck.cards:
         state.treasure_shop.add_top(state.treasure_deck.draw())
