@@ -7355,5 +7355,167 @@
         "description": "Every other time this takes damage each turn, it gains +1 DC till end of turn."
       }
     ]
+  },
+  "treasure_deck-soul_item-base_game-the_chest": {
+    "abilities": [
+      {
+        "trigger": "before_destroy",
+        "scope": "self",
+        "replacement": true,
+        "effects": [
+          {
+            "effect": "cancel_event"
+          },
+          {
+            "effect": "claim_soul",
+            "target": "controller"
+          }
+        ],
+        "description": "If this would be destroyed, it becomes a soul instead."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-chaos": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "pass_hands": "left"
+          }
+        ],
+        "description": "Each player gives their hand to the player to their left."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-cheese_grater": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 6
+          }
+        ],
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Reveal the top card of the loot deck.",
+                "effects": [
+                  {
+                    "effect": "reveal_cards",
+                    "deck": "loot",
+                    "count": 1
+                  },
+                  {
+                    "may": [
+                      {
+                        "effect": "move_cards",
+                        "deck": "loot",
+                        "position": "discard",
+                        "target": {
+                          "deck_top": {
+                            "deck": "loot",
+                            "as": "shown_loot"
+                          }
+                        }
+                      }
+                    ],
+                    "as": "discard_loot",
+                    "prompt": "Put it into the discard pile?"
+                  }
+                ]
+              },
+              {
+                "description": "Reveal the top card of the treasure deck.",
+                "effects": [
+                  {
+                    "effect": "reveal_cards",
+                    "deck": "treasure",
+                    "count": 1
+                  },
+                  {
+                    "may": [
+                      {
+                        "effect": "move_cards",
+                        "deck": "treasure",
+                        "position": "discard",
+                        "target": {
+                          "deck_top": {
+                            "deck": "treasure",
+                            "as": "shown_treasure"
+                          }
+                        }
+                      }
+                    ],
+                    "as": "discard_treasure",
+                    "prompt": "Put it into the discard pile?"
+                  }
+                ]
+              },
+              {
+                "description": "Reveal the top card of the monster deck.",
+                "effects": [
+                  {
+                    "effect": "reveal_cards",
+                    "deck": "monster",
+                    "count": 1
+                  },
+                  {
+                    "may": [
+                      {
+                        "effect": "move_cards",
+                        "deck": "monster",
+                        "position": "discard",
+                        "target": {
+                          "deck_top": {
+                            "deck": "monster",
+                            "as": "shown_monster"
+                          }
+                        }
+                      }
+                    ],
+                    "as": "discard_monster",
+                    "prompt": "Put it into the discard pile?"
+                  }
+                ]
+              },
+              {
+                "description": "Reveal the top card of the room deck.",
+                "effects": [
+                  {
+                    "effect": "reveal_cards",
+                    "deck": "room",
+                    "count": 1
+                  },
+                  {
+                    "may": [
+                      {
+                        "effect": "move_cards",
+                        "deck": "room",
+                        "position": "discard",
+                        "target": {
+                          "deck_top": {
+                            "deck": "room",
+                            "as": "shown_room"
+                          }
+                        }
+                      }
+                    ],
+                    "as": "discard_room",
+                    "prompt": "Put it into the discard pile?"
+                  }
+                ]
+              }
+            ],
+            "as": "which_deck",
+            "prompt": "Reveal the top card of which deck?"
+          }
+        ],
+        "description": "Each time a player rolls a 6, reveal the top card of any deck. Put it back or put it into discard."
+      }
+    ]
   }
 }

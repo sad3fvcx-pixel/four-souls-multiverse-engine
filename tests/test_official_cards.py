@@ -3718,6 +3718,114 @@ def test_the_haunt_counts_from_the_start_of_each_turn(
 
 
 # ----------------------------------------------------------------------
+# Whole hands, whole decks, and a destruction that does not happen
+# ----------------------------------------------------------------------
+
+
+def test_chaos_passes_every_hand_one_seat_to_the_left(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    chaos = give(game, "treasure_deck-active_items-base_game-chaos")
+
+    for player in game.state.players:
+        player.hand.cards.clear()
+
+    hands = [
+        deal(game, "loot_deck-1-base_game-a_penny", player=0),
+        deal(game, "loot_deck-2-base_game-2_cents", player=1),
+        deal(game, "loot_deck-3-base_game-3_cents", player=2),
+    ]
+
+    assert activate(game, chaos).accepted
+
+    for seat, card in enumerate(hands):
+        receiver = game.state.player((seat + 1) % 3)
+
+        assert card in receiver.hand.cards
+        assert card.owner == receiver.player_id
+
+
+def test_chaos_lifts_every_hand_before_it_puts_any_down(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    chaos = give(game, "treasure_deck-active_items-base_game-chaos")
+
+    for player in game.state.players:
+        player.hand.cards.clear()
+
+    mine = deal(game, "loot_deck-1-base_game-a_penny")
+    theirs = deal(game, "loot_deck-2-base_game-2_cents", player=1)
+
+    assert activate(game, chaos).accepted
+
+    assert list(game.state.player(0).hand.cards) == [theirs]
+    assert list(game.state.player(1).hand.cards) == [mine]
+
+
+def test_the_chest_becomes_a_soul_instead_of_being_destroyed(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    chest = give(game, "treasure_deck-soul_item-base_game-the_chest")
+
+    game.runtime.context.apply("destroy_treasure", [chest])
+    game.runtime.run()
+
+    assert chest not in game.state.treasure_discard.cards
+    assert chest in game.state.player(0).souls.cards
+
+
+def test_an_ordinary_item_is_still_destroyed(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    item = give(game, "treasure_deck-passive_items-base_game-breakfast")
+
+    game.runtime.context.apply("destroy_treasure", [item])
+    game.runtime.run()
+
+    assert item in game.state.treasure_discard.cards
+
+
+def test_the_cheese_grater_reveals_the_deck_it_is_told_to(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, rolls=[6])
+
+    give(game, "treasure_deck-passive_items-base_game-cheese_grater", player=1)
+
+    top = game.state.treasure_deck.cards[-1]
+    discarded = len(game.state.treasure_discard.cards)
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    answer(game, "Reveal the top card of the treasure deck.", player=1)
+    answer(game, "yes", player=1)
+
+    assert top in game.state.treasure_discard.cards
+    assert len(game.state.treasure_discard.cards) == discarded + 1
+
+
+def test_the_cheese_grater_may_put_the_card_back(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, rolls=[6])
+
+    give(game, "treasure_deck-passive_items-base_game-cheese_grater", player=1)
+
+    deck = list(game.state.loot_deck.cards)
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    answer(game, "Reveal the top card of the loot deck.", player=1)
+    answer(game, "no", player=1)
+
+    assert list(game.state.loot_deck.cards) == deck, "revealing moves nothing"
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

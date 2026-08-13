@@ -33,6 +33,9 @@ class EventType(StrEnum):
     # Card lifecycle
     ON_ENTER = "on_enter"
     ON_LEAVE = "on_leave"
+    BEFORE_DESTROY = "before_destroy"
+    """An item about to be destroyed, offered for replacement first."""
+
     ON_DESTROY = "on_destroy"
     ON_DISCARD = "on_discard"
     ON_GAIN = "on_gain"

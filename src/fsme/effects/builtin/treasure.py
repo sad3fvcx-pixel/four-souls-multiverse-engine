@@ -142,6 +142,10 @@ def destroy_treasure(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> in
 
     An eternal item cannot be destroyed and is passed over in silence, the way
     the rules pass over an instruction that cannot be carried out.
+
+    Destruction is offered for replacement first, because a card can answer it:
+    "if this would be destroyed, it becomes a soul instead" is not a reaction to
+    having been destroyed — it is the destruction not happening.
     """
     state = ctx.state
     destroyed = 0
@@ -157,6 +161,21 @@ def destroy_treasure(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> in
 
         treasures = holder.treasures
         owner = holder.player_id
+
+        proposal = ctx.propose(
+            EventType.BEFORE_DESTROY,
+            source=card,
+            controller=owner,
+            targets=[card],
+        )
+
+        if proposal.cancelled:
+            continue
+
+        if card not in treasures.cards:
+            # A replacement took the card somewhere else — into the soul pile,
+            # for one — and there is nothing left here to destroy.
+            continue
 
         treasures.cards.remove(card)
         state.treasure_discard.add_top(card)

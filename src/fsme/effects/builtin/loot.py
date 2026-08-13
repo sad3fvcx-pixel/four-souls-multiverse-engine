@@ -123,6 +123,58 @@ def draw_loot(ctx: EffectContext, targets: Sequence[Any], count: int = 1) -> int
     return drawn
 
 
+LEFT = "left"
+RIGHT = "right"
+
+
+def pass_hands(ctx: EffectContext, targets: Sequence[Any], direction: str = LEFT) -> int:
+    """
+    Every living player hands their whole hand to a neighbour, all at once.
+
+    At once is the point: a hand passed on and a hand received are the same
+    moment, so every hand is lifted before any is put down. Passing them one
+    player at a time would give the second player the first player's cards and
+    then pass those on again.
+    """
+    if direction not in (LEFT, RIGHT):
+        raise EffectExecutionError(
+            f"unknown direction '{direction}'; a hand goes left or right"
+        )
+
+    state = ctx.state
+    seats = [player for player in state.players if player.alive]
+
+    if len(seats) < 2:
+        return 0
+
+    step = 1 if direction == LEFT else -1
+
+    lifted = [list(player.hand.cards) for player in seats]
+
+    for player in seats:
+        player.hand.cards.clear()
+
+    passed = 0
+
+    for index, cards in enumerate(lifted):
+        receiver = seats[(index + step) % len(seats)]
+
+        for card in cards:
+            card.owner = receiver.player_id
+            card.controller = receiver.player_id
+
+            receiver.hand.add_top(card)
+            passed += 1
+
+        ctx.emit(
+            EventType.ON_GAIN,
+            controller=receiver.player_id,
+            targets=[receiver],
+        )
+
+    return passed
+
+
 def discard_loot(ctx: EffectContext, targets: Sequence[Any], count: int = 1) -> int:
     """
     Discard loot cards from the top of each target player's hand.
@@ -362,6 +414,12 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="count",
         description="Draw loot cards."
+    )
+    registry.register(
+        "pass_hands",
+        pass_hands,
+        primary="direction",
+        description="Every player hands their whole hand to a neighbour.",
     )
     registry.register(
         "discard_loot",
