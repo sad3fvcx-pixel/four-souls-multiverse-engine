@@ -87,23 +87,35 @@ def test_the_demo_set_loads_with_every_card_type() -> None:
         assert library.cards_of(card_type), card_type
 
 
-def test_the_demo_set_is_not_marked_official() -> None:
+def test_a_set_says_truthfully_whether_it_is_official() -> None:
     """
-    Nothing in the repository claims to be Four Souls content.
-    """
-    library = loader().load_root(CONTENT_ROOT)
-
-    for expansion in library:
-        assert expansion.manifest.official is False
-
-
-def test_an_empty_directory_is_not_a_set() -> None:
-    """
-    base_game/ holds only a README, so nothing is loaded from it.
+    The demo set was written for the engine and says so; the imported sets
+    come from the published game and say that.
     """
     library = loader().load_root(CONTENT_ROOT)
 
-    assert "base_game" not in library
+    assert library.get("engine_demo").manifest.official is False
+    assert library.get("base_game").manifest.official is True
+
+
+def test_a_section_directory_can_itself_be_a_set() -> None:
+    """
+    The base game is one directory with a manifest in it, not a directory of
+    directories. Both shapes are ordinary and both are read.
+    """
+    library = loader().load_root(CONTENT_ROOT)
+
+    assert "base_game" in library
+    assert len(library.get("base_game")) > 0
+
+
+def test_a_directory_without_a_manifest_is_not_a_set(tmp_path) -> None:
+    (tmp_path / "custom" / "notes").mkdir(parents=True)
+    (tmp_path / "custom" / "notes" / "readme.json").write_text("{}", encoding="utf-8")
+
+    library = loader().load_root(tmp_path)
+
+    assert len(library) == 0
 
 
 # ----------------------------------------------------------------------

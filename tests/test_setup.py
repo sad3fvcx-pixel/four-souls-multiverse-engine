@@ -83,8 +83,13 @@ def test_a_game_without_players_is_refused() -> None:
 
 
 def test_more_players_than_characters_is_refused() -> None:
+    small = ContentLibrary()
+    small.add(library().get("engine_demo"))
+
+    characters = len(small.cards_of(CardType.CHARACTER))
+
     with pytest.raises(SetupError) as error:
-        new_game(library(), [f"p{index}" for index in range(9)], seed=1)
+        new_game(small, [f"p{index}" for index in range(characters + 1)], seed=1)
 
     assert "characters" in str(error.value)
 

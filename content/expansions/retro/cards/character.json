@@ -1,0 +1,27 @@
+{
+  "cards": [
+    {
+      "id": "characters-retro-eden",
+      "name": "Eden",
+      "type": "character",
+      "expansion": "retro",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nWhen you start the game, look at\nthe top 3 cards of the treasure\ndeck, choose one, it becomes your\nstarting item and gains eternal.\nPut the rest on the bottom of\nthe deck in any order.",
+        "set": "Retro",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-retro-eden",
+        "version": "Alt Art",
+        "artist": "@MattKap1",
+        "notes": "Included with The Binding of Isaac: Repentance - Leviathan Edition from Nicalis."
+      }
+    }
+  ]
+}

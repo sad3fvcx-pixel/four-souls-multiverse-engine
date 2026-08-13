@@ -1,0 +1,26 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-trinkets-tapeworm-rainbow_tapeworm",
+      "name": "Rainbow Tapeworm",
+      "type": "loot",
+      "expansion": "tapeworm",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "At the start of your turn, roll:\n1-3: Nothing\n4-6: This becomes a copy of\nany non-eternal item in play\ntill the end of your turn.\n------------------------------\n-Trinket-\n(This card counts\nas a passive item)",
+        "set": "Tapeworm",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-tapeworm-rainbow_tapeworm",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "As with the rest of the Tapeworm promos, this card is foil-only."
+      }
+    }
+  ]
+}

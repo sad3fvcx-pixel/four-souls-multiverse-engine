@@ -1,0 +1,26 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-the_legend_of_bum_bo-bag_o_trash",
+      "name": "Bag-o-Trash",
+      "type": "starting_item",
+      "expansion": "the_legend_of_bum_bo",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 3¢:\nPlay an additional\nloot card this turn.\n------------------------------\n$: Pay 4¢: Loot 1.\n------------------------------\n$: Pay 6¢: Deal 1 damage\nto a monster or player.\n------------------------------\n-Eternal-",
+        "set": "The Legend of Bum-bo",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-the_legend_of_bum_bo-bag_o_trash",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew",
+        "notes": "Included as a bonus in physical editions of The Legend of Bum-bo from Nicalis."
+      }
+    }
+  ]
+}

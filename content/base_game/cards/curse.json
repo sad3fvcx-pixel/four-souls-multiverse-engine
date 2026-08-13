@@ -1,0 +1,94 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-curses-base_game-curse_of_amnesia",
+      "name": "Curse of Amnesia",
+      "type": "curse",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the end of your\nturn, discard 2\nloot cards.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-base_game-curse_of_amnesia",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-curses-base_game-curse_of_greed",
+      "name": "Curse of Greed",
+      "type": "curse",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the end of your\nturn, lose 4¢.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-base_game-curse_of_greed",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-curses-base_game-curse_of_loss",
+      "name": "Curse of Loss",
+      "type": "curse",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When you die, destroy\na soul you control.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-base_game-curse_of_loss",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-curses-base_game-curse_of_pain",
+      "name": "Curse of Pain",
+      "type": "curse",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the start of your\nturn, take 1 damage.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-base_game-curse_of_pain",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-curses-base_game-curse_of_the_blind",
+      "name": "Curse of the Blind",
+      "type": "curse",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Monsters have +1 DC\non your turn.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-base_game-curse_of_the_blind",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

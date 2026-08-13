@@ -1,0 +1,23 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-good_events-youtooz-devil_deal",
+      "name": "Devil Deal",
+      "type": "event",
+      "expansion": "youtooz",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose one-\n•Put this into discard.\n------------------------------\n•Loot 2. Take 1 damage.\n------------------------------\n•Take 2 damage. Search\nthe treasure deck for a\nGuppy item, gain it, then\nshuffle the treasure deck.",
+        "set": "Youtooz",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-youtooz-devil_deal",
+        "subcategory": "Good Events",
+        "version": "Alt Art",
+        "artist": "@therealracckun",
+        "notes": "Included with the Baphomet Youtooz figure available for pre-order starting February 2nd, 2024."
+      }
+    }
+  ]
+}

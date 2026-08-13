@@ -1,0 +1,312 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-bad_events-base_game-ambush",
+      "name": "Ambush!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The active player\nmust attack the\nmonster deck 2\ntimes this turn.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-base_game-ambush",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-base_game-cursed_chest",
+      "name": "Cursed Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-3: Take 1 damage.\n------------------------------\n4-5: Take 2 damage.\n------------------------------\n6: Search the treasure\ndeck for a Guppy item,\ngain it, then shuffle\nthe treasure deck.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-base_game-cursed_chest",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The Dark Room stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-base_game-greed",
+      "name": "Greed!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player\nwith the most ¢ or\ntied for the most.\nThat player loses\nall their ¢.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-base_game-greed",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-base_game-mega_troll_bomb",
+      "name": "Mega Troll Bomb!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each player\ntake 2 damage!",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-base_game-mega_troll_bomb",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-base_game-troll_bombs",
+      "name": "Troll Bombs",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Take\n2 damage!",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-base_game-troll_bombs",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-chest",
+      "name": "Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Gain 1¢.\n------------------------------\n3-4: Gain 3¢.\n------------------------------\n5-6: Gain 6¢.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-chest-v2",
+      "name": "Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Loot 1.\n------------------------------\n3-4: Loot 2.\n------------------------------\n5-6: Loot 3.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-dark_chest",
+      "name": "Dark Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Gain 1¢.\n------------------------------\n3-4: Loot 2.\n------------------------------\n5-6: Take 2 damage.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-dark_chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-dark_chest-v2",
+      "name": "Dark Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Loot 1.\n------------------------------\n3-4: Gain 3¢.\n------------------------------\n5-6: Take 2 damage.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-dark_chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-devil_deal",
+      "name": "Devil Deal",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose one-\n•Put this into discard.\n------------------------------\n•Loot 2. Take 1 damage.\n------------------------------\n•Take 2 damage. Search\nthe treasure deck for a\nGuppy item, gain it, then\nshuffle the treasure deck.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-devil_deal",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Unlocked via the Sheol stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-gold_chest",
+      "name": "Gold Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Gain\n+1 treasure.\n------------------------------\n3-4: Gain 5¢.\n------------------------------\n5-6: Gain 7¢.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-gold_chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-gold_chest-v2",
+      "name": "Gold Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Gain\n+1 treasure.\n------------------------------\n3-4: Loot 1.\n------------------------------\n5-6: Loot 2.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-gold_chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-i_can_see_forever",
+      "name": "I Can See Forever!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Look at the top 6\ncards of the loot\ndeck. Put them back\nin any order, then\nloot 1.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-i_can_see_forever",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-secret_room",
+      "name": "Secret Room!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1: Take 3 damage.\n------------------------------\n2-3: Discard 2 loot cards.\n------------------------------\n4-5: Gain 7¢.\n------------------------------\n6: Gain +1 treasure.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-secret_room",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-shop_upgrade",
+      "name": "Shop Upgrade!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Expand shop\nslots by 2.\n------------------------------\nThe active player may\nattack an additional\ntime this turn.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-shop_upgrade",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-we_need_to_go_deeper",
+      "name": "We Need to Go Deeper!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Put any number of\nnon-event monster\ncards in discard on top\nof the monster deck.\n------------------------------\nThe active player may\nattack an additional\ntime this turn.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-we_need_to_go_deeper",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-xl_floor",
+      "name": "XL Floor!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Expand monster\nslots by 1.\n------------------------------\nThe active player may\nattack an additional\ntime this turn.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-xl_floor",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

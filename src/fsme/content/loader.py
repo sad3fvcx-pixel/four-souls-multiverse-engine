@@ -152,6 +152,12 @@ class ContentLoader:
             if not section_path.is_dir():
                 continue
 
+            # A section may be a set in its own right — the base game is one
+            # directory, not a directory of directories — or it may hold one
+            # directory per set. Both shapes are ordinary, so both are read.
+            if (section_path / MANIFEST_NAME).is_file():
+                directories.append(section_path)
+
             for child in sorted(section_path.iterdir()):
                 if child.is_dir() and (child / MANIFEST_NAME).is_file():
                     directories.append(child)
@@ -190,7 +196,10 @@ class ContentLoader:
         seen: dict[str, str] = {}
 
         for file_path in sorted(directory.rglob(f"*{CARD_FILE_EXTENSION}")):
-            if file_path.name == MANIFEST_NAME:
+            if file_path.name == MANIFEST_NAME or file_path.name.startswith("_"):
+                # A leading underscore marks a file that belongs to the set but
+                # is not a card file: hand-written behaviour waiting to be
+                # merged in, notes, working material.
                 continue
 
             cards = self._read_cards(file_path, report)

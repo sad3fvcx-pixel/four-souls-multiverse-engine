@@ -1,0 +1,25 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-nendoroid-guppy_s_head",
+      "name": "Guppy's Head",
+      "type": "starting_item",
+      "expansion": "nendoroid",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "↷: Give a loot card to\nanother player. If you do,\nlook at the top 2 cards of\nthe loot deck. Put them back\nin any order, then loot 1.\n------------------------------\nEach time a player rolls\na 4, recharge this.\n------------------------------\n-Eternal, Guppy-",
+        "set": "Nendoroid",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-nendoroid-guppy_s_head",
+        "version": "Alt Ability",
+        "artist": "Nendoroid figure designed by Good Smile Company",
+        "notes": "Included with the Nendoroid Isaac figure available for pre-order starting November 5th, 2024."
+      }
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-alt_art-epic_fetus",
+      "name": "Epic Fetus!",
+      "type": "treasure",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Deal 1 damage\nto each monster\nand yourself.\n------------------------------\n\"Behold, children are a\nheritage from the Lord,\nthe fruit of the womb\na reward.\" Psalm 127:3",
+        "set": "Alt Art",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-alt_art-epic_fetus",
+        "subcategory": "Active Items",
+        "version": "Alt Ability",
+        "artist": "@woodcarvingman",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-alt_art-godhead",
+      "name": "Godhead",
+      "type": "treasure",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Flip a dice roll.\n(The roll becomes\n7 - the current result.)\n------------------------------\n\"Lord, make me an\ninstrument of your peace.\"\nThe Prayer of Saint Francis",
+        "set": "Alt Art",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-alt_art-godhead",
+        "subcategory": "Active Items",
+        "version": "Alt Ability",
+        "artist": "5 Pound Gummy Tattoos (using @CubitalLP as a canvas)",
+        "notes": "Unlocked via 19,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-alt_art-guppy_s_paw",
+      "name": "Guppy's Paw",
+      "type": "treasure",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Destroy an item\nyou control. If you\ndo, put a counter on this.\n------------------------------\nYou have +1 HP for each\ncounter on this.\n------------------------------\n-Guppy-",
+        "set": "Alt Art",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-alt_art-guppy_s_paw",
+        "subcategory": "Active Items",
+        "version": "Alt Ability",
+        "artist": "@Zombolis",
+        "notes": "Unlocked on the fifth roll against The Beast during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-alt_art-brimstone",
+      "name": "Brimstone",
+      "type": "treasure",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+2 AT\n------------------------------\nEach time you deal combat\ndamage to a monster, deal\n2 damage to another player.\nYou can't attack on\nyour next turn.",
+        "set": "Alt Art",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-alt_art-brimstone",
+        "subcategory": "Passive Items",
+        "version": "Alt Ability",
+        "artist": "@Northernlion",
+        "notes": "Unlocked via 44,000 backers for the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    }
+  ]
+}

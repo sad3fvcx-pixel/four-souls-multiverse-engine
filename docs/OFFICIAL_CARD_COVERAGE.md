@@ -1,119 +1,389 @@
 # Official Card Coverage
 
-Этот документ отслеживает, какая часть официальной игры реализована.
+Этот документ генерируется из содержимого `content/`.
+Не редактируйте его руками: `python tools/coverage_report.py`.
 
 Он отвечает на два разных вопроса, и их важно не путать:
 
-1. **Загружены ли официальные карты в репозиторий.**
-2. **Хватает ли движку механик, чтобы их выразить.**
+1. **Лежит ли карта в репозитории.**
+2. **Знает ли движок, что она делает.**
+
+Карта получает 🟩 только тогда, когда у неё есть поведение — способности
+или статики. Напечатанные числа, текст и количество копий импортированы у
+всех карт, но сами по себе они ничего не делают.
 
 ---
 
-# Текущее состояние
+# Итог
 
-**Официальных карт в репозитории: 0.**
+Импортировано официальных карт: **1014**. Реализовано: **0**. Осталось: **1014**.
 
-Каталог `content/base_game/` пуст намеренно. Названия карт, напечатанные
-значения и текст правил — содержимое изданной игры. Восстановление их по памяти
-дало бы набор, который выглядит официальным и при этом тихо неверен: монстр с
-неправильным значением броска или предмет с выдуманной формулировкой хуже, чем
-отсутствие карты, потому что об ошибке ничто не сообщит.
-
-Конвейер загрузки готов и покрыт тестами. Ему нужны точные данные — из
-рулбука, официального списка карт или существующей выверенной базы.
-
-Что есть в репозитории вместо этого: `content/custom/engine_demo/` — 31
-оригинальная карта, написанная, чтобы движку было на чём работать. Это не
-контент Four Souls, и манифест это фиксирует (`"official": false`).
-
----
-
-# Готовность механик
-
-Ниже — что движок умеет выражать на сегодня. Это и есть ответ на вопрос,
-насколько он готов принять официальный набор.
-
-## Поддерживается
-
-| Механика | Чем реализовано |
-|---|---|
-| Активируемые способности | Триггер `on_activate`, поворот предмета, перезарядка в начале хода |
-| Срабатывающие способности | 52 триггера, совпадающих по именам с событиями движка |
-| Замещающие эффекты | `"replacement": true`, окна `before_damage`, `before_heal`, `roll_modified` |
-| Статические эффекты | Поле `statics`: `attack`, `max_hp`, `attacks`, `loot_plays`, с условиями |
-| Условия | 29 условий, включая `and` / `or` / `not` |
-| Цели | 27 целей, включая выбор игроком (игрок, монстр, предмет, добыча, карта в колоде) |
-| Ветвление и циклы | `if` / `else`, `repeat`, `for_each`, `sequence`, `stop` |
-| Броски кубика | `roll_dice`, `reroll`, `modify_roll`, условия `dice_*` |
-| Бой | Раунды через стек, броски, урон обеим сторонам, смерть |
-| Награды | Напечатанные души, монеты, добыча, предметы |
-| Стек и приоритет | LIFO, окна приоритета, ответы на объекты стека |
-| Решения игрока | Приостановка способности до ответа, возобновление с той же операции |
-| Персонажи | Карта персонажа, здоровье, стартовый предмет, способности и статики |
-| Покупка | Магазин, стоимость, пополнение |
-| Победа | Порог душ, State-Based Actions |
-| Комнаты | Зона комнаты, вход и выход, комната в игре для всех |
-| Проклятия | Наложение на игрока, снятие, триггеры и статики проклятия |
-| Вечные предметы | Защита от уничтожения и кражи; стартовый предмет вечен по определению |
-| Кража и уничтожение предметов | `steal_treasure` (контроль без владения), `destroy_treasure` |
-| Копирование | `copy_effect`, `copy_ability`, `duplicate` |
-| Поиск в колоде | `target_deck_card`, `take_card`, `reveal_cards`, `shuffle_deck` |
-| Бонусные души | `claim_soul`: карта сама становится душой |
-
-## Пока не поддерживается
-
-| Механика | Что потребуется |
-|---|---|
-| Правила входа в комнату | Движок открывает и закрывает комнату; когда и за какую цену в неё входят — правило, которое придёт с официальными картами |
-| Цепочка ответов на модификацию броска | Окно `roll_modified` открывается один раз; ответ на чужую модификацию потребует приоритета внутри броска |
-| Отмена объекта в стеке | `cancel_stack` из `EFFECT_REGISTRY.md` не реализован |
-| Отложенные и запланированные эффекты | `STACK.md` §22 относит их к будущим расширениям |
-
-Список сократился с девяти пунктов до четырёх. Оставшиеся четыре требуют либо
-официальных формулировок правил, либо расширения приоритета — и то и другое
-разумнее решать, имея на руках карты.
+| Набор | Карт | Реализовано | Осталось |
+|---|---:|---:|---:|
+| `base_game` | 287 | 0 | 287 |
+| `requiem` | 246 | 0 | 246 |
+| `warp_zone` | 99 | 0 | 99 |
+| `four_souls` | 90 | 0 | 90 |
+| `gold_box` | 64 | 0 | 64 |
+| `alt_art` | 62 | 0 | 62 |
+| `the_summer_of_isaac` | 50 | 0 | 50 |
+| `the_unboxing_of_isaac` | 40 | 0 | 40 |
+| `star_promos` | 25 | 0 | 25 |
+| `anniversary` | 16 | 0 | 16 |
+| `tapeworm` | 7 | 0 | 7 |
+| `anniversary_booster_pack` | 4 | 0 | 4 |
+| `g_fuel` | 4 | 0 | 4 |
+| `mewgenics` | 4 | 0 | 4 |
+| `target` | 3 | 0 | 3 |
+| `gish` | 2 | 0 | 2 |
+| `nendoroid` | 2 | 0 | 2 |
+| `retro` | 2 | 0 | 2 |
+| `the_legend_of_bum_bo` | 2 | 0 | 2 |
+| `youtooz` | 2 | 0 | 2 |
+| `challenges` | 1 | 0 | 1 |
+| `dick_knots` | 1 | 0 | 1 |
+| `star` | 1 | 0 | 1 |
+| **всего** | **1014** | **0** | **1014** |
 
 ---
 
-# Как заполнять
+# base_game
 
-Когда официальные данные появятся, статусы проставляются по картам:
+| Тип | Карт | Реализовано |
+|---|---:|---:|
+| treasure | 105 | 0 |
+| monster | 85 | 0 |
+| loot | 51 | 0 |
+| event | 17 | 0 |
+| character | 11 | 0 |
+| starting_item | 10 | 0 |
+| curse | 5 | 0 |
+| bonus_soul | 3 | 0 |
 
-⬜ Не рассмотрена
-🟨 Анализируется
-🟩 Полностью поддерживается
-🟥 Требует расширения DSL
-
-Правило простое: 🟥 ставится только тогда, когда карту нельзя выразить
-существующими средствами. Тогда расширяется DSL или Runtime — но никогда не
-пишется код под конкретную карту.
-
-## Treasure
-
-| Card | Status | Missing |
-|------|--------|---------|
-| — | | Ожидает загрузки официального набора |
-
-## Loot
-
-| Card | Status | Missing |
-|------|--------|---------|
-| — | | Ожидает загрузки официального набора |
-
-## Monsters
-
-| Card | Status | Missing |
-|------|--------|---------|
-| — | | Ожидает загрузки официального набора |
-
-## Rooms
-
-| Card | Status | Missing |
-|------|--------|---------|
-| — | | Ожидает загрузки официального набора |
 
 ## Characters
 
-| Card | Status | Missing |
-|------|--------|---------|
-| — | | Ожидает загрузки официального набора |
+| Card | Status | Notes |
+|------|--------|-------|
+| Blue Baby | ⬜ |  |
+| Cain | ⬜ |  |
+| Eden | ⬜ |  |
+| Eve | ⬜ |  |
+| Isaac | ⬜ |  |
+| Judas | ⬜ |  |
+| Lazarus | ⬜ |  |
+| Lilith | ⬜ |  |
+| Maggy | ⬜ |  |
+| Samson | ⬜ |  |
+| The Forgotten | ⬜ |  |
+
+## Starting Items
+
+| Card | Status | Notes |
+|------|--------|-------|
+| Blood Lust | ⬜ |  |
+| Book of Belial | ⬜ |  |
+| Forever Alone | ⬜ |  |
+| Incubus | ⬜ |  |
+| Lazarus' Rags | ⬜ |  |
+| Sleight of Hand | ⬜ |  |
+| The Bone | ⬜ |  |
+| The Curse | ⬜ |  |
+| The D6 | ⬜ |  |
+| Yum Heart | ⬜ |  |
+
+## Treasure
+
+| Card | Status | Notes |
+|------|--------|-------|
+| Baby Haunt | ⬜ |  |
+| Battery Bum | ⬜ |  |
+| Belly Button | ⬜ |  |
+| Blank Card | ⬜ |  |
+| Bob's Brain | ⬜ |  |
+| Book of Sin | ⬜ |  |
+| Boomerang | ⬜ |  |
+| Box! | ⬜ |  |
+| Breakfast | ⬜ |  |
+| Brimstone | ⬜ |  |
+| Bum Friend | ⬜ |  |
+| Bum-bo! | ⬜ |  |
+| Cambion Conception | ⬜ |  |
+| Champion Belt | ⬜ |  |
+| Chaos | ⬜ |  |
+| Chaos Card | ⬜ |  |
+| Charged Baby | ⬜ |  |
+| Cheese Grater | ⬜ |  |
+| Compost | ⬜ |  |
+| Contract from Below | ⬜ |  |
+| Crystal Ball | ⬜ |  |
+| Curse of the Tower | ⬜ |  |
+| Dad's Lost Coin | ⬜ |  |
+| Daddy Haunt | ⬜ |  |
+| Dark Bum | ⬜ |  |
+| Dead Bird | ⬜ |  |
+| Decoy | ⬜ |  |
+| Dinner | ⬜ |  |
+| Diplopia | ⬜ |  |
+| Donation Machine | ⬜ |  |
+| Dry Baby | ⬜ |  |
+| Eden's Blessing | ⬜ |  |
+| Empty Vessel | ⬜ |  |
+| Eye of Greed | ⬜ |  |
+| Fanny Pack | ⬜ |  |
+| Finger! | ⬜ |  |
+| Flush! | ⬜ |  |
+| Glass Cannon | ⬜ |  |
+| Goat Head | ⬜ |  |
+| Godhead | ⬜ |  |
+| Golden Razor Blade | ⬜ |  |
+| Greed's Gullet | ⬜ |  |
+| Guppy's Collar | ⬜ |  |
+| Guppy's Head | ⬜ |  |
+| Guppy's Paw | ⬜ |  |
+| Host Hat | ⬜ |  |
+| Ipecac | ⬜ |  |
+| Jawbone | ⬜ |  |
+| Lucky Foot | ⬜ |  |
+| Meat! | ⬜ |  |
+| Mini Mush | ⬜ |  |
+| Modeling Clay | ⬜ |  |
+| Mom's Box | ⬜ |  |
+| Mom's Bra | ⬜ |  |
+| Mom's Coin Purse | ⬜ |  |
+| Mom's Purse | ⬜ |  |
+| Mom's Razor | ⬜ |  |
+| Mom's Shovel | ⬜ |  |
+| Monster Manual | ⬜ |  |
+| Monstro's Tooth | ⬜ |  |
+| Mr. Boom | ⬜ |  |
+| Mystery Sack | ⬜ |  |
+| No! | ⬜ |  |
+| Pandora's Box | ⬜ |  |
+| Pay to Play | ⬜ |  |
+| Placebo | ⬜ |  |
+| Polydactyly | ⬜ |  |
+| Portable Slot Machine | ⬜ |  |
+| Potato Peeler | ⬜ |  |
+| Razor Blade | ⬜ |  |
+| Remote Detonator | ⬜ |  |
+| Restock | ⬜ |  |
+| Sack Head | ⬜ |  |
+| Sack of Pennies | ⬜ |  |
+| Sacred Heart | ⬜ |  |
+| Shadow | ⬜ |  |
+| Shiny Rock | ⬜ |  |
+| Smelter | ⬜ |  |
+| Spider Mod | ⬜ |  |
+| Spoon Bender | ⬜ |  |
+| Starter Deck | ⬜ |  |
+| Steamy Sale! | ⬜ |  |
+| Suicide King | ⬜ |  |
+| Synthoil | ⬜ |  |
+| Tarot Cloth | ⬜ |  |
+| Tech X | ⬜ |  |
+| The Battery | ⬜ |  |
+| The Blue Map | ⬜ |  |
+| The Chest | ⬜ |  |
+| The Compass | ⬜ |  |
+| The D10 | ⬜ |  |
+| The D100 | ⬜ |  |
+| The D20 | ⬜ |  |
+| The D4 | ⬜ |  |
+| The Dead Cat | ⬜ |  |
+| The Habit | ⬜ |  |
+| The Map | ⬜ |  |
+| The Midas Touch | ⬜ |  |
+| The Polaroid | ⬜ |  |
+| The Poop | ⬜ |  |
+| The Relic | ⬜ |  |
+| The Shovel | ⬜ |  |
+| There's Options | ⬜ |  |
+| Trinity Shield | ⬜ |  |
+| Two of Clubs | ⬜ |  |
+
+## Loot
+
+| Card | Status | Notes |
+|------|--------|-------|
+| 2 Cents! | ⬜ | ×12 |
+| 3 Cents! | ⬜ | ×15 |
+| 4 Cents! | ⬜ | ×9 |
+| A Dime!! | ⬜ |  |
+| A Nickel! | ⬜ | ×5 |
+| A Penny! | ⬜ | ×6 |
+| Blank Rune | ⬜ |  |
+| Bloody Penny | ⬜ |  |
+| Bomb! | ⬜ | ×4 |
+| Broken Ankh | ⬜ |  |
+| Butter Bean! | ⬜ | ×3 |
+| Cain's Eye | ⬜ |  |
+| Counterfeit Penny | ⬜ |  |
+| Curved Horn | ⬜ |  |
+| Dagaz | ⬜ |  |
+| Dice Shard | ⬜ | ×3 |
+| Ehwaz | ⬜ |  |
+| Gold Bomb!! | ⬜ |  |
+| Golden Horseshoe | ⬜ |  |
+| Guppy's Hairball | ⬜ |  |
+| I. The Magician | ⬜ |  |
+| II. The High Priestess | ⬜ |  |
+| III. The Empress | ⬜ |  |
+| IV. The Emperor | ⬜ |  |
+| IX. The Hermit | ⬜ |  |
+| Lil Battery | ⬜ | ×4 |
+| Lost Soul | ⬜ |  |
+| Mega Battery | ⬜ |  |
+| O. The Fool | ⬜ |  |
+| Pills! | ⬜ |  |
+| Pills! | ⬜ |  |
+| Pills! | ⬜ |  |
+| Purple Heart | ⬜ |  |
+| Soul Heart | ⬜ | ×2 |
+| Swallowed Penny | ⬜ |  |
+| V. The Hierophant | ⬜ |  |
+| VI. The Lovers | ⬜ |  |
+| VII. The Chariot | ⬜ |  |
+| VIII. Justice | ⬜ |  |
+| X. Wheel of Fortune | ⬜ |  |
+| XI. Strength | ⬜ |  |
+| XII. The Hanged Man | ⬜ |  |
+| XIII. Death | ⬜ |  |
+| XIV. Temperance | ⬜ |  |
+| XIX. The Sun | ⬜ |  |
+| XV. The Devil | ⬜ |  |
+| XVI. The Tower | ⬜ |  |
+| XVII. The Stars | ⬜ |  |
+| XVIII. The Moon | ⬜ |  |
+| XX. Judgement | ⬜ |  |
+| XXI. The World | ⬜ |  |
+
+## Monsters
+
+| Card | Status | Notes |
+|------|--------|-------|
+| Big Spider | ⬜ |  |
+| Black Bony | ⬜ |  |
+| Boom Fly | ⬜ |  |
+| Carrion Queen | ⬜ |  |
+| Chub | ⬜ |  |
+| Clotty | ⬜ |  |
+| Cod Worm | ⬜ |  |
+| Conjoined Fatty | ⬜ |  |
+| Conquest | ⬜ |  |
+| Cursed Fatty | ⬜ |  |
+| Cursed Gaper | ⬜ |  |
+| Cursed Horf | ⬜ |  |
+| Cursed Keeper Head | ⬜ |  |
+| Cursed Mom's Hand | ⬜ |  |
+| Cursed Psy Horf | ⬜ |  |
+| Daddy Long Legs | ⬜ |  |
+| Dank Globin | ⬜ |  |
+| Dark One | ⬜ |  |
+| Death | ⬜ |  |
+| Delirium | ⬜ |  |
+| Dinga | ⬜ |  |
+| Dip | ⬜ |  |
+| Dople | ⬜ |  |
+| Envy | ⬜ |  |
+| Evil Twin | ⬜ |  |
+| Famine | ⬜ |  |
+| Fat Bat | ⬜ |  |
+| Fatty | ⬜ |  |
+| Fly | ⬜ |  |
+| Gemini | ⬜ |  |
+| Gluttony | ⬜ |  |
+| Greed | ⬜ |  |
+| Greedling | ⬜ |  |
+| Gurdy | ⬜ |  |
+| Gurdy Jr. | ⬜ |  |
+| Hanger | ⬜ |  |
+| Holy Dinga | ⬜ |  |
+| Holy Dip | ⬜ |  |
+| Holy Keeper Head | ⬜ |  |
+| Holy Mom's Eye | ⬜ |  |
+| Holy Squirt | ⬜ |  |
+| Hopper | ⬜ |  |
+| Horf | ⬜ |  |
+| Keeper Head | ⬜ |  |
+| Larry Jr. | ⬜ |  |
+| Leaper | ⬜ |  |
+| Leech | ⬜ |  |
+| Little Horn | ⬜ |  |
+| Lust | ⬜ |  |
+| Mask of Infamy | ⬜ |  |
+| Mega Fatty | ⬜ |  |
+| Mom! | ⬜ |  |
+| Mom's Dead Hand | ⬜ |  |
+| Mom's Eye | ⬜ |  |
+| Mom's Hand | ⬜ |  |
+| Monstro | ⬜ |  |
+| Mulliboom | ⬜ |  |
+| Mulligan | ⬜ |  |
+| Pale Fatty | ⬜ |  |
+| Peep | ⬜ |  |
+| Pestilence | ⬜ |  |
+| Pin | ⬜ |  |
+| Pooter | ⬜ |  |
+| Portal | ⬜ |  |
+| Pride | ⬜ |  |
+| Psy Horf | ⬜ |  |
+| Rag Man | ⬜ |  |
+| Rage Creep | ⬜ |  |
+| Red Host | ⬜ |  |
+| Ring of Flies | ⬜ |  |
+| Satan! | ⬜ |  |
+| Scolex | ⬜ |  |
+| Sloth | ⬜ |  |
+| Spider | ⬜ |  |
+| Squirt | ⬜ |  |
+| Stoney | ⬜ |  |
+| Swarm of Flies | ⬜ |  |
+| The Bloat | ⬜ |  |
+| The Duke of Flies | ⬜ |  |
+| The Haunt | ⬜ |  |
+| The Lamb | ⬜ |  |
+| Trite | ⬜ |  |
+| War | ⬜ |  |
+| Wizoob | ⬜ |  |
+| Wrath | ⬜ |  |
+
+## Events
+
+| Card | Status | Notes |
+|------|--------|-------|
+| Ambush! | ⬜ |  |
+| Chest | ⬜ |  |
+| Chest | ⬜ |  |
+| Cursed Chest | ⬜ |  |
+| Dark Chest | ⬜ |  |
+| Dark Chest | ⬜ |  |
+| Devil Deal | ⬜ |  |
+| Gold Chest | ⬜ |  |
+| Gold Chest | ⬜ |  |
+| Greed! | ⬜ |  |
+| I Can See Forever! | ⬜ |  |
+| Mega Troll Bomb! | ⬜ |  |
+| Secret Room! | ⬜ |  |
+| Shop Upgrade! | ⬜ |  |
+| Troll Bombs | ⬜ |  |
+| We Need to Go Deeper! | ⬜ |  |
+| XL Floor! | ⬜ |  |
+
+## Curses
+
+| Card | Status | Notes |
+|------|--------|-------|
+| Curse of Amnesia | ⬜ |  |
+| Curse of Greed | ⬜ |  |
+| Curse of Loss | ⬜ |  |
+| Curse of Pain | ⬜ |  |
+| Curse of the Blind | ⬜ |  |
+
+## Bonus Souls
+
+| Card | Status | Notes |
+|------|--------|-------|
+| Soul of Gluttony | ⬜ |  |
+| Soul of Greed | ⬜ |  |
+| Soul of Guppy | ⬜ |  |

@@ -1,0 +1,221 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-base_game-blood_lust",
+      "name": "Blood Lust",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a player or\nmonster. They gain\n+1 AT till end of turn.\n------------------------------\nAt the end of your\nturn, recharge this.\n-------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-blood_lust",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The Basement stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-book_of_belial",
+      "name": "Book of Belial",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Add or subtract\n1 from a roll.\n------------------------------\nAt the end of your\nturn, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-book_of_belial",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "starting_items-base_game-forever_alone",
+      "name": "Forever Alone",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose one-\n•Steal 1¢ from another player.\n------------------------------\n•Look at the top card of a deck.\n------------------------------\n•Discard a loot card, then loot 1.\n------------------------------\nEach time you take damage,\nrecharge this.\n------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-forever_alone",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The Blue Womb stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-incubus",
+      "name": "Incubus",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose one-\n•Look at a player's hand.\nYou may swap a card from\nyour hand with one of theirs.\n------------------------------\n•Loot 1, then put a card\nfrom your hand on top\nof the loot deck.\n------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-incubus",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The Womb stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-lazarus_rags",
+      "name": "Lazarus' Rags",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time you die,\nafter paying penalties,\ngain +1 treasure.\n------------------------------\n-Eternal-\n(This can't be destroyed\nor put into discard.)",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-lazarus_rags",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via the I Am Error? stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-sleight_of_hand",
+      "name": "Sleight of Hand",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Look at the top\n5 cards of a deck.\nPut them back in\nany order.\n------------------------------\n-Eternal-\n(This can't be destroyed\nor put into discard.)",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-sleight_of_hand",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Crossover with the video game, The Legend of Bum-bo."
+      }
+    },
+    {
+      "id": "starting_items-base_game-the_bone",
+      "name": "The Bone",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "↷: Put a counter on this.\n------------------------------\n$: Remove 1 counter from this:\nAdd 1 to a roll.\n------------------------------\n$: Remove 2 counters from this: Deal\n1 damage to a monster or player.\n------------------------------\n$: Remove 5 counters from this:\nThis becomes a soul and\nloses all abilities.\n------------------------------\n-Eternal-\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-the_bone",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via reaching $2,000,000 in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-the_curse",
+      "name": "The Curse",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, put the top card\nof a deck into discard.\n------------------------------\n↷: Put the top card\nof a discard on\ntop of its deck.\n------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-the_curse",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The Caves stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-the_d6",
+      "name": "The D6",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a dice roll.\nIts controller\nrerolls it.\n------------------------------\nAt the end of your\nturn, recharge this.\n-------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-the_d6",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "starting_items-base_game-yum_heart",
+      "name": "Yum Heart",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a player or\nmonster. Prevent the\nnext instance of damage\nthey would take this turn.\n------------------------------\nAt the end of your\nturn, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-yum_heart",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    }
+  ]
+}

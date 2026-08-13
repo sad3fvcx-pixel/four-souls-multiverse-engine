@@ -1,0 +1,1104 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-alt_art-begotten",
+      "name": "Begotten",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 2,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 2+ | AT: 1\n\nWhile this is at 2 HP\nor less, it has +2 DC.\n------------------------------\nRewards: Loot 3",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-alt_art-begotten",
+        "subcategory": "Basic Enemies",
+        "version": "Alt Ability",
+        "artist": "@davecorreia",
+        "notes": "Unlocked via 4,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-alt_art-big_bony",
+      "name": "Big Bony",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 2,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 2+ | AT: 1\n\nEach time a player\nmisses an attack roll,\nthey roll-\n1-2: They take 1 damage.\n------------------------------\nRewards: Loot 3",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-alt_art-big_bony",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@DraculaFetus",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-alt_art-clotty",
+      "name": "Clotty",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 2,
+      "rewards": {
+        "cents": 4
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 2+ | AT: 1\n\n\"But flesh with the\nlife thereof, which is\nthe blood thereof,\nshall ye not eat.\"\nGenesis 9:4\n------------------------------\nRewards: 4¢",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-alt_art-clotty",
+        "subcategory": "Basic Enemies",
+        "version": "Alt Ability",
+        "artist": "@rich_werner",
+        "notes": "Unlocked via 32,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-alt_art-gaper",
+      "name": "Gaper",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nWhen this dies on an\nattack roll of 4, the\nactive player must make\nan additional attack\non the monster slot\nthis was in.\n------------------------------\nRewards: 3¢",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-alt_art-gaper",
+        "subcategory": "Basic Enemies",
+        "version": "Alt Ability",
+        "artist": "@slimyswampghost",
+        "notes": "Unlocked via 29,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-alt_art-mom_s_hand",
+      "name": "Mom's Hand",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "cents": 9
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nAt the start of each turn\nthe active player rolls-\n1-2: They must attack this this turn.\n------------------------------\nWhen this deals combat damage,\ncancel everything that hasn't\nresolved and end the turn.\n------------------------------\nRewards: 9¢",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-alt_art-mom_s_hand",
+        "subcategory": "Basic Enemies",
+        "version": "Alt Ability",
+        "artist": "Jimbo Phillips",
+        "notes": "Unlocked via 43,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-alt_art-mulliboom",
+      "name": "Mulliboom",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 4,
+      "roll": 3,
+      "rewards": {
+        "cents": 7
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 3+ | AT: 4!\n\nWhen this dies, the active\nplayer deals 1 damage\neach to a monster,\nplayer, and themselves.\n------------------------------\nRewards: 7¢",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-alt_art-mulliboom",
+        "subcategory": "Basic Enemies",
+        "version": "Alt Ability",
+        "artist": "@RobertoZurdoArt",
+        "notes": "Unlocked via 16,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-alt_art-mulligan",
+      "name": "Mulligan",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nWhen this dies,\nexpand monster slots,\nshop slots, or room\nslots by 1.\n------------------------------\nRewards: 3¢",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-alt_art-mulligan",
+        "subcategory": "Basic Enemies",
+        "version": "Alt Ability",
+        "artist": "@peachmomoko60",
+        "notes": "Unlocked via 1,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-alt_art-twitchy",
+      "name": "Twitchy",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "cents": 8
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 5+ | AT: 1\n\nAt the end of each\nturn, the active player\nmoves this to another\nmonster slot.\n------------------------------\nRewards: 8¢",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-alt_art-twitchy",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Krooked_Glasses",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-brownie",
+      "name": "Brownie",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 3+ | AT: 1\n\nWhen this dies, search the monster\ndeck for a card named Dingle or\nDangle, put it in a monster slot\nnot being attacked, then shuffle\nthe monster deck. The active\nplayer must make an additional\nattack on it this turn.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-brownie",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@extrafabulous",
+        "notes": "Unlocked via 15,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-daddy_long_legs",
+      "name": "Daddy Long Legs",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 0,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 5+ | AT: 0\n\nEach time a player\nrolls a 1, each monster\ngains +1 AT till end of turn.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-daddy_long_legs",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@rickyberwick",
+        "notes": "Unlocked via 39,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-dark_one",
+      "name": "Dark One",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nEach time this takes\ndamage, it gains +2 AT\ntill end of turn.\n------------------------------\nRewards: +1 tresure\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-dark_one",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@CptHardluck",
+        "notes": "Unlocked after the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-dingle",
+      "name": "Dingle",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 2\n\nEach time this takes damage,\nthe active player puts a poo\ncounter on a non-eternal item.\nThat item loses all abilities\nfor as long as it has a poo\ncounter on it.\n------------------------------\nRewards: 2¢\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-dingle",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@artsyfartsy",
+        "notes": "Unlocked via 30,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-famine",
+      "name": "Famine",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 2,
+      "souls": 1,
+      "rewards": {
+        "cents": 4
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 2+ | AT: 1\n\nWhen this dies,\nthe active player\ndiscards their hand.\n------------------------------\nRewards: 4¢\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-famine",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@mossmouth",
+        "notes": "Unlocked via 7,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-fistula",
+      "name": "Fistula",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 8
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEach time this takes damage,\nput a counter on this.\n------------------------------\nOther monsters have +1 DC\nfor each counter on this.\n------------------------------\nRewards: 8¢\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-fistula",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "Tom Bunk",
+        "notes": "Unlocked via 26,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-gurdy",
+      "name": "Gurdy",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 7
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nMonsters have +1 HP while\nthis is covered.\n------------------------------\nAt the start of each turn, the\nplayer to the active player's left\nputs the top card of the monster\ndeck in a monster slot.\n------------------------------\nRewards: 7¢\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-gurdy",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@the_ptoing",
+        "notes": "Unlocked via 28,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-hornfel",
+      "name": "Hornfel",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 5+ | AT: 1\n\nEach time this deals\ncombat damage, it deals\n1 damage to a monster\nchosen at random.\n------------------------------\nRewards: 6¢\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-hornfel",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@EvilNassu",
+        "notes": "Unlocked via 33,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-larry_jr",
+      "name": "Larry Jr.",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nWhile this is at 2 HP\nor less, it has +1 AT.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-larry_jr",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@16BitsofGlass",
+        "notes": "Unlocked on the second roll against The Beast during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-little_horn",
+      "name": "Little Horn",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "loot": 4
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 5+ | AT: 1\n\nAt the end of each turn, if this\nwasn't attacked, put a counter on it.\n------------------------------\nAt the start of each turn, this\ndeals damage equal to the number\nof counters on it divided as the\nactive player chooses to any\nnumber of players.\n------------------------------\nRewards: Loot 4\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-little_horn",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@AgnesGarbowska",
+        "notes": "Unlocked via 46,000 backers for the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-mega_fatty",
+      "name": "Mega Fatty",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nEach time a player\nrolls a 1, this\ngains +2 HP till end\nof turn.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-mega_fatty",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@meatcanyon",
+        "notes": "Unlocked after the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-min_min",
+      "name": "Min Min",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 2,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 2+ | AT: 1\n\nAfter each attack roll\nagainst this, note its\nresult till end of turn.\n------------------------------\nEach time the active player\nrolls a number noted by this,\nthey take 1 damage.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-min_min",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@JhonenV",
+        "notes": "Unlocked via 22,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-monstro",
+      "name": "Monstro",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nWhen this dies, the active\nplayer rolls-\n1-3: Destroy a non-eternal\nitem you control chosen\nat random.\n------------------------------\nRewards: 5¢\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-monstro",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "Peach McMillen",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-monstro_ii",
+      "name": "Monstro II",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 3+ | AT: 1\n\nEach time this deals combat damage,\neach player votes right or left-\nIf right wins, the player to the\nactive player's right takes 1\ndamage. Otherwise, the player\nto the active player's left\ntakes 1 damage.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-monstro_ii",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@EnriqueCarmena",
+        "notes": "Unlocked via 13,000 backers for the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-pestilence",
+      "name": "Pestilence",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nWhen this dies, the\nactive player chooses a\nplayer. That player takes\n1 damage, then deals 1\ndamage to a player.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-pestilence",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@MattKap1",
+        "notes": "Unlocked via 24,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-pin",
+      "name": "Pin",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nThis takes no combat\ndamage on attack\nrolls of 5 or 6.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-pin",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@DAVID_FIRTH",
+        "notes": "Unlocked via 42,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-polycephalus",
+      "name": "Polycephalus",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEach time this takes\ndamage, flip the next\nattack roll this turn.\n(The roll becomes\n7 - the current result.)\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-polycephalus",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@ShawnCoss",
+        "notes": "Unlocked via 14,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-rag_man",
+      "name": "Rag Man",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nWhen this dies, after\ngaining rewards, the\nactive player rolls-\n1 or 6: Put this in a monster\nslot 1 card from the top.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-rag_man",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@DaveRapoza",
+        "notes": "Unlocked via 36,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-rag_mega",
+      "name": "Rag Mega",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 4+ | AT: 1\n\nWhen an attack is declared\non this, non-active players\ncan't play loot cards or\nactivate abilities till\nend of turn.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-rag_mega",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@DanPaladin",
+        "notes": "Unlocked via 12,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-the_bloat",
+      "name": "The Bloat",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 1\n\nEach time the attacking\nplayer misses an attack\nroll, they roll 2 dice-\nIf the results are\nthe same, they die!\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-the_bloat",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@screamerclauz",
+        "notes": "Unlocked via 10,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-alt_art-the_duke_of_flies",
+      "name": "The Duke of Flies",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhen this dies,\nexpand monster\nslots by 2.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-alt_art-the_duke_of_flies",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@jShannonigan",
+        "notes": "Unlocked via 8,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-alt_art-delirium",
+      "name": "Delirium",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 2,
+      "roll": 3,
+      "rewards": {
+        "loot": 6
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 3+ | AT: 2\n\nWhile the active player\ncontrols 2 souls, monsters\nhave +1 DC. If the active player\ncontrols 3+ souls, monsters\nhave +2 DC instead.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: Loot 6",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-alt_art-delirium",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@_SrPelo_",
+        "notes": "Unlocked in a celebration of the culmination of all the community's contributions during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-alt_art-it_lives",
+      "name": "It Lives!",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 8,
+      "attack": 4,
+      "roll": 3,
+      "souls": 2,
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 8 | DC: 3+ | AT: 4\n\nWhile this soul is\ncontrolled, players need\nto control at least 5\nsouls to win.\n------------------------------\nRewards: <3\n(+2 souls)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-alt_art-it_lives",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@plastiboo",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-alt_art-mega_satan",
+      "name": "Mega Satan!",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 6,
+      "roll": 6,
+      "souls": 1,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 6 | AT: 6\n\nPlayers can be attacked\nand have 4+ DC.\n------------------------------\nAt the end of each turn, if\nthe active player is the only\nliving player, this dies.\n------------------------------\nRewards: +2 treasure\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-alt_art-mega_satan",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@_KrisWilson_",
+        "notes": "Unlocked via 25,000 backers for the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-alt_art-mega_satan-v2",
+      "name": "Mega Satan!",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 6,
+      "roll": 6,
+      "souls": 2,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 6 | AT: 6\n\nPlayers can be attacked and\nhave 4+ DC. The active player may\nattack any number of times.\n------------------------------\nEach time a player dies,\nthis takes 2 damage.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: +2 treasure\n(+2 souls)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-alt_art-mega_satan",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@drakeredcrest",
+        "notes": "Unlocked after the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-alt_art-mom",
+      "name": "Mom!",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 2,
+      "roll": 3,
+      "souls": 2,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 3+ | AT: 2\n\nOther monsters have +1 HP.\n------------------------------\nWhen an attack is declared\non this, expand monster\nslots by 1.\n------------------------------\nRewards: +1 treasure\n(+2 souls)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-alt_art-mom",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@d20monkey",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-alt_art-satan",
+      "name": "Satan!",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 4,
+      "souls": 2,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 4+ | AT: 1\n\nThe third time a player\nrolls a 6 each turn, kill\nall players.\n------------------------------\nEach time a player would\nroll a 5, change the\nresult to a 6.\n------------------------------\nRewards: +2 treasure\n(+2 souls)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-alt_art-satan",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@zoethorogood",
+        "notes": "Unlocked via 18,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-alt_art-the_beast",
+      "name": "The Beast",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 6,
+      "roll": 6,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 6 | AT: 6\n\nWhen this dies, each player\ndestroys each soul they\ncontrol, then each player\ngains +2 treasure\nand loots 6.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-alt_art-the_beast",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@Shamfooo",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-alt_art-the_lamb",
+      "name": "The Lamb",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 6,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 3+ | AT: 6!\n\nWhen this dies, the active\nplayer may choose 2 other\nplayers. They each destroy\na soul they control.\n------------------------------\n\"I'll swallow your soul!\"\nNot the Bible\n------------------------------\nRewards: 3¢\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-alt_art-the_lamb",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@JLcomics",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-alt_art-ultra_greed",
+      "name": "Ultra Greed!",
+      "type": "monster",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 5+ | AT: 2\n\nWhen an attack is declared\non this, put a gold counter\non a non-eternal item.\n------------------------------\nWhen this dies, the active\nplayer may steal an item\nwith a gold counter on it.\n------------------------------\nRewards: 5¢\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-alt_art-ultra_greed",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "Sam Kieth",
+        "notes": "Unlocked via 40,000 backers for the Requiem Kickstarter."
+      }
+    }
+  ]
+}

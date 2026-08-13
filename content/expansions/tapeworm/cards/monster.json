@@ -1,0 +1,32 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-tapeworm-tapeworm",
+      "name": "Tapeworm",
+      "type": "monster",
+      "expansion": "tapeworm",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 4,
+      "roll": 2,
+      "rewards": {
+        "loot": 4
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 2+ | AT: 4\n\nWhen this dies put an egg\ncounter on the active player.\n------------------------------\nWhen a player with an egg counter\ndies and this is in discard, remove\ntheir egg counters and put this\nback into an active monster slot.\n------------------------------\nRewards: Loot 4",
+        "set": "Tapeworm",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-tapeworm-tapeworm",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "notes": "Unlocked via reaching $250,000 in the Tapeworm Kickstarter.\n\nAs with the rest of the Tapeworm promos, this card is foil-only."
+      }
+    }
+  ]
+}

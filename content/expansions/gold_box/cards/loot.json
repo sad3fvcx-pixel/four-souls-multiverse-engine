@@ -1,0 +1,298 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-1-gold_box-a_penny",
+      "name": "A Penny!",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 1¢.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 2,
+        "source_id": "loot_deck-1-gold_box-a_penny",
+        "subcategory": "1¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-1-gold_box-charged_penny",
+      "name": "Charged Penny",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 1¢,\nthen recharge\nan item.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-1-gold_box-charged_penny",
+        "subcategory": "1¢",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-2-gold_box-2_cents",
+      "name": "2 Cents!",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 2¢.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 2,
+        "source_id": "loot_deck-2-gold_box-2_cents",
+        "subcategory": "2¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-3-gold_box-3_cents",
+      "name": "3 Cents!",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 3¢.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 2,
+        "source_id": "loot_deck-3-gold_box-3_cents",
+        "subcategory": "3¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-4-gold_box-4_cents",
+      "name": "4 Cents!",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 4¢.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 2,
+        "source_id": "loot_deck-4-gold_box-4_cents",
+        "subcategory": "4¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-bombs-gold_box-bomb",
+      "name": "Bomb!",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Deal 1 damage\nto a monster\nor player.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-bombs-gold_box-bomb",
+        "subcategory": "Bombs",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-gold_box-a_sack",
+      "name": "A Sack",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Loot 3.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-gold_box-a_sack",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-gold_box-credit_card",
+      "name": "Credit Card",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The first shop item\na player purchases\nthis turn costs 0¢.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-gold_box-credit_card",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-gold_box-holy_card",
+      "name": "Holy Card",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player.\nThe next time that\nplayer would die this\nturn, prevent death. If\nit's their turn, cancel\neverything that hasn't\nresolved and end it.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-gold_box-holy_card",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-gold_box-joker",
+      "name": "Joker",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Look at a\nplayer's hand. You\nmay steal a loot\ncard from them.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-gold_box-joker",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-gold_box-two_of_diamonds",
+      "name": "Two of Diamonds",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player.\nThey gain x¢, where\nx is the number of\n¢ they have.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-gold_box-two_of_diamonds",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-dice_shards_soul_hearts-gold_box-soul_heart",
+      "name": "Soul Heart",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player.\nPrevent the next 1\ndamage they would\ntake this turn.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-dice_shards_soul_hearts-gold_box-soul_heart",
+        "subcategory": "Dice Shards / Soul Hearts",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-gold_box-jera",
+      "name": "Jera",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Loot x, where x\nis the number of\nloot cards in\nyour hand.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-gold_box-jera",
+        "subcategory": "Pills / Runes",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-gold_box-pills",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Recharge each\nitem you control.\n------------------------------\n3-4: Monsters you attack\nhave -1 DC till end of turn.\n------------------------------\n5-6: Monsters you attack\nhave +2 DC till end of turn.",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-gold_box-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-gold_box-cancer",
+      "name": "Cancer",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "You have +1 to your\nfirst dice roll\neach turn.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-gold_box-cancer",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-gold_box-pink_eye",
+      "name": "Pink Eye",
+      "type": "loot",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "Each time you take\ncombat damage from a\nmonster or player on an\nattack roll of 1, deal\n1 damage to them.\n------------------------------\n-Trinket-",
+        "set": "Gold Box",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-gold_box-pink_eye",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

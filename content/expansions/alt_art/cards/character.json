@@ -1,0 +1,315 @@
+{
+  "cards": [
+    {
+      "id": "characters-alt_art-azazel",
+      "name": "Azazel",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nLord of the Pit",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-azazel",
+        "version": "Alt Art",
+        "artist": "@dolldrums",
+        "notes": "Unlocked on the third roll against The Beast during the Requiem Kickstarter.",
+        "starting_item": "starting_items-gold_box-lord_of_the_pit"
+      }
+    },
+    {
+      "id": "characters-alt_art-blue_baby",
+      "name": "Blue Baby",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nForever Alone",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-blue_baby",
+        "version": "Alt Art",
+        "artist": "@FlorkOfCows",
+        "notes": "Unlocked via 6,000 backers for the Requiem Kickstarter.",
+        "starting_item": "starting_items-base_game-forever_alone"
+      }
+    },
+    {
+      "id": "characters-alt_art-eden",
+      "name": "Eden",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\n------------------------------\nWhen you start the game, look at\nthe top 3 cards of the treasure\ndeck and choose one. It becomes\nyour starting item and gains\neternal. Put the rest on the\nbottom of the treasure deck.",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 2,
+        "source_id": "characters-alt_art-eden",
+        "version": "Alt Art",
+        "artist": "Tonetta 777",
+        "notes": "Unlocked via 23,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "characters-alt_art-guppy",
+      "name": "Guppy",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nInfestation",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-guppy",
+        "version": "Alt Art",
+        "artist": "Amy Weber",
+        "notes": "Unlocked via 38,000 backers for the Requiem Kickstarter.",
+        "starting_item": "starting_items-four_souls-infestation"
+      }
+    },
+    {
+      "id": "characters-alt_art-isaac",
+      "name": "Isaac",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nThe D6",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-isaac",
+        "version": "Alt Art",
+        "artist": "@TomFulp",
+        "notes": "Unlocked via 41,000 bakcers for the Requiem Kickstarter.",
+        "starting_item": "starting_items-base_game-the_d6"
+      }
+    },
+    {
+      "id": "characters-alt_art-judas",
+      "name": "Judas",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nBook of Belial",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-judas",
+        "version": "Alt Art",
+        "artist": "@Vlurr143",
+        "notes": "Unlocked via 2,000 backers for the Requiem Kickstarter.",
+        "starting_item": "starting_items-base_game-book_of_belial"
+      }
+    },
+    {
+      "id": "characters-alt_art-lilith",
+      "name": "Lilith",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nIncubus",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-lilith",
+        "version": "Alt Art",
+        "artist": "Sandra ArteagA",
+        "notes": "Unlocked via 21,000 backers for the Requiem Kickstarter.",
+        "starting_item": "starting_items-base_game-incubus"
+      }
+    },
+    {
+      "id": "characters-alt_art-the_capricious",
+      "name": "The Capricious",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Choose one-\n•Play an additional\nloot card this turn.\n------------------------------\n•Put a shop item into discard.\n------------------------------\nStarting item:\nGlitch",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-the_capricious",
+        "version": "Alt Art",
+        "artist": "@bispau",
+        "notes": "Unlocked on the eighth roll against The Beast during the Requiem Kickstarter.",
+        "starting_item": "starting_items-requiem-glitch"
+      }
+    },
+    {
+      "id": "characters-alt_art-the_forgotten",
+      "name": "The Forgotten",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nThe Bone",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-the_forgotten",
+        "version": "Alt Art",
+        "artist": "@MaxGrecke",
+        "notes": "Unlocked via 45,000 backers for the Requiem Kickstarter.",
+        "starting_item": "starting_items-base_game-the_bone"
+      }
+    },
+    {
+      "id": "characters-alt_art-the_harlot",
+      "name": "The Harlot",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nGello",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-the_harlot",
+        "version": "Alt Art",
+        "artist": "@thetruehyperion",
+        "notes": "Unlocked via 11,000 backers for the Requiem Kickstarter.",
+        "starting_item": "starting_items-requiem-gello"
+      }
+    },
+    {
+      "id": "characters-alt_art-the_keeper",
+      "name": "The Keeper",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nWooden Nickel",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-the_keeper",
+        "version": "Alt Art",
+        "artist": "@sp00ky_d00dles",
+        "notes": "Unlocked via 9,000 backers for the Requiem Kickstarter.",
+        "starting_item": "starting_items-gold_box-wooden_nickel"
+      }
+    },
+    {
+      "id": "characters-alt_art-the_lost",
+      "name": "The Lost",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 1 | AT: 1\n\n↷: Play an additional\nloot card this turn.\n------------------------------\nAt the end of your turn,\nrecharge up to 1 character.\n------------------------------\nStarting item:\nHoly Mantle\n(+1 soul)",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-the_lost",
+        "version": "Alt Art",
+        "artist": "@mushbuh",
+        "notes": "Unlocked via 17,000 backers for the Requiem Kickstarter.",
+        "starting_item": "starting_items-gold_box-holy_mantle"
+      }
+    },
+    {
+      "id": "characters-alt_art-the_savage",
+      "name": "The Savage",
+      "type": "character",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nBerzerk",
+        "set": "Alt Art",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-alt_art-the_savage",
+        "version": "Alt Art",
+        "artist": "@JohnnyUtahNG",
+        "notes": "Unlocked via 3,000 backers for the Requiem Kickstarter.",
+        "starting_item": "starting_items-requiem-berserk"
+      }
+    }
+  ]
+}

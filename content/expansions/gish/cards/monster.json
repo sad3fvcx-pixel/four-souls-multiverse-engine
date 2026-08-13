@@ -1,0 +1,33 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-bosses-gish-gish",
+      "name": "Gish",
+      "type": "monster",
+      "expansion": "gish",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 3+ | AT: 1\n\nEach player must\nattack this on their turn.\n------------------------------\nWhen this dies, choose a\nplayer.  That player skips\ntheir next turn.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Gish",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-gish-gish",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "This card, along with the Lil' Gish treasure card, is included in the Gish Big Box Edition, produced by Limited Run Games, available between February 14th, 2020 and February 29th, 2020."
+      }
+    }
+  ]
+}

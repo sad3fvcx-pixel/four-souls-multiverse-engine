@@ -1,0 +1,80 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-bad_events-alt_art-ambush",
+      "name": "Ambush!",
+      "type": "event",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Expand monster slots\nby 2. The active player\nmust make an additional\nattack on a monster in\none of those slots\nthis turn.",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-alt_art-ambush",
+        "subcategory": "Bad Events",
+        "version": "Alt Ability",
+        "artist": "@carlesdalmauart",
+        "notes": "Unlocked via 5,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-good_events-alt_art-devil_deal",
+      "name": "Devil Deal",
+      "type": "event",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose one-\n•Put this into discard.\n------------------------------\n•Gain 6¢. Take 1 damage.\n------------------------------\n•Take 2 damage. Search\nthe loot deck for a loot\ncard, put it in your hand,\nthen shuffle the loot deck.",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-alt_art-devil_deal",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "@MachShfive",
+        "notes": "Unlocked via 47,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-good_events-alt_art-secret_room",
+      "name": "Secret Room!",
+      "type": "event",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Take 3 damage.\n------------------------------\n3-4: Loot 2.\n------------------------------\n5: Loot 4.\n------------------------------\n6: Reroll an item you\ncontrol. Gain +1 treasure.",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-alt_art-secret_room",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "@OvumArt",
+        "notes": "Unlocked via 27,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-good_events-alt_art-shop_upgrade",
+      "name": "Shop Upgrade!",
+      "type": "event",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Take 3 damage.\n------------------------------\n3-4: Loot 2.\n------------------------------\n5: Loot 4.\n------------------------------\n6: Reroll an item you\ncontrol. Gain +1 treasure.",
+        "set": "Alt Art",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-alt_art-shop_upgrade",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "Stephen Murphy, a.k.a. thecatamites",
+        "notes": "Unlocked via 20,000 backers for the Requiem Kickstarter."
+      }
+    }
+  ]
+}

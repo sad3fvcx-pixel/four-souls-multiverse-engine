@@ -1,0 +1,2265 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-base_game-blank_card",
+      "name": "Blank Card",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: The next time\nyou play a non-\ntrinket, non-ambush\nloot card this\nturn, copy it.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-blank_card",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-book_of_sin",
+      "name": "Book of Sin",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Roll-\n1-2: Gain 1¢.\n------------------------------\n3-4: Loot 1.\n------------------------------\n5-6: Gain +1 HP\ntill end of turn.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-book_of_sin",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-boomerang",
+      "name": "Boomerang",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose another\nplayer. Steal\na loot card\nfrom them at\nrandom.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-boomerang",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-bum_friend",
+      "name": "Bum Friend",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Loot 1, then\nput a loot card\nfrom your hand\non top of the\nloot deck.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-bum_friend",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-chaos",
+      "name": "Chaos",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Each player\ngives their\nhand to the player\nto their left.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-chaos",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-compost",
+      "name": "Compost",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: The next time\na player would\nloot, they loot from\nthe top of the loot\ndiscard instead.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-compost",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-crystal_ball",
+      "name": "Crystal Ball",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Before a dice\nis rolled, choose\na number.  If the\nnext roll is that\nnumber, loot 3.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-crystal_ball",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-decoy",
+      "name": "Decoy",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Swap this with\na non-eternal\nitem another\nplayer controls.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-decoy",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-diplopia",
+      "name": "Diplopia",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a \nnon-eternal\npassive item. This\nbecomes a copy of\nthat item till\nend of turn.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-diplopia",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-flush",
+      "name": "Flush!",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose one-\n•Put each monster\nnot being attacked\non the bottom of\nthe monster deck.\n------------------------------\n•Put each shop item on\nthe bottom of the\ntreasure deck.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-flush",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-glass_cannon",
+      "name": "Glass Cannon",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Destroy another\nitem, then roll-\n1-5: Destroy this\nand loot 2.\n------------------------------\n6: Recharge this.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-glass_cannon",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-godhead",
+      "name": "Godhead",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Change the\nresult of a dice\nroll to a\n1 or 6.\n------------------------------\n\"I and the Father are one.\"\nJohn 10:30",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-godhead",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via The Void stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-guppy_s_head",
+      "name": "Guppy's Head",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a player.\nThat player gives\nyou a loot card.\n------------------------------\n-Guppy-\n\"He shall lay his hand on the\nhead of the burnt offering, that\nit may be accepted for him to\nmake atonement on his behalf.\"\nLeviticus 1:4",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-guppy_s_head",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked by the community through an ARG played before the game's launch, along with Guppy's Paw and Guppy's Tail."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-guppy_s_paw",
+      "name": "Guppy's Paw",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Pay 1 HP. If you do,\nchoose a player.\nPrevent the next instance\nof up to 2 damage they\nwould take this turn.\n------------------------------\n-Guppy-",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-guppy_s_paw",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked by the community through an ARG played before the game's launch, along with Guppy's Head and Guppy's Tail."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-host_hat",
+      "name": "Host Hat",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Prevent the\nnext 1 damage you\nwould take this turn.\nWhen you prevent\ndamage this way,\ndeal 1 damage to\nanother player.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-host_hat",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-jawbone",
+      "name": "Jawbone",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Steal 3¢ from\na player.\n------------------------------\n\"With a donkey's jawbone I\nhave killed a thousand men.\"\nJudges 15:16",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-jawbone",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-lucky_foot",
+      "name": "Lucky Foot",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Add up to 2 to\na non-attack\nroll.\n------------------------------\n\"She wet my feet with her tears\nand wiped them dry with her hair.\"\nLuke 7:44",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-lucky_foot",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-mini_mush",
+      "name": "Mini Mush",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Subtract up\nto 2 from\na roll.\n------------------------------\n\"The meek shall inhereit the Earth;\nand shall delight themselves in\nthe abundance of peace.\"\nPsalm 37:11",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-mini_mush",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-modeling_clay",
+      "name": "Modeling Clay",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a\nnon-eternal\nitem. This becomes\na copy of that item.\n(This change is indefinite.)",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-modeling_clay",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "notes": "Crossover with the video game, The Legend of Bum-bo."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-mom_s_bra",
+      "name": "Mom's Bra",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a\nmonster or\nplayer. The next\ninstance of damage\nthey take this trun\nis reduced to 1.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-mom_s_bra",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-monster_manual",
+      "name": "Monster Manual",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose\na monster.\nThe active player\nmust attack that\nmonster this turn\nif able.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-monster_manual",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-mr_boom",
+      "name": "Mr. Boom",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Deal 1 damage\nto a monster.\n------------------------------\n\"The Lord said, I will wipe off the\nface of the Earth: Man, whom I\ncreated, together with the animals,\ncreatures that crawl, for I regret\nthat I made them.\"\nGenesis 6:7",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-mr_boom",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-mystery_sack",
+      "name": "Mystery Sack",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Roll-\n1-2: Loot 1.\n------------------------------\n3-4: Gain 4¢.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-mystery_sack",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-no",
+      "name": "No!",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Cancel the\n↷ or $ ability\nof an item.\n------------------------------\n\"Even a fool, when he keeps\nsilent, is considered wise.\"\nProverbs 17:28",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-no",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-placebo",
+      "name": "Placebo",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: This copies\na ↷ ability\nof a non-\neternal item.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-placebo",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-potato_peeler",
+      "name": "Potato Peeler",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Put the top\ncard of each\ndeck into\ndiscard.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-potato_peeler",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-razor_blade",
+      "name": "Razor Blade",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Deal 1\ndamage to\na player.\n------------------------------\n\"Ye shall not make any cuttings\nin your flesh for the dead, nor\nprint any marks upon you.\"\nLeviticus 19:28",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-razor_blade",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-remote_detonator",
+      "name": "Remote Detonator",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Each player\nvotes on an\nitem in play. Destroy\nthe item with the most\nvotes.  If there is a tie,\nnothing happens.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-remote_detonator",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-sack_head",
+      "name": "Sack Head",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Look at the top\ncard of a deck.\nYou may put that\ncard on the bottom\nof that deck.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-sack_head",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-sack_of_pennies",
+      "name": "Sack of Pennies",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Gain 1¢.\n------------------------------\nEach time a player\nrolls a 1, you may\nrecharge this.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-sack_of_pennies",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-spoon_bender",
+      "name": "Spoon Bender",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Add 1 to\na roll.\n------------------------------\n\"Whoever turns to mediums or\nspiritists and prostitutes himself\nwith them, I will turn against that\nperson and cut him off from\nhis people.\"\nLeviticus 20:6",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-spoon_bender",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-tech_x",
+      "name": "Tech X",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active",
+        "paid"
+      ],
+      "metadata": {
+        "text": "↷: Put a counter\non this.\n------------------------------\n$: Remove 3 counters\nfrom this:\nKill a player\nor monster.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-tech_x",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-the_battery",
+      "name": "The Battery",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Recharge\nanother item.\n------------------------------\n\"Then we shall not turn back\nfrom you; revive us, and we\nwill call upon your name.\"\nPsalm 80:18",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-the_battery",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-the_d100",
+      "name": "The D100",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Roll-\n1: Loot 1.  2: Loot 2.\n------------------------------\n3: Gain 3¢.  4: Gain 4¢.\n------------------------------\n5: Gain +1 HP till\nend of turn.\n------------------------------\n6: Gain +1 AT till\nend of turn.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-the_d100",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-the_d20",
+      "name": "The D20",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Reroll an item.\n(Destroy that\nitem and replace it\nwith the top card of\nthe treasure deck.)",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-the_d20",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-the_shovel",
+      "name": "The Shovel",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Put a non-event\nmonster card in\ndiscard on top of\nthe monster deck.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-the_shovel",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-base_game-two_of_clubs",
+      "name": "Two of Clubs",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a player.\nTill end of turn,\nif they would loot any\nnumber of loot cards,\nthey loot double that\nnumber instead.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-base_game-two_of_clubs",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-base_game-box",
+      "name": "Box!",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "↷: Destroy this.\nIf you do,\nyou may play any\nnumber of additional\nloot cards till\nend of turn.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-base_game-box",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-base_game-chaos_card",
+      "name": "Chaos Card",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "↷: Destroy this. If\nyou do, choose one-\n•Kill a player\nor monster.\n------------------------------\n•Destroy an\nitem or soul.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-base_game-chaos_card",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-base_game-mom_s_shovel",
+      "name": "Mom's Shovel",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "This enters play\ndeactivated.\n------------------------------\n↷: Destroy this.\nIf you do,\nsteal a soul from\nanother player.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-base_game-mom_s_shovel",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-base_game-the_d4",
+      "name": "The D4",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "↷: Destroy this. If\nyou do, choose a\nplayer. They reroll\neach item they control.\n(Destroy those items and\nreplace each with the top\ncard of the treasure deck.)",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-base_game-the_d4",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-base_game-battery_bum",
+      "name": "Battery Bum",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 4¢:\nRecharge an\nitem.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-base_game-battery_bum",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-base_game-contract_from_below",
+      "name": "Contract from Below",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Destroy 2 items\nyou control:\nSteal a non-eternal\nitem from any player.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-base_game-contract_from_below",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-base_game-donation_machine",
+      "name": "Donation Machine",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Give another\nnon-eternal item\nyou control to\nanother player:\nGain 8¢.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-base_game-donation_machine",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-base_game-golden_razor_blade",
+      "name": "Golden Razor Blade",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 5¢:\nDeal 1 damage\nto a monster\nor player.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-base_game-golden_razor_blade",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-base_game-pay_to_play",
+      "name": "Pay to Play",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 10¢:\nSteal a non-eternal\nitem a player controls.\n------------------------------\n\"Out of the heart of men,\nevil thoughts come, sexual\nimmorality, stealing, murder.\"\nMark 7:21",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-base_game-pay_to_play",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-base_game-portable_slot_machine",
+      "name": "Portable Slot Machine",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 3¢: Roll-\n1-2: Loot 1.\n------------------------------\n3-4: Gain 4¢.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-base_game-portable_slot_machine",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-base_game-smelter",
+      "name": "Smelter",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard\na loot card:\nGain 3¢.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-base_game-smelter",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-base_game-the_poop",
+      "name": "The Poop",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "Each time you take\ndamage, put a counter\non this.\n------------------------------\n$: Remove a counter\nfrom this:\nPrevent the next 1 damage\nyou would take this turn.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-base_game-the_poop",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-baby_haunt",
+      "name": "Baby Haunt",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Monsters have\n+1 DC on your turn.\n------------------------------\nWhen you die, before\npaying penalties,\ngive this to another\nplayer.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-baby_haunt",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-belly_button",
+      "name": "Belly Button",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You may play an\nadditional loot\ncard on your turn.\n------------------------------\nEach time you\ntake damage, you may\nrecharge your character.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-belly_button",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-bob_s_brain",
+      "name": "Bob's Brain",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you declare\nan attack, roll-\n1-2: Deal 1 damage to\na monster.\n------------------------------\n3-4: Deal 1 damage to\na player.\n------------------------------\n5-6: Take 1 damage.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-bob_s_brain",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-breakfast",
+      "name": "Breakfast",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 HP\n------------------------------\n\"I gave you milk to drink,\nnot solid food; for you were\nnot yet able to receive it.\"\nCorinthians 3:2",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-breakfast",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-brimstone",
+      "name": "Brimstone",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 AT\n------------------------------\nEach time you deal\ncombat damage to a\nmonster, deal 1 damage\nto another player.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-brimstone",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-bum_bo",
+      "name": "Bum-bo!",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "If you would gain any number of ¢,\nthis levels up by that much instead.\n------------------------------\nLevel 1+: You have +2 to your first\nattack roll each turn.\n------------------------------\nLevel 10+: You have +1 AT.\n------------------------------\nLevel 25+: You may attack any\nnumber of times on\nyour turn.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-bum_bo",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via dealing 250,000 damage to Delirium during the original Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-cambion_conception",
+      "name": "Cambion Conception",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you take\ndamage, put counters on\nthis equal to the amount\nof damage taken. Then,\nif this has 6+ counters,\nremove 6 counters from\nthis and gain +1 treasure.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-cambion_conception",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-champion_belt",
+      "name": "Champion Belt",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You have +1 AT for\nyour first attack\nroll each turn.\n------------------------------\nYou may attack an\nadditional time on\nyour turn.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-champion_belt",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-charged_baby",
+      "name": "Charged Baby",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 2, you may\nrecharge an item.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-charged_baby",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-cheese_grater",
+      "name": "Cheese Grater",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 6, reveal\nthe top card of any\ndeck. Put it back or\nput it into discard.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-cheese_grater",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-curse_of_the_tower",
+      "name": "Curse of the Tower",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you take\ndamage, roll-\n1-3: Each other player\ntakes 1 damage.\n------------------------------\n4-6: Deal 1 damage\nto a monster.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-curse_of_the_tower",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-dad_s_lost_coin",
+      "name": "Dad's Lost Coin",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nwould roll a 1, you\nmay force that player\nto reroll it.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-dad_s_lost_coin",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-daddy_haunt",
+      "name": "Daddy Haunt",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "If you would take any\namount of damage, take\nthat much damage\n+1 instead.\n------------------------------\nWhen you die, before\npaying penalties, give\nthis to another player.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-daddy_haunt",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-dark_bum",
+      "name": "Dark Bum",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, roll-\n1-2: Gain 3¢.\n------------------------------\n3-4: Loot 1.\n------------------------------\n5-6: Take 1 damage.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-dark_bum",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-dead_bird",
+      "name": "Dead Bird",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 3, you may\nlook at their hand\nand steal a loot\ncard from them.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-dead_bird",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-dinner",
+      "name": "Dinner",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 HP\n------------------------------\n\"Do not give what is holy\nto dogs, and do not throw\nyour pearls before swine.\"\nMatthew 7:6",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-dinner",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-dry_baby",
+      "name": "Dry Baby",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Damage you would take\nis reduced to 1.\n------------------------------\n\"He protects all His bones;\nnot one of them is broken.\"\nPsalm 34:20",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-dry_baby",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-eden_s_blessing",
+      "name": "Eden's Blessing",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the end of your\nturn, if you have 0¢,\ngain 6¢.\n------------------------------\n\"Thou shalt open thine hand\nwide unto thy brother, to thy\npoor, and to thy needy.\"\nDeuteronomy 15:11",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-eden_s_blessing",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-empty_vessel",
+      "name": "Empty Vessel",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "While you have 0 loot\ncards in your hand,\nyou have +1 AT.\n------------------------------\nWhile you have 0¢,\nyou have +1 to\nattack rolls.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-empty_vessel",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-eye_of_greed",
+      "name": "Eye of Greed",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 5, gain 3¢.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-eye_of_greed",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-fanny_pack",
+      "name": "Fanny Pack",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you\ntake damage,\nloot 1.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-fanny_pack",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-finger",
+      "name": "Finger!",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 2, you may\nswap a non-eternal\nitem you control with\na non-eternal item\nthey control.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-finger",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-goat_head",
+      "name": "Goat Head",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the end of your\nturn, you may discard\nany number of loot cards,\nthen loot equal to the\nnumber of cards\ndiscarded in this way.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-goat_head",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-greed_s_gullet",
+      "name": "Greed's Gullet",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you die, before\npaying penalties, gain 8¢.\n------------------------------\n\"The righteousness of the\nupright will deliver them,\nbut the treacherous will be\ncaught by their own greed.\"\nProverbs 11:6",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-greed_s_gullet",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-guppy_s_collar",
+      "name": "Guppy's Collar",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you\nwould die, roll-\n1-3: Prevent death. If it's\nyour turn, cancel everything\nthat hasn't resolved and\nend your turn..\n------------------------------\n-Guppy-",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-guppy_s_collar",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-ipecac",
+      "name": "Ipecac",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 AT\n------------------------------\nEach time you roll\nan attack roll of 6,\ndeal 1 damage to\neach other player.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-ipecac",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-meat",
+      "name": "Meat!",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You have +1 to\nattack rolls.\n------------------------------\n\"Every moving thing that\nliveth shall be meat for you.\"\nGenesis 9:3",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-meat",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-mom_s_box",
+      "name": "Mom's Box",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a\nplayer rolls a 4,\nyou may loot 1,\nthen discard a\nloot card.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-mom_s_box",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-mom_s_coin_purse",
+      "name": "Mom's Coin Purse",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Loot +1 during\nyour loot step.\n------------------------------\n\"Be sober-minded; be\nwatchful.  Your adversary\nthe devil prowls like\na roaring lion.\"\n1 Peter 5:8",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-mom_s_coin_purse",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-mom_s_purse",
+      "name": "Mom's Purse",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Loot +1 during\nyour loot step.\n------------------------------\n\"Whoever walks in integrity\nwalks securely, but he who\nmakes his ways crooked\nwill be found out.\"\nProverbs 10:9",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-mom_s_purse",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-mom_s_razor",
+      "name": "Mom's Razor",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a\nplayer rolls a 6,\nyou may deal 1\ndamage to them.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-mom_s_razor",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-monstro_s_tooth",
+      "name": "Monstro's Tooth",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of\nyour turn, choose\na player at random.\nThat player destroys\nan item they control.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-monstro_s_tooth",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-polydactyly",
+      "name": "Polydactyly",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You may play an\nadditional loot\ncard on your turn.\n------------------------------\nYou have +1 AT for\nthe first attack\nroll each turn.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-polydactyly",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-restock",
+      "name": "Restock",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of\nyour turn, you may\nput any number of\nshop items into\ndiscard.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-restock",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-sacred_heart",
+      "name": "Sacred Heart",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "When you would roll\na 1, you may change\nthe result to a 6.\n------------------------------\n\"Righteous ones, be glad in\nthe Lord and rejoice!  Shout\nfor joy, all of you who are\ntrue in heart!\"\nPsalm 32:11",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-sacred_heart",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via dealing 400,000 damage to Delirium during the original Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-shadow",
+      "name": "Shadow",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "If another player would\npay the death penalty,\nyou choose what item they\nwould destroy and you\ngain any loot cards and ¢\nthey would lose.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-shadow",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-shiny_rock",
+      "name": "Shiny Rock",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you\nactivate an item,\ngain 1¢.\n------------------------------\n\"Gods of silver and Gods of\ngold you are not to make\nfor yourselves.\"\nExodus 20:23",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-shiny_rock",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-spider_mod",
+      "name": "Spider Mod",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 5, you may put\na monster not being\nattacked into discard\nand replace it with\nthe top card of the\nmonster deck.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-spider_mod",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-starter_deck",
+      "name": "Starter Deck",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the end of your\nturn, if you have 8\nor more loot cards\nin your hand, loot 2.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-starter_deck",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-steamy_sale",
+      "name": "Steamy Sale!",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Shop items you purchase\ncost 5¢ less.\n------------------------------\n\"So Abram brought him all\nthese animals and cut each of\nthem in half, down the middle.\"\nGenesis 15:10",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-steamy_sale",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-suicide_king",
+      "name": "Suicide King",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you die, before\npaying penalties, loot 3.\n------------------------------\n\"And many of them that sleep\nin the dust of the Earth shall\nawake, some to everlasting\nlife, and some to shame and\neverlasting contempt.\"\nDaniel 12:2",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-suicide_king",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-synthoil",
+      "name": "Synthoil",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You have +1 to\nattack rolls.\n------------------------------\n\"He gives power to the faint,\nand to him who has no might\nHe increases strength.\"\nIsaiah 40:29",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-synthoil",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-tarot_cloth",
+      "name": "Tarot Cloth",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a\nplayer rolls a 4,\nthey must give you\na loot card.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-tarot_cloth",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-the_blue_map",
+      "name": "The Blue Map",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the end of\nyour turn, look at\nthe top 4 cards of\nthe treasure deck.\nPut them back in\nany order.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-the_blue_map",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-the_compass",
+      "name": "The Compass",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the end of\nyour turn, look at\nthe top 4 cards of\nthe loot deck.\nPut them back in\nany order.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-the_compass",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-the_d10",
+      "name": "The D10",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 3, you may\nput the top card of\nthe monster deck in\na monster slot not\nbeing attacked.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-the_d10",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-the_dead_cat",
+      "name": "The Dead Cat",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "This item starts with 9\ncounters on it.\n------------------------------\nIf you would take damage\nwhile this has counters on it,\nremove that many counters\nand prevent that much damage.\n------------------------------\n-Guppy-",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-the_dead_cat",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-the_habit",
+      "name": "The Habit",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "The first time\nyou take damage\neach turn, you may\nrecharge an item.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-the_habit",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-the_map",
+      "name": "The Map",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the end of\nyour turn, look at\nthe top 4 cards of\nthe monster deck.\nPut them back in\nany order.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-the_map",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-the_midas_touch",
+      "name": "The Midas Touch",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a\nmonster dies,\ngain 3¢.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-the_midas_touch",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-the_polaroid",
+      "name": "The Polaroid",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the end of your turn,\nif you have 0 loot cards\nin your hand, loot 2.\n------------------------------\n\"One whose father and mother\nare not married may not come\ninto the meeting of the\nLord's people.\"\nDeuteronomy 23:2",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-the_polaroid",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-the_relic",
+      "name": "The Relic",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time\na player rolls\na 1, loot 1.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-the_relic",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-there_s_options",
+      "name": "There's Options",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You may look at\nthe top card of the\ntreasure deck at any\ntime on your turn.\n------------------------------\nYou may purchase an\nadditional time on\nyour turn.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-there_s_options",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-base_game-trinity_shield",
+      "name": "Trinity Shield",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Other players can't\nplay loot cards or\nactivate items on\nyour turn.",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-base_game-trinity_shield",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-soul_item-base_game-pandora_s_box",
+      "name": "Pandora's Box",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "soul_item"
+      ],
+      "metadata": {
+        "text": "↷: Destroy this. If\nyou do, roll-\n1: Gain 1¢.  2: Gain 6¢.\n------------------------------\n3: Kill a monster.\n------------------------------\n4: Loot 3.  5: Gain 9¢.\n------------------------------\n6: This becomes\na soul. Gain it.\n\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-soul_item-base_game-pandora_s_box",
+        "subcategory": "Soul Item",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-soul_item-base_game-the_chest",
+      "name": "The Chest",
+      "type": "treasure",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "soul_item"
+      ],
+      "metadata": {
+        "text": "If this would be destroyed,\nit becomes a soul instead.\n------------------------------\n\"I assure you: Whoever does\nnot welcome the kingdom\nof God as a child will\nnever enter it.\"\nLuke 18:17\n\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-soul_item-base_game-the_chest",
+        "subcategory": "Soul Item",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

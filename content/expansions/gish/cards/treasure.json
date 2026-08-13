@@ -1,0 +1,27 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-gish-lil_gish",
+      "name": "Lil' Gish",
+      "type": "treasure",
+      "expansion": "gish",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a\ndeactivated item\nin play. That item\ndoes not recharge\nat the start of its\ncontrollers next\nturn.",
+        "set": "Gish",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-gish-lil_gish",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "This card, along with the Gish monster card, is included in the Gish Big Box Edition, produced by Limited Run Games, available between February 14th, 2020 and February 29th, 2020."
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-passive_items-retro-1_up",
+      "name": "1-Up",
+      "type": "treasure",
+      "expansion": "retro",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "If you would die during\nyour turn, destroy this,\nprevent death, heal to\nfull HP, and cancel your\nattack if able.  You may\nattack an additional\ntime this turn.",
+        "set": "Retro",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-retro-1_up",
+        "subcategory": "Passive Items",
+        "version": "Alt Art",
+        "artist": "@MattKap1",
+        "notes": "Included with The Binding of Isaac: Repentance - Leviathan Edition from Nicalis."
+      }
+    }
+  ]
+}

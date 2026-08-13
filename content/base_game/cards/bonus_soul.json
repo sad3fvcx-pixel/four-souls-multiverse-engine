@@ -1,0 +1,52 @@
+{
+  "cards": [
+    {
+      "id": "bonus_souls-base_game-soul_of_gluttony",
+      "name": "Soul of Gluttony",
+      "type": "bonus_soul",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The first player to\nhave 10 or more loot\ncards in their hand\ngains this soul.\n\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Bonus Souls",
+        "copies": 1,
+        "source_id": "bonus_souls-base_game-soul_of_gluttony",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "bonus_souls-base_game-soul_of_greed",
+      "name": "Soul of Greed",
+      "type": "bonus_soul",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The first player to\nhave 25¢ or more\ngains this soul.\n\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Bonus Souls",
+        "copies": 1,
+        "source_id": "bonus_souls-base_game-soul_of_greed",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "bonus_souls-base_game-soul_of_guppy",
+      "name": "Soul of Guppy",
+      "type": "bonus_soul",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The first player to\ncontrol 2 or more\nGuppy items gains\nthis soul.\n\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Bonus Souls",
+        "copies": 1,
+        "source_id": "bonus_souls-base_game-soul_of_guppy",
+        "notes": "Art by @TikaratheMew\n\nUnlocked via The Cathedral stretch goal in the original Kickstarter."
+      }
+    }
+  ]
+}
