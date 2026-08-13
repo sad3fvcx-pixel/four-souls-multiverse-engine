@@ -337,6 +337,7 @@ class Interpreter:
         spec = self._effects.spec(name)
 
         resolved = dict(params)
+        asks = resolved.pop("targets", ())
         shorthand = resolved.pop("__value__", None)
 
         if shorthand is not None:
@@ -348,7 +349,12 @@ class Interpreter:
 
             resolved.setdefault(spec.primary, shorthand)
 
-        return EffectOp(name=name, params=resolved, target=target)
+        return EffectOp(
+            name=name,
+            params=resolved,
+            target=target,
+            asks=tuple(asks) if isinstance(asks, (list, tuple)) else (asks,),
+        )
 
 
 def _mode_label(mode: Any, index: int) -> str:

@@ -39,6 +39,16 @@ class EffectOp:
     which item to steal until the first item is destroyed.
     """
 
+    asks: tuple[Any, ...] = ()
+    """
+    Targets this operation resolves before it runs.
+
+    An ability's declared targets are all chosen before anything happens, which
+    is right for a card that names its victim up front and wrong for one that
+    asks a question only after an earlier question was answered. Targets
+    written on the effect are resolved here, in order, when the effect runs.
+    """
+
     def param(self, key: str, default: Any = None) -> Any:
         """
         Read a parameter value.

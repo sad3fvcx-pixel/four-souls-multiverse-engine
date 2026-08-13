@@ -229,7 +229,83 @@
       "type": "starting_item",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Look at a player's hand. You may swap a card from your hand with one of theirs.",
+                  "effects": [
+                    {
+                      "effect": "reveal_hand",
+                      "targets": [
+                        {
+                          "target_player": {
+                            "exclude_controller": true,
+                            "as": "shown"
+                          }
+                        }
+                      ],
+                      "target": "shown"
+                    },
+                    {
+                      "may": [
+                        {
+                          "effect": "swap_cards",
+                          "targets": [
+                            {
+                              "target_loot": {
+                                "as": "mine_card"
+                              }
+                            },
+                            {
+                              "target_loot": {
+                                "of": "shown",
+                                "as": "their_card"
+                              }
+                            }
+                          ],
+                          "target": {
+                            "group": {
+                              "of": [
+                                "mine_card",
+                                "their_card"
+                              ],
+                              "as": "swap_pair"
+                            }
+                          }
+                        }
+                      ],
+                      "prompt": "Swap a card from your hand with one of theirs?"
+                    }
+                  ]
+                },
+                {
+                  "description": "Loot 1, then put a card from your hand on top of the loot deck.",
+                  "effects": [
+                    {
+                      "draw_loot": 1
+                    },
+                    {
+                      "effect": "move_cards",
+                      "deck": "loot",
+                      "position": "top",
+                      "target": {
+                        "target_loot": {
+                          "as": "returned"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Choose one: look at a player's hand and you may swap a card with one of theirs; or loot 1, then put a card from your hand on top of the loot deck."
+        }
+      ],
       "tags": [
         "activated",
         "eternal"

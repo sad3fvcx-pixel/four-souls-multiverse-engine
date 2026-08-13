@@ -41,6 +41,13 @@ class EffectExecutor:
         Execute one operation and record the result on the ability context.
         """
         spec = self._effects.spec(op.name)
+
+        if op.asks:
+            # Questions this effect asks for itself, in the order written: a
+            # card that swaps two cards must ask about the first before it can
+            # sensibly ask about the second.
+            self._targets.resolve_all(op.asks, context.state, ability, context.rng)
+
         targets = self._resolve_targets(op, context, ability, needs=spec.needs_target)
         params = _resolve_params(op.params, ability, context)
 

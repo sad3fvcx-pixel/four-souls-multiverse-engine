@@ -228,6 +228,110 @@ def steal_treasure(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     return stolen
 
 
+def give_treasure(ctx: EffectContext, targets: Sequence[Any], to: Any = None) -> int:
+    """
+    Hand items to another player.
+
+    Giving is not stealing: the item is offered, so ownership follows control
+    the way it does when a card changes hands willingly.
+    """
+    state = ctx.state
+
+    if to is None or not 0 <= int(to) < len(state.players):
+        raise EffectExecutionError("give_treasure needs a player to give to")
+
+    receiver = state.player(int(to))
+    given = 0
+
+    for card in targets:
+        if _is_eternal(card):
+            continue
+
+        holder = _holder(state, card)
+
+        if holder is None or holder.player_id == receiver.player_id:
+            continue
+
+        holder.treasures.cards.remove(card)
+
+        card.owner = receiver.player_id
+        card.controller = receiver.player_id
+
+        receiver.treasures.add_top(card)
+        given += 1
+
+        ctx.emit(
+            EventType.ON_GAIN,
+            source=card,
+            controller=receiver.player_id,
+            targets=[receiver],
+        )
+
+    return given
+
+
+def swap_cards(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Exchange two cards between the players holding them.
+
+    Exactly two: a swap with one card is a gift and a swap with three is not a
+    swap. The cards keep everything about themselves except whose they are.
+    """
+    if len(targets) != 2:
+        raise EffectExecutionError(
+            f"swap_cards needs exactly two cards, got {len(targets)}"
+        )
+
+    state = ctx.state
+    first, second = targets
+
+    left = _zone_of(state, first)
+    right = _zone_of(state, second)
+
+    if left is None or right is None:
+        return 0
+
+    left_zone, left_owner = left
+    right_zone, right_owner = right
+
+    left_zone.cards.remove(first)
+    right_zone.cards.remove(second)
+
+    left_zone.add_top(second)
+    right_zone.add_top(first)
+
+    for card, owner in ((second, left_owner), (first, right_owner)):
+        card.owner = owner
+        card.controller = owner
+
+    ctx.emit(
+        EventType.ON_GAIN,
+        source=second,
+        controller=left_owner,
+        targets=[state.player(left_owner)],
+    )
+    ctx.emit(
+        EventType.ON_GAIN,
+        source=first,
+        controller=right_owner,
+        targets=[state.player(right_owner)],
+    )
+
+    return 2
+
+
+def _zone_of(state: Any, card: Any) -> tuple[Any, int] | None:
+    """
+    Find the hand or play area holding a card, and whose it is.
+    """
+    for player in state.players:
+        for zone in (player.treasures, player.hand):
+            if card in zone.cards:
+                return zone, player.player_id
+
+    return None
+
+
 def register(registry: EffectRegistry) -> None:
     """
     Register every treasure effect.
@@ -250,6 +354,19 @@ def register(registry: EffectRegistry) -> None:
         steal_treasure,
         needs_target=True,
         description="Take an item from another player.",
+    )
+    registry.register(
+        "give_treasure",
+        give_treasure,
+        needs_target=True,
+        primary="to",
+        description="Hand an item to another player.",
+    )
+    registry.register(
+        "swap_cards",
+        swap_cards,
+        needs_target=True,
+        description="Exchange two cards between their holders.",
     )
     registry.register(
         "put_into_play",

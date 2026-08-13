@@ -6286,6 +6286,34 @@
   "treasure_deck-active_items-base_game-guppy_s_head": {
     "tags": [
       "guppy"
+    ],
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_player": {
+              "exclude_controller": true,
+              "as": "giver"
+            }
+          },
+          {
+            "target_loot": {
+              "of": "giver",
+              "chooser": "giver",
+              "as": "gift"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "take_card",
+            "to": "hand",
+            "target": "gift"
+          }
+        ],
+        "description": "Choose a player. That player gives you a loot card."
+      }
     ]
   },
   "treasure_deck-passive_items-base_game-guppy_s_collar": {
@@ -6869,6 +6897,332 @@
           }
         ],
         "description": "Remove 5 counters from this: this becomes a soul and loses all abilities."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-tarot_cloth": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 4
+          }
+        ],
+        "targets": [
+          {
+            "event_player": {
+              "as": "roller"
+            }
+          },
+          {
+            "target_loot": {
+              "of": "roller",
+              "chooser": "roller",
+              "as": "gift"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "take_card",
+            "to": "hand",
+            "target": "gift"
+          }
+        ],
+        "description": "Each time a player rolls a 4, they must give you a loot card."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-monstro_s_tooth": {
+    "abilities": [
+      {
+        "trigger": "turn_start",
+        "scope": "controller",
+        "targets": [
+          {
+            "random_player": {
+              "as": "unlucky"
+            }
+          },
+          {
+            "target_treasure": {
+              "of": "unlucky",
+              "chooser": "unlucky",
+              "exclude_eternal": true,
+              "as": "doomed"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "target": "doomed"
+          }
+        ],
+        "description": "At the start of your turn, choose a player at random. That player destroys an item they control."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-dead_bird": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 3
+          }
+        ],
+        "targets": [
+          {
+            "event_player": {
+              "as": "roller"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "may": [
+              {
+                "effect": "reveal_hand",
+                "target": "roller"
+              },
+              {
+                "effect": "take_card",
+                "to": "hand",
+                "targets": [
+                  {
+                    "target_loot": {
+                      "of": "roller",
+                      "as": "snatched"
+                    }
+                  }
+                ],
+                "target": "snatched"
+              }
+            ],
+            "prompt": "Look at their hand and steal a loot card?"
+          }
+        ],
+        "description": "Each time a player rolls a 3, you may look at their hand and steal a loot card from them."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-decoy": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_treasure": {
+              "owner": "opponents",
+              "exclude_eternal": true,
+              "as": "theirs"
+            }
+          },
+          {
+            "self": {
+              "as": "mine"
+            }
+          },
+          {
+            "group": {
+              "of": [
+                "mine",
+                "theirs"
+              ],
+              "as": "decoy_pair"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "swap_cards",
+            "target": "decoy_pair"
+          }
+        ],
+        "description": "Swap this with a non-eternal item another player controls."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-finger": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 2
+          }
+        ],
+        "targets": [
+          {
+            "event_player": {
+              "as": "roller"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "may": [
+              {
+                "effect": "swap_cards",
+                "targets": [
+                  {
+                    "target_treasure": {
+                      "owner": "controller",
+                      "exclude_eternal": true,
+                      "as": "mine"
+                    }
+                  },
+                  {
+                    "target_treasure": {
+                      "of": "roller",
+                      "exclude_eternal": true,
+                      "as": "theirs"
+                    }
+                  }
+                ],
+                "target": {
+                  "group": {
+                    "of": [
+                      "mine",
+                      "theirs"
+                    ],
+                    "as": "swap_pair"
+                  }
+                }
+              }
+            ],
+            "prompt": "Swap a non-eternal item you control with one of theirs?"
+          }
+        ],
+        "description": "Each time a player rolls a 2, you may swap a non-eternal item you control with a non-eternal item they control."
+      }
+    ]
+  },
+  "treasure_deck-paid_items-base_game-donation_machine": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "cost": {},
+        "targets": [
+          {
+            "target_treasure": {
+              "owner": "controller",
+              "exclude_source": true,
+              "exclude_eternal": true,
+              "as": "gift"
+            }
+          },
+          {
+            "target_player": {
+              "exclude_controller": true,
+              "as": "lucky"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "give_treasure",
+            "to": {
+              "player_of": "lucky"
+            },
+            "target": "gift"
+          },
+          {
+            "if": [
+              "last_effect_did"
+            ],
+            "then": [
+              {
+                "gain_coins": 8
+              }
+            ]
+          }
+        ],
+        "description": "Give another non-eternal item you control to another player: gain 8¢."
+      }
+    ]
+  },
+  "starting_items-base_game-incubus": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Look at a player's hand. You may swap a card from your hand with one of theirs.",
+                "effects": [
+                  {
+                    "effect": "reveal_hand",
+                    "targets": [
+                      {
+                        "target_player": {
+                          "exclude_controller": true,
+                          "as": "shown"
+                        }
+                      }
+                    ],
+                    "target": "shown"
+                  },
+                  {
+                    "may": [
+                      {
+                        "effect": "swap_cards",
+                        "targets": [
+                          {
+                            "target_loot": {
+                              "as": "mine_card"
+                            }
+                          },
+                          {
+                            "target_loot": {
+                              "of": "shown",
+                              "as": "their_card"
+                            }
+                          }
+                        ],
+                        "target": {
+                          "group": {
+                            "of": [
+                              "mine_card",
+                              "their_card"
+                            ],
+                            "as": "swap_pair"
+                          }
+                        }
+                      }
+                    ],
+                    "prompt": "Swap a card from your hand with one of theirs?"
+                  }
+                ]
+              },
+              {
+                "description": "Loot 1, then put a card from your hand on top of the loot deck.",
+                "effects": [
+                  {
+                    "draw_loot": 1
+                  },
+                  {
+                    "effect": "move_cards",
+                    "deck": "loot",
+                    "position": "top",
+                    "target": {
+                      "target_loot": {
+                        "as": "returned"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Choose one: look at a player's hand and you may swap a card with one of theirs; or loot 1, then put a card from your hand on top of the loot deck."
       }
     ]
   }

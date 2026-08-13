@@ -260,7 +260,41 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_treasure": {
+                "owner": "opponents",
+                "exclude_eternal": true,
+                "as": "theirs"
+              }
+            },
+            {
+              "self": {
+                "as": "mine"
+              }
+            },
+            {
+              "group": {
+                "of": [
+                  "mine",
+                  "theirs"
+                ],
+                "as": "decoy_pair"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "swap_cards",
+              "target": "decoy_pair"
+            }
+          ],
+          "description": "Swap this with a non-eternal item another player controls."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -485,7 +519,34 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_player": {
+                "exclude_controller": true,
+                "as": "giver"
+              }
+            },
+            {
+              "target_loot": {
+                "of": "giver",
+                "chooser": "giver",
+                "as": "gift"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "take_card",
+              "to": "hand",
+              "target": "gift"
+            }
+          ],
+          "description": "Choose a player. That player gives you a loot card."
+        }
+      ],
       "tags": [
         "activated",
         "active",
@@ -1902,7 +1963,48 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "cost": {},
+          "targets": [
+            {
+              "target_treasure": {
+                "owner": "controller",
+                "exclude_source": true,
+                "exclude_eternal": true,
+                "as": "gift"
+              }
+            },
+            {
+              "target_player": {
+                "exclude_controller": true,
+                "as": "lucky"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "give_treasure",
+              "to": {
+                "player_of": "lucky"
+              },
+              "target": "gift"
+            },
+            {
+              "if": [
+                "last_effect_did"
+              ],
+              "then": [
+                {
+                  "gain_coins": 8
+                }
+              ]
+            }
+          ],
+          "description": "Give another non-eternal item you control to another player: gain 8¢."
+        }
+      ],
       "tags": [
         "paid"
       ],
@@ -2837,7 +2939,49 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 3
+            }
+          ],
+          "targets": [
+            {
+              "event_player": {
+                "as": "roller"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "reveal_hand",
+                  "target": "roller"
+                },
+                {
+                  "effect": "take_card",
+                  "to": "hand",
+                  "targets": [
+                    {
+                      "target_loot": {
+                        "of": "roller",
+                        "as": "snatched"
+                      }
+                    }
+                  ],
+                  "target": "snatched"
+                }
+              ],
+              "prompt": "Look at their hand and steal a loot card?"
+            }
+          ],
+          "description": "Each time a player rolls a 3, you may look at their hand and steal a loot card from them."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -3091,7 +3235,60 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 2
+            }
+          ],
+          "targets": [
+            {
+              "event_player": {
+                "as": "roller"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "swap_cards",
+                  "targets": [
+                    {
+                      "target_treasure": {
+                        "owner": "controller",
+                        "exclude_eternal": true,
+                        "as": "mine"
+                      }
+                    },
+                    {
+                      "target_treasure": {
+                        "of": "roller",
+                        "exclude_eternal": true,
+                        "as": "theirs"
+                      }
+                    }
+                  ],
+                  "target": {
+                    "group": {
+                      "of": [
+                        "mine",
+                        "theirs"
+                      ],
+                      "as": "swap_pair"
+                    }
+                  }
+                }
+              ],
+              "prompt": "Swap a non-eternal item you control with one of theirs?"
+            }
+          ],
+          "description": "Each time a player rolls a 2, you may swap a non-eternal item you control with a non-eternal item they control."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -3434,7 +3631,34 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_start",
+          "scope": "controller",
+          "targets": [
+            {
+              "random_player": {
+                "as": "unlucky"
+              }
+            },
+            {
+              "target_treasure": {
+                "of": "unlucky",
+                "chooser": "unlucky",
+                "exclude_eternal": true,
+                "as": "doomed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "destroy_treasure",
+              "target": "doomed"
+            }
+          ],
+          "description": "At the start of your turn, choose a player at random. That player destroys an item they control."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -3799,7 +4023,39 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 4
+            }
+          ],
+          "targets": [
+            {
+              "event_player": {
+                "as": "roller"
+              }
+            },
+            {
+              "target_loot": {
+                "of": "roller",
+                "chooser": "roller",
+                "as": "gift"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "take_card",
+              "to": "hand",
+              "target": "gift"
+            }
+          ],
+          "description": "Each time a player rolls a 4, they must give you a loot card."
+        }
+      ],
       "tags": [
         "passive"
       ],

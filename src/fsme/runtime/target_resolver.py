@@ -137,6 +137,7 @@ class TargetResolver:
 
         register("target_player_or_monster", _target_player_or_monster)
         register("target_loot", _target_loot)
+        register("target_soul", _target_soul)
         register("target_deck_card", _target_deck_card)
         register("deck_top", _deck_top)
         register("target_treasure", _target_treasure)
@@ -153,6 +154,7 @@ class TargetResolver:
         register("previous_target", _previous_target)
         register("previous_result", _previous_result)
 
+        register("group", _group)
         register("none", _none)
 
 
@@ -365,11 +367,15 @@ def _ask(
     bind: str,
 ) -> list[Any]:
     """
-    Stop and ask the controller to pick, unless there is nothing to pick from.
+    Stop and ask somebody to pick, unless there is nothing to pick from.
 
     A single option is not a choice, so the engine takes it rather than
     interrupting the game to confirm the obvious. No options at all means the
     ability simply has no target.
+
+    The question usually goes to the ability's controller, because usually it
+    is their card. ``chooser`` sends it elsewhere: "that player discards a loot
+    card" is their choice to make, not the card holder's.
     """
     if not options:
         return []
@@ -383,11 +389,51 @@ def _ask(
         kind,
         options,
         bind=str(params.get("as", bind)),
-        player=context.controller,
+        player=_chooser(context, params),
         minimum=int(params.get("minimum", count)),
         maximum=int(params.get("maximum", count)),
         prompt=str(params.get("prompt", "")),
     )
+
+
+def _chooser(context: AbilityContext, params: Mapping[str, Any]) -> int | None:
+    """
+    Whose choice this is.
+    """
+    named = params.get("chooser")
+
+    if named is None:
+        return context.controller
+
+    for candidate in context.targets.get(str(named), ()):
+        if isinstance(candidate, PlayerState):
+            return candidate.player_id
+
+    return context.controller
+
+
+def _named_players(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> list[PlayerState]:
+    """
+    Whose cards a choice is about: a bound group, or the controller.
+    """
+    named = params.get("of")
+
+    if named is None:
+        if context.controller is None or not 0 <= context.controller < len(state.players):
+            return []
+
+        return [state.player(context.controller)]
+
+    if named == "all_players":
+        return list(state.players)
+
+    return [
+        target
+        for target in context.targets.get(str(named), ())
+        if isinstance(target, PlayerState)
+    ]
 
 
 def _target_player(
@@ -494,12 +540,32 @@ def _target_player_or_monster(
 def _target_loot(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
-    if context.controller is None or not 0 <= context.controller < len(state.players):
-        return []
+    """
+    A card out of a hand — the controller's, or one the card names.
+    """
+    hand: list[Any] = []
 
-    hand = list(state.player(context.controller).hand.cards)
+    for player in _named_players(state, context, params):
+        hand.extend(player.hand.cards)
 
     return _ask(DecisionKind.CHOOSE_LOOT, hand, context, params, "target_loot")
+
+
+def _target_soul(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    A soul out of a player's pile.
+
+    Souls are not interchangeable: a bonus soul card counts once and can be
+    taken away again, so a card that destroys one has to say which.
+    """
+    souls: list[Any] = []
+
+    for player in _named_players(state, context, params):
+        souls.extend(player.souls.cards)
+
+    return _ask(DecisionKind.CHOOSE_CARD, souls, context, params, "target_soul")
 
 
 def _target_deck_card(
@@ -853,6 +919,28 @@ def _previous_result(
     value = context.last_value
 
     return [] if value is None else [value]
+
+
+def _group(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    One group made of several the ability has already bound.
+
+    Some effects are about a pair rather than a list — swapping two cards is
+    the obvious one — and the two halves are chosen separately.
+    """
+    names = params.get("of", ())
+
+    if isinstance(names, str):
+        names = [names]
+
+    members: list[Any] = []
+
+    for name in names:
+        members.extend(context.targets.get(str(name), ()))
+
+    return members
 
 
 def _none(

@@ -21,11 +21,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **226**. Без правил: **17**. Осталось: **771**.
+Импортировано официальных карт: **1014**. Реализовано: **234**. Без правил: **17**. Осталось: **763**.
 
 | Набор | Карт | Реализовано | Без правил | Осталось |
 |---|---:|---:|---:|---:|
-| `base_game` | 287 | 226 | 17 | 44 |
+| `base_game` | 287 | 234 | 17 | 36 |
 | `requiem` | 246 | 0 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 0 | 99 |
 | `four_souls` | 90 | 0 | 0 | 90 |
@@ -48,7 +48,7 @@
 | `challenges` | 1 | 0 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 0 | 1 |
 | `star` | 1 | 0 | 0 | 1 |
-| **всего** | **1014** | **226** | **17** | **771** |
+| **всего** | **1014** | **234** | **17** | **763** |
 
 ---
 
@@ -56,12 +56,12 @@
 
 | Тип | Карт | Реализовано | Без правил |
 |---|---:|---:|---:|
-| treasure | 105 | 71 | 0 |
+| treasure | 105 | 78 | 0 |
 | monster | 85 | 63 | 17 |
 | loot | 51 | 50 | 0 |
 | event | 17 | 16 | 0 |
 | character | 11 | 9 | 0 |
-| starting_item | 10 | 9 | 0 |
+| starting_item | 10 | 10 | 0 |
 | curse | 5 | 5 | 0 |
 | bonus_soul | 3 | 3 | 0 |
 
@@ -89,7 +89,7 @@
 | Blood Lust | 🟩 |  |
 | Book of Belial | 🟩 |  |
 | Forever Alone | 🟩 |  |
-| Incubus | ⬜ |  |
+| Incubus | 🟩 |  |
 | Lazarus' Rags | 🟩 |  |
 | Sleight of Hand | 🟩 |  |
 | The Bone | 🟩 |  |
@@ -126,17 +126,17 @@
 | Dad's Lost Coin | 🟩 |  |
 | Daddy Haunt | ⬜ |  |
 | Dark Bum | 🟩 |  |
-| Dead Bird | ⬜ |  |
-| Decoy | ⬜ |  |
+| Dead Bird | 🟩 |  |
+| Decoy | 🟩 |  |
 | Dinner | 🟩 |  |
 | Diplopia | ⬜ |  |
-| Donation Machine | ⬜ |  |
+| Donation Machine | 🟩 |  |
 | Dry Baby | 🟩 |  |
 | Eden's Blessing | 🟩 |  |
 | Empty Vessel | 🟩 |  |
 | Eye of Greed | 🟩 |  |
 | Fanny Pack | 🟩 |  |
-| Finger! | ⬜ |  |
+| Finger! | 🟩 |  |
 | Flush! | 🟩 |  |
 | Glass Cannon | 🟩 |  |
 | Goat Head | 🟩 |  |
@@ -144,7 +144,7 @@
 | Golden Razor Blade | 🟩 |  |
 | Greed's Gullet | 🟩 |  |
 | Guppy's Collar | ⬜ |  |
-| Guppy's Head | ⬜ |  |
+| Guppy's Head | 🟩 |  |
 | Guppy's Paw | 🟩 |  |
 | Host Hat | ⬜ |  |
 | Ipecac | 🟩 |  |
@@ -160,7 +160,7 @@
 | Mom's Razor | 🟩 |  |
 | Mom's Shovel | 🟩 |  |
 | Monster Manual | ⬜ |  |
-| Monstro's Tooth | ⬜ |  |
+| Monstro's Tooth | 🟩 |  |
 | Mr. Boom | 🟩 |  |
 | Mystery Sack | 🟩 |  |
 | No! | 🟩 |  |
@@ -185,7 +185,7 @@
 | Steamy Sale! | 🟩 |  |
 | Suicide King | 🟩 |  |
 | Synthoil | 🟩 |  |
-| Tarot Cloth | ⬜ |  |
+| Tarot Cloth | 🟩 |  |
 | Tech X | 🟩 |  |
 | The Battery | 🟩 |  |
 | The Blue Map | 🟩 |  |

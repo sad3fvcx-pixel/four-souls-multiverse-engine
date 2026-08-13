@@ -3157,6 +3157,291 @@ def test_rolls_do_not_wait_when_nobody_can_answer(base_game: ContentLibrary) -> 
 
 
 # ----------------------------------------------------------------------
+# Questions addressed to somebody else, and cards changing hands
+# ----------------------------------------------------------------------
+
+
+def pending(game: Game, player: int) -> Any:
+    """
+    The question the engine is waiting on, and who it is being asked of.
+
+    A card that says "that player gives you a loot card" does not let the
+    controller pick which one, so a test about such a card is mostly a test
+    about whose decision it is.
+    """
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert decision.player == player, (
+        f"expected player {player} to be asked, not {decision.player}"
+    )
+
+    return decision
+
+
+def pick(game: Game, player: int, card: CardInstance) -> Any:
+    """
+    Answer the waiting question with one particular card.
+    """
+    decision = pending(game, player)
+
+    return choose(game, player, list(decision.options).index(card))
+
+
+def test_guppys_head_makes_the_other_player_choose_the_gift(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    head = give(game, "treasure_deck-active_items-base_game-guppy_s_head")
+
+    game.state.player(1).hand.cards.clear()
+
+    gift = deal(game, "loot_deck-1-base_game-a_penny", player=1)
+    kept = deal(game, "loot_deck-2-base_game-2_cents", player=1)
+
+    assert activate(game, head).accepted
+
+    # First the controller says who; only then is that player asked which card.
+    decision = pending(game, 0)
+
+    assert choose(
+        game, 0, list(decision.options).index(game.state.player(1))
+    ).accepted
+
+    assert list(pending(game, 1).options) == [gift, kept]
+    assert pick(game, 1, gift).accepted
+
+    assert gift in game.state.player(0).hand.cards
+    assert kept in game.state.player(1).hand.cards
+
+
+def test_tarot_cloth_is_paid_by_whoever_rolled_a_four(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, rolls=[4])
+
+    give(game, "treasure_deck-passive_items-base_game-tarot_cloth", player=1)
+
+    game.state.player(0).hand.cards.clear()
+
+    gift = deal(game, "loot_deck-1-base_game-a_penny")
+    kept = deal(game, "loot_deck-2-base_game-2_cents")
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    # The roller chooses what to hand over, not the holder of the cloth.
+    assert pick(game, 0, gift).accepted
+
+    assert kept in game.state.player(0).hand.cards
+
+    assert gift in game.state.player(1).hand.cards
+
+
+def test_monstros_tooth_is_destroyed_by_the_player_it_lands_on(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-monstro_s_tooth")
+
+    doomed = [
+        give(game, "treasure_deck-passive_items-base_game-breakfast", player=index)
+        for index in range(2)
+    ]
+
+    end_turn(game)
+    end_turn(game)
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+
+    unlucky = decision.player
+    item = doomed[unlucky]
+
+    assert item in decision.options, "a player destroys an item of their own"
+    assert pick(game, unlucky, item).accepted
+
+    assert item in game.state.treasure_discard.cards
+
+
+def test_dead_bird_may_steal_from_the_player_who_rolled_a_three(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, rolls=[3])
+
+    give(game, "treasure_deck-passive_items-base_game-dead_bird", player=1)
+
+    game.state.player(0).hand.cards.clear()
+
+    stolen = deal(game, "loot_deck-1-base_game-a_penny")
+    deal(game, "loot_deck-2-base_game-2_cents")
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    answer(game, "yes", player=1)
+
+    assert pick(game, 1, stolen).accepted
+
+    assert stolen in game.state.player(1).hand.cards
+    assert stolen not in game.state.player(0).hand.cards
+
+
+def test_dead_bird_may_be_declined(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, rolls=[3])
+
+    give(game, "treasure_deck-passive_items-base_game-dead_bird", player=1)
+
+    kept = deal(game, "loot_deck-1-base_game-a_penny")
+
+    hand = game.state.player(1).hand_size
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    answer(game, "no", player=1)
+
+    assert kept in game.state.player(0).hand.cards
+    assert game.state.player(1).hand_size == hand
+
+
+def test_decoy_trades_itself_for_the_item_it_chooses(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    decoy = give(game, "treasure_deck-active_items-base_game-decoy")
+
+    theirs = give(game, "treasure_deck-passive_items-base_game-breakfast", player=1)
+    spared = give(game, "treasure_deck-passive_items-base_game-the_relic", player=1)
+
+    assert activate(game, decoy).accepted
+
+    assert pick(game, 0, theirs).accepted
+
+    assert theirs in game.state.player(0).treasures.cards
+    assert decoy in game.state.player(1).treasures.cards
+    assert spared in game.state.player(1).treasures.cards
+
+    assert theirs.controller == 0
+    assert decoy.controller == 1
+
+
+def test_the_finger_swaps_items_with_whoever_rolled_a_two(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, rolls=[2])
+
+    give(game, "treasure_deck-passive_items-base_game-finger", player=1)
+
+    theirs = give(game, "treasure_deck-passive_items-base_game-breakfast")
+    mine = give(
+        game, "treasure_deck-passive_items-base_game-the_relic", player=1
+    )
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    answer(game, "yes", player=1)
+
+    # The holder of the Finger! chooses on both sides: it is their swap.
+    assert pick(game, 1, mine).accepted
+    assert pick(game, 1, theirs).accepted
+
+    assert theirs in game.state.player(1).treasures.cards
+    assert mine in game.state.player(0).treasures.cards
+
+
+def test_the_donation_machine_pays_for_the_item_it_gives_away(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    machine = give(game, "treasure_deck-paid_items-base_game-donation_machine")
+    gift = give(game, "treasure_deck-passive_items-base_game-breakfast")
+    kept = give(game, "treasure_deck-passive_items-base_game-the_relic")
+
+    coins = game.state.player(0).pennies
+
+    assert activate(game, machine).accepted
+
+    decision = pending(game, 0)
+
+    assert machine not in decision.options, "the machine cannot donate itself"
+    assert pick(game, 0, gift).accepted
+
+    decision = pending(game, 0)
+
+    assert choose(
+        game, 0, list(decision.options).index(game.state.player(1))
+    ).accepted
+
+    assert gift in game.state.player(1).treasures.cards
+    assert kept in game.state.player(0).treasures.cards
+    assert game.state.player(0).pennies == coins + 8
+
+
+def test_incubus_swaps_a_card_out_of_a_hand_it_has_seen(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    incubus = starting_item(game, "starting_items-base_game-incubus")
+
+    for player in game.state.players:
+        player.hand.cards.clear()
+
+    mine = deal(game, "loot_deck-1-base_game-a_penny")
+    deal(game, "loot_deck-3-base_game-3_cents")
+
+    theirs = deal(game, "loot_deck-2-base_game-2_cents", player=1)
+    deal(game, "loot_deck-4-base_game-4_cents", player=1)
+
+    assert activate(game, incubus).accepted
+
+    answer(
+        game,
+        "Look at a player's hand. You may swap a card from your hand with "
+        "one of theirs.",
+    )
+
+    decision = pending(game, 0)
+
+    assert choose(
+        game, 0, list(decision.options).index(game.state.player(1))
+    ).accepted
+
+    answer(game, "yes")
+
+    assert pick(game, 0, mine).accepted
+    assert pick(game, 0, theirs).accepted
+
+    assert theirs in game.state.player(0).hand.cards
+    assert mine in game.state.player(1).hand.cards
+
+
+def test_incubus_can_bury_a_card_instead(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    incubus = starting_item(game, "starting_items-base_game-incubus")
+
+    hand = game.state.player(0).hand_size
+
+    assert activate(game, incubus).accepted
+
+    answer(
+        game, "Loot 1, then put a card from your hand on top of the loot deck."
+    )
+
+    decision = pending(game, 0)
+    returned = decision.options[0]
+
+    assert choose(game, 0, 0).accepted
+
+    assert game.state.player(0).hand_size == hand
+    assert game.state.loot_deck.cards[-1] is returned
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

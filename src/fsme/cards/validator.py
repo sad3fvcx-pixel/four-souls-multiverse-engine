@@ -143,7 +143,9 @@ def _validate_ability(
                 errors.append(f"{location}: unknown condition '{name}'")
 
     if known_targets is not None:
-        declared = _declared_target_names(ability)
+        declared = _declared_target_names(ability) | _effect_aliases(
+            ability.get("effects", ())
+        )
 
         for name in _target_names(ability):
             if name not in known_targets and name not in declared:
@@ -183,6 +185,37 @@ def _node_names(nodes: Any, nested: Collection[str]) -> list[str]:
                 names.extend(_node_names(value, nested))
 
             break
+
+    return names
+
+
+def _effect_aliases(nodes: Any) -> set[str]:
+    """
+    Names bound by targets written on individual effects.
+    """
+    names: set[str] = set()
+
+    if not isinstance(nodes, (list, tuple)):
+        return names
+
+    for node in nodes:
+        if not isinstance(node, Mapping):
+            continue
+
+        for spec in node.get("targets", ()) or ():
+            if isinstance(spec, Mapping):
+                names |= _declared_target_names({"targets": [spec]})
+
+        target = node.get("target")
+
+        if isinstance(target, Mapping):
+            names |= _declared_target_names({"targets": [target]})
+
+        for branch in _BRANCH_KEYS:
+            names |= _effect_aliases(node.get(branch, ()))
+
+        for mode in _modes(node):
+            names |= _effect_aliases(mode.get("effects", ()))
 
     return names
 
@@ -267,6 +300,15 @@ def _inline_targets(nodes: Any) -> list[str]:
             names.append(target)
         elif isinstance(target, Mapping):
             names.extend(_spec_names(target))
+
+        asks = node.get("targets")
+
+        if isinstance(asks, (list, tuple)):
+            for spec in asks:
+                if isinstance(spec, Mapping):
+                    names.extend(_spec_names(spec))
+                elif isinstance(spec, str):
+                    names.append(spec)
 
         for key in ("for_each", "of"):
             value = node.get(key)
