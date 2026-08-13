@@ -143,6 +143,7 @@ class TargetResolver:
         register("all_stack", _all_stack)
         register("target_stack_item", _target_stack_item)
         register("event_source", _event_source)
+        register("event_player", _event_player)
         register("previous_target", _previous_target)
         register("previous_result", _previous_result)
 
@@ -613,6 +614,10 @@ def _all_treasures(
             if not getattr(getattr(card, "definition", None), "is_eternal", False)
         ]
 
+    if params.get("exclude_source", False):
+        # "Recharge another item" — the item saying so is not another item.
+        treasures = [card for card in treasures if card is not context.source]
+
     return treasures
 
 
@@ -672,6 +677,26 @@ def _target_stack_item(
         params,
         "target_stack_item",
     )
+
+
+def _event_player(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    The player the event being answered is about.
+
+    "Each time a player rolls a 6, deal 1 damage to them" needs a name for
+    them, and the event already knows: it is the player who rolled.
+    """
+    if context.event is None:
+        return []
+
+    who = context.event.controller
+
+    if who is None or not 0 <= who < len(state.players):
+        return []
+
+    return [state.player(who)]
 
 
 def _event_source(

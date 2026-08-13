@@ -139,6 +139,11 @@ def _resolve_params(
         elif "count" in value:
             resolved[key] = _counted(value, ability, context)
 
+        elif "player_of" in value:
+            group = _group(value["player_of"], ability, context)
+
+            resolved[key] = group[0].player_id if group else None
+
         else:
             resolved[key] = value
 

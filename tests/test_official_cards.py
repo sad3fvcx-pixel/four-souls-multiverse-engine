@@ -1018,6 +1018,7 @@ def answer(game: Game, label: str, player: int = 0) -> None:
 
     assert decision is not None
     assert decision.kind is DecisionKind.CHOOSE_OPTION
+    assert decision.player == player
 
     assert choose(game, player, list(decision.options).index(label)).accepted
 
@@ -1464,6 +1465,350 @@ def test_a_defeated_monster_is_replaced(base_game: ContentLibrary) -> None:
 
     assert monster not in game.state.active_monsters.cards
     assert len(game.state.active_monsters) == 2
+
+
+# ----------------------------------------------------------------------
+# Treasures
+# ----------------------------------------------------------------------
+
+
+def give(game: Game, card_id: str, player: int = 0) -> CardInstance:
+    """
+    Put a named published item into a player's play area.
+    """
+    card = CardInstance(
+        definition=game.runtime.cards.get(card_id),
+        instance_id=game.state.ids.allocate("treasure"),
+        controller=player,
+        owner=player,
+    )
+
+    game.state.player(player).treasures.add_top(card)
+    game.runtime.run()
+
+    return card
+
+
+def activate(game: Game, card: CardInstance, player: int = 0, ability: int = 0) -> Any:
+    index = list(game.state.player(player).treasures.cards).index(card)
+
+    return game.act(
+        CommandType.ACTIVATE_TREASURE, player, index=index, ability=ability
+    )
+
+
+def test_a_meal_raises_the_hit_point_maximum(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    before = game.state.player(0).max_hp
+
+    give(game, "treasure_deck-passive_items-base_game-breakfast")
+
+    assert game.state.player(0).max_hp == before + 1
+
+
+def test_the_champion_belt_grants_an_attack_and_a_first_swing(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    attacks = game.state.player(0).attacks_left
+
+    give(game, "treasure_deck-passive_items-base_game-champion_belt")
+
+    assert attack_bonus(game, 0) == 1
+
+    game.state.turn.attack_rolls = 2
+
+    assert attack_bonus(game, 0) == 0
+
+    end_turn(game)
+    end_turn(game)
+
+    assert game.state.player(0).attacks_left == attacks + 1
+
+
+@pytest.mark.parametrize(
+    "card_id",
+    (
+        "treasure_deck-passive_items-base_game-meat",
+        "treasure_deck-passive_items-base_game-synthoil",
+    ),
+)
+def test_an_attack_roll_bonus_applies_to_attacks_only(
+    base_game: ContentLibrary, card_id: str
+) -> None:
+    game = new_game(base_game, rolls=[3, 3])
+
+    give(game, card_id)
+
+    # An ordinary roll is untouched: the card says "attack rolls".
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    rolls = [
+        event.get("value")
+        for event in game.history
+        if event.type is EventType.AFTER_ROLL
+    ]
+
+    assert rolls[-1] == 3
+
+    assert game.act(CommandType.END_PHASE, 0).accepted
+    assert game.act(CommandType.ATTACK, 0, index=0).accepted
+
+    attacks = [
+        event.get("value")
+        for event in game.history
+        if event.type is EventType.AFTER_ATTACK_ROLL
+    ]
+
+    assert attacks[0] == 4
+
+
+def test_the_relic_pays_whoever_holds_it_when_anyone_rolls_a_one(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=2, rolls=[1])
+
+    give(game, "treasure_deck-passive_items-base_game-the_relic", player=1)
+
+    hand = game.state.player(1).hand_size
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    assert game.state.player(1).hand_size == hand + 1
+
+
+def test_moms_razor_hurts_the_player_who_rolled(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=2, rolls=[6])
+
+    give(game, "treasure_deck-passive_items-base_game-mom_s_razor", player=1)
+
+    hp = game.state.player(0).hp
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    answer(game, "yes", player=1)
+
+    assert game.state.player(0).hp == hp - 1
+
+
+def test_a_dry_baby_reduces_every_hit_to_one(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-dry_baby")
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    hp = player.hp
+
+    game.runtime.context.apply("deal_damage", [player], amount=4)
+    game.runtime.run()
+
+    assert player.hp == hp - 1
+
+
+def test_edens_blessing_pays_a_player_with_nothing(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-eden_s_blessing")
+
+    game.state.player(0).pennies = 0
+
+    end_turn(game)
+
+    assert game.state.player(0).pennies == 6
+
+
+def test_edens_blessing_pays_nothing_to_a_player_with_coins(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-eden_s_blessing")
+
+    game.state.player(0).pennies = 2
+
+    end_turn(game)
+
+    assert game.state.player(0).pennies == 2
+
+
+def test_mr_boom_is_activated_by_tapping(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    card = give(game, "treasure_deck-active_items-base_game-mr_boom")
+
+    assert game.act(CommandType.END_PHASE, 0).accepted
+
+    monster = game.state.active_monsters.cards[0]
+    hp = monster.hp
+
+    assert activate(game, card).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    if decision is not None:
+        assert choose(game, 0, list(decision.options).index(monster)).accepted
+
+        assert monster.hp == hp - 1
+    else:
+        assert game.state.active_monsters.cards[0].hp < hp
+
+    assert card.tapped is True
+    assert activate(game, card).rejected
+
+
+def test_the_battery_recharges_something_other_than_itself(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    battery = give(game, "treasure_deck-active_items-base_game-the_battery")
+
+    starting = game.state.player(0).treasures.cards[0]
+    starting.tapped = True
+
+    assert activate(game, battery).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    if decision is not None:
+        assert battery not in decision.options
+
+        assert choose(game, 0, list(decision.options).index(starting)).accepted
+
+    assert starting.tapped is False
+    assert battery.tapped is True
+
+
+def test_a_paid_item_charges_cents_and_stays_untapped(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    bum = give(game, "treasure_deck-paid_items-base_game-battery_bum")
+
+    starting = game.state.player(0).treasures.cards[0]
+    starting.tapped = True
+
+    assert activate(game, bum).rejected, "nobody can pay 4¢ from nothing"
+
+    game.state.player(0).pennies = 4
+
+    assert activate(game, bum).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    if decision is not None:
+        assert choose(game, 0, list(decision.options).index(starting)).accepted
+
+    assert starting.tapped is False
+    assert bum.tapped is False, "a paid ability does not tap the item"
+    assert game.state.player(0).pennies == 0
+
+
+def test_the_smelter_charges_a_card_from_hand(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    smelter = give(game, "treasure_deck-paid_items-base_game-smelter")
+
+    hand = game.state.player(0).hand_size
+    coins = game.state.player(0).pennies
+
+    assert activate(game, smelter).accepted
+
+    assert game.state.player(0).hand_size == hand - 1
+    assert game.state.player(0).pennies == coins + 3
+
+
+def test_tech_x_charges_counters_for_its_second_ability(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    tech = give(game, "treasure_deck-active_items-base_game-tech_x")
+
+    assert activate(game, tech, ability=1).rejected, "no counters yet"
+
+    for _ in range(3):
+        assert activate(game, tech, ability=0).accepted
+        tech.tapped = False
+
+    assert tech.counters["charge"] == 3
+
+    assert activate(game, tech, ability=1).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+
+    victim = game.state.player(1)
+
+    assert choose(game, 0, list(decision.options).index(victim)).accepted
+
+    assert tech.counters["charge"] == 0
+    assert victim.hp == 0 or not victim.alive
+
+
+def test_the_potato_peeler_discards_the_top_of_each_deck(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    peeler = give(game, "treasure_deck-active_items-base_game-potato_peeler")
+
+    tops = {name: deck_of(game, name)[0] for name in ("loot", "treasure", "monster")}
+
+    assert activate(game, peeler).accepted
+
+    for name, card in tops.items():
+        assert card in getattr(game.state, f"{name}_discard").cards
+        assert card not in deck_of(game, name)
+
+
+def test_the_jawbone_takes_three_cents_from_the_player_it_names(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    jawbone = give(game, "treasure_deck-active_items-base_game-jawbone")
+
+    victim = game.state.player(2)
+    victim.pennies = 5
+
+    assert activate(game, jawbone).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert game.state.player(0) not in decision.options
+
+    assert choose(game, 0, list(decision.options).index(victim)).accepted
+
+    assert victim.pennies == 2
+    assert game.state.player(0).pennies == 3
+
+
+def test_shiny_rock_pays_for_activating_anything(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-shiny_rock")
+    boom = give(game, "treasure_deck-active_items-base_game-mr_boom")
+
+    assert game.act(CommandType.END_PHASE, 0).accepted
+
+    coins = game.state.player(0).pennies
+
+    assert activate(game, boom).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    if decision is not None:
+        assert choose(game, 0, 0).accepted
+
+    assert game.state.player(0).pennies == coins + 1
 
 
 # ----------------------------------------------------------------------

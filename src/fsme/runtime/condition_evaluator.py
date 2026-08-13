@@ -172,6 +172,7 @@ class ConditionEvaluator:
         register("monster_boss", _monster_boss)
         register("monster_hp", _monster_hp)
 
+        register("attack_roll", _attack_roll)
         register("dice_equals", _dice_equals)
         register("dice_not_equals", _dice_not_equals)
         register("dice_greater", _dice_greater)
@@ -263,40 +264,63 @@ def _player_not_active(
     return not _player_active(state, context, params)
 
 
+def _has(
+    player: Any,
+    amount: int,
+    params: Mapping[str, Any],
+) -> bool:
+    """
+    Compare what a player has with what the card asks about.
+
+    "Has 3 cents" means three or more, which is why that is the default. A card
+    that means something else — "if you have 0 cents" — says so with an
+    operator, and then the comparison is the one it named.
+    """
+    if player is None:
+        return False
+
+    if "operator" not in params:
+        return amount >= int(params.get("amount", params.get("count", params.get("value", 1))))
+
+    return _compare(amount, params)
+
+
 def _player_has_coins(
     state: GameState, context: AbilityContext, params: Mapping[str, Any]
 ) -> bool:
-    player = _subject_player(state, context, params)
-    amount = int(params.get("amount", params.get("value", 1)))
+    return _has(_subject_player(state, context, params), _pennies(state, context, params), params)
 
-    return player is not None and player.pennies >= amount
+
+def _pennies(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> int:
+    player = _subject_player(state, context, params)
+
+    return int(player.pennies) if player is not None else 0
 
 
 def _player_has_loot(
     state: GameState, context: AbilityContext, params: Mapping[str, Any]
 ) -> bool:
     player = _subject_player(state, context, params)
-    count = int(params.get("count", params.get("value", 1)))
 
-    return player is not None and player.hand_size >= count
+    return _has(player, int(player.hand_size) if player else 0, params)
 
 
 def _player_has_treasure(
     state: GameState, context: AbilityContext, params: Mapping[str, Any]
 ) -> bool:
     player = _subject_player(state, context, params)
-    count = int(params.get("count", params.get("value", 1)))
 
-    return player is not None and player.treasure_count >= count
+    return _has(player, int(player.treasure_count) if player else 0, params)
 
 
 def _player_has_souls(
     state: GameState, context: AbilityContext, params: Mapping[str, Any]
 ) -> bool:
     player = _subject_player(state, context, params)
-    count = int(params.get("count", params.get("value", 1)))
 
-    return player is not None and player.soul_count >= count
+    return _has(player, int(player.soul_count) if player else 0, params)
 
 
 def _player_hp(
@@ -372,9 +396,37 @@ def _first_attack_roll(
 
 
 def _dice_value(context: AbilityContext) -> int | None:
+    """
+    The roll a condition is talking about.
+
+    An ability that rolled its own die reads that. An ability reacting to
+    somebody else's roll — "each time a player rolls a 6" — has no die of its
+    own and reads the one the event is announcing.
+    """
     value = context.get("dice")
 
-    return int(value) if isinstance(value, int) else None
+    if isinstance(value, int):
+        return value
+
+    if context.event is not None:
+        rolled = context.event.get("value")
+
+        if isinstance(rolled, int):
+            return rolled
+
+    return None
+
+
+def _attack_roll(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    True when the roll being answered is an attack roll.
+
+    Cards distinguish the two: "+1 to attack rolls" is not "+1 to rolls", and
+    only the roll itself knows which kind it is.
+    """
+    return bool(context.event is not None and context.event.get("attack", False))
 
 
 def _dice_equals(

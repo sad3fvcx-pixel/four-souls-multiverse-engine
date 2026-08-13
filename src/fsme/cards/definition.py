@@ -51,6 +51,17 @@ class Ability:
 
     optional: bool = False
 
+    cost: Mapping[str, Any] = field(default_factory=lambda: _EMPTY_MAP)
+    """
+    What a player pays to use this ability.
+
+    Four Souls prints two kinds of activated ability: ``↷`` taps the item, and
+    ``$`` charges something else — cents, a discarded card, a counter — without
+    tapping it. The engine treats them as one thing with different prices, so
+    ``{"tap": true}`` and ``{"coins": 4}`` go through the same check and the
+    same payment.
+    """
+
     replacement: bool = False
     """
     Whether this ability changes an event instead of reacting to one.
@@ -84,6 +95,7 @@ class Ability:
             targets=tuple(freeze(item) for item in data.get("targets", ())),
             effects=tuple(freeze(item) for item in data.get("effects", ())),
             optional=bool(data.get("optional", False)),
+            cost=freeze(data.get("cost", {})) or _EMPTY_MAP,
             replacement=bool(data.get("replacement", False)),
             scope=str(data["scope"]) if data.get("scope") else None,
             description=str(data.get("description", "")),

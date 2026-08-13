@@ -224,27 +224,41 @@ def move_cards(
     this on the bottom of the loot deck" is resolving, which means it is on the
     stack and nowhere else.
     """
-    if position not in ("top", "bottom"):
+    if position not in ("top", "bottom", "discard"):
         raise EffectExecutionError(
-            f"unknown position '{position}'; use 'top' or 'bottom'"
+            f"unknown position '{position}'; use 'top', 'bottom' or 'discard'"
         )
 
     state = ctx.state
-    zone = deck_zone(state, deck)
+    zone = (
+        _discard_pile(state, deck) if position == "discard" else deck_zone(state, deck)
+    )
 
     moved = 0
 
     for card in targets:
         _remove_from_anywhere(state, card)
 
-        if position == "top":
-            zone.add_top(card)
-        else:
+        if position == "bottom":
             zone.cards.insert(0, card)
+        else:
+            zone.add_top(card)
 
         moved += 1
 
     return moved
+
+
+def _discard_pile(state: GameState, name: str) -> Zone[Any]:
+    """
+    Return the discard pile belonging to a deck.
+    """
+    zone: Zone[Any] | None = getattr(state, f"{name}_discard", None)
+
+    if zone is None:
+        raise EffectExecutionError(f"deck '{name}' has no discard pile")
+
+    return zone
 
 
 def register(registry: EffectRegistry) -> None:

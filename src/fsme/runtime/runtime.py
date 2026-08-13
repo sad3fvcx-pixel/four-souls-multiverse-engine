@@ -120,6 +120,24 @@ def in_scope(ability: Ability, card: CardInstance, event: Event) -> bool:
     return True
 
 
+def names_ability(event: Event, card: CardInstance, ability: Ability) -> bool:
+    """
+    Decide whether an event naming one ability of a card names this one.
+
+    An item with a tap ability and a paid ability is two abilities on one card,
+    and activating it uses exactly one. Events that name no ability concern
+    every ability that listens, as they always did.
+    """
+    index = event.get("ability_index")
+
+    if index is None or event.source is not card:
+        return True
+
+    abilities = card.definition.abilities_for(str(event.type))
+
+    return bool(0 <= int(index) < len(abilities) and abilities[int(index)] is ability)
+
+
 class Runtime:
     """
     Owns a running game and is the only thing allowed to change it.
@@ -573,6 +591,9 @@ class Runtime:
                 if not in_scope(ability, card, event):
                     continue
 
+                if not names_ability(event, card, ability):
+                    continue
+
                 probe = AbilityContext(
                     source=card,
                     ability=ability,
@@ -718,6 +739,9 @@ class Runtime:
                     continue
 
                 if not in_scope(ability, card, event):
+                    continue
+
+                if not names_ability(event, card, ability):
                     continue
 
                 probe = AbilityContext(

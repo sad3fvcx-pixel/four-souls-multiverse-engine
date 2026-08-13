@@ -137,7 +137,7 @@ def combat_round(item: StackItem, context: EffectContext) -> None:
 
     state.turn.record_attack_roll()
 
-    roll = rolled(context, DICE_SIDES)
+    roll = rolled(context, DICE_SIDES, attack=True)
     required = _required_roll(monster)
 
     context.emit(
@@ -147,6 +147,7 @@ def combat_round(item: StackItem, context: EffectContext) -> None:
         value=roll,
         required=required,
         hit=roll >= required,
+        attack=True,
     )
 
     if roll >= required:

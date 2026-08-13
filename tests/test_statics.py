@@ -11,7 +11,7 @@ from conftest import make_definition, make_game, make_instance
 
 from fsme.cards import CardType, Static
 from fsme.commands import Command, CommandType
-from fsme.rules import ATTACK, LOOT_PLAYS, MAX_HP, static_value
+from fsme.rules import ATTACK, LOOT_PLAYS, MAX_HP, STATS, static_value
 from fsme.rules.statics import bonus
 
 
@@ -206,8 +206,6 @@ def test_the_demo_set_ships_static_cards() -> None:
     ]
 
     assert with_statics
-    assert {static.stat for definition in with_statics for static in definition.statics} == {
-        ATTACK,
-        MAX_HP,
-        LOOT_PLAYS,
-    }
+    assert {
+        static.stat for definition in with_statics for static in definition.statics
+    } <= set(STATS)

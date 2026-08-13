@@ -21,7 +21,7 @@ from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
 
 
-def rolled(ctx: EffectContext, sides: int = 6) -> int:
+def rolled(ctx: EffectContext, sides: int = 6, attack: bool = False) -> int:
     """
     Roll a die and let anything that changes rolls have its say.
 
@@ -37,9 +37,11 @@ def rolled(ctx: EffectContext, sides: int = 6) -> int:
 
     proposal = ctx.propose(
         EventType.ROLL_MODIFIED,
+        controller=ctx.actor,
         sides=sides,
         value=natural + _roll_bonus(ctx),
         natural=natural,
+        attack=attack,
     )
 
     if proposal.cancelled:
@@ -76,11 +78,11 @@ def roll_dice(ctx: EffectContext, targets: Sequence[Any], sides: int = 6) -> int
     """
     Roll a die and announce the result.
     """
-    ctx.emit(EventType.BEFORE_ROLL, sides=sides)
+    ctx.emit(EventType.BEFORE_ROLL, controller=ctx.actor, sides=sides)
 
     value = rolled(ctx, sides)
 
-    ctx.emit(EventType.AFTER_ROLL, sides=sides, value=value)
+    ctx.emit(EventType.AFTER_ROLL, controller=ctx.actor, sides=sides, value=value)
 
     return value
 

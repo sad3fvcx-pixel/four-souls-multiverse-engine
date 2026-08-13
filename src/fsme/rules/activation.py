@@ -11,14 +11,20 @@ from fsme.effects import EffectContext
 from fsme.events import EventType
 from fsme.state import GameState
 
+from .costs import pay, unpayable
+
 
 class ActivateTreasureHandler:
     """
-    Taps one of a player's items and fires its activated ability.
+    Pays for one of a player's items and fires its activated ability.
 
     Activation is not restricted to the active player: an item may be used
     whenever its controller holds priority, which is what makes responding to
     something on the stack possible.
+
+    An item may print more than one activated ability — a tap ability and a
+    paid one, as Tech X and The Bone do — so the command names which, and only
+    that one fires.
     """
 
     def validate(self, command: Command, state: GameState) -> str | None:
@@ -40,40 +46,54 @@ class ActivateTreasureHandler:
 
         card = player.treasures.cards[index]
 
-        if getattr(card, "tapped", False):
-            return f"'{getattr(card, 'name', card)}' is already tapped"
-
         definition = getattr(card, "definition", None)
 
-        if definition is None or not definition.abilities_for(
-            str(EventType.ON_ACTIVATE)
-        ):
+        abilities = (
+            definition.abilities_for(str(EventType.ON_ACTIVATE))
+            if definition is not None
+            else ()
+        )
+
+        if not abilities:
             return f"'{getattr(card, 'name', card)}' has no activated ability"
 
-        return None
+        which = command.get("ability", 0)
+
+        if not isinstance(which, int) or not 0 <= which < len(abilities):
+            return f"'{getattr(card, 'name', card)}' has no ability {which!r}"
+
+        return unpayable(abilities[which], card, player, state)
 
     def execute(self, command: Command, context: EffectContext) -> None:
         state = context.state
         player = state.player(command.player)
 
         card = player.treasures.cards[int(command.get("index", 0))]
+        which = int(command.get("ability", 0))
+
+        ability = card.definition.abilities_for(str(EventType.ON_ACTIVATE))[which]
 
         context.emit(
             EventType.BEFORE_ACTIVATE,
             source=card,
             controller=player.player_id,
+            ability_index=which,
         )
 
-        context.apply("deactivate", [card])
+        pay(ability, card, context)
 
+        # The event carries which ability was used, so an item with two of them
+        # fires the one that was paid for and not the other.
         context.emit(
             EventType.ON_ACTIVATE,
             source=card,
             controller=player.player_id,
+            ability_index=which,
         )
 
         context.emit(
             EventType.AFTER_ACTIVATE,
             source=card,
             controller=player.player_id,
+            ability_index=which,
         )

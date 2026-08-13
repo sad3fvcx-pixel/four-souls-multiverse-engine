@@ -142,7 +142,6 @@
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xvii_the_stars": {
     "abilities": [
       {
@@ -156,7 +155,6 @@
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xiii_death": {
     "abilities": [
       {
@@ -178,7 +176,6 @@
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-x_wheel_of_fortune": {
     "abilities": [
       {
@@ -188,37 +185,84 @@
             "roll_dice": 6
           },
           {
-            "if": [{"dice_equals": 1}],
-            "then": [{"gain_coins": 1}]
-          },
-          {
-            "if": [{"dice_equals": 2}],
+            "if": [
+              {
+                "dice_equals": 1
+              }
+            ],
             "then": [
-              {"effect": "deal_damage", "amount": 2, "target": "controller"}
+              {
+                "gain_coins": 1
+              }
             ]
           },
           {
-            "if": [{"dice_equals": 3}],
-            "then": [{"draw_loot": 3}]
+            "if": [
+              {
+                "dice_equals": 2
+              }
+            ],
+            "then": [
+              {
+                "effect": "deal_damage",
+                "amount": 2,
+                "target": "controller"
+              }
+            ]
           },
           {
-            "if": [{"dice_equals": 4}],
-            "then": [{"lose_coins": 4}]
+            "if": [
+              {
+                "dice_equals": 3
+              }
+            ],
+            "then": [
+              {
+                "draw_loot": 3
+              }
+            ]
           },
           {
-            "if": [{"dice_equals": 5}],
-            "then": [{"gain_coins": 5}]
+            "if": [
+              {
+                "dice_equals": 4
+              }
+            ],
+            "then": [
+              {
+                "lose_coins": 4
+              }
+            ]
           },
           {
-            "if": [{"dice_equals": 6}],
-            "then": [{"gain_treasure": 1}]
+            "if": [
+              {
+                "dice_equals": 5
+              }
+            ],
+            "then": [
+              {
+                "gain_coins": 5
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 6
+              }
+            ],
+            "then": [
+              {
+                "gain_treasure": 1
+              }
+            ]
           }
         ],
         "description": "Roll: 1 gain 1¢, 2 take 2 damage, 3 loot 3, 4 lose 4¢, 5 gain 5¢, 6 gain +1 treasure."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xvi_the_tower": {
     "abilities": [
       {
@@ -228,21 +272,52 @@
             "roll_dice": 6
           },
           {
-            "if": [{"dice_less": 3}],
+            "if": [
+              {
+                "dice_less": 3
+              }
+            ],
             "then": [
-              {"effect": "deal_damage", "amount": 1, "target": "all_players"}
+              {
+                "effect": "deal_damage",
+                "amount": 1,
+                "target": "all_players"
+              }
             ]
           },
           {
-            "if": [{"and": [{"dice_greater": 2}, {"dice_less": 5}]}],
+            "if": [
+              {
+                "and": [
+                  {
+                    "dice_greater": 2
+                  },
+                  {
+                    "dice_less": 5
+                  }
+                ]
+              }
+            ],
             "then": [
-              {"effect": "deal_damage", "amount": 1, "target": "all_monsters"}
+              {
+                "effect": "deal_damage",
+                "amount": 1,
+                "target": "all_monsters"
+              }
             ]
           },
           {
-            "if": [{"dice_greater": 4}],
+            "if": [
+              {
+                "dice_greater": 4
+              }
+            ],
             "then": [
-              {"effect": "deal_damage", "amount": 2, "target": "all_players"}
+              {
+                "effect": "deal_damage",
+                "amount": 2,
+                "target": "all_players"
+              }
             ]
           }
         ],
@@ -250,7 +325,6 @@
       }
     ]
   },
-
   "loot_deck-pills_runes-base_game-blank_rune": {
     "abilities": [
       {
@@ -260,39 +334,87 @@
             "roll_dice": 6
           },
           {
-            "if": [{"dice_equals": 1}],
+            "if": [
+              {
+                "dice_equals": 1
+              }
+            ],
             "then": [
-              {"effect": "gain_coins", "amount": 1, "target": "all_players"}
+              {
+                "effect": "gain_coins",
+                "amount": 1,
+                "target": "all_players"
+              }
             ]
           },
           {
-            "if": [{"dice_equals": 2}],
+            "if": [
+              {
+                "dice_equals": 2
+              }
+            ],
             "then": [
-              {"effect": "draw_loot", "count": 2, "target": "all_players"}
+              {
+                "effect": "draw_loot",
+                "count": 2,
+                "target": "all_players"
+              }
             ]
           },
           {
-            "if": [{"dice_equals": 3}],
+            "if": [
+              {
+                "dice_equals": 3
+              }
+            ],
             "then": [
-              {"effect": "deal_damage", "amount": 3, "target": "all_players"}
+              {
+                "effect": "deal_damage",
+                "amount": 3,
+                "target": "all_players"
+              }
             ]
           },
           {
-            "if": [{"dice_equals": 4}],
+            "if": [
+              {
+                "dice_equals": 4
+              }
+            ],
             "then": [
-              {"effect": "gain_coins", "amount": 4, "target": "all_players"}
+              {
+                "effect": "gain_coins",
+                "amount": 4,
+                "target": "all_players"
+              }
             ]
           },
           {
-            "if": [{"dice_equals": 5}],
+            "if": [
+              {
+                "dice_equals": 5
+              }
+            ],
             "then": [
-              {"effect": "draw_loot", "count": 5, "target": "all_players"}
+              {
+                "effect": "draw_loot",
+                "count": 5,
+                "target": "all_players"
+              }
             ]
           },
           {
-            "if": [{"dice_equals": 6}],
+            "if": [
+              {
+                "dice_equals": 6
+              }
+            ],
             "then": [
-              {"effect": "gain_coins", "amount": 6, "target": "all_players"}
+              {
+                "effect": "gain_coins",
+                "amount": 6,
+                "target": "all_players"
+              }
             ]
           }
         ],
@@ -300,7 +422,6 @@
       }
     ]
   },
-
   "loot_deck-pills_runes-base_game-pills": {
     "abilities": [
       {
@@ -310,45 +431,87 @@
             "roll_dice": 6
           },
           {
-            "if": [{"dice_less": 3}],
-            "then": [{"gain_coins": 4}]
+            "if": [
+              {
+                "dice_less": 3
+              }
+            ],
+            "then": [
+              {
+                "gain_coins": 4
+              }
+            ]
           },
           {
-            "if": [{"and": [{"dice_greater": 2}, {"dice_less": 5}]}],
-            "then": [{"gain_coins": 7}]
+            "if": [
+              {
+                "and": [
+                  {
+                    "dice_greater": 2
+                  },
+                  {
+                    "dice_less": 5
+                  }
+                ]
+              }
+            ],
+            "then": [
+              {
+                "gain_coins": 7
+              }
+            ]
           },
           {
-            "if": [{"dice_greater": 4}],
-            "then": [{"lose_coins": 4}]
+            "if": [
+              {
+                "dice_greater": 4
+              }
+            ],
+            "then": [
+              {
+                "lose_coins": 4
+              }
+            ]
           }
         ],
         "description": "Roll: 1-2 gain 4¢, 3-4 gain 7¢, 5-6 lose 4¢."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-viii_justice": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"target_player": {"exclude_controller": true, "as": "rival"}}
+          {
+            "target_player": {
+              "exclude_controller": true,
+              "as": "rival"
+            }
+          }
         ],
         "effects": [
           {
             "effect": "draw_loot",
-            "count": {"count": "loot", "of": "rival", "minus": "controller"}
+            "count": {
+              "count": "loot",
+              "of": "rival",
+              "minus": "controller"
+            }
           },
           {
             "effect": "gain_coins",
-            "amount": {"count": "coins", "of": "rival", "minus": "controller"}
+            "amount": {
+              "count": "coins",
+              "of": "rival",
+              "minus": "controller"
+            }
           }
         ],
         "description": "Choose a player. Loot and gain ¢ until you have the same number of each as they do."
       }
     ]
   },
-
   "loot_deck-butter_beans-base_game-butter_bean": {
     "abilities": [
       {
@@ -356,75 +519,104 @@
         "targets": [
           {
             "target_stack_item": {
-              "triggers": ["on_play", "on_activate"],
+              "triggers": [
+                "on_play",
+                "on_activate"
+              ],
               "as": "cancelled"
             }
           }
         ],
         "effects": [
-          {"effect": "cancel_stack", "target": "cancelled"}
+          {
+            "effect": "cancel_stack",
+            "target": "cancelled"
+          }
         ],
         "description": "Cancel the ↷ or $ ability of an item or a loot being played."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-o_the_fool": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "cancel_stack", "target": "all_stack"},
-          {"end_turn": {}}
+          {
+            "effect": "cancel_stack",
+            "target": "all_stack"
+          },
+          {
+            "end_turn": {}
+          }
         ],
         "description": "End the turn. Cancel everything that hasn't resolved."
       }
     ]
   },
-
   "loot_deck-pills_runes-base_game-ehwaz": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"all_monsters": {"exclude_attacked": true, "as": "bystanders"}}
+          {
+            "all_monsters": {
+              "exclude_attacked": true,
+              "as": "bystanders"
+            }
+          }
         ],
         "effects": [
-          {"effect": "discard_monsters", "target": "bystanders"}
+          {
+            "effect": "discard_monsters",
+            "target": "bystanders"
+          }
         ],
         "description": "Put each monster not being attacked into discard and replace each with the top card of the monster deck."
       }
     ]
   },
-
   "loot_deck-lost_soul-base_game-lost_soul": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "claim_soul", "target": "controller"}
+          {
+            "effect": "claim_soul",
+            "target": "controller"
+          }
         ],
         "description": "When this enters play, it becomes a soul."
       }
     ]
   },
-
   "loot_deck-batteries-base_game-mega_battery": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"target_player": {"as": "who"}},
-          {"owned_treasure": {"of": "who", "as": "their_items"}}
+          {
+            "target_player": {
+              "as": "who"
+            }
+          },
+          {
+            "owned_treasure": {
+              "of": "who",
+              "as": "their_items"
+            }
+          }
         ],
         "effects": [
-          {"effect": "recharge", "target": "their_items"}
+          {
+            "effect": "recharge",
+            "target": "their_items"
+          }
         ],
         "description": "Choose a player. Recharge each item they control."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xiv_temperance": {
     "abilities": [
       {
@@ -435,15 +627,27 @@
               {
                 "description": "Take 1 damage and gain 4¢.",
                 "effects": [
-                  {"effect": "deal_damage", "amount": 1, "target": "controller"},
-                  {"gain_coins": 4}
+                  {
+                    "effect": "deal_damage",
+                    "amount": 1,
+                    "target": "controller"
+                  },
+                  {
+                    "gain_coins": 4
+                  }
                 ]
               },
               {
                 "description": "Take 2 damage and gain 8¢.",
                 "effects": [
-                  {"effect": "deal_damage", "amount": 2, "target": "controller"},
-                  {"gain_coins": 8}
+                  {
+                    "effect": "deal_damage",
+                    "amount": 2,
+                    "target": "controller"
+                  },
+                  {
+                    "gain_coins": 8
+                  }
                 ]
               }
             ]
@@ -453,19 +657,26 @@
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-ii_the_high_priestess": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"target_player_or_monster": {"as": "victim"}}
+          {
+            "target_player_or_monster": {
+              "as": "victim"
+            }
+          }
         ],
         "effects": [
-          {"roll_dice": 6},
+          {
+            "roll_dice": 6
+          },
           {
             "effect": "deal_damage",
-            "amount": {"from": "dice"},
+            "amount": {
+              "from": "dice"
+            },
             "target": "victim"
           }
         ],
@@ -473,46 +684,67 @@
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xxi_the_world": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "reveal_hand", "target": "all_players"},
-          {"draw_loot": 2}
+          {
+            "effect": "reveal_hand",
+            "target": "all_players"
+          },
+          {
+            "draw_loot": 2
+          }
         ],
         "description": "Look at each player's hand, then loot 2."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xx_judgement": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"target_player": {"most": "souls", "as": "richest"}}
+          {
+            "target_player": {
+              "most": "souls",
+              "as": "richest"
+            }
+          }
         ],
         "effects": [
-          {"effect": "lose_soul", "count": 1, "target": "richest"}
+          {
+            "effect": "lose_soul",
+            "count": 1,
+            "target": "richest"
+          }
         ],
         "description": "Choose a player who controls the most souls or tied for the most. That player destroys a soul they control."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xv_the_devil": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"target_treasure": {"owner": "controller", "as": "sacrifice"}}
+          {
+            "target_treasure": {
+              "owner": "controller",
+              "as": "sacrifice"
+            }
+          }
         ],
         "effects": [
-          {"effect": "destroy_treasure", "target": "sacrifice"},
           {
-            "if": ["last_effect_did"],
+            "effect": "destroy_treasure",
+            "target": "sacrifice"
+          },
+          {
+            "if": [
+              "last_effect_did"
+            ],
             "then": [
               {
                 "effect": "steal_treasure",
@@ -532,7 +764,6 @@
       }
     ]
   },
-
   "loot_deck-pills_runes-base_game-dagaz": {
     "abilities": [
       {
@@ -545,7 +776,11 @@
                 "effects": [
                   {
                     "effect": "remove_curse",
-                    "target": {"target_curse": {"as": "doomed_curse"}}
+                    "target": {
+                      "target_curse": {
+                        "as": "doomed_curse"
+                      }
+                    }
                   }
                 ]
               },
@@ -555,7 +790,11 @@
                   {
                     "effect": "prevent_next_damage",
                     "amount": 1,
-                    "target": {"target_player": {"as": "shielded"}}
+                    "target": {
+                      "target_player": {
+                        "as": "shielded"
+                      }
+                    }
                   }
                 ]
               }
@@ -566,57 +805,82 @@
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-v_the_hierophant": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"target_player": {"as": "shielded"}}
+          {
+            "target_player": {
+              "as": "shielded"
+            }
+          }
         ],
         "effects": [
-          {"effect": "prevent_next_damage", "amount": 2, "target": "shielded"}
+          {
+            "effect": "prevent_next_damage",
+            "amount": 2,
+            "target": "shielded"
+          }
         ],
         "description": "Choose a player or monster. Prevent the next instance of up to 2 damage they would take this turn."
       }
     ]
   },
-
   "loot_deck-dice_shards_soul_hearts-base_game-soul_heart": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"target_player": {"as": "shielded"}}
+          {
+            "target_player": {
+              "as": "shielded"
+            }
+          }
         ],
         "effects": [
-          {"effect": "prevent_next_damage", "amount": 1, "target": "shielded"}
+          {
+            "effect": "prevent_next_damage",
+            "amount": 1,
+            "target": "shielded"
+          }
         ],
         "description": "Choose a player. Prevent the next 1 damage they would take this turn."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xix_the_sun": {
     "abilities": [
       {
         "trigger": "on_play",
-        "conditions": ["player_active"],
+        "conditions": [
+          "player_active"
+        ],
         "effects": [
-          {"effect": "move_cards", "deck": "loot", "position": "bottom", "target": "self"},
-          {"effect": "take_extra_turn", "target": "controller"}
+          {
+            "effect": "move_cards",
+            "deck": "loot",
+            "position": "bottom",
+            "target": "self"
+          },
+          {
+            "effect": "take_extra_turn",
+            "target": "controller"
+          }
         ],
         "description": "Put this on the bottom of the loot deck. If you do, take an extra turn after this one if it's your turn."
       }
     ]
   },
-
   "loot_deck-trinkets-base_game-swallowed_penny": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "put_into_play", "target": "self"}
+          {
+            "effect": "put_into_play",
+            "target": "self"
+          }
         ],
         "description": "This loot becomes an item under your control when it resolves."
       },
@@ -624,19 +888,23 @@
         "trigger": "after_damage",
         "scope": "controller",
         "effects": [
-          {"gain_coins": 1}
+          {
+            "gain_coins": 1
+          }
         ],
         "description": "Each time you take damage, gain 1¢."
       }
     ]
   },
-
   "loot_deck-trinkets-base_game-bloody_penny": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "put_into_play", "target": "self"}
+          {
+            "effect": "put_into_play",
+            "target": "self"
+          }
         ],
         "description": "This loot becomes an item under your control when it resolves."
       },
@@ -644,19 +912,25 @@
         "trigger": "player_died",
         "scope": "any",
         "effects": [
-          {"effect": "draw_loot", "count": 1, "target": "controller"}
+          {
+            "effect": "draw_loot",
+            "count": 1,
+            "target": "controller"
+          }
         ],
         "description": "Each time a player dies, loot 1."
       }
     ]
   },
-
   "loot_deck-trinkets-base_game-counterfeit_penny": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "put_into_play", "target": "self"}
+          {
+            "effect": "put_into_play",
+            "target": "self"
+          }
         ],
         "description": "This loot becomes an item under your control when it resolves."
       },
@@ -665,19 +939,25 @@
         "scope": "controller",
         "replacement": true,
         "effects": [
-          {"effect": "modify_event", "key": "amount", "delta": 1}
+          {
+            "effect": "modify_event",
+            "key": "amount",
+            "delta": 1
+          }
         ],
         "description": "If you would gain any number of ¢, gain that much +1¢ instead."
       }
     ]
   },
-
   "loot_deck-trinkets-base_game-guppy_s_hairball": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "put_into_play", "target": "self"}
+          {
+            "effect": "put_into_play",
+            "target": "self"
+          }
         ],
         "description": "This loot becomes an item under your control when it resolves."
       },
@@ -686,23 +966,35 @@
         "scope": "controller",
         "replacement": true,
         "effects": [
-          {"roll_dice": 6},
           {
-            "if": [{"dice_equals": 6}],
-            "then": [{"prevent_damage": 1}]
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 6
+              }
+            ],
+            "then": [
+              {
+                "prevent_damage": 1
+              }
+            ]
           }
         ],
         "description": "Each time you would take damage, roll- 6: Prevent 1 of that damage."
       }
     ]
   },
-
   "loot_deck-trinkets-base_game-curved_horn": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "put_into_play", "target": "self"}
+          {
+            "effect": "put_into_play",
+            "target": "self"
+          }
         ],
         "description": "This loot becomes an item under your control when it resolves."
       }
@@ -712,18 +1004,22 @@
         "stat": "attack",
         "amount": 1,
         "scope": "self",
-        "conditions": ["first_attack_roll"],
+        "conditions": [
+          "first_attack_roll"
+        ],
         "description": "You have +1 AT for your first attack roll each turn."
       }
     ]
   },
-
   "loot_deck-trinkets-base_game-cain_s_eye": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "put_into_play", "target": "self"}
+          {
+            "effect": "put_into_play",
+            "target": "self"
+          }
         ],
         "description": "This loot becomes an item under your control when it resolves."
       },
@@ -731,13 +1027,28 @@
         "trigger": "turn_start",
         "scope": "controller",
         "targets": [
-          {"deck_top": {"deck": "loot", "count": 1, "as": "top"}}
+          {
+            "deck_top": {
+              "deck": "loot",
+              "count": 1,
+              "as": "top"
+            }
+          }
         ],
         "effects": [
-          {"effect": "reveal_cards", "deck": "loot", "count": 1},
+          {
+            "effect": "reveal_cards",
+            "deck": "loot",
+            "count": 1
+          },
           {
             "may": [
-              {"effect": "move_cards", "deck": "loot", "position": "bottom", "target": "top"}
+              {
+                "effect": "move_cards",
+                "deck": "loot",
+                "position": "bottom",
+                "target": "top"
+              }
             ],
             "prompt": "Put the top card of the loot deck on the bottom?"
           }
@@ -746,13 +1057,15 @@
       }
     ]
   },
-
   "loot_deck-trinkets-base_game-golden_horseshoe": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "put_into_play", "target": "self"}
+          {
+            "effect": "put_into_play",
+            "target": "self"
+          }
         ],
         "description": "This loot becomes an item under your control when it resolves."
       },
@@ -760,13 +1073,28 @@
         "trigger": "turn_start",
         "scope": "controller",
         "targets": [
-          {"deck_top": {"deck": "treasure", "count": 1, "as": "top"}}
+          {
+            "deck_top": {
+              "deck": "treasure",
+              "count": 1,
+              "as": "top"
+            }
+          }
         ],
         "effects": [
-          {"effect": "reveal_cards", "deck": "treasure", "count": 1},
+          {
+            "effect": "reveal_cards",
+            "deck": "treasure",
+            "count": 1
+          },
           {
             "may": [
-              {"effect": "move_cards", "deck": "treasure", "position": "bottom", "target": "top"}
+              {
+                "effect": "move_cards",
+                "deck": "treasure",
+                "position": "bottom",
+                "target": "top"
+              }
             ],
             "prompt": "Put the top card of the treasure deck on the bottom?"
           }
@@ -775,13 +1103,15 @@
       }
     ]
   },
-
   "loot_deck-trinkets-base_game-purple_heart": {
     "abilities": [
       {
         "trigger": "on_play",
         "effects": [
-          {"effect": "put_into_play", "target": "self"}
+          {
+            "effect": "put_into_play",
+            "target": "self"
+          }
         ],
         "description": "This loot becomes an item under your control when it resolves."
       },
@@ -789,13 +1119,28 @@
         "trigger": "turn_start",
         "scope": "controller",
         "targets": [
-          {"deck_top": {"deck": "monster", "count": 1, "as": "top"}}
+          {
+            "deck_top": {
+              "deck": "monster",
+              "count": 1,
+              "as": "top"
+            }
+          }
         ],
         "effects": [
-          {"effect": "reveal_cards", "deck": "monster", "count": 1},
+          {
+            "effect": "reveal_cards",
+            "deck": "monster",
+            "count": 1
+          },
           {
             "may": [
-              {"effect": "move_cards", "deck": "monster", "position": "bottom", "target": "top"}
+              {
+                "effect": "move_cards",
+                "deck": "monster",
+                "position": "bottom",
+                "target": "top"
+              }
             ],
             "prompt": "Put the top card of the monster deck on the bottom?"
           }
@@ -804,96 +1149,192 @@
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-iv_the_emperor": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"target_deck_card": {"deck": "monster", "from_top": 5, "as": "kept"}},
-          {"deck_top": {"deck": "monster", "count": 5, "exclude": "kept", "as": "rest"}}
+          {
+            "target_deck_card": {
+              "deck": "monster",
+              "from_top": 5,
+              "as": "kept"
+            }
+          },
+          {
+            "deck_top": {
+              "deck": "monster",
+              "count": 5,
+              "exclude": "kept",
+              "as": "rest"
+            }
+          }
         ],
         "effects": [
-          {"effect": "move_cards", "deck": "monster", "position": "bottom", "target": "rest"}
+          {
+            "effect": "move_cards",
+            "deck": "monster",
+            "position": "bottom",
+            "target": "rest"
+          }
         ],
         "description": "Look at the top 5 cards of the monster deck. Put 1 on top and the rest on the bottom."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-ix_the_hermit": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"target_deck_card": {"deck": "treasure", "from_top": 5, "as": "kept"}},
-          {"deck_top": {"deck": "treasure", "count": 5, "exclude": "kept", "as": "rest"}}
+          {
+            "target_deck_card": {
+              "deck": "treasure",
+              "from_top": 5,
+              "as": "kept"
+            }
+          },
+          {
+            "deck_top": {
+              "deck": "treasure",
+              "count": 5,
+              "exclude": "kept",
+              "as": "rest"
+            }
+          }
         ],
         "effects": [
-          {"effect": "move_cards", "deck": "treasure", "position": "bottom", "target": "rest"}
+          {
+            "effect": "move_cards",
+            "deck": "treasure",
+            "position": "bottom",
+            "target": "rest"
+          }
         ],
         "description": "Look at the top 5 cards of the treasure deck. Put 1 on the top and the rest on the bottom."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xviii_the_moon": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"target_deck_card": {"deck": "loot", "from_top": 5, "as": "kept"}},
-          {"deck_top": {"deck": "loot", "count": 5, "exclude": "kept", "as": "rest"}}
+          {
+            "target_deck_card": {
+              "deck": "loot",
+              "from_top": 5,
+              "as": "kept"
+            }
+          },
+          {
+            "deck_top": {
+              "deck": "loot",
+              "count": 5,
+              "exclude": "kept",
+              "as": "rest"
+            }
+          }
         ],
         "effects": [
-          {"effect": "move_cards", "deck": "loot", "position": "bottom", "target": "rest"}
+          {
+            "effect": "move_cards",
+            "deck": "loot",
+            "position": "bottom",
+            "target": "rest"
+          }
         ],
         "description": "Look at the top 5 cards of the loot deck. Put 1 on top and the rest on the bottom."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xii_the_hanged_man": {
     "abilities": [
       {
         "trigger": "on_play",
         "targets": [
-          {"deck_top": {"deck": "loot", "count": 1, "as": "loot_top"}},
-          {"deck_top": {"deck": "treasure", "count": 1, "as": "treasure_top"}},
-          {"deck_top": {"deck": "monster", "count": 1, "as": "monster_top"}}
+          {
+            "deck_top": {
+              "deck": "loot",
+              "count": 1,
+              "as": "loot_top"
+            }
+          },
+          {
+            "deck_top": {
+              "deck": "treasure",
+              "count": 1,
+              "as": "treasure_top"
+            }
+          },
+          {
+            "deck_top": {
+              "deck": "monster",
+              "count": 1,
+              "as": "monster_top"
+            }
+          }
         ],
         "effects": [
-          {"effect": "reveal_cards", "deck": "loot", "count": 1},
-          {"effect": "reveal_cards", "deck": "treasure", "count": 1},
-          {"effect": "reveal_cards", "deck": "monster", "count": 1},
+          {
+            "effect": "reveal_cards",
+            "deck": "loot",
+            "count": 1
+          },
+          {
+            "effect": "reveal_cards",
+            "deck": "treasure",
+            "count": 1
+          },
+          {
+            "effect": "reveal_cards",
+            "deck": "monster",
+            "count": 1
+          },
           {
             "may": [
-              {"effect": "move_cards", "deck": "loot", "position": "bottom", "target": "loot_top"}
+              {
+                "effect": "move_cards",
+                "deck": "loot",
+                "position": "bottom",
+                "target": "loot_top"
+              }
             ],
             "as": "bury_loot",
             "prompt": "Put the top card of the loot deck on the bottom?"
           },
           {
             "may": [
-              {"effect": "move_cards", "deck": "treasure", "position": "bottom", "target": "treasure_top"}
+              {
+                "effect": "move_cards",
+                "deck": "treasure",
+                "position": "bottom",
+                "target": "treasure_top"
+              }
             ],
             "as": "bury_treasure",
             "prompt": "Put the top card of the treasure deck on the bottom?"
           },
           {
             "may": [
-              {"effect": "move_cards", "deck": "monster", "position": "bottom", "target": "monster_top"}
+              {
+                "effect": "move_cards",
+                "deck": "monster",
+                "position": "bottom",
+                "target": "monster_top"
+              }
             ],
             "as": "bury_monster",
             "prompt": "Put the top card of the monster deck on the bottom?"
           },
-          {"draw_loot": 2}
+          {
+            "draw_loot": 2
+          }
         ],
         "description": "Look at the top card of each deck. You may put any of those cards on the bottom of their deck, then loot 2."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-iii_the_empress": {
     "abilities": [
       {
@@ -906,14 +1347,23 @@
           }
         ],
         "effects": [
-          {"effect": "add_modifier", "stat": "attack", "amount": 1, "target": "blessed"},
-          {"effect": "add_modifier", "stat": "roll", "amount": 1, "target": "blessed"}
+          {
+            "effect": "add_modifier",
+            "stat": "attack",
+            "amount": 1,
+            "target": "blessed"
+          },
+          {
+            "effect": "add_modifier",
+            "stat": "roll",
+            "amount": 1,
+            "target": "blessed"
+          }
         ],
         "description": "Choose a player. They gain +1 AT and +1 to dice rolls till end of turn."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-vi_the_lovers": {
     "abilities": [
       {
@@ -926,13 +1376,17 @@
           }
         ],
         "effects": [
-          {"effect": "add_modifier", "stat": "max_hp", "amount": 2, "target": "blessed"}
+          {
+            "effect": "add_modifier",
+            "stat": "max_hp",
+            "amount": 2,
+            "target": "blessed"
+          }
         ],
         "description": "Choose a player. They gain +2 HP till end of turn."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-vii_the_chariot": {
     "abilities": [
       {
@@ -945,14 +1399,23 @@
           }
         ],
         "effects": [
-          {"effect": "add_modifier", "stat": "attack", "amount": 1, "target": "blessed"},
-          {"effect": "add_modifier", "stat": "max_hp", "amount": 1, "target": "blessed"}
+          {
+            "effect": "add_modifier",
+            "stat": "attack",
+            "amount": 1,
+            "target": "blessed"
+          },
+          {
+            "effect": "add_modifier",
+            "stat": "max_hp",
+            "amount": 1,
+            "target": "blessed"
+          }
         ],
         "description": "Choose a player. They gain +1 AT and +1 HP till end of turn."
       }
     ]
   },
-
   "loot_deck-cards_miscellaneous-base_game-xi_strength": {
     "abilities": [
       {
@@ -965,14 +1428,23 @@
           }
         ],
         "effects": [
-          {"effect": "add_modifier", "stat": "attack", "amount": 1, "target": "blessed"},
-          {"effect": "add_modifier", "stat": "attacks", "amount": 1, "target": "blessed"}
+          {
+            "effect": "add_modifier",
+            "stat": "attack",
+            "amount": 1,
+            "target": "blessed"
+          },
+          {
+            "effect": "add_modifier",
+            "stat": "attacks",
+            "amount": 1,
+            "target": "blessed"
+          }
         ],
         "description": "Choose a player. They gain +1 AT till end of turn and may attack an additional time this turn."
       }
     ]
   },
-
   "loot_deck-pills_runes-base_game-pills-v3": {
     "abilities": [
       {
@@ -982,23 +1454,59 @@
             "roll_dice": 6
           },
           {
-            "if": [{"dice_less": 3}],
-            "then": [{"effect": "add_modifier", "stat": "attack", "amount": 1}]
+            "if": [
+              {
+                "dice_less": 3
+              }
+            ],
+            "then": [
+              {
+                "effect": "add_modifier",
+                "stat": "attack",
+                "amount": 1
+              }
+            ]
           },
           {
-            "if": [{"and": [{"dice_greater": 2}, {"dice_less": 5}]}],
-            "then": [{"effect": "add_modifier", "stat": "max_hp", "amount": 1}]
+            "if": [
+              {
+                "and": [
+                  {
+                    "dice_greater": 2
+                  },
+                  {
+                    "dice_less": 5
+                  }
+                ]
+              }
+            ],
+            "then": [
+              {
+                "effect": "add_modifier",
+                "stat": "max_hp",
+                "amount": 1
+              }
+            ]
           },
           {
-            "if": [{"dice_greater": 4}],
-            "then": [{"effect": "deal_damage", "amount": 1, "target": "controller"}]
+            "if": [
+              {
+                "dice_greater": 4
+              }
+            ],
+            "then": [
+              {
+                "effect": "deal_damage",
+                "amount": 1,
+                "target": "controller"
+              }
+            ]
           }
         ],
         "description": "Roll: 1-2 you gain +1 AT till end of turn, 3-4 you gain +1 HP till end of turn, 5-6 take 1 damage."
       }
     ]
   },
-
   "loot_deck-pills_runes-base_game-pills-v2": {
     "abilities": [
       {
@@ -1008,21 +1516,1033 @@
             "roll_dice": 6
           },
           {
-            "if": [{"dice_less": 3}],
-            "then": [{"draw_loot": 1}]
-          },
-          {
-            "if": [{"and": [{"dice_greater": 2}, {"dice_less": 5}]}],
-            "then": [{"draw_loot": 3}]
-          },
-          {
-            "if": [{"dice_greater": 4}],
+            "if": [
+              {
+                "dice_less": 3
+              }
+            ],
             "then": [
-              {"effect": "discard_cards", "target": "target_loot"}
+              {
+                "draw_loot": 1
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "and": [
+                  {
+                    "dice_greater": 2
+                  },
+                  {
+                    "dice_less": 5
+                  }
+                ]
+              }
+            ],
+            "then": [
+              {
+                "draw_loot": 3
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_greater": 4
+              }
+            ],
+            "then": [
+              {
+                "effect": "discard_cards",
+                "target": "target_loot"
+              }
             ]
           }
         ],
         "description": "Roll: 1-2 loot 1, 3-4 loot 3, 5-6 discard 1 loot card."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-breakfast": {
+    "statics": [
+      {
+        "stat": "max_hp",
+        "amount": 1,
+        "scope": "self",
+        "description": "+1 HP"
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-dinner": {
+    "statics": [
+      {
+        "stat": "max_hp",
+        "amount": 1,
+        "scope": "self",
+        "description": "+1 HP"
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-champion_belt": {
+    "statics": [
+      {
+        "stat": "attack",
+        "amount": 1,
+        "scope": "self",
+        "conditions": [
+          "first_attack_roll"
+        ],
+        "description": "You have +1 AT for your first attack roll each turn."
+      },
+      {
+        "stat": "attacks",
+        "amount": 1,
+        "scope": "self",
+        "description": "You may attack an additional time on your turn."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-polydactyly": {
+    "statics": [
+      {
+        "stat": "loot_plays",
+        "amount": 1,
+        "scope": "self",
+        "description": "You may play an additional loot card on your turn."
+      },
+      {
+        "stat": "attack",
+        "amount": 1,
+        "scope": "self",
+        "conditions": [
+          "first_attack_roll"
+        ],
+        "description": "You have +1 AT for the first attack roll each turn."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-meat": {
+    "abilities": [
+      {
+        "trigger": "roll_modified",
+        "scope": "controller",
+        "replacement": true,
+        "conditions": [
+          "attack_roll"
+        ],
+        "effects": [
+          {
+            "modify_roll": 1
+          }
+        ],
+        "description": "You have +1 to attack rolls."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-synthoil": {
+    "abilities": [
+      {
+        "trigger": "roll_modified",
+        "scope": "controller",
+        "replacement": true,
+        "conditions": [
+          "attack_roll"
+        ],
+        "effects": [
+          {
+            "modify_roll": 1
+          }
+        ],
+        "description": "You have +1 to attack rolls."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-empty_vessel": {
+    "abilities": [
+      {
+        "trigger": "roll_modified",
+        "scope": "controller",
+        "replacement": true,
+        "conditions": [
+          "attack_roll",
+          {
+            "player_has_coins": {
+              "operator": "==",
+              "value": 0
+            }
+          }
+        ],
+        "effects": [
+          {
+            "modify_roll": 1
+          }
+        ],
+        "description": "While you have 0¢, you have +1 to attack rolls."
+      }
+    ],
+    "statics": [
+      {
+        "stat": "attack",
+        "amount": 1,
+        "scope": "self",
+        "conditions": [
+          {
+            "player_has_loot": {
+              "operator": "==",
+              "value": 0
+            }
+          }
+        ],
+        "description": "While you have 0 loot cards in your hand, you have +1 AT."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-fanny_pack": {
+    "abilities": [
+      {
+        "trigger": "after_damage",
+        "scope": "controller",
+        "effects": [
+          {
+            "draw_loot": 1
+          }
+        ],
+        "description": "Each time you take damage, loot 1."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-the_midas_touch": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "any",
+        "effects": [
+          {
+            "effect": "gain_coins",
+            "amount": 3,
+            "target": "controller"
+          }
+        ],
+        "description": "Each time a monster dies, gain 3¢."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-eye_of_greed": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 5
+          }
+        ],
+        "effects": [
+          {
+            "effect": "gain_coins",
+            "amount": 3,
+            "target": "controller"
+          }
+        ],
+        "description": "Each time a player rolls a 5, gain 3¢."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-the_relic": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 1
+          }
+        ],
+        "effects": [
+          {
+            "effect": "draw_loot",
+            "count": 1,
+            "target": "controller"
+          }
+        ],
+        "description": "Each time a player rolls a 1, loot 1."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-charged_baby": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 2
+          }
+        ],
+        "effects": [
+          {
+            "may": [
+              {
+                "effect": "recharge",
+                "target": {
+                  "target_treasure": {
+                    "as": "charged"
+                  }
+                }
+              }
+            ],
+            "prompt": "Recharge an item?"
+          }
+        ],
+        "description": "Each time a player rolls a 2, you may recharge an item."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-mom_s_razor": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 6
+          }
+        ],
+        "effects": [
+          {
+            "may": [
+              {
+                "effect": "deal_damage",
+                "amount": 1,
+                "target": "event_player"
+              }
+            ],
+            "prompt": "Deal 1 damage to the player who rolled?"
+          }
+        ],
+        "description": "Each time a player rolls a 6, you may deal 1 damage to them."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-dry_baby": {
+    "abilities": [
+      {
+        "trigger": "before_damage",
+        "scope": "controller",
+        "replacement": true,
+        "effects": [
+          {
+            "effect": "modify_event",
+            "key": "amount",
+            "value": 1
+          }
+        ],
+        "description": "Damage you would take is reduced to 1."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-shiny_rock": {
+    "abilities": [
+      {
+        "trigger": "after_activate",
+        "scope": "controller",
+        "effects": [
+          {
+            "gain_coins": 1
+          }
+        ],
+        "description": "Each time you activate an item, gain 1¢."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-dark_bum": {
+    "abilities": [
+      {
+        "trigger": "turn_start",
+        "scope": "controller",
+        "effects": [
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_less": 3
+              }
+            ],
+            "then": [
+              {
+                "gain_coins": 3
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "and": [
+                  {
+                    "dice_greater": 2
+                  },
+                  {
+                    "dice_less": 5
+                  }
+                ]
+              }
+            ],
+            "then": [
+              {
+                "draw_loot": 1
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_greater": 4
+              }
+            ],
+            "then": [
+              {
+                "effect": "deal_damage",
+                "amount": 1,
+                "target": "controller"
+              }
+            ]
+          }
+        ],
+        "description": "At the start of your turn, roll: 1-2 gain 3¢, 3-4 loot 1, 5-6 take 1 damage."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-eden_s_blessing": {
+    "abilities": [
+      {
+        "trigger": "turn_end",
+        "scope": "controller",
+        "conditions": [
+          {
+            "player_has_coins": {
+              "operator": "==",
+              "value": 0
+            }
+          }
+        ],
+        "effects": [
+          {
+            "gain_coins": 6
+          }
+        ],
+        "description": "At the end of your turn, if you have 0¢, gain 6¢."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-the_polaroid": {
+    "abilities": [
+      {
+        "trigger": "turn_end",
+        "scope": "controller",
+        "conditions": [
+          {
+            "player_has_loot": {
+              "operator": "==",
+              "value": 0
+            }
+          }
+        ],
+        "effects": [
+          {
+            "draw_loot": 2
+          }
+        ],
+        "description": "At the end of your turn, if you have 0 loot cards in your hand, loot 2."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-starter_deck": {
+    "abilities": [
+      {
+        "trigger": "turn_end",
+        "scope": "controller",
+        "conditions": [
+          {
+            "player_has_loot": {
+              "operator": ">=",
+              "value": 8
+            }
+          }
+        ],
+        "effects": [
+          {
+            "draw_loot": 2
+          }
+        ],
+        "description": "At the end of your turn, if you have 8 or more loot cards in your hand, loot 2."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-mr_boom": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_monster": {
+              "as": "victim"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "victim"
+          }
+        ],
+        "description": "Deal 1 damage to a monster."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-razor_blade": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_player": {
+              "as": "victim"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "victim"
+          }
+        ],
+        "description": "Deal 1 damage to a player."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-the_battery": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_treasure": {
+              "exclude_source": true,
+              "as": "other"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "recharge",
+            "target": "other"
+          }
+        ],
+        "description": "Recharge another item."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-mystery_sack": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_less": 3
+              }
+            ],
+            "then": [
+              {
+                "draw_loot": 1
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "and": [
+                  {
+                    "dice_greater": 2
+                  },
+                  {
+                    "dice_less": 5
+                  }
+                ]
+              }
+            ],
+            "then": [
+              {
+                "gain_coins": 4
+              }
+            ]
+          }
+        ],
+        "description": "Roll: 1-2 loot 1, 3-4 gain 4¢."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-book_of_sin": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_less": 3
+              }
+            ],
+            "then": [
+              {
+                "gain_coins": 1
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "and": [
+                  {
+                    "dice_greater": 2
+                  },
+                  {
+                    "dice_less": 5
+                  }
+                ]
+              }
+            ],
+            "then": [
+              {
+                "draw_loot": 1
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_greater": 4
+              }
+            ],
+            "then": [
+              {
+                "effect": "add_modifier",
+                "stat": "max_hp",
+                "amount": 1
+              }
+            ]
+          }
+        ],
+        "description": "Roll: 1-2 gain 1¢, 3-4 loot 1, 5-6 gain +1 HP till end of turn."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-the_d100": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 1
+              }
+            ],
+            "then": [
+              {
+                "draw_loot": 1
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 2
+              }
+            ],
+            "then": [
+              {
+                "draw_loot": 2
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 3
+              }
+            ],
+            "then": [
+              {
+                "gain_coins": 3
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 4
+              }
+            ],
+            "then": [
+              {
+                "gain_coins": 4
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 5
+              }
+            ],
+            "then": [
+              {
+                "effect": "add_modifier",
+                "stat": "max_hp",
+                "amount": 1
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 6
+              }
+            ],
+            "then": [
+              {
+                "effect": "add_modifier",
+                "stat": "attack",
+                "amount": 1
+              }
+            ]
+          }
+        ],
+        "description": "Roll: 1 loot 1, 2 loot 2, 3 gain 3¢, 4 gain 4¢, 5 gain +1 HP till end of turn, 6 gain +1 AT till end of turn."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-potato_peeler": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "deck_top": {
+              "deck": "loot",
+              "count": 1,
+              "as": "loot_top"
+            }
+          },
+          {
+            "deck_top": {
+              "deck": "treasure",
+              "count": 1,
+              "as": "treasure_top"
+            }
+          },
+          {
+            "deck_top": {
+              "deck": "monster",
+              "count": 1,
+              "as": "monster_top"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "move_cards",
+            "deck": "loot",
+            "position": "discard",
+            "target": "loot_top"
+          },
+          {
+            "effect": "move_cards",
+            "deck": "treasure",
+            "position": "discard",
+            "target": "treasure_top"
+          },
+          {
+            "effect": "move_cards",
+            "deck": "monster",
+            "position": "discard",
+            "target": "monster_top"
+          }
+        ],
+        "description": "Put the top card of each deck into discard."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-sack_of_pennies": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "gain_coins": 1
+          }
+        ],
+        "description": "Gain 1¢."
+      },
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 1
+          }
+        ],
+        "effects": [
+          {
+            "may": [
+              {
+                "effect": "recharge",
+                "target": "self"
+              }
+            ],
+            "prompt": "Recharge the Sack of Pennies?"
+          }
+        ],
+        "description": "Each time a player rolls a 1, you may recharge this."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-bum_friend": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "draw_loot": 1
+          },
+          {
+            "effect": "move_cards",
+            "deck": "loot",
+            "position": "top",
+            "target": {
+              "target_loot": {
+                "as": "returned"
+              }
+            }
+          }
+        ],
+        "description": "Loot 1, then put a loot card from your hand on top of the loot deck."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-jawbone": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_player": {
+              "exclude_controller": true,
+              "as": "victim"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "transfer_coins",
+            "amount": 3,
+            "source_player": {
+              "player_of": "victim"
+            },
+            "target": "controller"
+          }
+        ],
+        "description": "Steal 3¢ from a player."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-tech_x": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_counter",
+            "counter": "charge",
+            "amount": 1,
+            "target": "self"
+          }
+        ],
+        "description": "Put a counter on this."
+      },
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "counters": 3
+        },
+        "targets": [
+          {
+            "target_player_or_monster": {
+              "as": "victim"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "kill",
+            "target": "victim"
+          }
+        ],
+        "description": "Remove 3 counters from this: kill a player or monster."
+      }
+    ]
+  },
+  "treasure_deck-paid_items-base_game-battery_bum": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "coins": 4
+        },
+        "targets": [
+          {
+            "target_treasure": {
+              "as": "charged"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "recharge",
+            "target": "charged"
+          }
+        ],
+        "description": "Pay 4¢: recharge an item."
+      }
+    ]
+  },
+  "treasure_deck-paid_items-base_game-golden_razor_blade": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "coins": 5
+        },
+        "targets": [
+          {
+            "target_player_or_monster": {
+              "as": "victim"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "victim"
+          }
+        ],
+        "description": "Pay 5¢: deal 1 damage to a monster or player."
+      }
+    ]
+  },
+  "treasure_deck-paid_items-base_game-smelter": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "discard": 1
+        },
+        "effects": [
+          {
+            "gain_coins": 3
+          }
+        ],
+        "description": "Discard a loot card: gain 3¢."
+      }
+    ]
+  },
+  "treasure_deck-paid_items-base_game-portable_slot_machine": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "coins": 3
+        },
+        "effects": [
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_less": 3
+              }
+            ],
+            "then": [
+              {
+                "draw_loot": 1
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "and": [
+                  {
+                    "dice_greater": 2
+                  },
+                  {
+                    "dice_less": 5
+                  }
+                ]
+              }
+            ],
+            "then": [
+              {
+                "gain_coins": 4
+              }
+            ]
+          }
+        ],
+        "description": "Pay 3¢: roll- 1-2 loot 1, 3-4 gain 4¢."
+      }
+    ]
+  },
+  "treasure_deck-paid_items-base_game-pay_to_play": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "coins": 10
+        },
+        "targets": [
+          {
+            "target_treasure": {
+              "owner": "opponents",
+              "exclude_eternal": true,
+              "as": "spoils"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "steal_treasure",
+            "target": "spoils"
+          }
+        ],
+        "description": "Pay 10¢: steal a non-eternal item a player controls."
       }
     ]
   }
