@@ -24,6 +24,7 @@ from fsme.runtime.vocabulary import engine_vocabulary
 
 IMPLEMENTED = "🟩"
 NOT_YET = "⬜"
+NOTHING_TO_DO = "▪️"
 
 TYPE_SECTIONS = (
     (CardType.CHARACTER, "Characters"),
@@ -45,24 +46,52 @@ def is_implemented(card: CardDefinition) -> bool:
     return bool(card.abilities or card.statics)
 
 
+def is_vanilla(card: CardDefinition) -> bool:
+    """
+    True for a card somebody has read and found no rules on.
+
+    A monster with hit points, an attack value and a Bible quote is finished
+    the moment it is imported. Counting it as unimplemented for ever would
+    hide how much is actually left; counting it as implemented would claim
+    work nobody did. It gets its own answer, and only because a person put it
+    there by hand.
+    """
+    return bool(card.metadata.get("vanilla")) and not is_implemented(card)
+
+
+def is_settled(card: CardDefinition) -> bool:
+    """
+    True when nothing more is owed on this card.
+    """
+    return is_implemented(card) or is_vanilla(card)
+
+
 def summary_table(sets: dict[str, list[CardDefinition]]) -> list[str]:
     lines = [
-        "| Набор | Карт | Реализовано | Осталось |",
-        "|---|---:|---:|---:|",
+        "| Набор | Карт | Реализовано | Без правил | Осталось |",
+        "|---|---:|---:|---:|---:|",
     ]
 
     for name in sorted(sets, key=lambda key: -len(sets[key])):
         cards = sets[name]
         done = sum(1 for card in cards if is_implemented(card))
+        plain = sum(1 for card in cards if is_vanilla(card))
 
-        lines.append(f"| `{name}` | {len(cards)} | {done} | {len(cards) - done} |")
+        lines.append(
+            f"| `{name}` | {len(cards)} | {done} | {plain} | "
+            f"{len(cards) - done - plain} |"
+        )
 
     total = sum(len(cards) for cards in sets.values())
     done = sum(
         1 for cards in sets.values() for card in cards if is_implemented(card)
     )
+    plain = sum(1 for cards in sets.values() for card in cards if is_vanilla(card))
 
-    lines.append(f"| **всего** | **{total}** | **{done}** | **{total - done}** |")
+    lines.append(
+        f"| **всего** | **{total}** | **{done}** | **{plain}** | "
+        f"**{total - done - plain}** |"
+    )
 
     return lines
 
@@ -70,17 +99,22 @@ def summary_table(sets: dict[str, list[CardDefinition]]) -> list[str]:
 def type_table(cards: list[CardDefinition]) -> list[str]:
     counts: Counter[str] = Counter()
     done: Counter[str] = Counter()
+    plain: Counter[str] = Counter()
 
     for card in cards:
         counts[str(card.type)] += 1
 
         if is_implemented(card):
             done[str(card.type)] += 1
+        elif is_vanilla(card):
+            plain[str(card.type)] += 1
 
-    lines = ["| Тип | Карт | Реализовано |", "|---|---:|---:|"]
+    lines = ["| Тип | Карт | Реализовано | Без правил |", "|---|---:|---:|---:|"]
 
     for card_type, total in counts.most_common():
-        lines.append(f"| {card_type} | {total} | {done[card_type]} |")
+        lines.append(
+            f"| {card_type} | {total} | {done[card_type]} | {plain[card_type]} |"
+        )
 
     return lines
 
@@ -89,11 +123,17 @@ def card_rows(cards: list[CardDefinition]) -> list[str]:
     lines = ["| Card | Status | Notes |", "|------|--------|-------|"]
 
     for card in sorted(cards, key=lambda card: card.name.casefold()):
-        status = IMPLEMENTED if is_implemented(card) else NOT_YET
-        note = ""
+        if is_implemented(card):
+            status = IMPLEMENTED
+        elif is_vanilla(card):
+            status = NOTHING_TO_DO
+        else:
+            status = NOT_YET
+
+        note = "нет правил на карте" if is_vanilla(card) else ""
 
         if card.metadata.get("copies", 1) > 1:
-            note = f"×{card.metadata['copies']}"
+            note = f"{note} ×{card.metadata['copies']}".strip()
 
         lines.append(f"| {card.name} | {status} | {note} |")
 
@@ -119,6 +159,7 @@ def build(content: Path, focus: str) -> str:
     done = sum(
         1 for cards in sets.values() for card in cards if is_implemented(card)
     )
+    plain = sum(1 for cards in sets.values() for card in cards if is_vanilla(card))
 
     lines = [
         "# Official Card Coverage",
@@ -135,12 +176,18 @@ def build(content: Path, focus: str) -> str:
         "или статики. Напечатанные числа, текст и количество копий импортированы у",
         "всех карт, но сами по себе они ничего не делают.",
         "",
+        "Есть и третий ответ: ▪️ — на карте нет правил. Монстр с хитами, атакой и",
+        "цитатой из Библии закончен в тот момент, когда импортирован. Это утверждение",
+        "делает человек, прочитавший карту, а не импорт: пометка `\"vanilla\": true`",
+        "ставится руками в `_abilities.json`.",
+        "",
         "---",
         "",
         "# Итог",
         "",
         f"Импортировано официальных карт: **{total}**. "
-        f"Реализовано: **{done}**. Осталось: **{total - done}**.",
+        f"Реализовано: **{done}**. Без правил: **{plain}**. "
+        f"Осталось: **{total - done - plain}**.",
         "",
         *summary_table(sets),
         "",

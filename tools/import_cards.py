@@ -447,6 +447,13 @@ def apply_abilities(
         if key in written:
             card[key] = written[key]
 
+    if written.get("vanilla"):
+        # Somebody read the card and found no rules on it: a monster with hit
+        # points and a Bible quote has already been fully imported. Saying so
+        # is a claim a person makes, not something the importer may guess, so
+        # it is written down beside the abilities.
+        card.setdefault("metadata", {})["vanilla"] = True
+
     if card.get("abilities") or card.get("statics"):
         report.implemented += 1
 

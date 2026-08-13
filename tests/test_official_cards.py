@@ -1812,6 +1812,241 @@ def test_shiny_rock_pays_for_activating_anything(base_game: ContentLibrary) -> N
 
 
 # ----------------------------------------------------------------------
+# Monsters
+# ----------------------------------------------------------------------
+
+
+def summon(game: Game, card_id: str) -> CardInstance:
+    """
+    Put a named published monster into the first monster slot.
+
+    Waiting for the shuffle to deal the wanted monster would make the test
+    about the shuffle.
+    """
+    monster = CardInstance(
+        definition=game.runtime.cards.get(card_id),
+        instance_id=game.state.ids.allocate("monster"),
+    )
+
+    monster.hp = monster.definition.health
+    monster.alive = True
+
+    game.state.active_monsters.cards.insert(0, monster)
+
+    return monster
+
+
+def slay(game: Game, monster: CardInstance, killer: int = 0) -> None:
+    """
+    Kill a monster outright, crediting the player who did it.
+    """
+    monster.last_damaged_by = killer
+
+    game.runtime.context.apply("kill", [monster])
+    game.runtime.run()
+
+
+def test_a_boom_fly_takes_everybody_with_it(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3)
+
+    fly = summon(game, "monster_deck-basic_enemies-base_game-boom_fly")
+
+    for player in game.state.players:
+        toughen(game, player)
+
+    before = [player.hp for player in game.state.players]
+
+    slay(game, fly)
+
+    assert [player.hp for player in game.state.players] == [hp - 1 for hp in before]
+
+
+def test_a_black_bony_hits_the_player_who_killed_it(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    bony = summon(game, "monster_deck-basic_enemies-base_game-black_bony")
+
+    for player in game.state.players:
+        toughen(game, player)
+
+    before = [player.hp for player in game.state.players]
+
+    slay(game, bony, killer=2)
+
+    assert game.state.player(2).hp == before[2] - 1
+    assert game.state.player(0).hp == before[0]
+
+
+@pytest.mark.parametrize(("roll", "damage"), ((2, 1), (5, 2)))
+def test_wrath_rolls_for_how_much_it_hurts(
+    base_game: ContentLibrary, roll: int, damage: int
+) -> None:
+    game = new_game(base_game, players=3, rolls=[roll])
+
+    wrath = summon(game, "monster_deck-bosses-base_game-wrath")
+
+    for player in game.state.players:
+        toughen(game, player)
+
+    before = [player.hp for player in game.state.players]
+
+    slay(game, wrath)
+
+    assert [player.hp for player in game.state.players] == [
+        hp - damage for hp in before
+    ]
+
+
+def test_a_greedling_charges_the_player_it_names(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3)
+
+    greedling = summon(game, "monster_deck-basic_enemies-base_game-greedling")
+
+    victim = game.state.player(2)
+    victim.pennies = 9
+
+    slay(game, greedling)
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, list(decision.options).index(victim)).accepted
+
+    assert victim.pennies == 2
+
+
+def test_sloth_empties_the_hand_of_whoever_killed_it(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    sloth = summon(game, "monster_deck-bosses-base_game-sloth")
+
+    assert game.state.player(1).hand_size > 0
+
+    slay(game, sloth, killer=1)
+
+    assert game.state.player(1).hand_size == 0
+    assert game.state.player(0).hand_size > 0
+
+
+def test_a_psy_horf_recharges_the_killer_s_items(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    horf = summon(game, "monster_deck-basic_enemies-base_game-psy_horf")
+
+    for card in game.state.player(0).treasures.cards:
+        card.tapped = True
+
+    slay(game, horf)
+
+    assert [card.tapped for card in game.state.player(0).treasures.cards] == [False]
+
+
+def test_moms_dead_hand_offers_a_theft_that_may_be_refused(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    hand = summon(game, "monster_deck-basic_enemies-base_game-mom_s_dead_hand")
+
+    game.runtime.context.apply("gain_treasure", [game.state.player(1)], count=1)
+    game.runtime.run()
+
+    theirs = game.state.player(1).treasures.cards[-1]
+
+    slay(game, hand)
+
+    answer(game, "yes")
+
+    decision = game.runtime.awaiting_decision
+
+    if decision is not None:
+        assert choose(game, 0, list(decision.options).index(theirs)).accepted
+
+    assert theirs in game.state.player(0).treasures.cards
+
+
+PILLS_PAYOUT = {1: 4, 2: 4, 3: 7, 4: 7, 5: -4, 6: -4}
+"""
+What Pills! itself pays for each face.
+
+Pills! is only here to make somebody roll a die, but it pays for the privilege,
+and a test that forgot that would be measuring the wrong card.
+"""
+
+
+@pytest.mark.parametrize(
+    ("card_id", "roll", "coins", "loot", "damage"),
+    (
+        ("monster_deck-cursed_enemies-base_game-cursed_keeper_head", 1, -2, 0, 0),
+        ("monster_deck-cursed_enemies-base_game-cursed_horf", 2, 0, 0, 2),
+        ("monster_deck-cursed_enemies-base_game-cursed_fatty", 5, 0, -1, 0),
+        ("monster_deck-holy_charmed_enemies-base_game-holy_dip", 1, 1, 0, 0),
+        ("monster_deck-holy_charmed_enemies-base_game-holy_keeper_head", 4, 2, 0, 0),
+        ("monster_deck-holy_charmed_enemies-base_game-holy_squirt", 5, 0, 1, 0),
+    ),
+)
+def test_a_cursed_or_holy_monster_answers_the_roll_it_names(
+    base_game: ContentLibrary,
+    card_id: str,
+    roll: int,
+    coins: int,
+    loot: int,
+    damage: int,
+) -> None:
+    game = new_game(base_game, rolls=[roll])
+
+    summon(game, card_id)
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    game.state.player(0).pennies = 20
+
+    before = snapshot(player)
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    assert player.pennies == before.pennies + PILLS_PAYOUT[roll] + coins
+    assert player.hand_size == before.hand_size + loot
+    assert player.hp == before.hp - damage
+
+
+def test_a_holy_monster_leaves_other_rolls_alone(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, rolls=[3])
+
+    summon(game, "monster_deck-holy_charmed_enemies-base_game-holy_dip")
+
+    coins = game.state.player(0).pennies
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    # Pills! pays 7¢ on a three, and the monster pays nothing on anything but a one.
+    assert game.state.player(0).pennies == coins + 7
+
+
+def test_chub_heals_only_while_it_is_the_one_being_attacked(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, rolls=[1, 1, 1, 1])
+
+    chub = summon(game, "monster_deck-bosses-base_game-chub")
+    chub.hp = 1
+
+    assert game.act(CommandType.END_PHASE, 0).accepted
+
+    # A roll made outside a fight with Chub does nothing for it.
+    assert chub.hp == 1
+
+    assert game.act(CommandType.ATTACK, 0, index=0).accepted
+
+    assert chub.hp > 1
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

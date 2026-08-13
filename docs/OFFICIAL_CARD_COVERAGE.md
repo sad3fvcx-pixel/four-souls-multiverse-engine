@@ -12,53 +12,58 @@
 или статики. Напечатанные числа, текст и количество копий импортированы у
 всех карт, но сами по себе они ничего не делают.
 
+Есть и третий ответ: ▪️ — на карте нет правил. Монстр с хитами, атакой и
+цитатой из Библии закончен в тот момент, когда импортирован. Это утверждение
+делает человек, прочитавший карту, а не импорт: пометка `"vanilla": true`
+ставится руками в `_abilities.json`.
+
 ---
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **83**. Осталось: **931**.
+Импортировано официальных карт: **1014**. Реализовано: **105**. Без правил: **17**. Осталось: **892**.
 
-| Набор | Карт | Реализовано | Осталось |
-|---|---:|---:|---:|
-| `base_game` | 287 | 83 | 204 |
-| `requiem` | 246 | 0 | 246 |
-| `warp_zone` | 99 | 0 | 99 |
-| `four_souls` | 90 | 0 | 90 |
-| `gold_box` | 64 | 0 | 64 |
-| `alt_art` | 62 | 0 | 62 |
-| `the_summer_of_isaac` | 50 | 0 | 50 |
-| `the_unboxing_of_isaac` | 40 | 0 | 40 |
-| `star_promos` | 25 | 0 | 25 |
-| `anniversary` | 16 | 0 | 16 |
-| `tapeworm` | 7 | 0 | 7 |
-| `anniversary_booster_pack` | 4 | 0 | 4 |
-| `g_fuel` | 4 | 0 | 4 |
-| `mewgenics` | 4 | 0 | 4 |
-| `target` | 3 | 0 | 3 |
-| `gish` | 2 | 0 | 2 |
-| `nendoroid` | 2 | 0 | 2 |
-| `retro` | 2 | 0 | 2 |
-| `the_legend_of_bum_bo` | 2 | 0 | 2 |
-| `youtooz` | 2 | 0 | 2 |
-| `challenges` | 1 | 0 | 1 |
-| `dick_knots` | 1 | 0 | 1 |
-| `star` | 1 | 0 | 1 |
-| **всего** | **1014** | **83** | **931** |
+| Набор | Карт | Реализовано | Без правил | Осталось |
+|---|---:|---:|---:|---:|
+| `base_game` | 287 | 105 | 17 | 165 |
+| `requiem` | 246 | 0 | 0 | 246 |
+| `warp_zone` | 99 | 0 | 0 | 99 |
+| `four_souls` | 90 | 0 | 0 | 90 |
+| `gold_box` | 64 | 0 | 0 | 64 |
+| `alt_art` | 62 | 0 | 0 | 62 |
+| `the_summer_of_isaac` | 50 | 0 | 0 | 50 |
+| `the_unboxing_of_isaac` | 40 | 0 | 0 | 40 |
+| `star_promos` | 25 | 0 | 0 | 25 |
+| `anniversary` | 16 | 0 | 0 | 16 |
+| `tapeworm` | 7 | 0 | 0 | 7 |
+| `anniversary_booster_pack` | 4 | 0 | 0 | 4 |
+| `g_fuel` | 4 | 0 | 0 | 4 |
+| `mewgenics` | 4 | 0 | 0 | 4 |
+| `target` | 3 | 0 | 0 | 3 |
+| `gish` | 2 | 0 | 0 | 2 |
+| `nendoroid` | 2 | 0 | 0 | 2 |
+| `retro` | 2 | 0 | 0 | 2 |
+| `the_legend_of_bum_bo` | 2 | 0 | 0 | 2 |
+| `youtooz` | 2 | 0 | 0 | 2 |
+| `challenges` | 1 | 0 | 0 | 1 |
+| `dick_knots` | 1 | 0 | 0 | 1 |
+| `star` | 1 | 0 | 0 | 1 |
+| **всего** | **1014** | **105** | **17** | **892** |
 
 ---
 
 # base_game
 
-| Тип | Карт | Реализовано |
-|---|---:|---:|
-| treasure | 105 | 35 |
-| monster | 85 | 0 |
-| loot | 51 | 48 |
-| event | 17 | 0 |
-| character | 11 | 0 |
-| starting_item | 10 | 0 |
-| curse | 5 | 0 |
-| bonus_soul | 3 | 0 |
+| Тип | Карт | Реализовано | Без правил |
+|---|---:|---:|---:|
+| treasure | 105 | 35 | 0 |
+| monster | 85 | 22 | 17 |
+| loot | 51 | 48 | 0 |
+| event | 17 | 0 | 0 |
+| character | 11 | 0 | 0 |
+| starting_item | 10 | 0 | 0 |
+| curse | 5 | 0 | 0 |
+| bonus_soul | 3 | 0 | 0 |
 
 
 ## Characters
@@ -263,90 +268,90 @@
 | Card | Status | Notes |
 |------|--------|-------|
 | Big Spider | ⬜ |  |
-| Black Bony | ⬜ |  |
-| Boom Fly | ⬜ |  |
+| Black Bony | 🟩 |  |
+| Boom Fly | 🟩 |  |
 | Carrion Queen | ⬜ |  |
-| Chub | ⬜ |  |
-| Clotty | ⬜ |  |
-| Cod Worm | ⬜ |  |
-| Conjoined Fatty | ⬜ |  |
+| Chub | 🟩 |  |
+| Clotty | ▪️ | нет правил на карте |
+| Cod Worm | ▪️ | нет правил на карте |
+| Conjoined Fatty | ▪️ | нет правил на карте |
 | Conquest | ⬜ |  |
-| Cursed Fatty | ⬜ |  |
+| Cursed Fatty | 🟩 |  |
 | Cursed Gaper | ⬜ |  |
-| Cursed Horf | ⬜ |  |
-| Cursed Keeper Head | ⬜ |  |
+| Cursed Horf | 🟩 |  |
+| Cursed Keeper Head | 🟩 |  |
 | Cursed Mom's Hand | ⬜ |  |
-| Cursed Psy Horf | ⬜ |  |
+| Cursed Psy Horf | 🟩 |  |
 | Daddy Long Legs | ⬜ |  |
 | Dank Globin | ⬜ |  |
 | Dark One | ⬜ |  |
-| Death | ⬜ |  |
+| Death | 🟩 |  |
 | Delirium | ⬜ |  |
 | Dinga | ⬜ |  |
-| Dip | ⬜ |  |
+| Dip | ▪️ | нет правил на карте |
 | Dople | ⬜ |  |
 | Envy | ⬜ |  |
 | Evil Twin | ⬜ |  |
 | Famine | ⬜ |  |
-| Fat Bat | ⬜ |  |
-| Fatty | ⬜ |  |
-| Fly | ⬜ |  |
+| Fat Bat | ▪️ | нет правил на карте |
+| Fatty | ▪️ | нет правил на карте |
+| Fly | ▪️ | нет правил на карте |
 | Gemini | ⬜ |  |
 | Gluttony | ⬜ |  |
 | Greed | ⬜ |  |
-| Greedling | ⬜ |  |
-| Gurdy | ⬜ |  |
+| Greedling | 🟩 |  |
+| Gurdy | ▪️ | нет правил на карте |
 | Gurdy Jr. | ⬜ |  |
 | Hanger | ⬜ |  |
-| Holy Dinga | ⬜ |  |
-| Holy Dip | ⬜ |  |
-| Holy Keeper Head | ⬜ |  |
-| Holy Mom's Eye | ⬜ |  |
-| Holy Squirt | ⬜ |  |
+| Holy Dinga | 🟩 |  |
+| Holy Dip | 🟩 |  |
+| Holy Keeper Head | 🟩 |  |
+| Holy Mom's Eye | 🟩 |  |
+| Holy Squirt | 🟩 |  |
 | Hopper | ⬜ |  |
 | Horf | ⬜ |  |
 | Keeper Head | ⬜ |  |
 | Larry Jr. | ⬜ |  |
 | Leaper | ⬜ |  |
-| Leech | ⬜ |  |
-| Little Horn | ⬜ |  |
+| Leech | ▪️ | нет правил на карте |
+| Little Horn | ▪️ | нет правил на карте |
 | Lust | ⬜ |  |
 | Mask of Infamy | ⬜ |  |
 | Mega Fatty | ⬜ |  |
 | Mom! | ⬜ |  |
-| Mom's Dead Hand | ⬜ |  |
-| Mom's Eye | ⬜ |  |
+| Mom's Dead Hand | 🟩 |  |
+| Mom's Eye | 🟩 |  |
 | Mom's Hand | ⬜ |  |
-| Monstro | ⬜ |  |
-| Mulliboom | ⬜ |  |
+| Monstro | ▪️ | нет правил на карте |
+| Mulliboom | 🟩 |  |
 | Mulligan | ⬜ |  |
-| Pale Fatty | ⬜ |  |
+| Pale Fatty | ▪️ | нет правил на карте |
 | Peep | ⬜ |  |
 | Pestilence | ⬜ |  |
 | Pin | ⬜ |  |
-| Pooter | ⬜ |  |
+| Pooter | ▪️ | нет правил на карте |
 | Portal | ⬜ |  |
 | Pride | ⬜ |  |
-| Psy Horf | ⬜ |  |
+| Psy Horf | 🟩 |  |
 | Rag Man | ⬜ |  |
 | Rage Creep | ⬜ |  |
-| Red Host | ⬜ |  |
+| Red Host | ▪️ | нет правил на карте |
 | Ring of Flies | ⬜ |  |
 | Satan! | ⬜ |  |
 | Scolex | ⬜ |  |
-| Sloth | ⬜ |  |
-| Spider | ⬜ |  |
-| Squirt | ⬜ |  |
+| Sloth | 🟩 |  |
+| Spider | ▪️ | нет правил на карте |
+| Squirt | ▪️ | нет правил на карте |
 | Stoney | ⬜ |  |
-| Swarm of Flies | ⬜ |  |
+| Swarm of Flies | 🟩 |  |
 | The Bloat | ⬜ |  |
 | The Duke of Flies | ⬜ |  |
 | The Haunt | ⬜ |  |
 | The Lamb | ⬜ |  |
-| Trite | ⬜ |  |
+| Trite | ▪️ | нет правил на карте |
 | War | ⬜ |  |
-| Wizoob | ⬜ |  |
-| Wrath | ⬜ |  |
+| Wizoob | 🟩 |  |
+| Wrath | 🟩 |  |
 
 ## Events
 

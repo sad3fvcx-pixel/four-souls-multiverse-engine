@@ -173,6 +173,7 @@ class ConditionEvaluator:
         register("monster_hp", _monster_hp)
 
         register("attack_roll", _attack_roll)
+        register("is_attacked", _is_attacked)
         register("dice_equals", _dice_equals)
         register("dice_not_equals", _dice_not_equals)
         register("dice_greater", _dice_greater)
@@ -415,6 +416,22 @@ def _dice_value(context: AbilityContext) -> int | None:
             return rolled
 
     return None
+
+
+def _is_attacked(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    True when the monster this ability belongs to is the one under attack.
+
+    A monster's ability talks about its own fight. Two monsters are in play at
+    once, and a roll made against one of them is not a roll against the other.
+    """
+    return bool(
+        state.combat.active
+        and context.source is not None
+        and state.combat.monster is context.source
+    )
 
 
 def _attack_roll(
