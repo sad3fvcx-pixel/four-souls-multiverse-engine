@@ -22,6 +22,7 @@ from fsme.events import Event, EventBus, EventType
 from fsme.rng.rng import RNG
 from fsme.rules import (
     ProcedureRegistry,
+    cards_in_play,
     default_command_registry,
     default_procedure_registry,
     refresh_derived,
@@ -543,6 +544,7 @@ class Runtime:
         )
 
         self._context._set_event(event)
+        self._context._set_source(card)
 
         try:
             self._target_resolver.resolve_all(
@@ -565,6 +567,7 @@ class Runtime:
 
         finally:
             self._context._set_event(None)
+            self._context._set_source(None)
 
     def _open_priority_window(self) -> None:
         """
@@ -687,21 +690,12 @@ class Runtime:
         """
         Yield every card in play able to trigger, in a fixed order.
 
-        The order is part of determinism: players by seat, then their cards in
-        zone order, then the shared board.
+        "In play" is one list, shared with static modifiers, so a card cannot
+        be live for one and dead for the other. The order is part of
+        determinism: players by seat, then their cards in zone order, then the
+        shared board.
         """
-        for player in self._state.players:
-            for card in player.treasures.cards:
-                if isinstance(card, CardInstance):
-                    yield card
-
-        for card in self._state.active_monsters.cards:
-            if isinstance(card, CardInstance):
-                yield card
-
-        for card in self._state.room_area.cards:
-            if isinstance(card, CardInstance):
-                yield card
+        yield from cards_in_play(self._state)
 
     def _push_ability(
         self,
@@ -784,6 +778,7 @@ class Runtime:
             )
 
         self._context._set_actor(context.controller)
+        self._context._set_source(context.source)
 
         try:
             if ops is None:
@@ -806,6 +801,7 @@ class Runtime:
 
         finally:
             self._context._set_actor(None)
+            self._context._set_source(None)
 
         item.mark_resolved()
 

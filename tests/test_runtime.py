@@ -231,6 +231,7 @@ def test_execution_context_exposes_only_the_intended_powers() -> None:
         "rng",
         "actor",
         "event",
+        "source",
         "emit",
         "push",
         "propose",

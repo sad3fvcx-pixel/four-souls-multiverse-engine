@@ -25,6 +25,7 @@ class ZoneType(Enum):
     SOUL = auto()
     MONSTER = auto()
     ROOM = auto()
+    CURSE = auto()
 
     def __str__(self) -> str:
         return self.name.lower()

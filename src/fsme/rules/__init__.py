@@ -41,6 +41,7 @@ from .statics import (
     LOOT_PLAYS,
     MAX_HP,
     STATS,
+    cards_in_play,
     refresh_derived,
     static_value,
 )
@@ -98,6 +99,7 @@ __all__ = [
     "PassPriorityHandler",
     "PlayLootHandler",
     "SetupError",
+    "cards_in_play",
     "refresh_derived",
     "static_value",
     "ATTACK",

@@ -13,6 +13,7 @@ from fsme.stack import StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
 from .constants import LOOT_PLAYS_PER_TURN
+from .statics import cards_in_play
 
 DISCARD_PLAYED_LOOT = "discard_played_loot"
 
@@ -87,10 +88,17 @@ class PlayLootHandler:
 def discard_played_loot(item: StackItem, context: EffectContext) -> None:
     """
     Move a resolved loot card to the discard pile.
+
+    A card that put itself into play — a curse attaching to a player — stays
+    where it went. Discarding it as well would leave the same card in two
+    places at once.
     """
     card = item.source
 
     if card is None:
+        return
+
+    if card in cards_in_play(context.state):
         return
 
     context.state.loot_discard.add_top(card)

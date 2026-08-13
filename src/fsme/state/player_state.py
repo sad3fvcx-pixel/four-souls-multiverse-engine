@@ -45,6 +45,15 @@ class PlayerState:
     treasures: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.TREASURE))
     souls: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.SOUL))
 
+    curses: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.CURSE))
+    """
+    Curses attached to this player.
+
+    A curse is in play the way an item is: its abilities answer events and its
+    statics count, but it belongs to the player it afflicts rather than to
+    whoever played it.
+    """
+
     def can_attack(self) -> bool:
         return self.alive and self.attacks_left > 0
 
@@ -71,6 +80,10 @@ class PlayerState:
     @property
     def treasure_count(self) -> int:
         return len(self.treasures)
+
+    @property
+    def curse_count(self) -> int:
+        return len(self.curses)
 
     def heal(self, amount: int) -> None:
         if amount < 0:

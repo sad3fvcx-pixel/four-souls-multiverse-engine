@@ -197,5 +197,16 @@ class CardDefinition:
     def has_tag(self, tag: str) -> bool:
         return tag in self.tags
 
+    @property
+    def is_eternal(self) -> bool:
+        """
+        Whether this card resists being destroyed or stolen.
+
+        A character's starting item is eternal by definition — losing it would
+        leave the character without the thing that defines it — and any card
+        may declare itself eternal with a tag.
+        """
+        return self.type is CardType.STARTING_ITEM or self.has_tag("eternal")
+
     def __str__(self) -> str:
         return f"{self.id} ({self.name})"

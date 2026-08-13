@@ -49,6 +49,13 @@ class EffectContext(Protocol):
         ...
 
     @property
+    def source(self) -> Any | None:
+        """
+        The card whose ability is being resolved, when there is one.
+        """
+        ...
+
+    @property
     def event(self) -> Event | None:
         """
         The event currently open for replacement, if any.

@@ -37,6 +37,7 @@ class ExecutionContext:
         "_propose",
         "_actor",
         "_event",
+        "_source",
     )
 
     def __init__(
@@ -57,6 +58,7 @@ class ExecutionContext:
         self._propose = propose
         self._actor: int | None = None
         self._event: Event | None = None
+        self._source: Any | None = None
 
     @property
     def state(self) -> GameState:
@@ -84,6 +86,23 @@ class ExecutionContext:
         Runtime-only: name the player the next work is done for.
         """
         self._actor = player
+
+    @property
+    def source(self) -> Any | None:
+        """
+        The card whose ability is being resolved, when there is one.
+
+        A card that attaches itself to a player has to be able to name itself,
+        and the ability that does it should not have to be told which card it
+        belongs to.
+        """
+        return self._source
+
+    def _set_source(self, source: Any | None) -> None:
+        """
+        Runtime-only: name the card the next work belongs to.
+        """
+        self._source = source
 
     @property
     def event(self) -> Event | None:

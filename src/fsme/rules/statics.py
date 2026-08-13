@@ -34,7 +34,13 @@ STATS = (ATTACK, MAX_HP, ATTACKS, LOOT_PLAYS)
 
 def cards_in_play(state: GameState) -> list[CardInstance]:
     """
-    Every card whose statics currently count, in a fixed order.
+    Every card that is in play, in a fixed order.
+
+    This is the engine's single answer to "what is on the table": triggered
+    abilities and static modifiers both read it, so a card cannot be live for
+    one and dead for the other. A character, an item, a curse afflicting a
+    player, an active monster and the current room are all in play; a card in
+    hand, in a deck or in a discard pile is not.
     """
     cards: list[CardInstance] = []
 
@@ -44,6 +50,9 @@ def cards_in_play(state: GameState) -> list[CardInstance]:
 
         cards.extend(
             card for card in player.treasures.cards if isinstance(card, CardInstance)
+        )
+        cards.extend(
+            card for card in player.curses.cards if isinstance(card, CardInstance)
         )
 
     cards.extend(

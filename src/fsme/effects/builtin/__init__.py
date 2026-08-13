@@ -10,9 +10,29 @@ card never adds code here; adding a mechanic does.
 from __future__ import annotations
 
 from ..registry import EffectRegistry
-from . import coins, damage, dice, loot, modifiers, replacement, treasure
+from . import (
+    coins,
+    curses,
+    damage,
+    dice,
+    loot,
+    modifiers,
+    replacement,
+    rooms,
+    treasure,
+)
 
-_MODULES = (coins, damage, dice, loot, modifiers, replacement, treasure)
+_MODULES = (
+    coins,
+    curses,
+    damage,
+    dice,
+    loot,
+    modifiers,
+    replacement,
+    rooms,
+    treasure,
+)
 
 
 def register_builtin_effects(registry: EffectRegistry) -> EffectRegistry:
