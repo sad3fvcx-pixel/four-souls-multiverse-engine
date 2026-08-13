@@ -793,6 +793,13 @@ def _all_treasures(
         # "Recharge another item" — the item saying so is not another item.
         treasures = [card for card in treasures if card is not context.source]
 
+    tag = params.get("tag")
+
+    if tag is not None:
+        # "A non-eternal passive item" is a family, and a card that is copying
+        # another card's rules belongs to the family it is wearing.
+        treasures = [card for card in treasures if card.has_tag(str(tag))]
+
     return treasures
 
 

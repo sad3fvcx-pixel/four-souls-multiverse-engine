@@ -137,7 +137,7 @@ def names_ability(event: Event, card: CardInstance, ability: Ability) -> bool:
     if index is None or event.source is not card:
         return True
 
-    abilities = card.definition.abilities_for(str(event.type))
+    abilities = card.face.abilities_for(str(event.type))
 
     return bool(0 <= int(index) < len(abilities) and abilities[int(index)] is ability)
 
@@ -631,7 +631,7 @@ class Runtime:
         matches: list[tuple[CardInstance, Ability]] = []
 
         for card in self._candidates(event):
-            for ability in card.definition.abilities_for(str(event.type)):
+            for ability in card.face.abilities_for(str(event.type)):
                 if not ability.replacement:
                     continue
 
@@ -784,7 +784,7 @@ class Runtime:
         matches: list[tuple[CardInstance, Ability]] = []
 
         for card in self._candidates(event):
-            for ability in card.definition.abilities_for(str(event.type)):
+            for ability in card.face.abilities_for(str(event.type)):
                 if ability.replacement:
                     # A replacement already had its say before the event was
                     # queued. It is not also a trigger, or preventing damage

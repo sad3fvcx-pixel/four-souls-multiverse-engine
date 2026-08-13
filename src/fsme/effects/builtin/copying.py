@@ -72,7 +72,7 @@ def copy_ability(
     copied = 0
 
     for card in targets:
-        definition = getattr(card, "definition", None)
+        definition = getattr(card, "face", None) or getattr(card, "definition", None)
 
         if definition is None:
             raise EffectExecutionError("copy_ability expects card targets")
@@ -89,6 +89,54 @@ def copy_ability(
             )
 
             copied += 1
+
+    return copied
+
+
+TILL_END_OF_TURN = "end_of_turn"
+INDEFINITELY = "game"
+
+
+def copy_card(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    until: str = INDEFINITELY,
+) -> int:
+    """
+    Make the copying card play by another card's rules.
+
+    Nothing is cloned. The card keeps its identity — its owner, its place on
+    the table, the fact that it is the card that gets destroyed — and wears the
+    other card's rules until the copy lapses. Which is what the printed cards
+    describe: one says "till end of turn" and the other says the change is
+    indefinite, and that is the only difference between them.
+    """
+    if until not in (TILL_END_OF_TURN, INDEFINITELY):
+        raise EffectExecutionError(
+            f"unknown duration '{until}'; a copy lasts "
+            f"'{TILL_END_OF_TURN}' or '{INDEFINITELY}'"
+        )
+
+    copier = ctx.source
+
+    if copier is None or not hasattr(copier, "copy_of"):
+        raise EffectExecutionError("copy_card must be used by a card in play")
+
+    copied = 0
+
+    for card in targets:
+        definition = getattr(card, "face", None) or getattr(card, "definition", None)
+
+        if definition is None:
+            raise EffectExecutionError("copy_card expects card targets")
+
+        if card is copier:
+            continue
+
+        copier.copy_of = definition
+        copier.copy_expires = "" if until == INDEFINITELY else TILL_END_OF_TURN
+
+        copied += 1
 
     return copied
 
@@ -150,6 +198,13 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="trigger",
         description="Use another card's ability.",
+    )
+    registry.register(
+        "copy_card",
+        copy_card,
+        needs_target=True,
+        primary="until",
+        description="Play by another card's rules until the copy lapses.",
     )
     registry.register(
         "duplicate",

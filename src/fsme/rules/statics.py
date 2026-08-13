@@ -142,7 +142,7 @@ def bonus(state: GameState, stat: str, player_id: int) -> int:
     total = 0
 
     for card in cards_in_play(state):
-        for static in card.definition.statics:
+        for static in card.face.statics:
             if static.stat != stat:
                 continue
 
@@ -176,7 +176,7 @@ def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
     """
     total = base
 
-    for static in monster.definition.statics:
+    for static in monster.face.statics:
         if static.stat != stat or static.scope == "other_monsters":
             # A monster's own static reaches itself unless it says otherwise,
             # and "other monsters" says otherwise.
@@ -189,7 +189,7 @@ def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
         if card is monster:
             continue
 
-        for static in card.definition.statics:
+        for static in card.face.statics:
             if static.stat != stat or static.scope not in MONSTER_SCOPES:
                 continue
 
@@ -224,6 +224,9 @@ def _monster_conditions(static: Static, source: CardInstance, state: GameState) 
 def expire_card_modifiers(state: GameState) -> int:
     """
     Drop every card modifier that only lasted for the turn.
+
+    A copy that only lasted for the turn lapses here too: "this becomes a copy
+    of that item till end of turn" leaves the card wearing its own rules again.
     """
     dropped = 0
 
@@ -236,6 +239,12 @@ def expire_card_modifiers(state: GameState) -> int:
 
         dropped += len(card.modifiers) - len(keep)
         card.modifiers = keep
+
+        if getattr(card, "copy_expires", ""):
+            card.copy_of = None
+            card.copy_expires = ""
+
+            dropped += 1
 
     return dropped
 

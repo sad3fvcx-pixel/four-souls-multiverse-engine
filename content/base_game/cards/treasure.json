@@ -342,7 +342,29 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_treasure": {
+                "tag": "passive",
+                "exclude_eternal": true,
+                "exclude_source": true,
+                "as": "model"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "copy_card",
+              "until": "end_of_turn",
+              "target": "model"
+            }
+          ],
+          "description": "Choose a non-eternal passive item. This becomes a copy of that item till end of turn."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -808,7 +830,28 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_treasure": {
+                "exclude_eternal": true,
+                "exclude_source": true,
+                "as": "model"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "copy_card",
+              "until": "game",
+              "target": "model"
+            }
+          ],
+          "description": "Choose a non-eternal item. This becomes a copy of that item. This change is indefinite."
+        }
+      ],
       "tags": [
         "activated",
         "active"

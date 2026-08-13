@@ -62,12 +62,12 @@ class ActivateTreasureHandler:
 
             card = player.treasures.cards[index]
 
-        definition = getattr(card, "definition", None)
+        # The face, not the definition: an item copying another item is
+        # activated for the ability it is currently wearing.
+        face = getattr(card, "face", None)
 
         abilities = (
-            definition.abilities_for(str(EventType.ON_ACTIVATE))
-            if definition is not None
-            else ()
+            face.abilities_for(str(EventType.ON_ACTIVATE)) if face is not None else ()
         )
 
         if not abilities:
@@ -95,7 +95,7 @@ class ActivateTreasureHandler:
 
         which = int(command.get("ability", 0))
 
-        ability = card.definition.abilities_for(str(EventType.ON_ACTIVATE))[which]
+        ability = card.face.abilities_for(str(EventType.ON_ACTIVATE))[which]
 
         context.emit(
             EventType.BEFORE_ACTIVATE,

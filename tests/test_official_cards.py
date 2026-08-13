@@ -3826,6 +3826,118 @@ def test_the_cheese_grater_may_put_the_card_back(base_game: ContentLibrary) -> N
 
 
 # ----------------------------------------------------------------------
+# Wearing another card's rules
+# ----------------------------------------------------------------------
+
+
+def test_diplopia_wears_a_passive_item_until_the_turn_ends(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    diplopia = give(game, "treasure_deck-active_items-base_game-diplopia")
+
+    meal = give(game, "treasure_deck-passive_items-base_game-breakfast", player=1)
+    give(game, "treasure_deck-passive_items-base_game-the_relic", player=1)
+
+    before = game.state.player(0).max_hp
+
+    assert activate(game, diplopia).accepted
+    assert pick(game, 0, meal).accepted
+
+    assert diplopia.copy_of is meal.definition
+    assert game.state.player(0).max_hp == before + 1, "a copy of a meal feeds too"
+
+    end_turn(game)
+
+    assert diplopia.copy_of is None
+    assert game.state.player(0).max_hp == before
+
+
+def test_diplopia_is_offered_passive_items_only(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    diplopia = give(game, "treasure_deck-active_items-base_game-diplopia")
+
+    active = give(game, "treasure_deck-active_items-base_game-decoy", player=1)
+
+    passive = give(game, "treasure_deck-passive_items-base_game-breakfast", player=1)
+    give(game, "treasure_deck-passive_items-base_game-the_relic", player=1)
+
+    assert activate(game, diplopia).accepted
+
+    options = list(pending(game, 0).options)
+
+    assert passive in options
+    assert active not in options
+    assert diplopia not in options
+
+
+def test_modeling_clay_keeps_the_rules_it_copied(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    clay = give(game, "treasure_deck-active_items-base_game-modeling_clay")
+
+    meal = give(game, "treasure_deck-passive_items-base_game-breakfast", player=1)
+    give(game, "treasure_deck-passive_items-base_game-the_relic", player=1)
+
+    before = game.state.player(0).max_hp
+
+    assert activate(game, clay).accepted
+    assert pick(game, 0, meal).accepted
+
+    end_turn(game)
+    end_turn(game)
+
+    assert clay.copy_of is meal.definition
+    assert game.state.player(0).max_hp == before + 1, "the change is indefinite"
+
+
+def test_a_copied_item_may_be_activated_for_what_it_copied(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    clay = give(game, "treasure_deck-active_items-base_game-modeling_clay")
+    battery = give(game, "treasure_deck-active_items-base_game-the_battery", player=1)
+
+    spent = give(game, "treasure_deck-active_items-base_game-decoy")
+    spent.tapped = True
+
+    assert activate(game, clay).accepted
+    assert pick(game, 0, battery).accepted
+
+    clay.tapped = False
+
+    # The Battery recharges another item, and the clay is now a Battery.
+    assert activate(game, clay).accepted
+    assert pick(game, 0, spent).accepted
+
+    assert not spent.tapped
+
+
+def test_a_copy_is_still_the_card_it_was_printed_as(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    clay = give(game, "treasure_deck-active_items-base_game-modeling_clay")
+
+    meal = give(game, "treasure_deck-passive_items-base_game-breakfast", player=1)
+    give(game, "treasure_deck-passive_items-base_game-the_relic", player=1)
+
+    assert activate(game, clay).accepted
+    assert pick(game, 0, meal).accepted
+
+    game.runtime.context.apply("destroy_treasure", [clay])
+    game.runtime.run()
+
+    assert clay in game.state.treasure_discard.cards
+    assert meal in game.state.player(1).treasures.cards
+    assert clay.name == "Modeling Clay"
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

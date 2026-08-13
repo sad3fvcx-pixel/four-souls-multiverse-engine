@@ -7517,5 +7517,54 @@
         "description": "Each time a player rolls a 6, reveal the top card of any deck. Put it back or put it into discard."
       }
     ]
+  },
+  "treasure_deck-active_items-base_game-diplopia": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_treasure": {
+              "tag": "passive",
+              "exclude_eternal": true,
+              "exclude_source": true,
+              "as": "model"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "copy_card",
+            "until": "end_of_turn",
+            "target": "model"
+          }
+        ],
+        "description": "Choose a non-eternal passive item. This becomes a copy of that item till end of turn."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-modeling_clay": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_treasure": {
+              "exclude_eternal": true,
+              "exclude_source": true,
+              "as": "model"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "copy_card",
+            "until": "game",
+            "target": "model"
+          }
+        ],
+        "description": "Choose a non-eternal item. This becomes a copy of that item. This change is indefinite."
+      }
+    ]
   }
 }
