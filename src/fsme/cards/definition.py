@@ -114,9 +114,19 @@ class Static:
     it happens.
     """
 
-    stat: str
+    stat: str = ""
 
     amount: int = 0
+
+    forbids: str = ""
+    """
+    An action this card does not allow, for as long as it is in play.
+
+    A prohibition is a static like any other: nothing triggers it, nothing
+    resolves it, and the engine simply asks whether an action is allowed before
+    letting a player take it. "Other players can't play loot cards on your
+    turn" has no moment at which it happens either.
+    """
 
     scope: str = "controller"
     """
@@ -138,8 +148,9 @@ class Static:
     @classmethod
     def from_data(cls, data: Mapping[str, Any]) -> Static:
         return cls(
-            stat=str(data["stat"]),
+            stat=str(data.get("stat", "")),
             amount=int(data.get("amount", 0)),
+            forbids=str(data.get("forbids", "")),
             scope=str(data.get("scope", "controller")),
             conditions=tuple(
                 freeze(item) for item in data.get("conditions", ())

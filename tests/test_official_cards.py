@@ -3938,6 +3938,98 @@ def test_a_copy_is_still_the_card_it_was_printed_as(
 
 
 # ----------------------------------------------------------------------
+# Cards that forbid things
+# ----------------------------------------------------------------------
+
+
+def test_the_trinity_shield_silences_the_table_on_its_turn(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-trinity_shield")
+
+    battery = give(game, "treasure_deck-active_items-base_game-the_battery", player=1)
+
+    refused = activate(game, battery, player=1)
+
+    assert not refused.accepted
+    assert "Trinity Shield" in str(refused.reason)
+
+    # Playing loot is forbidden the same way, and a player answering somebody
+    # else's card is the only one who would be trying.
+    from fsme.rules import refuse
+
+    assert refuse(game.state, "play_loot", player=1) is not None
+    assert refuse(game.state, "play_loot", player=0) is None
+
+    # The holder is not silenced by their own item.
+    assert activate(
+        game, give(game, "treasure_deck-active_items-base_game-the_battery")
+    ).accepted
+
+
+def test_the_trinity_shield_is_quiet_on_other_turns(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-trinity_shield")
+
+    battery = give(game, "treasure_deck-active_items-base_game-the_battery", player=1)
+
+    end_turn(game)
+
+    assert activate(game, battery, player=1).accepted
+
+
+def test_stoney_cannot_be_attacked(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    stoney = only_monster(game, "monster_deck-basic_enemies-base_game-stoney")
+
+    while game.state.turn.phase is not GamePhase.ACTION:
+        assert game.act(CommandType.END_PHASE, 0).accepted
+
+    refused = game.act(
+        CommandType.ATTACK,
+        0,
+        index=list(game.state.active_monsters.cards).index(stoney),
+    )
+
+    assert not refused.accepted
+    assert "Stoney" in str(refused.reason)
+
+
+def test_stoney_hardens_the_monsters_beside_it(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    stoney = only_monster(game, "monster_deck-basic_enemies-base_game-stoney")
+    other = summon(game, "monster_deck-bosses-base_game-greed")
+
+    printed = int(other.definition.roll or 0)
+
+    assert difficulty_of(game, other) == printed + 1
+
+    game.runtime.context.apply("discard_monsters", [stoney])
+    game.runtime.run()
+
+    assert difficulty_of(game, other) == printed
+
+
+def test_stoney_dies_with_the_next_monster_to_die(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    stoney = only_monster(game, "monster_deck-basic_enemies-base_game-stoney")
+    other = summon(game, "monster_deck-bosses-base_game-greed")
+
+    slay(game, other)
+
+    assert not stoney.alive
+    assert stoney not in game.state.active_monsters.cards
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

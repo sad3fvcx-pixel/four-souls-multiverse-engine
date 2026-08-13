@@ -12,6 +12,7 @@ from fsme.events import EventType
 from fsme.state import GameState
 
 from .costs import pay, unpayable
+from .restrictions import ACTIVATE, refuse
 
 
 def _is_character(command: Command) -> bool:
@@ -77,6 +78,11 @@ class ActivateTreasureHandler:
 
         if not isinstance(which, int) or not 0 <= which < len(abilities):
             return f"'{getattr(card, 'name', card)}' has no ability {which!r}"
+
+        forbidden = refuse(state, ACTIVATE, player=command.player)
+
+        if forbidden is not None:
+            return forbidden
 
         return unpayable(abilities[which], card, player, state)
 

@@ -13,6 +13,7 @@ from fsme.stack import DISCARD_PLAYED_LOOT, StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
 from .constants import LOOT_PLAYS_PER_TURN
+from .restrictions import PLAY_LOOT, refuse
 from .statics import cards_in_play
 
 
@@ -55,7 +56,7 @@ class PlayLootHandler:
         if not isinstance(index, int) or not 0 <= index < player.hand_size:
             return f"no loot card at hand index {index!r}"
 
-        return None
+        return refuse(state, PLAY_LOOT, player=command.player)
 
     def execute(self, command: Command, context: EffectContext) -> None:
         state = context.state

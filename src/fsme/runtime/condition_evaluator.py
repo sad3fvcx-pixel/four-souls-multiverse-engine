@@ -176,7 +176,8 @@ class ConditionEvaluator:
         register("is_attacked", _is_attacked)
         register("card_counters", _card_counters)
         register("combat_damage", _combat_damage)
-        register("is_damage_source", _is_damage_source)
+        register("is_damage_source", _is_event_source)
+        register("is_event_source", _is_event_source)
         register("is_damage_target", _is_damage_target)
         register("is_damage_actor", _is_damage_actor)
         register("dice_equals", _dice_equals)
@@ -485,11 +486,16 @@ def _combat_damage(
     return bool(context.event is not None and context.event.get("combat", False))
 
 
-def _is_damage_source(
+def _is_event_source(
     state: GameState, context: AbilityContext, params: Mapping[str, Any]
 ) -> bool:
     """
-    True when this card is what dealt the damage.
+    True when this card is what the event is about.
+
+    "When another monster dies" is this condition negated: the card asking is
+    in play, the event names a monster, and the two must not be the same one.
+    Damage asks the same question and calls it ``is_damage_source``, which is
+    the same test under the name the damage cards use.
     """
     return bool(
         context.event is not None

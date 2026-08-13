@@ -4748,7 +4748,25 @@
         "version": "Original",
         "artist": "@TikaratheMew",
         "effect_3p_plus": true
-      }
+      },
+      "statics": [
+        {
+          "forbids": "play_loot",
+          "scope": "opponents",
+          "conditions": [
+            "player_active"
+          ],
+          "description": "Other players can't play loot cards on your turn."
+        },
+        {
+          "forbids": "activate",
+          "scope": "opponents",
+          "conditions": [
+            "player_active"
+          ],
+          "description": "Other players can't activate items on your turn."
+        }
+      ]
     },
     {
       "id": "treasure_deck-soul_item-base_game-pandora_s_box",

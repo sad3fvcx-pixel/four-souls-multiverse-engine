@@ -23,6 +23,8 @@ from fsme.stack import COMBAT_ROUND, COMBAT_STRIKE, StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
 from .constants import BASE_PLAYER_ATTACK, DICE_SIDES
+from .restrictions import ATTACK as ATTACK_ACTION
+from .restrictions import refuse
 from .statics import ATTACK, DIFFICULTY, monster_value, static_value
 
 DEFAULT_MONSTER_ROLL = 4
@@ -70,7 +72,7 @@ class AttackHandler:
         if not getattr(monsters[index], "alive", False):
             return "that monster is already dead"
 
-        return None
+        return refuse(state, ATTACK_ACTION, player=command.player, card=monsters[index])
 
     def execute(self, command: Command, context: EffectContext) -> None:
         state = context.state

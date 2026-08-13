@@ -1330,7 +1330,26 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "any",
+          "conditions": [
+            {
+              "not": [
+                "is_event_source"
+              ]
+            }
+          ],
+          "effects": [
+            {
+              "effect": "kill",
+              "target": "self"
+            }
+          ],
+          "description": "When another monster dies, this dies."
+        }
+      ],
       "health": 3,
       "attack": 0,
       "roll": 0,
@@ -1350,7 +1369,20 @@
         "version": "Original",
         "artist": "TAR_HEAD",
         "notes": "Unlocked via dealing 500,000 damage to Delirium during the original Kickstarter."
-      }
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 1,
+          "scope": "all_monsters",
+          "description": "Monsters have +1 DC."
+        },
+        {
+          "forbids": "attack",
+          "scope": "self",
+          "description": "This can't be attacked."
+        }
+      ]
     },
     {
       "id": "monster_deck-basic_enemies-base_game-swarm_of_flies",

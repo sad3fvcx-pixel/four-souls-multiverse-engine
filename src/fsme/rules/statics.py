@@ -51,6 +51,7 @@ __all__ = [
     "expire_turn_modifiers",
     "monster_value",
     "refresh_derived",
+    "static_conditions_hold",
     "static_value",
 ]
 
@@ -182,7 +183,7 @@ def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
             # and "other monsters" says otherwise.
             continue
 
-        if _monster_conditions(static, monster, state):
+        if static_conditions_hold(static, monster, state):
             total += static.amount
 
     for card in cards_in_play(state):
@@ -193,7 +194,7 @@ def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
             if static.stat != stat or static.scope not in MONSTER_SCOPES:
                 continue
 
-            if _monster_conditions(static, card, state):
+            if static_conditions_hold(static, card, state):
                 total += static.amount
 
     for modifier in getattr(monster, "modifiers", ()):
@@ -203,9 +204,15 @@ def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
     return max(0, total)
 
 
-def _monster_conditions(static: Static, source: CardInstance, state: GameState) -> bool:
+def static_conditions_hold(
+    static: Static, source: CardInstance, state: GameState
+) -> bool:
     """
-    Check a monster-facing static's conditions against the card carrying it.
+    Check a static's conditions against the card carrying it.
+
+    This is the reading used by statics that are not about a player at all — a
+    monster's own numbers, or a prohibition — where there is no seat to ask the
+    condition about and the card itself is the subject.
     """
     if not static.conditions:
         return True

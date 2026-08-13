@@ -47,6 +47,7 @@ from .errors import RuleError, RuleRegistrationError, UnknownRuleError
 from .loot import PlayLootHandler, discard_played_loot
 from .priority import PassPriorityHandler
 from .procedures import ProcedureRegistry, StackProcedure
+from .restrictions import ACTIONS, forbidden_by, refuse
 from .setup import SetupError, new_game
 from .shop import BuyTreasureHandler, refill_shop
 from .statics import (
@@ -123,6 +124,9 @@ __all__ = [
     "monster_value",
     "record_trigger",
     "refresh_derived",
+    "ACTIONS",
+    "forbidden_by",
+    "refuse",
     "static_value",
     "times_this_turn",
     "trigger_key",

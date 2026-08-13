@@ -7566,5 +7566,60 @@
         "description": "Choose a non-eternal item. This becomes a copy of that item. This change is indefinite."
       }
     ]
+  },
+  "treasure_deck-passive_items-base_game-trinity_shield": {
+    "statics": [
+      {
+        "forbids": "play_loot",
+        "scope": "opponents",
+        "conditions": [
+          "player_active"
+        ],
+        "description": "Other players can't play loot cards on your turn."
+      },
+      {
+        "forbids": "activate",
+        "scope": "opponents",
+        "conditions": [
+          "player_active"
+        ],
+        "description": "Other players can't activate items on your turn."
+      }
+    ]
+  },
+  "monster_deck-basic_enemies-base_game-stoney": {
+    "statics": [
+      {
+        "stat": "difficulty",
+        "amount": 1,
+        "scope": "all_monsters",
+        "description": "Monsters have +1 DC."
+      },
+      {
+        "forbids": "attack",
+        "scope": "self",
+        "description": "This can't be attacked."
+      }
+    ],
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "any",
+        "conditions": [
+          {
+            "not": [
+              "is_event_source"
+            ]
+          }
+        ],
+        "effects": [
+          {
+            "effect": "kill",
+            "target": "self"
+          }
+        ],
+        "description": "When another monster dies, this dies."
+      }
+    ]
   }
 }

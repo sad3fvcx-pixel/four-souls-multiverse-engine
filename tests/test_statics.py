@@ -11,7 +11,7 @@ from conftest import make_definition, make_game, make_instance
 
 from fsme.cards import CardType, Static
 from fsme.commands import Command, CommandType
-from fsme.rules import ATTACK, LOOT_PLAYS, MAX_HP, STATS, static_value
+from fsme.rules import ACTIONS, ATTACK, LOOT_PLAYS, MAX_HP, STATS, static_value
 from fsme.rules.statics import bonus
 from fsme.state.modifiers import MONSTER_STATS
 
@@ -207,6 +207,20 @@ def test_the_demo_set_ships_static_cards() -> None:
     ]
 
     assert with_statics
+
+    # A static either changes a number or forbids an action; the ones that
+    # forbid name no statistic, and every statistic named must be one the
+    # engine adds up.
     assert {
-        static.stat for definition in with_statics for static in definition.statics
+        static.stat
+        for definition in with_statics
+        for static in definition.statics
+        if not static.forbids
     } <= set(STATS) | set(MONSTER_STATS)
+
+    assert {
+        static.forbids
+        for definition in with_statics
+        for static in definition.statics
+        if static.forbids
+    } <= set(ACTIONS)
