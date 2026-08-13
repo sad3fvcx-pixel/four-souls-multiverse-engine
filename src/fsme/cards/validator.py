@@ -143,8 +143,10 @@ def _validate_ability(
                 errors.append(f"{location}: unknown condition '{name}'")
 
     if known_targets is not None:
+        declared = _declared_target_names(ability)
+
         for name in _target_names(ability):
-            if name not in known_targets:
+            if name not in known_targets and name not in declared:
                 errors.append(f"{location}: unknown target '{name}'")
 
     return errors
@@ -181,6 +183,41 @@ def _node_names(nodes: Any, nested: Collection[str]) -> list[str]:
                 names.extend(_node_names(value, nested))
 
             break
+
+    return names
+
+
+def _declared_target_names(ability: Mapping[str, Any]) -> set[str]:
+    """
+    Collect the names an ability binds its own target groups under.
+
+    An ability that declares ``{"target_player": {"as": "victim"}}`` may then
+    point an effect at ``victim``. That name is not part of the engine's
+    vocabulary and never will be — it belongs to this one card — so it has to
+    be gathered from the ability rather than looked up.
+    """
+    names: set[str] = set()
+
+    declared = ability.get("targets", ())
+
+    if not isinstance(declared, (list, tuple)):
+        return names
+
+    for spec in declared:
+        if isinstance(spec, str):
+            names.add(spec)
+            continue
+
+        if not isinstance(spec, Mapping):
+            continue
+
+        if "as" in spec:
+            names.add(str(spec["as"]))
+            continue
+
+        for value in spec.values():
+            if isinstance(value, Mapping) and "as" in value:
+                names.add(str(value["as"]))
 
     return names
 

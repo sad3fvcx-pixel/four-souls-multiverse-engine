@@ -126,6 +126,7 @@ class TargetResolver:
         register("random_monster", _random_monster)
         register("target_monster", _target_monster)
 
+        register("target_player_or_monster", _target_player_or_monster)
         register("target_loot", _target_loot)
         register("target_deck_card", _target_deck_card)
         register("target_treasure", _target_treasure)
@@ -316,6 +317,24 @@ def _target_monster(
         context,
         params,
         "target_monster",
+    )
+
+
+def _target_player_or_monster(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    Let the controller pick anything that can be damaged.
+
+    "A monster or player" is one choice on the card and so it is one choice
+    here. Offering the two lists separately would make the player answer a
+    question the card never asked.
+    """
+    options: list[Any] = list(state.living_players())
+    options.extend(_all_monsters(state, context, params, rng))
+
+    return _ask(
+        DecisionKind.CHOOSE_CARD, options, context, params, "target_player_or_monster"
     )
 
 

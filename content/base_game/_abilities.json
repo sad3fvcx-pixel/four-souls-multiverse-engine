@@ -1,0 +1,145 @@
+{
+  "loot_deck-1-base_game-a_penny": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "gain_coins": 1
+          }
+        ],
+        "description": "Gain 1¢."
+      }
+    ]
+  },
+  "loot_deck-2-base_game-2_cents": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "gain_coins": 2
+          }
+        ],
+        "description": "Gain 2¢."
+      }
+    ]
+  },
+  "loot_deck-3-base_game-3_cents": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "gain_coins": 3
+          }
+        ],
+        "description": "Gain 3¢."
+      }
+    ]
+  },
+  "loot_deck-4-base_game-4_cents": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "gain_coins": 4
+          }
+        ],
+        "description": "Gain 4¢."
+      }
+    ]
+  },
+  "loot_deck-nickels-base_game-a_nickel": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "gain_coins": 5
+          }
+        ],
+        "description": "Gain 5¢."
+      }
+    ]
+  },
+  "loot_deck-bombs-base_game-bomb": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {
+            "target_player_or_monster": {
+              "as": "victim"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "victim"
+          }
+        ],
+        "description": "Deal 1 damage to a monster or player."
+      }
+    ]
+  },
+  "loot_deck-bombs-base_game-gold_bomb": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {
+            "target_player_or_monster": {
+              "as": "victim"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 3,
+            "target": "victim"
+          }
+        ],
+        "description": "Deal 3 damage to a monster or player."
+      }
+    ]
+  },
+  "loot_deck-batteries-base_game-lil_battery": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {
+            "target_treasure": {
+              "as": "item"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "recharge",
+            "target": "item"
+          }
+        ],
+        "description": "Recharge an item."
+      }
+    ]
+  },
+  "loot_deck-nickels-base_game-a_dime": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "gain_coins": 10
+          }
+        ],
+        "description": "Gain 10¢."
+      }
+    ]
+  }
+}

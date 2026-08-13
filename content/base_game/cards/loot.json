@@ -6,7 +6,17 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 1
+            }
+          ],
+          "description": "Gain 1¢."
+        }
+      ],
       "metadata": {
         "text": "Gain 1¢.",
         "set": "Base Game",
@@ -24,7 +34,17 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 2
+            }
+          ],
+          "description": "Gain 2¢."
+        }
+      ],
       "metadata": {
         "text": "Gain 2¢.",
         "set": "Base Game",
@@ -42,7 +62,17 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 3
+            }
+          ],
+          "description": "Gain 3¢."
+        }
+      ],
       "metadata": {
         "text": "Gain 3¢.",
         "set": "Base Game",
@@ -60,7 +90,17 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 4
+            }
+          ],
+          "description": "Gain 4¢."
+        }
+      ],
       "metadata": {
         "text": "Gain 4¢.",
         "set": "Base Game",
@@ -78,7 +118,25 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_treasure": {
+                "as": "item"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "item"
+            }
+          ],
+          "description": "Recharge an item."
+        }
+      ],
       "metadata": {
         "text": "Recharge\nan item.",
         "set": "Base Game",
@@ -114,7 +172,26 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "victim"
+            }
+          ],
+          "description": "Deal 1 damage to a monster or player."
+        }
+      ],
       "metadata": {
         "text": "Deal 1 damage\nto a monster\nor player.",
         "set": "Base Game",
@@ -132,7 +209,26 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 3,
+              "target": "victim"
+            }
+          ],
+          "description": "Deal 3 damage to a monster or player."
+        }
+      ],
       "metadata": {
         "text": "Deal 3 damage\nto a monster\nor player.",
         "set": "Base Game",
@@ -624,7 +720,17 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 10
+            }
+          ],
+          "description": "Gain 10¢."
+        }
+      ],
       "metadata": {
         "text": "Gain 10¢.",
         "set": "Base Game",
@@ -642,7 +748,17 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 5
+            }
+          ],
+          "description": "Gain 5¢."
+        }
+      ],
       "metadata": {
         "text": "Gain 5¢.",
         "set": "Base Game",
