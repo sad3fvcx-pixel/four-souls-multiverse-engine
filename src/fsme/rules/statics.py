@@ -84,6 +84,9 @@ def cards_in_play(state: GameState) -> list[CardInstance]:
     cards.extend(
         card for card in state.room_area.cards if isinstance(card, CardInstance)
     )
+    cards.extend(
+        card for card in state.bonus_souls.cards if isinstance(card, CardInstance)
+    )
 
     return cards
 

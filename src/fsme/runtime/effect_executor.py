@@ -134,7 +134,7 @@ def _resolve_params(
             stored = ability.get(str(value["from"]))
             number = int(stored) if isinstance(stored, int) else 0
 
-            resolved[key] = number + int(value.get("plus", 0))
+            resolved[key] = _shift(number, value)
 
         elif "count" in value:
             resolved[key] = _counted(value, ability, context)
@@ -147,13 +147,13 @@ def _resolve_params(
             )
             number = int(carried) if isinstance(carried, int) else 0
 
-            resolved[key] = number + int(value.get("plus", 0))
+            resolved[key] = _shift(number, value)
 
         elif "last_result" in value:
             done = ability.last_value
             number = int(done) if isinstance(done, int) else 0
 
-            resolved[key] = number + int(value.get("plus", 0))
+            resolved[key] = _shift(number, value)
 
         elif "player_of" in value:
             group = _group(value["player_of"], ability, context)
@@ -164,6 +164,16 @@ def _resolve_params(
             resolved[key] = value
 
     return resolved
+
+
+def _shift(number: int, spec: Mapping[str, Any]) -> int:
+    """
+    Scale and shift a number a card read from somewhere.
+
+    ``times`` is what lets a card give back what it took: removing counters
+    equal to the damage taken is the same number, negated.
+    """
+    return number * int(spec.get("times", 1)) + int(spec.get("plus", 0))
 
 
 _COUNTS: dict[str, Callable[[Any], int]] = {

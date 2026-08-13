@@ -315,9 +315,29 @@ def _player_has_loot(
 def _player_has_treasure(
     state: GameState, context: AbilityContext, params: Mapping[str, Any]
 ) -> bool:
+    """
+    Compare how many items a player controls with what the card asks about.
+
+    ``tag`` narrows it to one family of items — "2 or more Guppy items" is not
+    two or more items.
+    """
     player = _subject_player(state, context, params)
 
-    return _has(player, int(player.treasure_count) if player else 0, params)
+    if player is None:
+        return False
+
+    tag = params.get("tag")
+
+    if tag is None:
+        held = int(player.treasure_count)
+    else:
+        held = sum(
+            1
+            for card in player.treasures.cards
+            if str(tag) in getattr(getattr(card, "definition", None), "tags", ())
+        )
+
+    return _has(player, held, params)
 
 
 def _player_has_souls(

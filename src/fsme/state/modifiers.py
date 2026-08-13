@@ -42,7 +42,15 @@ have no card left in play to hang on, such as "+1 to dice rolls till end of
 turn".
 """
 
-STATS = (ATTACK, MAX_HP, ATTACKS, LOOT_PLAYS, ROLL)
+SHOP_COST = "shop_cost"
+"""
+What a player pays for an item in the shop, before the shop's own price.
+
+A card that makes shopping cheaper changes a number the rules read, which is
+what a statistic is for.
+"""
+
+STATS = (ATTACK, MAX_HP, ATTACKS, LOOT_PLAYS, ROLL, SHOP_COST)
 """
 Every statistic a modifier may change.
 

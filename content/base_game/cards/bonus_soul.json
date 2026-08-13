@@ -6,7 +6,27 @@
       "type": "bonus_soul",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "loot_drawn",
+          "scope": "any",
+          "conditions": [
+            {
+              "player_has_loot": {
+                "operator": ">=",
+                "value": 10
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "claim_soul",
+              "target": "event_player"
+            }
+          ],
+          "description": "The first player to have 10 or more loot cards in their hand gains this soul."
+        }
+      ],
       "metadata": {
         "text": "The first player to\nhave 10 or more loot\ncards in their hand\ngains this soul.\n\n(+1 soul)",
         "set": "Base Game",
@@ -22,7 +42,27 @@
       "type": "bonus_soul",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "coins_gained",
+          "scope": "any",
+          "conditions": [
+            {
+              "player_has_coins": {
+                "operator": ">=",
+                "value": 25
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "claim_soul",
+              "target": "event_player"
+            }
+          ],
+          "description": "The first player to have 25¢ or more gains this soul."
+        }
+      ],
       "metadata": {
         "text": "The first player to\nhave 25¢ or more\ngains this soul.\n\n(+1 soul)",
         "set": "Base Game",
@@ -38,7 +78,28 @@
       "type": "bonus_soul",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_gain",
+          "scope": "any",
+          "conditions": [
+            {
+              "player_has_treasure": {
+                "tag": "guppy",
+                "operator": ">=",
+                "value": 2
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "claim_soul",
+              "target": "event_player"
+            }
+          ],
+          "description": "The first player to control 2 or more Guppy items gains this soul."
+        }
+      ],
       "metadata": {
         "text": "The first player to\ncontrol 2 or more\nGuppy items gains\nthis soul.\n\n(+1 soul)",
         "set": "Base Game",

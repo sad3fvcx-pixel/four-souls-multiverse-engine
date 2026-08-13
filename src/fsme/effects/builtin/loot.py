@@ -220,6 +220,11 @@ def _detach(state: Any, card: Any) -> None:
         state.loot_discard,
         state.treasure_deck,
         state.treasure_shop,
+        state.treasure_discard,
+        state.bonus_souls,
+        state.active_monsters,
+        state.monster_deck,
+        state.monster_discard,
         state.room_area,
         state.room_deck,
     ]

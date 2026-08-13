@@ -984,6 +984,9 @@
         ],
         "description": "Each time you would take damage, roll- 6: Prevent 1 of that damage."
       }
+    ],
+    "tags": [
+      "guppy"
     ]
   },
   "loot_deck-trinkets-base_game-curved_horn": {
@@ -5163,6 +5166,1131 @@
         ],
         "description": "When this dies, the active player may attack an additional time."
       }
+    ]
+  },
+  "bonus_souls-base_game-soul_of_gluttony": {
+    "abilities": [
+      {
+        "trigger": "loot_drawn",
+        "scope": "any",
+        "conditions": [
+          {
+            "player_has_loot": {
+              "operator": ">=",
+              "value": 10
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "claim_soul",
+            "target": "event_player"
+          }
+        ],
+        "description": "The first player to have 10 or more loot cards in their hand gains this soul."
+      }
+    ]
+  },
+  "bonus_souls-base_game-soul_of_greed": {
+    "abilities": [
+      {
+        "trigger": "coins_gained",
+        "scope": "any",
+        "conditions": [
+          {
+            "player_has_coins": {
+              "operator": ">=",
+              "value": 25
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "claim_soul",
+            "target": "event_player"
+          }
+        ],
+        "description": "The first player to have 25¢ or more gains this soul."
+      }
+    ]
+  },
+  "bonus_souls-base_game-soul_of_guppy": {
+    "abilities": [
+      {
+        "trigger": "on_gain",
+        "scope": "any",
+        "conditions": [
+          {
+            "player_has_treasure": {
+              "tag": "guppy",
+              "operator": ">=",
+              "value": 2
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "claim_soul",
+            "target": "event_player"
+          }
+        ],
+        "description": "The first player to control 2 or more Guppy items gains this soul."
+      }
+    ]
+  },
+  "monster_deck-good_events-base_game-xl_floor": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "effect": "expand_slots",
+            "area": "monster",
+            "amount": 1
+          },
+          {
+            "effect": "add_modifier",
+            "stat": "attacks",
+            "amount": 1,
+            "target": "active_player"
+          }
+        ],
+        "description": "Expand monster slots by 1. The active player may attack an additional time this turn."
+      }
+    ]
+  },
+  "monster_deck-good_events-base_game-shop_upgrade": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "effect": "expand_slots",
+            "area": "shop",
+            "amount": 2
+          },
+          {
+            "effect": "add_modifier",
+            "stat": "attacks",
+            "amount": 1,
+            "target": "active_player"
+          }
+        ],
+        "description": "Expand shop slots by 2. The active player may attack an additional time this turn."
+      }
+    ]
+  },
+  "monster_deck-good_events-base_game-we_need_to_go_deeper": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "targets": [
+          {
+            "target_deck_card": {
+              "deck": "monster",
+              "pile": "discard",
+              "exclude_type": "event",
+              "minimum": 0,
+              "maximum": 20,
+              "as": "raised",
+              "prompt": "Put any number of monster cards on top of the monster deck."
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "move_cards",
+            "deck": "monster",
+            "position": "top",
+            "target": "raised"
+          },
+          {
+            "effect": "add_modifier",
+            "stat": "attacks",
+            "amount": 1,
+            "target": "active_player"
+          }
+        ],
+        "description": "Put any number of non-event monster cards in discard on top of the monster deck. The active player may attack an additional time this turn."
+      }
+    ]
+  },
+  "monster_deck-bad_events-base_game-cursed_chest": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_less": 4
+              }
+            ],
+            "then": [
+              {
+                "effect": "deal_damage",
+                "amount": 1,
+                "target": "controller"
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "and": [
+                  {
+                    "dice_greater": 3
+                  },
+                  {
+                    "dice_less": 6
+                  }
+                ]
+              }
+            ],
+            "then": [
+              {
+                "effect": "deal_damage",
+                "amount": 2,
+                "target": "controller"
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 6
+              }
+            ],
+            "then": [
+              {
+                "effect": "take_card",
+                "to": "treasures",
+                "shuffle": "treasure",
+                "target": {
+                  "target_deck_card": {
+                    "deck": "treasure",
+                    "tag": "guppy",
+                    "as": "guppy"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "description": "Roll: 1-3 take 1 damage, 4-5 take 2 damage, 6 search the treasure deck for a Guppy item, gain it, then shuffle the treasure deck."
+      }
+    ]
+  },
+  "monster_deck-good_events-base_game-devil_deal": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Put this into discard.",
+                "effects": []
+              },
+              {
+                "description": "Loot 2. Take 1 damage.",
+                "effects": [
+                  {
+                    "draw_loot": 2
+                  },
+                  {
+                    "effect": "deal_damage",
+                    "amount": 1,
+                    "target": "controller"
+                  }
+                ]
+              },
+              {
+                "description": "Take 2 damage. Search the treasure deck for a Guppy item, gain it, then shuffle the treasure deck.",
+                "effects": [
+                  {
+                    "effect": "deal_damage",
+                    "amount": 2,
+                    "target": "controller"
+                  },
+                  {
+                    "effect": "take_card",
+                    "to": "treasures",
+                    "shuffle": "treasure",
+                    "target": {
+                      "target_deck_card": {
+                        "deck": "treasure",
+                        "tag": "guppy",
+                        "as": "guppy"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Choose one: put this into discard; loot 2 and take 1 damage; or take 2 damage and search the treasure deck for a Guppy item."
+      }
+    ]
+  },
+  "starting_items-base_game-lazarus_rags": {
+    "abilities": [
+      {
+        "trigger": "player_died",
+        "scope": "controller",
+        "effects": [
+          {
+            "gain_treasure": 1
+          }
+        ],
+        "description": "Each time you die, gain +1 treasure."
+      }
+    ]
+  },
+  "starting_items-base_game-forever_alone": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Steal 1¢ from another player.",
+                "effects": [
+                  {
+                    "effect": "transfer_coins",
+                    "amount": 1,
+                    "target": "controller",
+                    "source_player": {
+                      "player_of": "robbed"
+                    }
+                  }
+                ]
+              },
+              {
+                "description": "Look at the top card of the loot deck.",
+                "effects": [
+                  {
+                    "effect": "reveal_cards",
+                    "deck": "loot",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "description": "Look at the top card of the treasure deck.",
+                "effects": [
+                  {
+                    "effect": "reveal_cards",
+                    "deck": "treasure",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "description": "Look at the top card of the monster deck.",
+                "effects": [
+                  {
+                    "effect": "reveal_cards",
+                    "deck": "monster",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "description": "Discard a loot card, then loot 1.",
+                "effects": [
+                  {
+                    "effect": "discard_cards",
+                    "target": {
+                      "target_loot": {
+                        "as": "dumped"
+                      }
+                    }
+                  },
+                  {
+                    "draw_loot": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "targets": [
+          {
+            "target_player": {
+              "exclude_controller": true,
+              "as": "robbed"
+            }
+          }
+        ],
+        "description": "Choose one: steal 1¢ from another player; look at the top card of a deck; or discard a loot card, then loot 1."
+      },
+      {
+        "trigger": "after_damage",
+        "scope": "controller",
+        "effects": [
+          {
+            "effect": "recharge",
+            "target": "self"
+          }
+        ],
+        "description": "Each time you take damage, recharge this."
+      }
+    ]
+  },
+  "starting_items-base_game-the_curse": {
+    "abilities": [
+      {
+        "trigger": "turn_start",
+        "scope": "controller",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Put the top card of the loot deck into discard.",
+                "effects": [
+                  {
+                    "effect": "move_cards",
+                    "deck": "loot",
+                    "position": "discard",
+                    "target": {
+                      "deck_top": {
+                        "deck": "loot",
+                        "count": 1,
+                        "as": "top"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "description": "Put the top card of the treasure deck into discard.",
+                "effects": [
+                  {
+                    "effect": "move_cards",
+                    "deck": "treasure",
+                    "position": "discard",
+                    "target": {
+                      "deck_top": {
+                        "deck": "treasure",
+                        "count": 1,
+                        "as": "top"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "description": "Put the top card of the monster deck into discard.",
+                "effects": [
+                  {
+                    "effect": "move_cards",
+                    "deck": "monster",
+                    "position": "discard",
+                    "target": {
+                      "deck_top": {
+                        "deck": "monster",
+                        "count": 1,
+                        "as": "top"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "At the start of your turn, put the top card of a deck into discard."
+      },
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Put the top card of the loot discard on top of the loot deck.",
+                "effects": [
+                  {
+                    "effect": "move_cards",
+                    "deck": "loot",
+                    "position": "top",
+                    "target": {
+                      "target_deck_card": {
+                        "deck": "loot",
+                        "pile": "discard",
+                        "from_top": 1,
+                        "as": "raised"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "description": "Put the top card of the treasure discard on top of the treasure deck.",
+                "effects": [
+                  {
+                    "effect": "move_cards",
+                    "deck": "treasure",
+                    "position": "top",
+                    "target": {
+                      "target_deck_card": {
+                        "deck": "treasure",
+                        "pile": "discard",
+                        "from_top": 1,
+                        "as": "raised"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "description": "Put the top card of the monster discard on top of the monster deck.",
+                "effects": [
+                  {
+                    "effect": "move_cards",
+                    "deck": "monster",
+                    "position": "top",
+                    "target": {
+                      "target_deck_card": {
+                        "deck": "monster",
+                        "pile": "discard",
+                        "from_top": 1,
+                        "as": "raised"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Put the top card of a discard on top of its deck."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-no": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "cancel_stack",
+            "target": {
+              "target_stack_item": {
+                "triggers": [
+                  "on_activate"
+                ],
+                "as": "cancelled"
+              }
+            }
+          }
+        ],
+        "description": "Cancel the ↷ or $ ability of an item."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-guppy_s_paw": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "tap": true,
+          "hp": 1
+        },
+        "targets": [
+          {
+            "target_player": {
+              "as": "shielded"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "prevent_next_damage",
+            "amount": 2,
+            "target": "shielded"
+          }
+        ],
+        "description": "Pay 1 HP: choose a player. Prevent the next instance of up to 2 damage they would take this turn."
+      }
+    ],
+    "tags": [
+      "guppy"
+    ]
+  },
+  "treasure_deck-active_items-base_game-glass_cannon": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "target": {
+              "target_treasure": {
+                "owner": "controller",
+                "exclude_source": true,
+                "as": "sacrifice"
+              }
+            }
+          },
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_less": 6
+              }
+            ],
+            "then": [
+              {
+                "effect": "destroy_treasure",
+                "target": "self"
+              },
+              {
+                "draw_loot": 2
+              }
+            ]
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 6
+              }
+            ],
+            "then": [
+              {
+                "effect": "recharge",
+                "target": "self"
+              }
+            ]
+          }
+        ],
+        "description": "Destroy another item, then roll- 1-5: destroy this and loot 2. 6: recharge this."
+      }
+    ]
+  },
+  "treasure_deck-one_use_items-base_game-chaos_card": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "target": "self"
+          },
+          {
+            "if": [
+              "last_effect_did"
+            ],
+            "then": [
+              {
+                "choose": [
+                  {
+                    "description": "Kill a player or monster.",
+                    "effects": [
+                      {
+                        "effect": "kill",
+                        "target": {
+                          "target_player_or_monster": {
+                            "as": "doomed"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "description": "Destroy an item.",
+                    "effects": [
+                      {
+                        "effect": "destroy_treasure",
+                        "target": {
+                          "target_treasure": {
+                            "exclude_eternal": true,
+                            "as": "doomed_item"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "description": "Destroy a soul.",
+                    "effects": [
+                      {
+                        "effect": "lose_soul",
+                        "count": 1,
+                        "target": {
+                          "target_player": {
+                            "as": "robbed"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Destroy this. If you do, choose one: kill a player or monster, or destroy an item or soul."
+      }
+    ]
+  },
+  "treasure_deck-one_use_items-base_game-mom_s_shovel": {
+    "abilities": [
+      {
+        "trigger": "on_enter",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "deactivate",
+            "target": "self"
+          }
+        ],
+        "description": "This enters play deactivated."
+      },
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "target": "self"
+          },
+          {
+            "if": [
+              "last_effect_did"
+            ],
+            "then": [
+              {
+                "effect": "steal_soul",
+                "target": {
+                  "target_player": {
+                    "exclude_controller": true,
+                    "as": "robbed"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "description": "Destroy this. If you do, steal a soul from another player."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-the_d20": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_treasure": {
+              "exclude_eternal": true,
+              "as": "rerolled"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "target": "rerolled"
+          },
+          {
+            "if": [
+              "last_effect_did"
+            ],
+            "then": [
+              {
+                "gain_treasure": 1
+              }
+            ]
+          }
+        ],
+        "description": "Reroll an item: destroy that item and replace it with the top card of the treasure deck."
+      }
+    ]
+  },
+  "treasure_deck-one_use_items-base_game-the_d4": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "target": "self"
+          },
+          {
+            "if": [
+              "last_effect_did"
+            ],
+            "then": [
+              {
+                "for_each": {
+                  "owned_treasure": {
+                    "of": "rerolled_player",
+                    "exclude_eternal": true
+                  }
+                },
+                "effects": [
+                  {
+                    "effect": "destroy_treasure"
+                  },
+                  {
+                    "gain_treasure": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "targets": [
+          {
+            "target_player": {
+              "as": "rerolled_player"
+            }
+          }
+        ],
+        "description": "Destroy this. If you do, choose a player. They reroll each item they control."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-restock": {
+    "abilities": [
+      {
+        "trigger": "turn_start",
+        "scope": "controller",
+        "effects": [
+          {
+            "may": [
+              {
+                "effect": "move_cards",
+                "deck": "treasure",
+                "position": "discard",
+                "target": {
+                  "target_shop_item": {
+                    "minimum": 0,
+                    "maximum": 10,
+                    "as": "dumped"
+                  }
+                }
+              }
+            ],
+            "prompt": "Put any number of shop items into discard?"
+          }
+        ],
+        "description": "At the start of your turn, you may put any number of shop items into discard."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-spider_mod": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 5
+          }
+        ],
+        "effects": [
+          {
+            "may": [
+              {
+                "effect": "discard_monsters",
+                "target": {
+                  "target_monster": {
+                    "exclude_attacked": true,
+                    "as": "swept"
+                  }
+                }
+              }
+            ],
+            "prompt": "Discard a monster not being attacked?"
+          }
+        ],
+        "description": "Each time a player rolls a 5, you may put a monster not being attacked into discard and replace it with the top card of the monster deck."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-the_dead_cat": {
+    "abilities": [
+      {
+        "trigger": "on_enter",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "add_counter",
+            "counter": "charge",
+            "amount": 9,
+            "target": "self"
+          }
+        ],
+        "description": "This item starts with 9 counters on it."
+      },
+      {
+        "trigger": "before_damage",
+        "scope": "controller",
+        "replacement": true,
+        "conditions": [
+          {
+            "card_counters": {
+              "operator": ">",
+              "value": 0
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "add_counter",
+            "counter": "charge",
+            "amount": {
+              "from_event": "amount",
+              "times": -1
+            },
+            "target": "self"
+          },
+          {
+            "effect": "prevent_damage",
+            "amount": {
+              "from_event": "amount"
+            }
+          }
+        ],
+        "description": "If you would take damage while this has counters on it, remove that many counters and prevent that much damage."
+      }
+    ],
+    "tags": [
+      "guppy"
+    ]
+  },
+  "treasure_deck-soul_item-base_game-pandora_s_box": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "target": "self"
+          },
+          {
+            "if": [
+              "last_effect_did"
+            ],
+            "then": [
+              {
+                "roll_dice": 6
+              },
+              {
+                "if": [
+                  {
+                    "dice_equals": 1
+                  }
+                ],
+                "then": [
+                  {
+                    "gain_coins": 1
+                  }
+                ]
+              },
+              {
+                "if": [
+                  {
+                    "dice_equals": 2
+                  }
+                ],
+                "then": [
+                  {
+                    "gain_coins": 6
+                  }
+                ]
+              },
+              {
+                "if": [
+                  {
+                    "dice_equals": 3
+                  }
+                ],
+                "then": [
+                  {
+                    "effect": "kill",
+                    "target": {
+                      "target_monster": {
+                        "as": "doomed"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "if": [
+                  {
+                    "dice_equals": 4
+                  }
+                ],
+                "then": [
+                  {
+                    "draw_loot": 3
+                  }
+                ]
+              },
+              {
+                "if": [
+                  {
+                    "dice_equals": 5
+                  }
+                ],
+                "then": [
+                  {
+                    "gain_coins": 9
+                  }
+                ]
+              },
+              {
+                "if": [
+                  {
+                    "dice_equals": 6
+                  }
+                ],
+                "then": [
+                  {
+                    "effect": "claim_soul",
+                    "target": "controller"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Destroy this. If you do, roll- 1: gain 1¢. 2: gain 6¢. 3: kill a monster. 4: loot 3. 5: gain 9¢. 6: this becomes a soul, gain it."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-boomerang": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_player": {
+              "exclude_controller": true,
+              "as": "robbed"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "take_card",
+            "to": "hand",
+            "target": {
+              "random_loot": {
+                "of": "robbed",
+                "as": "snatched"
+              }
+            }
+          }
+        ],
+        "description": "Choose another player. Steal a loot card from them at random."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-the_shovel": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "move_cards",
+            "deck": "monster",
+            "position": "top",
+            "target": {
+              "target_deck_card": {
+                "deck": "monster",
+                "pile": "discard",
+                "exclude_type": "event",
+                "as": "raised"
+              }
+            }
+          }
+        ],
+        "description": "Put a non-event monster card in discard on top of the monster deck."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-steamy_sale": {
+    "statics": [
+      {
+        "stat": "shop_cost",
+        "amount": -5,
+        "scope": "self",
+        "description": "Shop items you purchase cost 5¢ less."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-bum_bo": {
+    "abilities": [
+      {
+        "trigger": "before_coins_gained",
+        "scope": "controller",
+        "replacement": true,
+        "effects": [
+          {
+            "effect": "add_counter",
+            "counter": "charge",
+            "amount": {
+              "from_event": "amount"
+            },
+            "target": "self"
+          },
+          {
+            "cancel_event": {}
+          }
+        ],
+        "description": "If you would gain any number of ¢, this levels up by that much instead."
+      }
+    ],
+    "statics": [
+      {
+        "stat": "attack",
+        "amount": 1,
+        "scope": "self",
+        "conditions": [
+          {
+            "card_counters": {
+              "operator": ">=",
+              "value": 10
+            }
+          }
+        ],
+        "description": "Level 10+: You have +1 AT."
+      },
+      {
+        "stat": "attacks",
+        "amount": 3,
+        "scope": "self",
+        "conditions": [
+          {
+            "card_counters": {
+              "operator": ">=",
+              "value": 25
+            }
+          }
+        ],
+        "description": "Level 25+: You may attack any number of times on your turn."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-guppy_s_head": {
+    "tags": [
+      "guppy"
+    ]
+  },
+  "treasure_deck-passive_items-base_game-guppy_s_collar": {
+    "tags": [
+      "guppy"
     ]
   }
 }

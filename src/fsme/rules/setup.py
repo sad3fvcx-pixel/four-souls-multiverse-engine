@@ -60,6 +60,7 @@ def new_game(
     index = _index(library)
 
     _build_decks(state, index, rng)
+    _lay_out_bonus_souls(state, index)
     _seat_players(state, index, players, rng)
     _open_the_board(state, monster_slots=monster_slots, shop_slots=shop_slots)
 
@@ -123,6 +124,25 @@ def _build_decks(
         rng.shuffle(cards)
 
         zone.cards.extend(cards)
+
+
+def _lay_out_bonus_souls(
+    state: GameState,
+    index: dict[CardType, list[CardDefinition]],
+) -> None:
+    """
+    Put the bonus souls on the table.
+
+    They are not in any deck: they sit face up from the start and go to the
+    first player who earns them, so they have to be in play to be watching.
+    """
+    for definition in index.get(CardType.BONUS_SOUL, ()):
+        state.bonus_souls.add_top(
+            CardInstance(
+                definition=definition,
+                instance_id=state.ids.allocate("soul"),
+            )
+        )
 
 
 def _seat_players(

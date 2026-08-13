@@ -80,7 +80,96 @@
       "type": "starting_item",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Steal 1¢ from another player.",
+                  "effects": [
+                    {
+                      "effect": "transfer_coins",
+                      "amount": 1,
+                      "target": "controller",
+                      "source_player": {
+                        "player_of": "robbed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top card of the loot deck.",
+                  "effects": [
+                    {
+                      "effect": "reveal_cards",
+                      "deck": "loot",
+                      "count": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top card of the treasure deck.",
+                  "effects": [
+                    {
+                      "effect": "reveal_cards",
+                      "deck": "treasure",
+                      "count": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top card of the monster deck.",
+                  "effects": [
+                    {
+                      "effect": "reveal_cards",
+                      "deck": "monster",
+                      "count": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Discard a loot card, then loot 1.",
+                  "effects": [
+                    {
+                      "effect": "discard_cards",
+                      "target": {
+                        "target_loot": {
+                          "as": "dumped"
+                        }
+                      }
+                    },
+                    {
+                      "draw_loot": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "target_player": {
+                "exclude_controller": true,
+                "as": "robbed"
+              }
+            }
+          ],
+          "description": "Choose one: steal 1¢ from another player; look at the top card of a deck; or discard a loot card, then loot 1."
+        },
+        {
+          "trigger": "after_damage",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "Each time you take damage, recharge this."
+        }
+      ],
       "tags": [
         "activated",
         "eternal"
@@ -124,7 +213,18 @@
       "type": "starting_item",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "player_died",
+          "scope": "controller",
+          "effects": [
+            {
+              "gain_treasure": 1
+            }
+          ],
+          "description": "Each time you die, gain +1 treasure."
+        }
+      ],
       "tags": [
         "eternal"
       ],
@@ -190,7 +290,134 @@
       "type": "starting_item",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_start",
+          "scope": "controller",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Put the top card of the loot deck into discard.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "loot",
+                      "position": "discard",
+                      "target": {
+                        "deck_top": {
+                          "deck": "loot",
+                          "count": 1,
+                          "as": "top"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Put the top card of the treasure deck into discard.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "treasure",
+                      "position": "discard",
+                      "target": {
+                        "deck_top": {
+                          "deck": "treasure",
+                          "count": 1,
+                          "as": "top"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Put the top card of the monster deck into discard.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "monster",
+                      "position": "discard",
+                      "target": {
+                        "deck_top": {
+                          "deck": "monster",
+                          "count": 1,
+                          "as": "top"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "At the start of your turn, put the top card of a deck into discard."
+        },
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Put the top card of the loot discard on top of the loot deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "loot",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "loot",
+                          "pile": "discard",
+                          "from_top": 1,
+                          "as": "raised"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Put the top card of the treasure discard on top of the treasure deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "treasure",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "treasure",
+                          "pile": "discard",
+                          "from_top": 1,
+                          "as": "raised"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Put the top card of the monster discard on top of the monster deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "monster",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "monster",
+                          "pile": "discard",
+                          "from_top": 1,
+                          "as": "raised"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Put the top card of a discard on top of its deck."
+        }
+      ],
       "tags": [
         "activated",
         "eternal"

@@ -51,6 +51,11 @@ class GameState:
     treasure_discard: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DISCARD))
     treasure_shop: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.SHOP))
 
+    bonus_souls: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.SOUL))
+    """
+    Souls sitting on the table, waiting for whoever earns them first.
+    """
+
     room_deck: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DECK))
     room_discard: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DISCARD))
     room_area: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.ROOM))

@@ -447,6 +447,11 @@ def apply_abilities(
         if key in written:
             card[key] = written[key]
 
+    if "tags" in written:
+        # A family a card belongs to — Guppy items, for one — that the database
+        # does not record but other cards ask about by name.
+        card["tags"] = sorted(set(card.get("tags", [])) | set(written["tags"]))
+
     if written.get("vanilla"):
         # Somebody read the card and found no rules on it: a monster with hit
         # points and a Bible quote has already been fully imported. Saying so

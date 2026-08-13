@@ -21,11 +21,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **183**. Без правил: **17**. Осталось: **814**.
+Импортировано официальных карт: **1014**. Реализовано: **209**. Без правил: **17**. Осталось: **788**.
 
 | Набор | Карт | Реализовано | Без правил | Осталось |
 |---|---:|---:|---:|---:|
-| `base_game` | 287 | 183 | 17 | 87 |
+| `base_game` | 287 | 209 | 17 | 61 |
 | `requiem` | 246 | 0 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 0 | 99 |
 | `four_souls` | 90 | 0 | 0 | 90 |
@@ -48,7 +48,7 @@
 | `challenges` | 1 | 0 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 0 | 1 |
 | `star` | 1 | 0 | 0 | 1 |
-| **всего** | **1014** | **183** | **17** | **814** |
+| **всего** | **1014** | **209** | **17** | **788** |
 
 ---
 
@@ -56,14 +56,14 @@
 
 | Тип | Карт | Реализовано | Без правил |
 |---|---:|---:|---:|
-| treasure | 105 | 46 | 0 |
+| treasure | 105 | 61 | 0 |
 | monster | 85 | 63 | 17 |
 | loot | 51 | 48 | 0 |
-| event | 17 | 10 | 0 |
+| event | 17 | 15 | 0 |
 | character | 11 | 9 | 0 |
-| starting_item | 10 | 2 | 0 |
+| starting_item | 10 | 5 | 0 |
 | curse | 5 | 5 | 0 |
-| bonus_soul | 3 | 0 | 0 |
+| bonus_soul | 3 | 3 | 0 |
 
 
 ## Characters
@@ -88,12 +88,12 @@
 |------|--------|-------|
 | Blood Lust | 🟩 |  |
 | Book of Belial | ⬜ |  |
-| Forever Alone | ⬜ |  |
+| Forever Alone | 🟩 |  |
 | Incubus | ⬜ |  |
-| Lazarus' Rags | ⬜ |  |
+| Lazarus' Rags | 🟩 |  |
 | Sleight of Hand | ⬜ |  |
 | The Bone | ⬜ |  |
-| The Curse | ⬜ |  |
+| The Curse | 🟩 |  |
 | The D6 | ⬜ |  |
 | Yum Heart | 🟩 |  |
 
@@ -107,16 +107,16 @@
 | Blank Card | ⬜ |  |
 | Bob's Brain | 🟩 |  |
 | Book of Sin | 🟩 |  |
-| Boomerang | ⬜ |  |
+| Boomerang | 🟩 |  |
 | Box! | ⬜ |  |
 | Breakfast | 🟩 |  |
 | Brimstone | ⬜ |  |
 | Bum Friend | 🟩 |  |
-| Bum-bo! | ⬜ |  |
+| Bum-bo! | 🟩 |  |
 | Cambion Conception | 🟩 |  |
 | Champion Belt | 🟩 |  |
 | Chaos | ⬜ |  |
-| Chaos Card | ⬜ |  |
+| Chaos Card | 🟩 |  |
 | Charged Baby | 🟩 |  |
 | Cheese Grater | ⬜ |  |
 | Compost | ⬜ |  |
@@ -138,14 +138,14 @@
 | Fanny Pack | 🟩 |  |
 | Finger! | ⬜ |  |
 | Flush! | 🟩 |  |
-| Glass Cannon | ⬜ |  |
+| Glass Cannon | 🟩 |  |
 | Goat Head | 🟩 |  |
 | Godhead | ⬜ |  |
 | Golden Razor Blade | 🟩 |  |
 | Greed's Gullet | 🟩 |  |
 | Guppy's Collar | ⬜ |  |
 | Guppy's Head | ⬜ |  |
-| Guppy's Paw | ⬜ |  |
+| Guppy's Paw | 🟩 |  |
 | Host Hat | ⬜ |  |
 | Ipecac | 🟩 |  |
 | Jawbone | 🟩 |  |
@@ -158,13 +158,13 @@
 | Mom's Coin Purse | ⬜ |  |
 | Mom's Purse | ⬜ |  |
 | Mom's Razor | 🟩 |  |
-| Mom's Shovel | ⬜ |  |
+| Mom's Shovel | 🟩 |  |
 | Monster Manual | ⬜ |  |
 | Monstro's Tooth | ⬜ |  |
 | Mr. Boom | 🟩 |  |
 | Mystery Sack | 🟩 |  |
-| No! | ⬜ |  |
-| Pandora's Box | ⬜ |  |
+| No! | 🟩 |  |
+| Pandora's Box | 🟩 |  |
 | Pay to Play | 🟩 |  |
 | Placebo | ⬜ |  |
 | Polydactyly | 🟩 |  |
@@ -172,17 +172,17 @@
 | Potato Peeler | 🟩 |  |
 | Razor Blade | 🟩 |  |
 | Remote Detonator | ⬜ |  |
-| Restock | ⬜ |  |
+| Restock | 🟩 |  |
 | Sack Head | 🟩 |  |
 | Sack of Pennies | 🟩 |  |
 | Sacred Heart | ⬜ |  |
 | Shadow | ⬜ |  |
 | Shiny Rock | 🟩 |  |
 | Smelter | 🟩 |  |
-| Spider Mod | ⬜ |  |
+| Spider Mod | 🟩 |  |
 | Spoon Bender | ⬜ |  |
 | Starter Deck | 🟩 |  |
-| Steamy Sale! | ⬜ |  |
+| Steamy Sale! | 🟩 |  |
 | Suicide King | 🟩 |  |
 | Synthoil | 🟩 |  |
 | Tarot Cloth | ⬜ |  |
@@ -193,16 +193,16 @@
 | The Compass | ⬜ |  |
 | The D10 | ⬜ |  |
 | The D100 | 🟩 |  |
-| The D20 | ⬜ |  |
-| The D4 | ⬜ |  |
-| The Dead Cat | ⬜ |  |
+| The D20 | 🟩 |  |
+| The D4 | 🟩 |  |
+| The Dead Cat | 🟩 |  |
 | The Habit | ⬜ |  |
 | The Map | ⬜ |  |
 | The Midas Touch | 🟩 |  |
 | The Polaroid | 🟩 |  |
 | The Poop | 🟩 |  |
 | The Relic | 🟩 |  |
-| The Shovel | ⬜ |  |
+| The Shovel | 🟩 |  |
 | There's Options | ⬜ |  |
 | Trinity Shield | ⬜ |  |
 | Two of Clubs | ⬜ |  |
@@ -360,20 +360,20 @@
 | Ambush! | ⬜ |  |
 | Chest | 🟩 |  |
 | Chest | 🟩 |  |
-| Cursed Chest | ⬜ |  |
+| Cursed Chest | 🟩 |  |
 | Dark Chest | 🟩 |  |
 | Dark Chest | 🟩 |  |
-| Devil Deal | ⬜ |  |
+| Devil Deal | 🟩 |  |
 | Gold Chest | 🟩 |  |
 | Gold Chest | 🟩 |  |
 | Greed! | 🟩 |  |
 | I Can See Forever! | ⬜ |  |
 | Mega Troll Bomb! | 🟩 |  |
 | Secret Room! | 🟩 |  |
-| Shop Upgrade! | ⬜ |  |
+| Shop Upgrade! | 🟩 |  |
 | Troll Bombs | 🟩 |  |
-| We Need to Go Deeper! | ⬜ |  |
-| XL Floor! | ⬜ |  |
+| We Need to Go Deeper! | 🟩 |  |
+| XL Floor! | 🟩 |  |
 
 ## Curses
 
@@ -389,6 +389,6 @@
 
 | Card | Status | Notes |
 |------|--------|-------|
-| Soul of Gluttony | ⬜ |  |
-| Soul of Greed | ⬜ |  |
-| Soul of Guppy | ⬜ |  |
+| Soul of Gluttony | 🟩 |  |
+| Soul of Greed | 🟩 |  |
+| Soul of Guppy | 🟩 |  |

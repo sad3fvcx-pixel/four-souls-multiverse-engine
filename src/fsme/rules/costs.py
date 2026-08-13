@@ -26,8 +26,9 @@ TAP = "tap"
 COINS = "coins"
 DISCARD = "discard"
 COUNTERS = "counters"
+HP = "hp"
 
-KINDS = (TAP, COINS, DISCARD, COUNTERS)
+KINDS = (TAP, COINS, DISCARD, COUNTERS, HP)
 
 
 def cost_of(ability: Ability) -> Mapping[str, Any]:
@@ -73,6 +74,13 @@ def unpayable(
     if counters > int(getattr(card, "counters", {}).get("charge", 0)):
         return f"'{_name(card)}' does not have {counters} counters"
 
+    hp = int(cost.get(HP, 0))
+
+    if hp >= player.hp:
+        # Paying the last hit point would be paying with your life, which is
+        # not what "pay 1 HP" offers.
+        return f"paying {hp} HP needs more than {player.hp} hit point(s)"
+
     return None
 
 
@@ -108,6 +116,11 @@ def pay(ability: Ability, card: Any, context: EffectContext) -> None:
 
     if counters:
         context.apply("add_counter", [card], counter="charge", amount=-counters)
+
+    hp = int(cost.get(HP, 0))
+
+    if hp:
+        context.apply("deal_damage", [player], amount=hp)
 
 
 def _name(card: Any) -> str:

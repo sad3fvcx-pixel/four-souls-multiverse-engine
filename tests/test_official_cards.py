@@ -1484,6 +1484,12 @@ def give(game: Game, card_id: str, player: int = 0) -> CardInstance:
     )
 
     game.state.player(player).treasures.add_top(card)
+
+    # Entering play is an event, and cards react to it: a game that puts an
+    # item into play without saying so is not the game a card was written for.
+    game.runtime.context.emit(
+        EventType.ON_ENTER, source=card, controller=player
+    )
     game.runtime.run()
 
     return card
@@ -2734,6 +2740,185 @@ def test_the_lamb_hands_a_soul_to_whoever_killed_it(
 
     assert game.state.player(2).soul_count == 0
     assert game.state.player(0).soul_count >= 1
+
+
+# ----------------------------------------------------------------------
+# Bonus souls, prices and one-use items
+# ----------------------------------------------------------------------
+
+
+def test_the_bonus_souls_are_on_the_table_from_the_start(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    assert len(game.state.bonus_souls) == 3
+
+
+def test_the_soul_of_greed_goes_to_the_first_player_who_earns_it(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    soul = next(
+        card
+        for card in game.state.bonus_souls.cards
+        if card.id == "bonus_souls-base_game-soul_of_greed"
+    )
+
+    game.runtime.context.apply("gain_coins", [game.state.player(1)], amount=24)
+    game.runtime.run()
+
+    assert soul in game.state.bonus_souls.cards
+
+    game.runtime.context.apply("gain_coins", [game.state.player(1)], amount=1)
+    game.runtime.run()
+
+    assert soul in game.state.player(1).souls.cards
+    assert soul not in game.state.bonus_souls.cards
+
+
+def test_steamy_sale_lowers_what_its_holder_pays(base_game: ContentLibrary) -> None:
+    from fsme.rules.shop import shop_price
+
+    game = new_game(base_game)
+
+    before = shop_price(game.state, 0)
+
+    give(game, "treasure_deck-passive_items-base_game-steamy_sale")
+
+    assert shop_price(game.state, 0) == before - 5
+    assert shop_price(game.state, 1) == before
+
+
+def test_the_dead_cat_spends_counters_instead_of_hit_points(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    cat = give(game, "treasure_deck-passive_items-base_game-the_dead_cat")
+
+    assert cat.counters["charge"] == 9
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    hp = player.hp
+
+    game.runtime.context.apply("deal_damage", [player], amount=3)
+    game.runtime.run()
+
+    assert player.hp == hp
+    assert cat.counters["charge"] == 6
+
+
+def test_bum_bo_levels_up_on_the_coins_it_swallows(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    bum = give(game, "treasure_deck-passive_items-base_game-bum_bo")
+
+    game.runtime.context.apply("gain_coins", [game.state.player(0)], amount=12)
+    game.runtime.run()
+
+    assert game.state.player(0).pennies == 0, "the coins became levels"
+    assert bum.counters["charge"] == 12
+    assert attack_bonus(game, 0) == 1
+
+
+def test_guppys_paw_is_paid_for_in_blood(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3)
+
+    paw = give(game, "treasure_deck-active_items-base_game-guppy_s_paw")
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    hp = player.hp
+
+    assert activate(game, paw).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, list(decision.options).index(game.state.player(1))).accepted
+
+    assert player.hp == hp - 1
+    assert [shield.player_id for shield in game.state.shields] == [1]
+
+
+def test_a_one_hit_point_player_cannot_pay_a_hit_point(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    paw = give(game, "treasure_deck-active_items-base_game-guppy_s_paw")
+
+    game.state.player(0).hp = 1
+
+    assert activate(game, paw).rejected
+
+
+def test_the_d20_replaces_the_item_it_rerolls(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    d20 = give(game, "treasure_deck-active_items-base_game-the_d20")
+
+    game.runtime.context.apply("gain_treasure", [game.state.player(1)], count=1)
+    game.runtime.run()
+
+    theirs = game.state.player(1).treasures.cards[-1]
+
+    assert activate(game, d20).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, list(decision.options).index(theirs)).accepted
+
+    assert theirs in game.state.treasure_discard.cards
+    assert d20 in game.state.player(0).treasures.cards
+
+
+def test_the_shovel_digs_a_monster_back_out(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    shovel = give(game, "treasure_deck-active_items-base_game-the_shovel")
+
+    buried = game.state.active_monsters.cards[-1]
+
+    game.runtime.context.apply("discard_monsters", [buried])
+    game.runtime.run()
+
+    assert buried in game.state.monster_discard.cards
+
+    assert activate(game, shovel).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    if decision is not None:
+        assert choose(game, 0, list(decision.options).index(buried)).accepted
+
+    assert deck_of(game, "monster")[0] is buried
+
+
+def test_the_curse_buries_a_card_every_turn(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=2)
+
+    starting_item(game, "starting_items-base_game-the_curse")
+
+    end_turn(game)
+    end_turn(game)
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert decision.kind is DecisionKind.CHOOSE_OPTION
+
+    top = deck_of(game, "treasure")[0]
+
+    answer(game, str(decision.options[1]))
+
+    assert top in game.state.treasure_discard.cards
 
 
 # ----------------------------------------------------------------------

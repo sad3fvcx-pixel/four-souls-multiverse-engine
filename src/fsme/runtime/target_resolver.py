@@ -142,6 +142,7 @@ class TargetResolver:
         register("owned_treasure", _owned_treasure)
         register("all_treasures", _all_treasures)
         register("shop_items", _shop_items)
+        register("target_shop_item", _target_shop_item)
 
         register("top_stack", _top_stack)
         register("all_stack", _all_stack)
@@ -497,10 +498,11 @@ def _target_deck_card(
     exists, and a search is one more question.
     """
     deck = str(params.get("deck", "loot"))
-    zone = getattr(state, f"{deck}_deck", None)
+    pile = str(params.get("pile", "deck"))
+    zone = getattr(state, f"{deck}_{pile}", None)
 
     if zone is None:
-        raise UnknownTargetError(f"unknown deck '{deck}'")
+        raise UnknownTargetError(f"unknown pile '{deck} {pile}'")
 
     # "Look at the top 5 cards and pick one" is a search of five cards, not of
     # the deck. Without the limit the player would be shown everything.
@@ -519,6 +521,26 @@ def _target_deck_card(
             card
             for card in options
             if str(getattr(getattr(card, "definition", None), "type", "")) == card_type
+        ]
+
+    excluded = params.get("exclude_type")
+
+    if excluded is not None:
+        options = [
+            card
+            for card in options
+            if str(getattr(getattr(card, "definition", None), "type", "")) != excluded
+        ]
+
+    tag = params.get("tag")
+
+    if tag is not None:
+        # Cards belong to families — Guppy items, for one — and a card that
+        # searches for one asks by the family's name.
+        options = [
+            card
+            for card in options
+            if str(tag) in getattr(getattr(card, "definition", None), "tags", ())
         ]
 
     return _ask(
@@ -700,6 +722,21 @@ def _shop_items(
     Everything for sale right now.
     """
     return list(state.treasure_shop.cards)
+
+
+def _target_shop_item(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    Let the controller pick from what is for sale.
+    """
+    return _ask(
+        DecisionKind.CHOOSE_TREASURE,
+        list(state.treasure_shop.cards),
+        context,
+        params,
+        "target_shop_item",
+    )
 
 
 def _top_stack(

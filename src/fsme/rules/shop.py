@@ -10,8 +10,10 @@ from fsme.commands import Command
 from fsme.effects import EffectContext
 from fsme.events import EventType
 from fsme.state import GamePhase, GameState
+from fsme.state.modifiers import SHOP_COST
 
 from .constants import TREASURE_COST
+from .statics import bonus
 
 
 class BuyTreasureHandler:
@@ -37,8 +39,10 @@ class BuyTreasureHandler:
         if not player.alive:
             return "a dead player may not buy"
 
-        if player.pennies < TREASURE_COST:
-            return f"buying costs {TREASURE_COST} cents, player has {player.pennies}"
+        price = shop_price(state, player.player_id)
+
+        if player.pennies < price:
+            return f"buying costs {price} cents, player has {player.pennies}"
 
         index = command.get("index", 0)
 
@@ -51,13 +55,15 @@ class BuyTreasureHandler:
         state = context.state
         player = state.player(command.player)
 
+        price = shop_price(state, player.player_id)
+
         context.emit(
             EventType.BEFORE_PURCHASE,
             controller=player.player_id,
-            cost=TREASURE_COST,
+            cost=price,
         )
 
-        context.apply("lose_coins", [player], amount=TREASURE_COST)
+        context.apply("lose_coins", [player], amount=price)
 
         card = state.treasure_shop.cards.pop(int(command.get("index", 0)))
 
@@ -84,6 +90,16 @@ class BuyTreasureHandler:
             source=card,
             controller=player.player_id,
         )
+
+
+def shop_price(state: GameState, player_id: int) -> int:
+    """
+    What this player pays for a shop item right now.
+
+    The shop's price is printed in the rules; cards move it, and a card that
+    makes shopping cheaper cannot take it below nothing.
+    """
+    return max(0, TREASURE_COST + bonus(state, SHOP_COST, player_id))
 
 
 def refill_shop(context: EffectContext) -> None:
