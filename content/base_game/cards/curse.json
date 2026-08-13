@@ -6,7 +6,18 @@
       "type": "curse",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "discard_loot": 2
+            }
+          ],
+          "description": "At the end of your turn, discard 2 loot cards."
+        }
+      ],
       "metadata": {
         "text": "At the end of your\nturn, discard 2\nloot cards.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
         "set": "Base Game",
@@ -24,7 +35,18 @@
       "type": "curse",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "lose_coins": 4
+            }
+          ],
+          "description": "At the end of your turn, lose 4¢."
+        }
+      ],
       "metadata": {
         "text": "At the end of your\nturn, lose 4¢.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
         "set": "Base Game",
@@ -42,7 +64,20 @@
       "type": "curse",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "player_died",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "lose_soul",
+              "count": 1,
+              "target": "controller"
+            }
+          ],
+          "description": "When you die, destroy a soul you control."
+        }
+      ],
       "metadata": {
         "text": "When you die, destroy\na soul you control.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
         "set": "Base Game",
@@ -60,7 +95,20 @@
       "type": "curse",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_start",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "controller"
+            }
+          ],
+          "description": "At the start of your turn, take 1 damage."
+        }
+      ],
       "metadata": {
         "text": "At the start of your\nturn, take 1 damage.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
         "set": "Base Game",

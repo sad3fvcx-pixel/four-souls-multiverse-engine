@@ -2047,6 +2047,115 @@ def test_chub_heals_only_while_it_is_the_one_being_attacked(
 
 
 # ----------------------------------------------------------------------
+# Characters and curses
+# ----------------------------------------------------------------------
+
+
+def test_a_character_taps_for_an_extra_loot_card(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    character = game.state.player(0).character
+
+    assert character is not None
+
+    assert play(game, deal(game, "loot_deck-1-base_game-a_penny")).accepted
+    assert play(game, deal(game, "loot_deck-1-base_game-a_penny")).rejected
+
+    assert game.act(CommandType.ACTIVATE_TREASURE, 0, zone="character").accepted
+
+    assert character.tapped is True
+    assert play(game, deal(game, "loot_deck-1-base_game-a_penny")).accepted
+
+
+def test_a_tapped_character_cannot_be_tapped_again(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    assert game.act(CommandType.ACTIVATE_TREASURE, 0, zone="character").accepted
+    assert game.act(CommandType.ACTIVATE_TREASURE, 0, zone="character").rejected
+
+
+def curse(game: Game, card_id: str, player: int = 0) -> CardInstance:
+    """
+    Put a curse on a player, the way a card that attaches one would.
+    """
+    card = CardInstance(
+        definition=game.runtime.cards.get(card_id),
+        instance_id=game.state.ids.allocate("curse"),
+    )
+
+    game.runtime.context.apply("attach_curse", [game.state.player(player)], card=card)
+    game.runtime.run()
+
+    return card
+
+
+def test_the_curse_of_greed_charges_its_bearer_at_the_end_of_the_turn(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    curse(game, "monster_deck-curses-base_game-curse_of_greed")
+
+    game.state.player(0).pennies = 9
+    game.state.player(1).pennies = 9
+
+    end_turn(game)
+
+    assert game.state.player(0).pennies == 5
+    assert game.state.player(1).pennies == 9, "the curse is one player's, not the table's"
+
+
+def test_the_curse_of_amnesia_costs_two_cards(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    curse(game, "monster_deck-curses-base_game-curse_of_amnesia")
+
+    hand = game.state.player(0).hand_size
+
+    end_turn(game)
+
+    assert game.state.player(0).hand_size == hand - 2
+
+
+def test_the_curse_of_pain_hurts_at_the_start_of_the_turn(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    curse(game, "monster_deck-curses-base_game-curse_of_pain")
+
+    player = game.state.player(0)
+
+    assert player.hp == player.max_hp
+
+    # Round the table back to the cursed player: the curse hurts when their
+    # turn starts, not when somebody else's does.
+    end_turn(game)
+
+    assert player.hp == player.max_hp
+
+    end_turn(game)
+
+    assert player.hp == player.max_hp - 1
+
+
+def test_the_curse_of_loss_takes_a_soul_when_its_bearer_dies(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    curse(game, "monster_deck-curses-base_game-curse_of_loss")
+
+    game.runtime.context.apply("gain_soul", [game.state.player(0)], count=2)
+    game.runtime.run()
+
+    game.runtime.context.apply("kill", [game.state.player(0)])
+    game.runtime.run()
+
+    assert game.state.player(0).soul_count == 1
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

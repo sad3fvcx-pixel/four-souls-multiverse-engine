@@ -21,11 +21,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **105**. Без правил: **17**. Осталось: **892**.
+Импортировано официальных карт: **1014**. Реализовано: **118**. Без правил: **17**. Осталось: **879**.
 
 | Набор | Карт | Реализовано | Без правил | Осталось |
 |---|---:|---:|---:|---:|
-| `base_game` | 287 | 105 | 17 | 165 |
+| `base_game` | 287 | 118 | 17 | 152 |
 | `requiem` | 246 | 0 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 0 | 99 |
 | `four_souls` | 90 | 0 | 0 | 90 |
@@ -48,7 +48,7 @@
 | `challenges` | 1 | 0 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 0 | 1 |
 | `star` | 1 | 0 | 0 | 1 |
-| **всего** | **1014** | **105** | **17** | **892** |
+| **всего** | **1014** | **118** | **17** | **879** |
 
 ---
 
@@ -60,9 +60,9 @@
 | monster | 85 | 22 | 17 |
 | loot | 51 | 48 | 0 |
 | event | 17 | 0 | 0 |
-| character | 11 | 0 | 0 |
+| character | 11 | 9 | 0 |
 | starting_item | 10 | 0 | 0 |
-| curse | 5 | 0 | 0 |
+| curse | 5 | 4 | 0 |
 | bonus_soul | 3 | 0 | 0 |
 
 
@@ -70,17 +70,17 @@
 
 | Card | Status | Notes |
 |------|--------|-------|
-| Blue Baby | ⬜ |  |
+| Blue Baby | 🟩 |  |
 | Cain | ⬜ |  |
 | Eden | ⬜ |  |
-| Eve | ⬜ |  |
-| Isaac | ⬜ |  |
-| Judas | ⬜ |  |
-| Lazarus | ⬜ |  |
-| Lilith | ⬜ |  |
-| Maggy | ⬜ |  |
-| Samson | ⬜ |  |
-| The Forgotten | ⬜ |  |
+| Eve | 🟩 |  |
+| Isaac | 🟩 |  |
+| Judas | 🟩 |  |
+| Lazarus | 🟩 |  |
+| Lilith | 🟩 |  |
+| Maggy | 🟩 |  |
+| Samson | 🟩 |  |
+| The Forgotten | 🟩 |  |
 
 ## Starting Items
 
@@ -379,10 +379,10 @@
 
 | Card | Status | Notes |
 |------|--------|-------|
-| Curse of Amnesia | ⬜ |  |
-| Curse of Greed | ⬜ |  |
-| Curse of Loss | ⬜ |  |
-| Curse of Pain | ⬜ |  |
+| Curse of Amnesia | 🟩 |  |
+| Curse of Greed | 🟩 |  |
+| Curse of Loss | 🟩 |  |
+| Curse of Pain | 🟩 |  |
 | Curse of the Blind | ⬜ |  |
 
 ## Bonus Souls

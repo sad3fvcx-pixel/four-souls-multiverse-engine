@@ -14,6 +14,16 @@ from fsme.state import GameState
 from .costs import pay, unpayable
 
 
+def _is_character(command: Command) -> bool:
+    """
+    Whether this command activates a character rather than an item.
+
+    A character card taps for its ability exactly as an item does, and it is
+    not in the item area, so the command says which card it means.
+    """
+    return str(command.get("zone", "treasures")) == "character"
+
+
 class ActivateTreasureHandler:
     """
     Pays for one of a player's items and fires its activated ability.
@@ -39,12 +49,18 @@ class ActivateTreasureHandler:
         if not player.alive:
             return "a dead player may not activate items"
 
-        index = command.get("index", 0)
+        if _is_character(command):
+            card = player.character
 
-        if not isinstance(index, int) or not 0 <= index < player.treasure_count:
-            return f"no treasure at index {index!r}"
+            if card is None:
+                return "this player has no character card"
+        else:
+            index = command.get("index", 0)
 
-        card = player.treasures.cards[index]
+            if not isinstance(index, int) or not 0 <= index < player.treasure_count:
+                return f"no treasure at index {index!r}"
+
+            card = player.treasures.cards[index]
 
         definition = getattr(card, "definition", None)
 
@@ -68,7 +84,15 @@ class ActivateTreasureHandler:
         state = context.state
         player = state.player(command.player)
 
-        card = player.treasures.cards[int(command.get("index", 0))]
+        card = (
+            player.character
+            if _is_character(command)
+            else player.treasures.cards[int(command.get("index", 0))]
+        )
+
+        if card is None:
+            return
+
         which = int(command.get("ability", 0))
 
         ability = card.definition.abilities_for(str(EventType.ON_ACTIVATE))[which]

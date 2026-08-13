@@ -3081,5 +3081,200 @@
         "description": "Each time the attacking player rolls an attack roll of 5, they take 1 damage."
       }
     ]
+  },
+  "characters-base_game-blue_baby": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "characters-base_game-eve": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "characters-base_game-isaac": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "characters-base_game-judas": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "characters-base_game-lazarus": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "characters-base_game-lilith": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "characters-base_game-maggy": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "characters-base_game-samson": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "characters-base_game-the_forgotten": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "monster_deck-curses-base_game-curse_of_amnesia": {
+    "abilities": [
+      {
+        "trigger": "turn_end",
+        "scope": "controller",
+        "effects": [
+          {
+            "discard_loot": 2
+          }
+        ],
+        "description": "At the end of your turn, discard 2 loot cards."
+      }
+    ]
+  },
+  "monster_deck-curses-base_game-curse_of_greed": {
+    "abilities": [
+      {
+        "trigger": "turn_end",
+        "scope": "controller",
+        "effects": [
+          {
+            "lose_coins": 4
+          }
+        ],
+        "description": "At the end of your turn, lose 4¢."
+      }
+    ]
+  },
+  "monster_deck-curses-base_game-curse_of_pain": {
+    "abilities": [
+      {
+        "trigger": "turn_start",
+        "scope": "controller",
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "controller"
+          }
+        ],
+        "description": "At the start of your turn, take 1 damage."
+      }
+    ]
+  },
+  "monster_deck-curses-base_game-curse_of_loss": {
+    "abilities": [
+      {
+        "trigger": "player_died",
+        "scope": "controller",
+        "effects": [
+          {
+            "effect": "lose_soul",
+            "count": 1,
+            "target": "controller"
+          }
+        ],
+        "description": "When you die, destroy a soul you control."
+      }
+    ]
   }
 }
