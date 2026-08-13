@@ -174,6 +174,7 @@ class ConditionEvaluator:
 
         register("attack_roll", _attack_roll)
         register("is_attacked", _is_attacked)
+        register("card_counters", _card_counters)
         register("dice_equals", _dice_equals)
         register("dice_not_equals", _dice_not_equals)
         register("dice_greater", _dice_greater)
@@ -416,6 +417,23 @@ def _dice_value(context: AbilityContext) -> int | None:
             return rolled
 
     return None
+
+
+def _card_counters(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    Compare the counters on this card with a number.
+    """
+    source = context.source
+
+    if source is None:
+        return False
+
+    counters = getattr(source, "counters", {})
+    name = str(params.get("counter", "charge"))
+
+    return _compare(int(counters.get(name, 0)), dict(params))
 
 
 def _is_attacked(

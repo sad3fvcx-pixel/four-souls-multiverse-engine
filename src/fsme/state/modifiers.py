@@ -110,14 +110,29 @@ class DamageShield:
     """
 
     player_id: int
-    amount: int
+    amount: int | None = None
+    """
+    How much damage this stops, or None for the whole instance.
+
+    Cards say both: "prevent the next 1 damage" names a number, and "prevent the
+    next instance of damage" does not care how big the instance is.
+    """
+
     duration: Duration = Duration.END_OF_TURN
 
     def expires_at_end_of_turn(self) -> bool:
         return self.duration is Duration.END_OF_TURN
 
+    def stops(self, damage: int) -> int:
+        """
+        Return how much of an incoming instance this shield takes.
+        """
+        return damage if self.amount is None else min(damage, self.amount)
+
     def __str__(self) -> str:
-        return f"prevent {self.amount} damage to player {self.player_id}"
+        size = "all" if self.amount is None else str(self.amount)
+
+        return f"prevent {size} damage to player {self.player_id}"
 
 
 @dataclass(slots=True)

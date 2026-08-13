@@ -21,11 +21,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **136**. Без правил: **17**. Осталось: **861**.
+Импортировано официальных карт: **1014**. Реализовано: **149**. Без правил: **17**. Осталось: **848**.
 
 | Набор | Карт | Реализовано | Без правил | Осталось |
 |---|---:|---:|---:|---:|
-| `base_game` | 287 | 136 | 17 | 134 |
+| `base_game` | 287 | 149 | 17 | 121 |
 | `requiem` | 246 | 0 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 0 | 99 |
 | `four_souls` | 90 | 0 | 0 | 90 |
@@ -48,7 +48,7 @@
 | `challenges` | 1 | 0 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 0 | 1 |
 | `star` | 1 | 0 | 0 | 1 |
-| **всего** | **1014** | **136** | **17** | **861** |
+| **всего** | **1014** | **149** | **17** | **848** |
 
 ---
 
@@ -56,12 +56,12 @@
 
 | Тип | Карт | Реализовано | Без правил |
 |---|---:|---:|---:|
-| treasure | 105 | 35 | 0 |
+| treasure | 105 | 46 | 0 |
 | monster | 85 | 29 | 17 |
 | loot | 51 | 48 | 0 |
 | event | 17 | 10 | 0 |
 | character | 11 | 9 | 0 |
-| starting_item | 10 | 0 | 0 |
+| starting_item | 10 | 2 | 0 |
 | curse | 5 | 5 | 0 |
 | bonus_soul | 3 | 0 | 0 |
 
@@ -86,7 +86,7 @@
 
 | Card | Status | Notes |
 |------|--------|-------|
-| Blood Lust | ⬜ |  |
+| Blood Lust | 🟩 |  |
 | Book of Belial | ⬜ |  |
 | Forever Alone | ⬜ |  |
 | Incubus | ⬜ |  |
@@ -95,7 +95,7 @@
 | The Bone | ⬜ |  |
 | The Curse | ⬜ |  |
 | The D6 | ⬜ |  |
-| Yum Heart | ⬜ |  |
+| Yum Heart | 🟩 |  |
 
 ## Treasure
 
@@ -105,7 +105,7 @@
 | Battery Bum | 🟩 |  |
 | Belly Button | ⬜ |  |
 | Blank Card | ⬜ |  |
-| Bob's Brain | ⬜ |  |
+| Bob's Brain | 🟩 |  |
 | Book of Sin | 🟩 |  |
 | Boomerang | ⬜ |  |
 | Box! | ⬜ |  |
@@ -113,7 +113,7 @@
 | Brimstone | ⬜ |  |
 | Bum Friend | 🟩 |  |
 | Bum-bo! | ⬜ |  |
-| Cambion Conception | ⬜ |  |
+| Cambion Conception | 🟩 |  |
 | Champion Belt | 🟩 |  |
 | Chaos | ⬜ |  |
 | Chaos Card | ⬜ |  |
@@ -122,7 +122,7 @@
 | Compost | ⬜ |  |
 | Contract from Below | ⬜ |  |
 | Crystal Ball | ⬜ |  |
-| Curse of the Tower | ⬜ |  |
+| Curse of the Tower | 🟩 |  |
 | Dad's Lost Coin | ⬜ |  |
 | Daddy Haunt | ⬜ |  |
 | Dark Bum | 🟩 |  |
@@ -137,23 +137,23 @@
 | Eye of Greed | 🟩 |  |
 | Fanny Pack | 🟩 |  |
 | Finger! | ⬜ |  |
-| Flush! | ⬜ |  |
+| Flush! | 🟩 |  |
 | Glass Cannon | ⬜ |  |
-| Goat Head | ⬜ |  |
+| Goat Head | 🟩 |  |
 | Godhead | ⬜ |  |
 | Golden Razor Blade | 🟩 |  |
-| Greed's Gullet | ⬜ |  |
+| Greed's Gullet | 🟩 |  |
 | Guppy's Collar | ⬜ |  |
 | Guppy's Head | ⬜ |  |
 | Guppy's Paw | ⬜ |  |
 | Host Hat | ⬜ |  |
-| Ipecac | ⬜ |  |
+| Ipecac | 🟩 |  |
 | Jawbone | 🟩 |  |
 | Lucky Foot | ⬜ |  |
 | Meat! | 🟩 |  |
 | Mini Mush | ⬜ |  |
 | Modeling Clay | ⬜ |  |
-| Mom's Box | ⬜ |  |
+| Mom's Box | 🟩 |  |
 | Mom's Bra | ⬜ |  |
 | Mom's Coin Purse | ⬜ |  |
 | Mom's Purse | ⬜ |  |
@@ -173,7 +173,7 @@
 | Razor Blade | 🟩 |  |
 | Remote Detonator | ⬜ |  |
 | Restock | ⬜ |  |
-| Sack Head | ⬜ |  |
+| Sack Head | 🟩 |  |
 | Sack of Pennies | 🟩 |  |
 | Sacred Heart | ⬜ |  |
 | Shadow | ⬜ |  |
@@ -183,7 +183,7 @@
 | Spoon Bender | ⬜ |  |
 | Starter Deck | 🟩 |  |
 | Steamy Sale! | ⬜ |  |
-| Suicide King | ⬜ |  |
+| Suicide King | 🟩 |  |
 | Synthoil | 🟩 |  |
 | Tarot Cloth | ⬜ |  |
 | Tech X | 🟩 |  |
@@ -200,7 +200,7 @@
 | The Map | ⬜ |  |
 | The Midas Touch | 🟩 |  |
 | The Polaroid | 🟩 |  |
-| The Poop | ⬜ |  |
+| The Poop | 🟩 |  |
 | The Relic | 🟩 |  |
 | The Shovel | ⬜ |  |
 | There's Options | ⬜ |  |

@@ -2365,6 +2365,179 @@ def test_a_game_is_never_laid_out_with_an_event_in_a_slot(
 
 
 # ----------------------------------------------------------------------
+# Counters, whole instances, and cards that read the event
+# ----------------------------------------------------------------------
+
+
+def starting_item(game: Game, name: str, player: int = 0) -> CardInstance:
+    """
+    Replace a player's starting item with a named one.
+    """
+    game.state.player(player).treasures.cards.clear()
+
+    return give(game, name, player=player)
+
+
+def test_yum_heart_stops_an_instance_however_big(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3)
+
+    heart = starting_item(game, "starting_items-base_game-yum_heart")
+
+    victim = game.state.player(1)
+    toughen(game, victim)
+
+    hp = victim.hp
+
+    assert activate(game, heart).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, list(decision.options).index(victim)).accepted
+
+    game.runtime.context.apply("deal_damage", [victim], amount=5)
+    game.runtime.run()
+
+    assert victim.hp == hp, "the whole instance was prevented, not one point of it"
+
+
+def test_an_end_of_turn_recharge_makes_an_item_usable_again(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    heart = starting_item(game, "starting_items-base_game-yum_heart")
+
+    assert activate(game, heart).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    if decision is not None:
+        assert choose(game, 0, 0).accepted
+
+    assert heart.tapped is True
+
+    end_turn(game)
+
+    assert heart.tapped is False
+
+
+def test_blood_lust_may_strengthen_a_monster(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    lust = starting_item(game, "starting_items-base_game-blood_lust")
+
+    monster = game.state.active_monsters.cards[0]
+    printed = attack_of(game, monster)
+
+    assert activate(game, lust).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, list(decision.options).index(monster)).accepted
+
+    assert attack_of(game, monster) == printed + 1
+
+
+def test_the_poop_counts_the_damage_and_spends_it(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    poop = give(game, "treasure_deck-paid_items-base_game-the_poop")
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    game.runtime.context.apply("deal_damage", [player], amount=1)
+    game.runtime.run()
+
+    assert poop.counters["charge"] == 1
+
+    # The Poop prints one activated ability; the other is a trigger, and the
+    # index counts only the activated ones.
+    assert activate(game, poop).accepted
+
+    assert poop.counters["charge"] == 0
+    assert poop.tapped is False, "a paid ability does not tap"
+
+    hp = player.hp
+
+    game.runtime.context.apply("deal_damage", [player], amount=1)
+    game.runtime.run()
+
+    assert player.hp == hp, "the promised point was prevented"
+
+
+def test_cambion_conception_counts_damage_and_pays_at_six(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    cambion = give(game, "treasure_deck-passive_items-base_game-cambion_conception")
+
+    player = game.state.player(0)
+    toughen(game, player, amount=12)
+
+    treasures = player.treasure_count
+
+    game.runtime.context.apply("deal_damage", [player], amount=4)
+    game.runtime.run()
+
+    assert cambion.counters["charge"] == 4
+    assert player.treasure_count == treasures
+
+    game.runtime.context.apply("deal_damage", [player], amount=3)
+    game.runtime.run()
+
+    assert cambion.counters["charge"] == 1
+    assert player.treasure_count == treasures + 1
+
+
+def test_the_goat_head_pays_back_what_was_discarded(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-goat_head")
+
+    hand = game.state.player(0).hand_size
+
+    assert game.act(CommandType.END_PHASE, 0).accepted
+    assert game.act(CommandType.END_PHASE, 0).accepted
+    assert game.act(CommandType.END_TURN, 0).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert decision.minimum == 0
+
+    assert choose(game, 0, 0, 1).accepted
+
+    assert game.state.player(0).hand_size == hand
+
+
+def test_flush_sweeps_the_side_it_is_told_to(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    flush = give(game, "treasure_deck-active_items-base_game-flush")
+
+    monsters = list(game.state.active_monsters.cards)
+    shop = list(game.state.treasure_shop.cards)
+
+    assert activate(game, flush).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+
+    answer(game, str(decision.options[1]))
+
+    assert list(game.state.treasure_shop.cards) == []
+    assert all(card in game.state.treasure_deck.cards for card in shop)
+    assert list(game.state.active_monsters.cards) == monsters
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

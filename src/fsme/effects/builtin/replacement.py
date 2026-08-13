@@ -61,7 +61,7 @@ def prevent_damage(
 def prevent_next_damage(
     ctx: EffectContext,
     targets: Sequence[Any],
-    amount: int = 1,
+    amount: int | None = None,
 ) -> int:
     """
     Promise that the next damage a player takes will be reduced.
@@ -70,8 +70,12 @@ def prevent_next_damage(
     is happening now; this one is written on a card played before the damage
     exists, so it is recorded on the game and spent by the first instance of
     damage that arrives.
+
+    Leaving ``amount`` out prevents the whole instance, however large: that is
+    what "prevent the next instance of damage" says, and it is not the same card
+    as "prevent the next 1 damage".
     """
-    if amount < 0:
+    if amount is not None and amount < 0:
         raise EffectExecutionError("prevent_next_damage amount must be non-negative")
 
     promised = 0
@@ -83,7 +87,10 @@ def prevent_next_damage(
             raise EffectExecutionError("prevent_next_damage expects player targets")
 
         ctx.state.shields.append(
-            DamageShield(player_id=int(player_id), amount=int(amount))
+            DamageShield(
+                player_id=int(player_id),
+                amount=None if amount is None else int(amount),
+            )
         )
 
         promised += 1

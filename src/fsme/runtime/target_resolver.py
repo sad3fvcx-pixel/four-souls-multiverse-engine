@@ -138,6 +138,7 @@ class TargetResolver:
         register("target_treasure", _target_treasure)
         register("owned_treasure", _owned_treasure)
         register("all_treasures", _all_treasures)
+        register("shop_items", _shop_items)
 
         register("top_stack", _top_stack)
         register("all_stack", _all_stack)
@@ -619,6 +620,15 @@ def _all_treasures(
         treasures = [card for card in treasures if card is not context.source]
 
     return treasures
+
+
+def _shop_items(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    Everything for sale right now.
+    """
+    return list(state.treasure_shop.cards)
 
 
 def _top_stack(

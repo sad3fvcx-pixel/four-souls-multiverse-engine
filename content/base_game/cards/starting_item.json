@@ -6,7 +6,38 @@
       "type": "starting_item",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "blessed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "blessed"
+            }
+          ],
+          "description": "Choose a player or monster. They gain +1 AT till end of turn."
+        },
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "At the end of your turn, recharge this."
+        }
+      ],
       "tags": [
         "activated",
         "eternal"
@@ -202,7 +233,36 @@
       "type": "starting_item",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_player": {
+                "as": "shielded"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "prevent_next_damage",
+              "target": "shielded"
+            }
+          ],
+          "description": "Choose a player. Prevent the next instance of damage they would take this turn."
+        },
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "At the end of your turn, recharge this."
+        }
+      ],
       "tags": [
         "activated",
         "eternal"

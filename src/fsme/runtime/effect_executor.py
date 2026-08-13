@@ -139,6 +139,22 @@ def _resolve_params(
         elif "count" in value:
             resolved[key] = _counted(value, ability, context)
 
+        elif "from_event" in value:
+            carried = (
+                ability.event.get(str(value["from_event"]))
+                if ability.event is not None
+                else None
+            )
+            number = int(carried) if isinstance(carried, int) else 0
+
+            resolved[key] = number + int(value.get("plus", 0))
+
+        elif "last_result" in value:
+            done = ability.last_value
+            number = int(done) if isinstance(done, int) else 0
+
+            resolved[key] = number + int(value.get("plus", 0))
+
         elif "player_of" in value:
             group = _group(value["player_of"], ability, context)
 

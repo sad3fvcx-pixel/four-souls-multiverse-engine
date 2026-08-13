@@ -570,7 +570,7 @@ class Runtime:
                     continue
 
                 before = int(event.get("amount", 0))
-                after = max(0, before - shield.amount)
+                after = max(0, before - shield.stops(before))
 
                 event.set("amount", after)
                 self._state.shields.remove(shield)

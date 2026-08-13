@@ -279,7 +279,45 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Put each monster not being attacked on the bottom of the monster deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "monster",
+                      "position": "bottom",
+                      "target": {
+                        "all_monsters": {
+                          "exclude_attacked": true,
+                          "as": "swept"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Put each shop item on the bottom of the treasure deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "treasure",
+                      "position": "bottom",
+                      "target": "shop_items"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Choose one: put each monster not being attacked on the bottom of the monster deck, or put each shop item on the bottom of the treasure deck."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -854,7 +892,99 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Look at the top card of the loot deck.",
+                  "effects": [
+                    {
+                      "effect": "reveal_cards",
+                      "deck": "loot",
+                      "count": 1
+                    },
+                    {
+                      "may": [
+                        {
+                          "effect": "move_cards",
+                          "deck": "loot",
+                          "position": "bottom",
+                          "target": {
+                            "deck_top": {
+                              "deck": "loot",
+                              "count": 1,
+                              "as": "top"
+                            }
+                          }
+                        }
+                      ],
+                      "prompt": "Put it on the bottom?"
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top card of the treasure deck.",
+                  "effects": [
+                    {
+                      "effect": "reveal_cards",
+                      "deck": "treasure",
+                      "count": 1
+                    },
+                    {
+                      "may": [
+                        {
+                          "effect": "move_cards",
+                          "deck": "treasure",
+                          "position": "bottom",
+                          "target": {
+                            "deck_top": {
+                              "deck": "treasure",
+                              "count": 1,
+                              "as": "top"
+                            }
+                          }
+                        }
+                      ],
+                      "prompt": "Put it on the bottom?"
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top card of the monster deck.",
+                  "effects": [
+                    {
+                      "effect": "reveal_cards",
+                      "deck": "monster",
+                      "count": 1
+                    },
+                    {
+                      "may": [
+                        {
+                          "effect": "move_cards",
+                          "deck": "monster",
+                          "position": "bottom",
+                          "target": {
+                            "deck_top": {
+                              "deck": "monster",
+                              "count": 1,
+                              "as": "top"
+                            }
+                          }
+                        }
+                      ],
+                      "prompt": "Put it on the bottom?"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Look at the top card of a deck. You may put that card on the bottom of that deck."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -1581,7 +1711,35 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "charge",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time you take damage, put a counter on this."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "counters": 1
+          },
+          "effects": [
+            {
+              "effect": "prevent_next_damage",
+              "amount": 1,
+              "target": "controller"
+            }
+          ],
+          "description": "Remove a counter from this: prevent the next 1 damage you would take this turn."
+        }
+      ],
       "tags": [
         "paid"
       ],
@@ -1644,7 +1802,75 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "attack_start",
+          "scope": "controller",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": {
+                    "target_monster": {
+                      "as": "victim"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": {
+                    "target_player": {
+                      "as": "hurt"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "controller"
+                }
+              ]
+            }
+          ],
+          "description": "Each time you declare an attack, roll: 1-2 deal 1 damage to a monster, 3-4 deal 1 damage to a player, 5-6 take 1 damage."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -1738,7 +1964,44 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "charge",
+              "amount": {
+                "from_event": "amount"
+              },
+              "target": "self"
+            },
+            {
+              "if": [
+                {
+                  "card_counters": {
+                    "operator": ">=",
+                    "value": 6
+                  }
+                }
+              ],
+              "then": [
+                {
+                  "effect": "add_counter",
+                  "counter": "charge",
+                  "amount": -6,
+                  "target": "self"
+                },
+                {
+                  "gain_treasure": 1
+                }
+              ]
+            }
+          ],
+          "description": "Each time you take damage, put counters on this equal to the amount of damage taken. Then, if this has 6+ counters, remove 6 counters from this and gain +1 treasure."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -1865,7 +2128,50 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "controller",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "opponents"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 3
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": {
+                    "target_monster": {
+                      "as": "victim"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "description": "Each time you take damage, roll: 1-3 each other player takes 1 damage, 4-6 deal 1 damage to a monster."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -2281,7 +2587,35 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "targets": [
+            {
+              "target_loot": {
+                "minimum": 0,
+                "maximum": 20,
+                "as": "dumped",
+                "prompt": "Discard any number of loot cards."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "discard_cards",
+              "target": "dumped"
+            },
+            {
+              "effect": "draw_loot",
+              "count": {
+                "last_result": true
+              }
+            }
+          ],
+          "description": "At the end of your turn, you may discard any number of loot cards, then loot equal to the number of cards discarded in this way."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -2302,7 +2636,18 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "player_died",
+          "scope": "controller",
+          "effects": [
+            {
+              "gain_coins": 8
+            }
+          ],
+          "description": "Each time you die, gain 8¢."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -2344,7 +2689,25 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "controller",
+          "conditions": [
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "opponents"
+            }
+          ],
+          "description": "Each time you roll an attack roll of 6, deal 1 damage to each other player."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -2357,7 +2720,15 @@
         "subcategory": "Passive Items",
         "version": "Original",
         "artist": "TAR_HEAD"
-      }
+      },
+      "statics": [
+        {
+          "stat": "attack",
+          "amount": 1,
+          "scope": "self",
+          "description": "+1 AT"
+        }
+      ]
     },
     {
       "id": "treasure_deck-passive_items-base_game-meat",
@@ -2401,7 +2772,36 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 4
+            }
+          ],
+          "effects": [
+            {
+              "may": [
+                {
+                  "draw_loot": 1
+                },
+                {
+                  "effect": "discard_cards",
+                  "target": {
+                    "target_loot": {
+                      "as": "dumped"
+                    }
+                  }
+                }
+              ],
+              "prompt": "Loot 1, then discard a loot card?"
+            }
+          ],
+          "description": "Each time a player rolls a 4, you may loot 1, then discard a loot card."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -2745,7 +3145,18 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "player_died",
+          "scope": "controller",
+          "effects": [
+            {
+              "draw_loot": 3
+            }
+          ],
+          "description": "Each time you die, loot 3."
+        }
+      ],
       "tags": [
         "passive"
       ],
