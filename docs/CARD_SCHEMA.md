@@ -163,6 +163,35 @@ A replacement is not also a trigger: an ability is one or the other.
 
 ---
 
+# 8.2 Statics
+
+A card may change a value for as long as it is in play.
+
+```json
+"statics": [
+  { "stat": "attack", "amount": 1, "scope": "controller" }
+]
+```
+
+A static is not an ability. Nothing triggers it, it never reaches the stack,
+and it stops applying the moment the card leaves play. It is written separately
+because there is no moment at which it happens.
+
+Recognised stats:
+
+- attack
+- max_hp
+- attacks
+- loot_plays
+
+Scopes:
+
+- controller
+- opponents
+- all_players
+
+---
+
 # 9. Effects
 
 Effects are represented by engine primitives.

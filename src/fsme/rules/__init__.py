@@ -35,7 +35,24 @@ from .priority import PassPriorityHandler
 from .procedures import ProcedureRegistry, StackProcedure
 from .setup import SetupError, new_game
 from .shop import BuyTreasureHandler, refill_shop
-from .turn import EndPhaseHandler, EndTurnHandler, StartGameHandler
+from .statics import (
+    ATTACK,
+    ATTACKS,
+    LOOT_PLAYS,
+    MAX_HP,
+    STATS,
+    refresh_derived,
+    static_value,
+)
+from .turn import (
+    ADVANCE_TURN,
+    DISCARD_TO_HAND_LIMIT,
+    EndPhaseHandler,
+    EndTurnHandler,
+    StartGameHandler,
+    advance_turn,
+    discard_to_hand_limit,
+)
 
 
 def default_command_registry() -> CommandRegistry:
@@ -66,6 +83,7 @@ def default_procedure_registry() -> ProcedureRegistry:
 
     registry.register(COMBAT_ROUND, combat_round)
     registry.register(DISCARD_PLAYED_LOOT, discard_played_loot)
+    registry.register(ADVANCE_TURN, advance_turn)
 
     return registry
 
@@ -80,10 +98,21 @@ __all__ = [
     "PassPriorityHandler",
     "PlayLootHandler",
     "SetupError",
+    "refresh_derived",
+    "static_value",
+    "ATTACK",
+    "ATTACKS",
+    "LOOT_PLAYS",
+    "MAX_HP",
+    "STATS",
     "ProcedureRegistry",
     "StackProcedure",
     "StartGameHandler",
+    "ADVANCE_TURN",
     "COMBAT_ROUND",
+    "DISCARD_TO_HAND_LIMIT",
+    "advance_turn",
+    "discard_to_hand_limit",
     "DISCARD_PLAYED_LOOT",
     "combat_round",
     "default_command_registry",

@@ -88,12 +88,20 @@ class TargetResolver:
 
         A spec may carry ``"as"`` to name the resulting group so that later
         effects can point at it; otherwise the target name itself is used.
+
+        A group that is already bound is left alone. That is what makes an
+        ability resumable: after a player answers, resolution starts over from
+        the top, and the target that asked the question must find the answer
+        rather than ask it again.
         """
         for spec in specs:
             name, params = normalise(spec)
-            resolved = self.resolve(spec, state, context, rng)
+            alias = str(params.get("as", name))
 
-            context.bind(str(params.get("as", name)), resolved)
+            if alias in context.targets:
+                continue
+
+            context.bind(alias, self.resolve(spec, state, context, rng))
 
     def _register_builtin(self) -> None:
         register = self.register
@@ -118,6 +126,7 @@ class TargetResolver:
         register("random_monster", _random_monster)
         register("target_monster", _target_monster)
 
+        register("target_loot", _target_loot)
         register("target_treasure", _target_treasure)
         register("owned_treasure", _owned_treasure)
         register("all_treasures", _all_treasures)
@@ -307,6 +316,17 @@ def _target_monster(
         params,
         "target_monster",
     )
+
+
+def _target_loot(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    if context.controller is None or not 0 <= context.controller < len(state.players):
+        return []
+
+    hand = list(state.player(context.controller).hand.cards)
+
+    return _ask(DecisionKind.CHOOSE_LOOT, hand, context, params, "target_loot")
 
 
 def _target_treasure(

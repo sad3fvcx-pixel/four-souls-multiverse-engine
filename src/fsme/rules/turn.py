@@ -10,12 +10,24 @@ taken mid-turn restores mid-turn.
 
 from __future__ import annotations
 
+from fsme.cards import Ability
 from fsme.commands import Command
 from fsme.effects import EffectContext
 from fsme.events import EventType
+from fsme.stack import StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
-from .constants import ATTACKS_PER_TURN, HAND_LIMIT, STARTING_HAND_SIZE
+from .constants import (
+    ATTACKS_PER_TURN,
+    HAND_LIMIT,
+    LOOT_PLAYS_PER_TURN,
+    STARTING_HAND_SIZE,
+)
+from .statics import ATTACKS, LOOT_PLAYS, static_value
+
+ADVANCE_TURN = "advance_turn"
+
+DISCARD_TO_HAND_LIMIT = "discard_to_hand_limit"
 
 
 class StartGameHandler:
@@ -119,19 +131,68 @@ class EndTurnHandler:
             phase=str(GamePhase.END),
         )
 
+        # Pushed first, so it resolves last: the turn only passes once the
+        # player has finished discarding.
+        context.push(
+            StackItem(
+                kind=StackItemType.ENGINE_EFFECT,
+                label=ADVANCE_TURN,
+                controller=player.player_id,
+            )
+        )
+
         surplus = player.hand_size - HAND_LIMIT
 
         if surplus > 0:
-            context.apply("discard_loot", [player], count=surplus)
+            context.push(
+                StackItem(
+                    kind=StackItemType.ENGINE_EFFECT,
+                    label=DISCARD_TO_HAND_LIMIT,
+                    ability=discard_to_hand_limit(surplus),
+                    source=player.character,
+                    controller=player.player_id,
+                )
+            )
 
-        context.emit(EventType.TURN_END, controller=player.player_id)
-        context.emit(EventType.TURN_CLEANUP, controller=player.player_id)
 
-        following = state.next_player(command.player)
+def discard_to_hand_limit(count: int) -> Ability:
+    """
+    Build the rule that trims a hand down to the limit.
 
-        state.turn.reset_for_new_turn(following)
+    It is written in the same language as a card, which is what lets the
+    player choose which cards to lose: asking a question mid-resolution is
+    something abilities already know how to do, and a rule expressed as an
+    ability inherits it for free.
+    """
+    return Ability(
+        trigger=str(EventType.TURN_CLEANUP),
+        targets=(
+            {"target_loot": {"count": count, "as": "discarded"}},
+        ),
+        effects=(
+            {"effect": "discard_cards", "target": "discarded"},
+        ),
+        description=f"Discard {count} card(s) down to the hand limit.",
+    )
 
-        _begin_turn(context, active_player=following)
+
+def advance_turn(item: StackItem, context: EffectContext) -> None:
+    """
+    Close the current turn and open the next one.
+    """
+    state = context.state
+
+    if item.controller is None:
+        return
+
+    context.emit(EventType.TURN_END, controller=item.controller)
+    context.emit(EventType.TURN_CLEANUP, controller=item.controller)
+
+    following = state.next_player(item.controller)
+
+    state.turn.reset_for_new_turn(following)
+
+    _begin_turn(context, active_player=following)
 
 
 def _begin_turn(context: EffectContext, *, active_player: int) -> None:
@@ -146,7 +207,13 @@ def _begin_turn(context: EffectContext, *, active_player: int) -> None:
     player = state.player(active_player)
 
     player.reset_turn()
-    player.attacks_left = ATTACKS_PER_TURN
+
+    player.attacks_left = static_value(
+        state, ATTACKS, active_player, ATTACKS_PER_TURN
+    )
+    player.additional_loot_plays = static_value(
+        state, LOOT_PLAYS, active_player, LOOT_PLAYS_PER_TURN
+    ) - LOOT_PLAYS_PER_TURN
 
     tapped = [card for card in player.treasures.cards if getattr(card, "tapped", False)]
 

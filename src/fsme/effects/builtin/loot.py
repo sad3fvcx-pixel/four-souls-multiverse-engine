@@ -104,6 +104,38 @@ def discard_loot(ctx: EffectContext, targets: Sequence[Any], count: int = 1) -> 
     return discarded
 
 
+def discard_cards(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Discard specific cards from whichever hand holds them.
+
+    This is the chosen-card counterpart to ``discard_loot``, which takes from
+    the top. A player told to discard down to the hand limit picks; a player
+    told to discard at random does not.
+    """
+    state = ctx.state
+    discarded = 0
+
+    for card in targets:
+        for player in state.players:
+            if card not in player.hand.cards:
+                continue
+
+            player.hand.cards.remove(card)
+            state.loot_discard.add_top(card)
+            discarded += 1
+
+            ctx.emit(
+                EventType.LOOT_DISCARDED,
+                controller=player.player_id,
+                targets=[player],
+                card=card,
+            )
+
+            break
+
+    return discarded
+
+
 def gain_soul(
     ctx: EffectContext,
     targets: Sequence[Any],
@@ -184,6 +216,12 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="count",
         description="Discard loot cards.",
+    )
+    registry.register(
+        "discard_cards",
+        discard_cards,
+        needs_target=True,
+        description="Discard specific cards from hand.",
     )
     registry.register(
         "gain_soul",

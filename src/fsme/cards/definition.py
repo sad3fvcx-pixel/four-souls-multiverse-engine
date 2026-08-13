@@ -91,6 +91,40 @@ class Ability:
 
 
 @dataclass(frozen=True, slots=True)
+class Static:
+    """
+    A value this card changes for as long as it is in play.
+
+    A static is not an event and never resolves: nothing triggers it and it
+    never reaches the stack. The engine simply asks what a number is, and every
+    static in play has a say in the answer. That is why "+1 damage while you
+    control this" cannot be written as an ability — there is no moment at which
+    it happens.
+    """
+
+    stat: str
+
+    amount: int = 0
+
+    scope: str = "controller"
+    """
+    Who the modifier applies to: ``controller``, ``opponents`` or
+    ``all_players``.
+    """
+
+    description: str = ""
+
+    @classmethod
+    def from_data(cls, data: Mapping[str, Any]) -> Static:
+        return cls(
+            stat=str(data["stat"]),
+            amount=int(data.get("amount", 0)),
+            scope=str(data.get("scope", "controller")),
+            description=str(data.get("description", "")),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class CardDefinition:
     """
     The immutable description of a card.
@@ -105,6 +139,7 @@ class CardDefinition:
     expansion: str
 
     abilities: tuple[Ability, ...] = ()
+    statics: tuple[Static, ...] = ()
 
     health: int | None = None
     attack: int | None = None
@@ -137,6 +172,9 @@ class CardDefinition:
             expansion=str(data["expansion"]),
             abilities=tuple(
                 Ability.from_data(ability) for ability in data.get("abilities", ())
+            ),
+            statics=tuple(
+                Static.from_data(static) for static in data.get("statics", ())
             ),
             health=data.get("health"),
             attack=data.get("attack"),

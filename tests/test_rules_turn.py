@@ -79,7 +79,11 @@ def test_a_new_turn_recharges_the_active_player_items() -> None:
     assert EventType.TREASURE_CHARGED in [event.type for event in runtime.history]
 
 
-def test_ending_a_turn_discards_down_to_the_hand_limit() -> None:
+def test_ending_a_turn_asks_which_cards_to_discard() -> None:
+    """
+    A player over the hand limit chooses what to lose, and the turn does not
+    pass until they have.
+    """
     runtime, state = make_game(loot_cards=40)
     start(runtime)
 
@@ -90,8 +94,39 @@ def test_ending_a_turn_discards_down_to_the_hand_limit() -> None:
 
     end_turn(runtime, 0)
 
+    decision = runtime.awaiting_decision
+
+    assert decision is not None
+    assert decision.player == 0
+    assert decision.minimum == 3
+    assert decision.maximum == 3
+    assert player.hand_size == HAND_LIMIT + 3
+    assert state.turn.active_player == 0
+
+    kept = [card for index, card in enumerate(player.hand.cards) if index > 2]
+
+    runtime.submit(
+        Command(
+            type=CommandType.CHOOSE_TARGET,
+            player=0,
+            payload={"choices": [0, 1, 2]},
+        )
+    )
+
     assert player.hand_size == HAND_LIMIT
+    assert player.hand.cards == kept
+    assert state.turn.active_player == 1
     assert EventType.LOOT_DISCARDED in [event.type for event in runtime.history]
+
+
+def test_a_hand_within_the_limit_ends_the_turn_at_once() -> None:
+    runtime, state = make_game()
+    start(runtime)
+
+    end_turn(runtime, 0)
+
+    assert runtime.awaiting_decision is None
+    assert state.turn.active_player == 1
 
 
 def test_a_turn_grants_one_loot_play_and_one_attack() -> None:

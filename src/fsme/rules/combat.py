@@ -21,6 +21,7 @@ from fsme.stack import StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
 from .constants import BASE_PLAYER_ATTACK, DICE_SIDES
+from .statics import ATTACK, static_value
 
 COMBAT_ROUND = "combat_round"
 
@@ -148,7 +149,11 @@ def combat_round(item: StackItem, context: EffectContext) -> None:
     )
 
     if roll >= required:
-        context.apply("deal_damage", [monster], amount=BASE_PLAYER_ATTACK)
+        damage = static_value(
+            state, ATTACK, attacker.player_id, BASE_PLAYER_ATTACK
+        )
+
+        context.apply("deal_damage", [monster], amount=damage)
     else:
         context.apply("deal_damage", [attacker], amount=_monster_attack(monster))
 

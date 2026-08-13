@@ -9,7 +9,11 @@
       "abilities": [
         {
           "trigger": "on_activate",
-          "effects": [{ "gain_coins": 2 }],
+          "effects": [
+            {
+              "gain_coins": 2
+            }
+          ],
           "description": "Gain 2 cents."
         }
       ]
@@ -24,7 +28,11 @@
         {
           "trigger": "on_activate",
           "effects": [
-            { "effect": "deal_damage", "amount": 1, "target": "current_monster" }
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "current_monster"
+            }
           ],
           "description": "Deal 1 damage to the monster you are fighting."
         }
@@ -39,7 +47,11 @@
       "abilities": [
         {
           "trigger": "monster_killed",
-          "effects": [{ "gain_coins": 2 }],
+          "effects": [
+            {
+              "gain_coins": 2
+            }
+          ],
           "description": "Whenever a monster dies, gain 2 cents."
         }
       ]
@@ -53,7 +65,11 @@
       "abilities": [
         {
           "trigger": "turn_start",
-          "effects": [{ "heal": 1 }],
+          "effects": [
+            {
+              "heal": 1
+            }
+          ],
           "description": "At the start of every turn, heal 1."
         }
       ]
@@ -69,7 +85,11 @@
           "trigger": "before_damage",
           "replacement": true,
           "scope": "any",
-          "effects": [{ "prevent_damage": 1 }],
+          "effects": [
+            {
+              "prevent_damage": 1
+            }
+          ],
           "description": "Prevent 1 damage dealt to you."
         }
       ]
@@ -84,14 +104,76 @@
         {
           "trigger": "on_activate",
           "effects": [
-            { "roll_dice": 6 },
             {
-              "if": [{ "dice_equals": 6 }],
-              "then": [{ "draw_loot": 2 }],
-              "else": [{ "gain_coins": 1 }]
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 6
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 2
+                }
+              ],
+              "else": [
+                {
+                  "gain_coins": 1
+                }
+              ]
             }
           ],
           "description": "Roll a die. On a 6 draw 2 loot, otherwise gain 1 cent."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.whetstone",
+      "name": "Whetstone",
+      "type": "treasure",
+      "expansion": "engine_demo",
+      "cost": 10,
+      "abilities": [],
+      "statics": [
+        {
+          "stat": "attack",
+          "amount": 1,
+          "scope": "controller",
+          "description": "Your attacks deal 1 more damage."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.hearty_meal",
+      "name": "Hearty Meal",
+      "type": "treasure",
+      "expansion": "engine_demo",
+      "cost": 10,
+      "abilities": [],
+      "statics": [
+        {
+          "stat": "max_hp",
+          "amount": 1,
+          "scope": "controller",
+          "description": "You have 1 more maximum hit point."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.deep_pockets",
+      "name": "Deep Pockets",
+      "type": "treasure",
+      "expansion": "engine_demo",
+      "cost": 10,
+      "abilities": [],
+      "statics": [
+        {
+          "stat": "loot_plays",
+          "amount": 1,
+          "scope": "controller",
+          "description": "You may play one more loot card each turn."
         }
       ]
     }

@@ -24,6 +24,7 @@ from fsme.rules import (
     ProcedureRegistry,
     default_command_registry,
     default_procedure_registry,
+    refresh_derived,
 )
 from fsme.stack import StackItem, StackItemType
 from fsme.state import GameState, PendingDecision, PlayerState
@@ -871,6 +872,11 @@ class Runtime:
             return True
 
         if any(
+            player.hp > player.max_hp for player in state.players
+        ):
+            return True
+
+        if any(
             getattr(monster, "alive", False) and (monster.hp or 0) <= 0
             for monster in state.active_monsters.cards
         ):
@@ -890,7 +896,7 @@ class Runtime:
         Returns True when something changed, which tells the loop to run
         another pass: a death may award a soul, and that soul may win the game.
         """
-        changed = False
+        changed = refresh_derived(self._state)
 
         for player in self._state.players:
             if player.alive and player.hp <= 0:

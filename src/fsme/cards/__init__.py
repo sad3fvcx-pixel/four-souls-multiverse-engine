@@ -8,7 +8,7 @@ how it happens.
 """
 
 from .card import CardInstance, SoulToken
-from .definition import Ability, CardDefinition
+from .definition import Ability, CardDefinition, Static
 from .errors import (
     CardError,
     DuplicateCardError,
@@ -28,6 +28,7 @@ __all__ = [
     "CardRegistry",
     "CardType",
     "SoulToken",
+    "Static",
     "CardError",
     "DuplicateCardError",
     "InvalidCardError",
