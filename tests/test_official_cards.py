@@ -2156,6 +2156,101 @@ def test_the_curse_of_loss_takes_a_soul_when_its_bearer_dies(
 
 
 # ----------------------------------------------------------------------
+# Monsters whose own numbers change
+# ----------------------------------------------------------------------
+
+
+def difficulty_of(game: Game, monster: CardInstance) -> int:
+    from fsme.rules import DIFFICULTY, monster_value
+
+    printed = monster.definition.roll or 4
+
+    return monster_value(game.state, DIFFICULTY, monster, printed)
+
+
+def attack_of(game: Game, monster: CardInstance) -> int:
+    from fsme.rules import ATTACK, monster_value
+
+    printed = monster.definition.attack or 1
+
+    return monster_value(game.state, ATTACK, monster, printed)
+
+
+def test_gemini_hits_harder_at_one_hit_point(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    gemini = summon(game, "monster_deck-bosses-base_game-gemini")
+
+    printed = gemini.definition.attack
+
+    assert attack_of(game, gemini) == printed
+
+    gemini.hp = 1
+
+    assert attack_of(game, gemini) == printed + 1
+
+
+@pytest.mark.parametrize(
+    ("card_id", "hp", "bonus"),
+    (
+        ("monster_deck-bosses-base_game-larry_jr", 2, 1),
+        ("monster_deck-bosses-base_game-mask_of_infamy", 1, 2),
+    ),
+)
+def test_a_wounded_monster_is_harder_to_hit(
+    base_game: ContentLibrary, card_id: str, hp: int, bonus: int
+) -> None:
+    game = new_game(base_game)
+
+    monster = summon(game, card_id)
+    printed = monster.definition.roll
+
+    assert difficulty_of(game, monster) == printed
+
+    monster.hp = hp
+
+    assert difficulty_of(game, monster) == printed + bonus
+
+
+def test_war_grows_angrier_each_time_it_is_hurt(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    war = summon(game, "monster_deck-bosses-base_game-war")
+    printed = war.definition.attack
+
+    game.runtime.context.apply("deal_damage", [war], amount=1)
+    game.runtime.run()
+
+    assert attack_of(game, war) == printed + 1
+
+    game.runtime.context.apply("deal_damage", [war], amount=1)
+    game.runtime.run()
+
+    assert attack_of(game, war) == printed + 2
+
+    end_turn(game)
+
+    assert attack_of(game, war) == printed, "the anger lasted for the turn"
+
+
+def test_the_curse_of_the_blind_only_blinds_its_bearer(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    monster = game.state.active_monsters.cards[0]
+    printed = monster.definition.roll or 4
+
+    curse(game, "monster_deck-curses-base_game-curse_of_the_blind", player=1)
+
+    assert difficulty_of(game, monster) == printed
+
+    end_turn(game)
+
+    assert difficulty_of(game, monster) == printed + 1
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

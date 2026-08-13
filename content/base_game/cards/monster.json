@@ -1332,7 +1332,27 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "difficulty",
+              "amount": 1,
+              "target": "all_monsters"
+            }
+          ],
+          "description": "Each time the attacking player rolls an attack roll of 1, each monster gains +1 DC till end of turn."
+        }
+      ],
       "health": 4,
       "attack": 1,
       "roll": 4,
@@ -1360,7 +1380,21 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time this takes damage, it gains +1 AT till end of turn."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 4,
@@ -1511,7 +1545,23 @@
         "subcategory": "Bosses",
         "version": "Original",
         "artist": "@rojen241"
-      }
+      },
+      "statics": [
+        {
+          "stat": "attack",
+          "amount": 1,
+          "scope": "self",
+          "conditions": [
+            {
+              "monster_hp": {
+                "operator": "==",
+                "value": 1
+              }
+            }
+          ],
+          "description": "While this is at 1 HP, it has +1 AT."
+        }
+      ]
     },
     {
       "id": "monster_deck-bosses-base_game-gluttony",
@@ -1652,7 +1702,23 @@
         "subcategory": "Bosses",
         "version": "Original",
         "artist": "@rojen241"
-      }
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 1,
+          "scope": "self",
+          "conditions": [
+            {
+              "monster_hp": {
+                "operator": "<=",
+                "value": 2
+              }
+            }
+          ],
+          "description": "While this is at 2 HP or less, it has +1 DC."
+        }
+      ]
     },
     {
       "id": "monster_deck-bosses-base_game-little_horn",
@@ -1737,7 +1803,23 @@
         "subcategory": "Bosses",
         "version": "Original",
         "artist": "@Von_Grimsworth"
-      }
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 2,
+          "scope": "self",
+          "conditions": [
+            {
+              "monster_hp": {
+                "operator": "==",
+                "value": 1
+              }
+            }
+          ],
+          "description": "When this is at 1 HP, it has +2 DC."
+        }
+      ]
     },
     {
       "id": "monster_deck-bosses-base_game-mega_fatty",
@@ -2098,7 +2180,21 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time this takes damage, it gains +1 AT till end of turn."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 3,
@@ -2238,7 +2334,26 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 4
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "all_monsters"
+            }
+          ],
+          "description": "Each time a player rolls a 4, each monster gains +1 AT till end of turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,

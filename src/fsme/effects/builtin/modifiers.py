@@ -10,8 +10,8 @@ from collections.abc import Sequence
 from typing import Any
 
 from fsme.events import EventType
-from fsme.state import Duration, PlayerState, TemporaryModifier
-from fsme.state.modifiers import STATS
+from fsme.state import CardModifier, Duration, PlayerState, TemporaryModifier
+from fsme.state.modifiers import MONSTER_STATS, STATS
 
 from ..context import EffectContext
 from ..errors import EffectExecutionError
@@ -40,9 +40,10 @@ def add_modifier(
     if not stat:
         raise EffectExecutionError("add_modifier requires a stat")
 
-    if stat not in STATS:
+    if stat not in STATS and stat not in MONSTER_STATS:
         raise EffectExecutionError(
-            f"unknown stat '{stat}'; the stats are {', '.join(sorted(STATS))}"
+            f"unknown stat '{stat}'; the stats are "
+            f"{', '.join(sorted(set(STATS) | set(MONSTER_STATS)))}"
         )
 
     try:
@@ -54,7 +55,28 @@ def add_modifier(
 
     for player in targets:
         if not isinstance(player, PlayerState):
-            raise EffectExecutionError("add_modifier expects player targets")
+            # A monster is not a player and has no seat, so its bonus lives on
+            # the card itself. Everything else about the effect is the same.
+            if not hasattr(player, "modifiers"):
+                raise EffectExecutionError(
+                    "add_modifier expects a player or a card"
+                )
+
+            player.modifiers.append(
+                CardModifier(stat=stat, amount=int(amount), duration=lifetime)
+            )
+
+            granted += 1
+
+            ctx.emit(
+                EventType.STAT_MODIFIED,
+                source=player,
+                stat=stat,
+                amount=int(amount),
+                duration=str(lifetime),
+            )
+
+            continue
 
         ctx.state.modifiers.append(
             TemporaryModifier(

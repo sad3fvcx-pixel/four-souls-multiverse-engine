@@ -63,6 +63,40 @@ class Duration(StrEnum):
     """Until the game ends: a permanent change with no card behind it."""
 
 
+DIFFICULTY = "difficulty"
+"""
+What a player must roll to hit a monster.
+
+Monsters have their own two numbers — the damage they deal and the roll they
+demand — and cards change both. They are listed apart from the player statistics
+because nothing else can carry them: a monster is not a player and has no seat.
+"""
+
+MONSTER_STATS = (ATTACK, DIFFICULTY)
+
+
+@dataclass(slots=True)
+class CardModifier:
+    """
+    A change to one card's own numbers, lasting beyond the card that made it.
+
+    "This gains +1 AT till end of turn" belongs to the monster, not to any
+    player, so it is kept on the monster and the turn takes it away.
+    """
+
+    stat: str
+    amount: int
+    duration: Duration = Duration.END_OF_TURN
+
+    def expires_at_end_of_turn(self) -> bool:
+        return self.duration is Duration.END_OF_TURN
+
+    def __str__(self) -> str:
+        sign = "+" if self.amount >= 0 else ""
+
+        return f"{sign}{self.amount} {self.stat}"
+
+
 @dataclass(slots=True)
 class DamageShield:
     """

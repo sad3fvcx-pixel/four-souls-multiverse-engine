@@ -112,7 +112,10 @@ def in_scope(ability: Ability, card: CardInstance, event: Event) -> bool:
     scope = ability_scope(ability)
 
     if scope == "self":
-        return event.source is card
+        # The card's own business either way: it may be what the event is
+        # about — an item being activated — or what the event happened to,
+        # which is what a monster means by "each time this takes damage".
+        return event.source is card or any(target is card for target in event.targets)
 
     if scope == "controller":
         return card.controller is not None and event.controller == card.controller

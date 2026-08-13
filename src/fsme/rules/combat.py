@@ -22,7 +22,7 @@ from fsme.stack import COMBAT_ROUND, StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
 from .constants import BASE_PLAYER_ATTACK, DICE_SIDES, MONSTER_SLOTS
-from .statics import ATTACK, static_value
+from .statics import ATTACK, DIFFICULTY, monster_value, static_value
 
 DEFAULT_MONSTER_ROLL = 4
 """Roll a player must meet when a monster card does not print one."""
@@ -138,7 +138,7 @@ def combat_round(item: StackItem, context: EffectContext) -> None:
     state.turn.record_attack_roll()
 
     roll = rolled(context, DICE_SIDES, attack=True)
-    required = _required_roll(monster)
+    required = _required_roll(monster, state)
 
     context.emit(
         EventType.AFTER_ATTACK_ROLL,
@@ -157,7 +157,9 @@ def combat_round(item: StackItem, context: EffectContext) -> None:
 
         context.apply("deal_damage", [monster], amount=damage)
     else:
-        context.apply("deal_damage", [attacker], amount=_monster_attack(monster))
+        context.apply(
+            "deal_damage", [attacker], amount=_monster_attack(monster, state)
+        )
 
     # The next round waits behind anything the damage triggered. If either side
     # died, State-Based Actions run first and this round ends the attack.
@@ -186,18 +188,20 @@ def end_combat(context: EffectContext) -> None:
     )
 
 
-def _required_roll(monster: Any) -> int:
+def _required_roll(monster: Any, state: GameState) -> int:
     definition = getattr(monster, "definition", None)
     required = getattr(definition, "roll", None)
+    printed = int(required) if required else DEFAULT_MONSTER_ROLL
 
-    return int(required) if required else DEFAULT_MONSTER_ROLL
+    return monster_value(state, DIFFICULTY, monster, printed)
 
 
-def _monster_attack(monster: Any) -> int:
+def _monster_attack(monster: Any, state: GameState) -> int:
     definition = getattr(monster, "definition", None)
     attack = getattr(definition, "attack", None)
+    printed = int(attack) if attack else DEFAULT_MONSTER_ATTACK
 
-    return int(attack) if attack else DEFAULT_MONSTER_ATTACK
+    return monster_value(state, ATTACK, monster, printed)
 
 
 def refill_monsters(context: EffectContext) -> None:

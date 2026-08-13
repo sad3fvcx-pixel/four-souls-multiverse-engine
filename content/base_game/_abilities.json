@@ -3276,5 +3276,151 @@
         "description": "When you die, destroy a soul you control."
       }
     ]
+  },
+  "monster_deck-bosses-base_game-dark_one": {
+    "abilities": [
+      {
+        "trigger": "after_damage",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "attack",
+            "amount": 1,
+            "target": "self"
+          }
+        ],
+        "description": "Each time this takes damage, it gains +1 AT till end of turn."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-war": {
+    "abilities": [
+      {
+        "trigger": "after_damage",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "attack",
+            "amount": 1,
+            "target": "self"
+          }
+        ],
+        "description": "Each time this takes damage, it gains +1 AT till end of turn."
+      }
+    ]
+  },
+  "monster_deck-cursed_enemies-base_game-cursed_gaper": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 4
+          }
+        ],
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "attack",
+            "amount": 1,
+            "target": "all_monsters"
+          }
+        ],
+        "description": "Each time a player rolls a 4, each monster gains +1 AT till end of turn."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-daddy_long_legs": {
+    "abilities": [
+      {
+        "trigger": "after_attack_roll",
+        "scope": "any",
+        "conditions": [
+          "is_attacked",
+          {
+            "dice_equals": 1
+          }
+        ],
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "difficulty",
+            "amount": 1,
+            "target": "all_monsters"
+          }
+        ],
+        "description": "Each time the attacking player rolls an attack roll of 1, each monster gains +1 DC till end of turn."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-gemini": {
+    "statics": [
+      {
+        "stat": "attack",
+        "amount": 1,
+        "scope": "self",
+        "conditions": [
+          {
+            "monster_hp": {
+              "operator": "==",
+              "value": 1
+            }
+          }
+        ],
+        "description": "While this is at 1 HP, it has +1 AT."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-mask_of_infamy": {
+    "statics": [
+      {
+        "stat": "difficulty",
+        "amount": 2,
+        "scope": "self",
+        "conditions": [
+          {
+            "monster_hp": {
+              "operator": "==",
+              "value": 1
+            }
+          }
+        ],
+        "description": "When this is at 1 HP, it has +2 DC."
+      }
+    ]
+  },
+  "monster_deck-curses-base_game-curse_of_the_blind": {
+    "statics": [
+      {
+        "stat": "difficulty",
+        "amount": 1,
+        "scope": "all_monsters",
+        "conditions": [
+          "player_active"
+        ],
+        "description": "Monsters have +1 DC on your turn."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-larry_jr": {
+    "statics": [
+      {
+        "stat": "difficulty",
+        "amount": 1,
+        "scope": "self",
+        "conditions": [
+          {
+            "monster_hp": {
+              "operator": "<=",
+              "value": 2
+            }
+          }
+        ],
+        "description": "While this is at 2 HP or less, it has +1 DC."
+      }
+    ]
   }
 }

@@ -136,7 +136,18 @@
         "subcategory": "Curses",
         "version": "Original",
         "artist": "@TikaratheMew"
-      }
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 1,
+          "scope": "all_monsters",
+          "conditions": [
+            "player_active"
+          ],
+          "description": "Monsters have +1 DC on your turn."
+        }
+      ]
     }
   ]
 }

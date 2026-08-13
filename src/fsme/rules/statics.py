@@ -21,6 +21,7 @@ from fsme.state import GameState, TemporaryModifier
 from fsme.state.modifiers import (
     ATTACK,
     ATTACKS,
+    DIFFICULTY,
     LOOT_PLAYS,
     MAX_HP,
     ROLL,
@@ -39,12 +40,16 @@ __all__ = [
     "ATTACK",
     "ATTACKS",
     "LOOT_PLAYS",
+    "DIFFICULTY",
     "MAX_HP",
+    "MONSTER_SCOPES",
     "ROLL",
     "STATS",
     "bonus",
     "cards_in_play",
+    "expire_card_modifiers",
     "expire_turn_modifiers",
+    "monster_value",
     "refresh_derived",
     "static_value",
 ]
@@ -148,6 +153,89 @@ def bonus(state: GameState, stat: str, player_id: int) -> int:
     return total
 
 
+MONSTER_SCOPES = ("all_monsters", "other_monsters")
+"""
+Static scopes that reach monsters rather than players.
+
+"Monsters have +1 DC" is a static like any other; what differs is who it lands
+on, and a monster has no seat for the player scopes to match against.
+"""
+
+
+def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
+    """
+    Return one of a monster's numbers with everything that changes it applied.
+
+    Three things can: the monster's own printed statics, statics on other cards
+    that reach monsters, and modifiers sitting on the monster until the turn
+    ends. They are added up here so that combat asks one question and cannot
+    get two answers.
+    """
+    total = base
+
+    for static in monster.definition.statics:
+        if static.stat != stat:
+            continue
+
+        if static.scope in MONSTER_SCOPES or static.scope in (None, "", "self"):
+            if _monster_conditions(static, monster, state):
+                total += static.amount
+
+    for card in cards_in_play(state):
+        if card is monster:
+            continue
+
+        for static in card.definition.statics:
+            if static.stat != stat or static.scope not in MONSTER_SCOPES:
+                continue
+
+            if _monster_conditions(static, card, state):
+                total += static.amount
+
+    for modifier in getattr(monster, "modifiers", ()):
+        if modifier.stat == stat:
+            total += modifier.amount
+
+    return max(0, total)
+
+
+def _monster_conditions(static: Static, source: CardInstance, state: GameState) -> bool:
+    """
+    Check a monster-facing static's conditions against the card carrying it.
+    """
+    if not static.conditions:
+        return True
+
+    return _CONDITIONS.evaluate_all(
+        static.conditions,
+        state,
+        AbilityContext(
+            source=source,
+            controller=source.controller,
+            owner=source.owner,
+        ),
+    )
+
+
+def expire_card_modifiers(state: GameState) -> int:
+    """
+    Drop every card modifier that only lasted for the turn.
+    """
+    dropped = 0
+
+    for card in list(cards_in_play(state)):
+        keep = [
+            modifier
+            for modifier in card.modifiers
+            if not modifier.expires_at_end_of_turn()
+        ]
+
+        dropped += len(card.modifiers) - len(keep)
+        card.modifiers = keep
+
+    return dropped
+
+
 def expire_turn_modifiers(state: GameState) -> list[TemporaryModifier]:
     """
     Drop everything that only lasted for the turn, and return the modifiers.
@@ -165,6 +253,8 @@ def expire_turn_modifiers(state: GameState) -> list[TemporaryModifier]:
     state.shields = [
         shield for shield in state.shields if not shield.expires_at_end_of_turn()
     ]
+
+    expire_card_modifiers(state)
 
     expired = [modifier for modifier in state.modifiers if modifier.expires_at_end_of_turn()]
 

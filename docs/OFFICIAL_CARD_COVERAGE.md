@@ -21,11 +21,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **118**. Без правил: **17**. Осталось: **879**.
+Импортировано официальных карт: **1014**. Реализовано: **126**. Без правил: **17**. Осталось: **871**.
 
 | Набор | Карт | Реализовано | Без правил | Осталось |
 |---|---:|---:|---:|---:|
-| `base_game` | 287 | 118 | 17 | 152 |
+| `base_game` | 287 | 126 | 17 | 144 |
 | `requiem` | 246 | 0 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 0 | 99 |
 | `four_souls` | 90 | 0 | 0 | 90 |
@@ -48,7 +48,7 @@
 | `challenges` | 1 | 0 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 0 | 1 |
 | `star` | 1 | 0 | 0 | 1 |
-| **всего** | **1014** | **118** | **17** | **879** |
+| **всего** | **1014** | **126** | **17** | **871** |
 
 ---
 
@@ -57,12 +57,12 @@
 | Тип | Карт | Реализовано | Без правил |
 |---|---:|---:|---:|
 | treasure | 105 | 35 | 0 |
-| monster | 85 | 22 | 17 |
+| monster | 85 | 29 | 17 |
 | loot | 51 | 48 | 0 |
 | event | 17 | 0 | 0 |
 | character | 11 | 9 | 0 |
 | starting_item | 10 | 0 | 0 |
-| curse | 5 | 4 | 0 |
+| curse | 5 | 5 | 0 |
 | bonus_soul | 3 | 0 | 0 |
 
 
@@ -277,14 +277,14 @@
 | Conjoined Fatty | ▪️ | нет правил на карте |
 | Conquest | ⬜ |  |
 | Cursed Fatty | 🟩 |  |
-| Cursed Gaper | ⬜ |  |
+| Cursed Gaper | 🟩 |  |
 | Cursed Horf | 🟩 |  |
 | Cursed Keeper Head | 🟩 |  |
 | Cursed Mom's Hand | ⬜ |  |
 | Cursed Psy Horf | 🟩 |  |
-| Daddy Long Legs | ⬜ |  |
+| Daddy Long Legs | 🟩 |  |
 | Dank Globin | ⬜ |  |
-| Dark One | ⬜ |  |
+| Dark One | 🟩 |  |
 | Death | 🟩 |  |
 | Delirium | ⬜ |  |
 | Dinga | ⬜ |  |
@@ -296,7 +296,7 @@
 | Fat Bat | ▪️ | нет правил на карте |
 | Fatty | ▪️ | нет правил на карте |
 | Fly | ▪️ | нет правил на карте |
-| Gemini | ⬜ |  |
+| Gemini | 🟩 |  |
 | Gluttony | ⬜ |  |
 | Greed | ⬜ |  |
 | Greedling | 🟩 |  |
@@ -311,12 +311,12 @@
 | Hopper | ⬜ |  |
 | Horf | ⬜ |  |
 | Keeper Head | ⬜ |  |
-| Larry Jr. | ⬜ |  |
+| Larry Jr. | 🟩 |  |
 | Leaper | ⬜ |  |
 | Leech | ▪️ | нет правил на карте |
 | Little Horn | ▪️ | нет правил на карте |
 | Lust | ⬜ |  |
-| Mask of Infamy | ⬜ |  |
+| Mask of Infamy | 🟩 |  |
 | Mega Fatty | ⬜ |  |
 | Mom! | ⬜ |  |
 | Mom's Dead Hand | 🟩 |  |
@@ -349,7 +349,7 @@
 | The Haunt | ⬜ |  |
 | The Lamb | ⬜ |  |
 | Trite | ▪️ | нет правил на карте |
-| War | ⬜ |  |
+| War | 🟩 |  |
 | Wizoob | 🟩 |  |
 | Wrath | 🟩 |  |
 
@@ -383,7 +383,7 @@
 | Curse of Greed | 🟩 |  |
 | Curse of Loss | 🟩 |  |
 | Curse of Pain | 🟩 |  |
-| Curse of the Blind | ⬜ |  |
+| Curse of the Blind | 🟩 |  |
 
 ## Bonus Souls
 
