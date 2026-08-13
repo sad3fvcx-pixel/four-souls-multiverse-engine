@@ -195,6 +195,7 @@ class ConditionEvaluator:
 
         register("first_turn", _first_turn)
         register("first_attack_roll", _first_attack_roll)
+        register("nth_time_this_turn", _nth_time_this_turn)
         register("last_effect_did", _last_effect_did)
         register("game_finished", _game_finished)
 
@@ -419,6 +420,37 @@ def _first_attack_roll(
     looking at roll number one.
     """
     return state.turn.attack_rolls <= 1
+
+
+TIMES_THIS_TURN = "__times_this_turn__"
+"""
+Where the runtime leaves the occurrence number an ability is looking at.
+
+A condition may not count anything itself — counting is a change to the game,
+and conditions only read — so the count is made when the trigger matches and
+handed to the condition along with everything else it knows.
+"""
+
+
+def _nth_time_this_turn(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    True on the occurrence a card is talking about.
+
+    "The first time you take damage each turn" is occurrence one.
+    "Every other time this takes damage each turn" is ``{"every": 2}``: the
+    second, the fourth, and so on, counting from the start of the turn.
+    """
+    counted = context.get(TIMES_THIS_TURN)
+    number = int(counted) if isinstance(counted, int) else 0
+
+    every = params.get("every")
+
+    if every is not None:
+        return int(every) > 0 and number % int(every) == 0
+
+    return _compare(number, dict(params) or {"operator": "==", "value": 1})
 
 
 def _dice_value(context: AbilityContext) -> int | None:

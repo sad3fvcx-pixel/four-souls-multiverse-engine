@@ -2688,7 +2688,28 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "conditions": [
+            {
+              "nth_time_this_turn": {
+                "every": 2
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "difficulty",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Every other time this takes damage each turn, it gains +1 DC till end of turn."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 4,

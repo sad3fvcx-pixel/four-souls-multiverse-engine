@@ -4323,7 +4323,36 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "controller",
+          "conditions": [
+            {
+              "nth_time_this_turn": 1
+            }
+          ],
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "recharge",
+                  "targets": [
+                    {
+                      "target_treasure": {
+                        "as": "revived"
+                      }
+                    }
+                  ],
+                  "target": "revived"
+                }
+              ],
+              "prompt": "Recharge an item?"
+            }
+          ],
+          "description": "The first time you take damage each turn, you may recharge an item."
+        }
+      ],
       "tags": [
         "passive"
       ],

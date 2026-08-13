@@ -24,7 +24,7 @@ from fsme.stack import SETTLE_ROLL, StackItem, StackItemType
 from fsme.state import GameState, PendingDecision, PendingRoll, PlayerState
 
 from .ability_context import AbilityContext
-from .condition_evaluator import ConditionEvaluator
+from .condition_evaluator import TIMES_THIS_TURN, ConditionEvaluator
 from .effect_executor import EffectExecutor
 from .errors import (
     AbilityResolutionError,
@@ -626,6 +626,8 @@ class Runtime:
         """
         Find the replacement abilities watching for an event.
         """
+        from fsme.rules import record_trigger
+
         matches: list[tuple[CardInstance, Ability]] = []
 
         for card in self._candidates(event):
@@ -646,6 +648,10 @@ class Runtime:
                     owner=card.owner,
                     event=event,
                 )
+
+                # Counted before the conditions are asked: a card that acts
+                # only the first time still watched the other times go by.
+                probe.store(TIMES_THIS_TURN, record_trigger(self._state, card, ability))
 
                 if self._conditions.evaluate_all(
                     ability.conditions, self._state, probe
@@ -773,6 +779,8 @@ class Runtime:
         because a condition that fails must leave no trace of the ability at
         all.
         """
+        from fsme.rules import record_trigger
+
         matches: list[tuple[CardInstance, Ability]] = []
 
         for card in self._candidates(event):
@@ -796,6 +804,10 @@ class Runtime:
                     owner=card.owner,
                     event=event,
                 )
+
+                # Counted before the conditions are asked: a card that acts
+                # only the first time still watched the other times go by.
+                probe.store(TIMES_THIS_TURN, record_trigger(self._state, card, ability))
 
                 if self._conditions.evaluate_all(
                     ability.conditions, self._state, probe

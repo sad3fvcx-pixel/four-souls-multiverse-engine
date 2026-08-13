@@ -3610,6 +3610,114 @@ def test_moms_bra_can_spare_a_monster_instead(base_game: ContentLibrary) -> None
 
 
 # ----------------------------------------------------------------------
+# Counting how often something happens in a turn
+# ----------------------------------------------------------------------
+
+
+def hurt(game: Game, target: Any, amount: int = 1) -> None:
+    game.runtime.context.apply("deal_damage", [target], amount=amount)
+    game.runtime.run()
+
+
+def test_the_habit_offers_a_recharge_on_the_first_damage_only(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-the_habit")
+
+    spent = give(game, "treasure_deck-active_items-base_game-decoy")
+    spent.tapped = True
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    hurt(game, player)
+
+    answer(game, "yes")
+
+    assert pick(game, 0, spent).accepted
+    assert not spent.tapped
+
+    spent.tapped = True
+
+    # The second blow of the same turn is not the first one.
+    hurt(game, player)
+
+    assert game.runtime.awaiting_decision is None
+    assert spent.tapped
+
+
+def test_the_habit_offers_again_next_turn(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    give(game, "treasure_deck-passive_items-base_game-the_habit")
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    hurt(game, player)
+
+    answer(game, "no")
+
+    end_turn(game)
+    end_turn(game)
+
+    hurt(game, player)
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert decision.player == 0
+
+    answer(game, "no")
+
+
+def test_the_haunt_hardens_on_every_second_hit(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    haunt = only_monster(game, "monster_deck-bosses-base_game-the_haunt", hp=9)
+
+    printed = int(haunt.definition.roll or 0)
+
+    hurt(game, haunt)
+
+    assert difficulty_of(game, haunt) == printed, "the first hit is not the second"
+
+    hurt(game, haunt)
+
+    assert difficulty_of(game, haunt) == printed + 1
+
+    hurt(game, haunt)
+
+    assert difficulty_of(game, haunt) == printed + 1
+
+    hurt(game, haunt)
+
+    assert difficulty_of(game, haunt) == printed + 2
+
+
+def test_the_haunt_counts_from_the_start_of_each_turn(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    haunt = only_monster(game, "monster_deck-bosses-base_game-the_haunt", hp=9)
+
+    printed = int(haunt.definition.roll or 0)
+
+    hurt(game, haunt)
+
+    end_turn(game)
+
+    # A new turn starts the counting over, and the bonus it never got expired
+    # with the old one.
+    hurt(game, haunt)
+
+    assert difficulty_of(game, haunt) == printed
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

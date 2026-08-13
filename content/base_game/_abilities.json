@@ -7299,5 +7299,61 @@
         "description": "Choose a monster or player. The next instance of damage they take this turn is reduced to 1."
       }
     ]
+  },
+  "treasure_deck-passive_items-base_game-the_habit": {
+    "abilities": [
+      {
+        "trigger": "after_damage",
+        "scope": "controller",
+        "conditions": [
+          {
+            "nth_time_this_turn": 1
+          }
+        ],
+        "effects": [
+          {
+            "may": [
+              {
+                "effect": "recharge",
+                "targets": [
+                  {
+                    "target_treasure": {
+                      "as": "revived"
+                    }
+                  }
+                ],
+                "target": "revived"
+              }
+            ],
+            "prompt": "Recharge an item?"
+          }
+        ],
+        "description": "The first time you take damage each turn, you may recharge an item."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-the_haunt": {
+    "abilities": [
+      {
+        "trigger": "after_damage",
+        "scope": "self",
+        "conditions": [
+          {
+            "nth_time_this_turn": {
+              "every": 2
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "difficulty",
+            "amount": 1,
+            "target": "self"
+          }
+        ],
+        "description": "Every other time this takes damage each turn, it gains +1 DC till end of turn."
+      }
+    ]
   }
 }

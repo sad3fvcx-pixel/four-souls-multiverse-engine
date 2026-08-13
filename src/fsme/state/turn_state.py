@@ -6,7 +6,7 @@ Turn state for Four Souls Multiverse Engine.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .phase import GamePhase
 
@@ -36,6 +36,16 @@ class TurnState:
 
     A card that grants an extra turn resolves long before the turn is over, so
     the promise has to wait somewhere until the turn actually ends.
+    """
+
+    triggers_fired: dict[str, int] = field(default_factory=dict)
+    """
+    How often each ability has answered its trigger this turn.
+
+    A card that says "the first time you take damage each turn" or "every other
+    time this takes damage each turn" is counting occurrences within a turn, and
+    nothing else in the game keeps that count. It is cleared when a turn ends,
+    which is the whole of what "each turn" means.
     """
 
     attack_rolls: int = 0
@@ -77,6 +87,8 @@ class TurnState:
         self.loot_played = 0
         self.attacks_declared = 0
         self.attack_rolls = 0
+
+        self.triggers_fired.clear()
 
     def record_loot_play(self) -> None:
         self.loot_played += 1

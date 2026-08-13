@@ -41,6 +41,7 @@ from .constants import (
     STARTING_HAND_SIZE,
     TREASURE_COST,
 )
+from .counters import record_trigger, times_this_turn, trigger_key
 from .decisions import ChooseTargetHandler
 from .errors import RuleError, RuleRegistrationError, UnknownRuleError
 from .loot import PlayLootHandler, discard_played_loot
@@ -120,8 +121,11 @@ __all__ = [
     "cards_in_play",
     "expire_turn_modifiers",
     "monster_value",
+    "record_trigger",
     "refresh_derived",
     "static_value",
+    "times_this_turn",
+    "trigger_key",
     "ATTACK",
     "ATTACKS",
     "LOOT_PLAYS",
