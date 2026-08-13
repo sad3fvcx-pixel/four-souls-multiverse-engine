@@ -214,10 +214,36 @@ def _open_the_board(
         if not state.monster_deck.cards:
             break
 
-        state.active_monsters.add_top(state.monster_deck.draw())
+        state.active_monsters.add_top(_first_monster(state))
 
     for _ in range(shop_slots):
         if not state.treasure_deck.cards:
             break
 
         state.treasure_shop.add_top(state.treasure_deck.draw())
+
+
+def _first_monster(state: GameState) -> CardInstance:
+    """
+    Draw until a monster turns up, burying anything that is not one.
+
+    The monster deck also holds events and curses. Laying a game out is not a
+    turn, so there is nobody for an event to happen to and nobody to curse; the
+    card goes to the bottom and the deal continues. A deck of nothing but events
+    would loop for ever, so the last card drawn is used whatever it is.
+    """
+    seen = 0
+    total = len(state.monster_deck)
+
+    while state.monster_deck.cards and seen < total:
+        card: CardInstance = state.monster_deck.draw()
+
+        if card.definition.type is CardType.MONSTER:
+            return card
+
+        state.monster_deck.cards.insert(0, card)
+        seen += 1
+
+    last: CardInstance = state.monster_deck.draw()
+
+    return last

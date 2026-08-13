@@ -20,7 +20,7 @@ from typing import Any
 import pytest
 from test_combat import FixedRNG
 
-from fsme.cards import CardInstance
+from fsme.cards import CardInstance, CardType
 from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary, ContentLoader
 from fsme.events import EventType
@@ -2248,6 +2248,120 @@ def test_the_curse_of_the_blind_only_blinds_its_bearer(
     end_turn(game)
 
     assert difficulty_of(game, monster) == printed + 1
+
+
+# ----------------------------------------------------------------------
+# Events revealed from the monster deck
+# ----------------------------------------------------------------------
+
+
+def stack_deck(game: Game, card_id: str) -> CardInstance:
+    """
+    Put a named card on top of the monster deck.
+    """
+    card = CardInstance(
+        definition=game.runtime.cards.get(card_id),
+        instance_id=game.state.ids.allocate("monster"),
+    )
+
+    game.state.monster_deck.add_top(card)
+
+    return card
+
+
+def clear_a_slot(game: Game) -> None:
+    """
+    Empty a monster slot so the rules reveal whatever is on top of the deck.
+
+    The monster is discarded rather than killed: a defeated monster may have a
+    death ability of its own, and this is a test about what comes next.
+    """
+    game.runtime.context.apply(
+        "discard_monsters", [game.state.active_monsters.cards[-1]]
+    )
+    game.runtime.run()
+
+
+def test_an_event_happens_when_it_is_revealed(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3, rolls=[6])
+
+    event = stack_deck(game, "monster_deck-good_events-base_game-chest")
+
+    coins = game.state.player(0).pennies
+
+    clear_a_slot(game)
+
+    assert game.state.player(0).pennies == coins + 6
+    assert event in game.state.monster_discard.cards
+    assert event not in game.state.active_monsters.cards
+    assert len(game.state.active_monsters) == 2, "the event did not fill the slot"
+
+
+def test_a_revealed_curse_attaches_to_the_active_player(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    card = stack_deck(game, "monster_deck-curses-base_game-curse_of_pain")
+
+    clear_a_slot(game)
+
+    assert card in game.state.player(0).curses.cards
+    assert len(game.state.active_monsters) == 2
+
+
+def test_troll_bombs_hurt_only_the_player_who_found_them(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    for player in game.state.players:
+        toughen(game, player)
+
+    before = [player.hp for player in game.state.players]
+
+    stack_deck(game, "monster_deck-bad_events-base_game-troll_bombs")
+
+    clear_a_slot(game)
+
+    assert game.state.player(0).hp == before[0] - 2
+    assert game.state.player(1).hp == before[1]
+
+
+def test_greed_empties_the_richest_purse(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, players=3)
+
+    game.state.player(1).pennies = 12
+    game.state.player(2).pennies = 12
+    game.state.player(0).pennies = 3
+
+    stack_deck(game, "monster_deck-bad_events-base_game-greed")
+
+    clear_a_slot(game)
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert list(decision.options) == [game.state.player(1), game.state.player(2)]
+
+    assert choose(game, 0, 1).accepted
+
+    assert game.state.player(2).pennies == 0
+    assert game.state.player(1).pennies == 12
+    assert game.state.player(0).pennies == 3
+
+
+def test_a_game_is_never_laid_out_with_an_event_in_a_slot(
+    base_game: ContentLibrary,
+) -> None:
+    """
+    Laying a game out is not a turn: there is nobody for an event to happen to.
+    """
+    for seed in range(12):
+        game = Game.from_content(base_game, ["Ann", "Bo"], seed=seed)
+
+        for monster in game.state.active_monsters.cards:
+            assert monster.definition.type is CardType.MONSTER
 
 
 # ----------------------------------------------------------------------

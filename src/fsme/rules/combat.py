@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from fsme.cards import CardType
 from fsme.commands import Command
 from fsme.effects import EffectContext
 from fsme.effects.builtin.dice import rolled
@@ -206,19 +207,54 @@ def _monster_attack(monster: Any, state: GameState) -> int:
 
 def refill_monsters(context: EffectContext) -> None:
     """
-    Reveal monsters until the slots are full again.
+    Reveal cards until the monster slots are full again.
 
     A monster that leaves — defeated, discarded, replaced by a card — leaves a
     hole, and the rules fill it from the top of the monster deck. Doing it here
     rather than in whatever removed the monster means every way of removing one
     is followed by the same refill.
+
+    The monster deck is not only monsters. An event happens at once and goes to
+    the discard pile; a curse attaches to the active player and stays. Neither
+    fills the slot, so the reveal continues.
     """
     state = context.state
 
     while len(state.active_monsters) < MONSTER_SLOTS and state.monster_deck.cards:
-        state.active_monsters.add_top(state.monster_deck.draw())
+        card = state.monster_deck.draw()
+        kind = getattr(getattr(card, "definition", None), "type", None)
 
-        context.emit(
-            EventType.ON_ENTER,
-            source=state.active_monsters.cards[-1],
-        )
+        if kind is CardType.EVENT:
+            _resolve_event(context, card)
+        elif kind is CardType.CURSE:
+            _attach_curse(context, card)
+        else:
+            state.active_monsters.add_top(card)
+
+            context.emit(EventType.ON_ENTER, source=card)
+
+
+def _resolve_event(context: EffectContext, card: Any) -> None:
+    """
+    Let a revealed event happen, then put it in the discard pile.
+
+    The card reaches the discard before its ability resolves, which is where a
+    played card goes anyway: the ability is already on its way and holds what it
+    needs. Nothing is left half in play.
+    """
+    state = context.state
+    active = state.turn.active_player
+
+    card.controller = active
+    card.owner = active
+
+    state.monster_discard.add_top(card)
+
+    context.emit(EventType.ON_PLAY, source=card, controller=active)
+
+
+def _attach_curse(context: EffectContext, card: Any) -> None:
+    """
+    Put a revealed curse on the active player.
+    """
+    context.apply("attach_curse", [context.state.active_player], card=card)

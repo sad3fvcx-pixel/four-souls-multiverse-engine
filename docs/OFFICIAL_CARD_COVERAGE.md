@@ -21,11 +21,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **126**. Без правил: **17**. Осталось: **871**.
+Импортировано официальных карт: **1014**. Реализовано: **136**. Без правил: **17**. Осталось: **861**.
 
 | Набор | Карт | Реализовано | Без правил | Осталось |
 |---|---:|---:|---:|---:|
-| `base_game` | 287 | 126 | 17 | 144 |
+| `base_game` | 287 | 136 | 17 | 134 |
 | `requiem` | 246 | 0 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 0 | 99 |
 | `four_souls` | 90 | 0 | 0 | 90 |
@@ -48,7 +48,7 @@
 | `challenges` | 1 | 0 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 0 | 1 |
 | `star` | 1 | 0 | 0 | 1 |
-| **всего** | **1014** | **126** | **17** | **871** |
+| **всего** | **1014** | **136** | **17** | **861** |
 
 ---
 
@@ -59,7 +59,7 @@
 | treasure | 105 | 35 | 0 |
 | monster | 85 | 29 | 17 |
 | loot | 51 | 48 | 0 |
-| event | 17 | 0 | 0 |
+| event | 17 | 10 | 0 |
 | character | 11 | 9 | 0 |
 | starting_item | 10 | 0 | 0 |
 | curse | 5 | 5 | 0 |
@@ -358,20 +358,20 @@
 | Card | Status | Notes |
 |------|--------|-------|
 | Ambush! | ⬜ |  |
-| Chest | ⬜ |  |
-| Chest | ⬜ |  |
+| Chest | 🟩 |  |
+| Chest | 🟩 |  |
 | Cursed Chest | ⬜ |  |
-| Dark Chest | ⬜ |  |
-| Dark Chest | ⬜ |  |
+| Dark Chest | 🟩 |  |
+| Dark Chest | 🟩 |  |
 | Devil Deal | ⬜ |  |
-| Gold Chest | ⬜ |  |
-| Gold Chest | ⬜ |  |
-| Greed! | ⬜ |  |
+| Gold Chest | 🟩 |  |
+| Gold Chest | 🟩 |  |
+| Greed! | 🟩 |  |
 | I Can See Forever! | ⬜ |  |
-| Mega Troll Bomb! | ⬜ |  |
-| Secret Room! | ⬜ |  |
+| Mega Troll Bomb! | 🟩 |  |
+| Secret Room! | 🟩 |  |
 | Shop Upgrade! | ⬜ |  |
-| Troll Bombs | ⬜ |  |
+| Troll Bombs | 🟩 |  |
 | We Need to Go Deeper! | ⬜ |  |
 | XL Floor! | ⬜ |  |
 
