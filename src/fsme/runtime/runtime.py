@@ -548,9 +548,46 @@ class Runtime:
                 if event.cancelled:
                     return
 
+            self._keep_promises(event)
             self._spend_shield(event)
         finally:
             self._replacement_depth -= 1
+
+    def _keep_promises(self, event: Event) -> None:
+        """
+        Apply the changes owed to this event by cards that have already gone.
+
+        Promises are kept after the cards in play have replaced what they
+        replace and before any shield is spent, so that "the next instance of
+        damage is reduced to 1" meets the damage before prevention does and
+        prevention has the smaller number to work on.
+        """
+        player_id: int | None = None
+        card_ids: set[str] = set()
+
+        for target in event.targets:
+            if player_id is None:
+                player_id = getattr(target, "player_id", None)
+
+            instance_id = getattr(target, "instance_id", None)
+
+            if instance_id is not None:
+                card_ids.add(str(instance_id))
+
+        kept = frozenset(card_ids)
+
+        for promise in list(self._state.promises):
+            if promise.event != str(event.type):
+                continue
+
+            if not promise.concerns(player_id, kept):
+                continue
+
+            for key, value in promise.apply_to(event.payload).items():
+                event.set(key, value)
+
+            if not promise.spend():
+                self._state.promises.remove(promise)
 
     def _spend_shield(self, event: Event) -> None:
         """

@@ -3442,6 +3442,174 @@ def test_incubus_can_bury_a_card_instead(base_game: ContentLibrary) -> None:
 
 
 # ----------------------------------------------------------------------
+# Promises: cards that change what has not happened yet
+# ----------------------------------------------------------------------
+
+
+def test_compost_takes_the_next_loot_from_the_discard_pile(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    compost = give(game, "treasure_deck-active_items-base_game-compost")
+
+    game.state.loot_discard.cards.clear()
+
+    buried = deal(game, "loot_deck-1-base_game-a_penny", player=1)
+
+    game.state.player(1).hand.cards.remove(buried)
+    game.state.loot_discard.add_top(buried)
+
+    assert activate(game, compost).accepted
+
+    game.runtime.context.apply("draw_loot", [game.state.player(0)], count=1)
+    game.runtime.run()
+
+    assert buried in game.state.player(0).hand.cards
+    assert game.state.promises == [], "the promise was for the next loot only"
+
+
+def test_compost_is_spent_by_whoever_loots_first(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    compost = give(game, "treasure_deck-active_items-base_game-compost")
+
+    game.state.loot_discard.cards.clear()
+
+    buried = deal(game, "loot_deck-2-base_game-2_cents", player=1)
+
+    game.state.player(1).hand.cards.remove(buried)
+    game.state.loot_discard.add_top(buried)
+
+    assert activate(game, compost).accepted
+
+    # The card says "a player", not "you": the promise waits for anybody.
+    game.runtime.context.apply("draw_loot", [game.state.player(1)], count=1)
+    game.runtime.run()
+
+    assert buried in game.state.player(1).hand.cards
+
+
+def test_two_of_clubs_doubles_every_loot_the_chosen_player_draws(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    clubs = give(game, "treasure_deck-active_items-base_game-two_of_clubs")
+
+    assert activate(game, clubs).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(
+        game, 0, list(decision.options).index(game.state.player(1))
+    ).accepted
+
+    lucky = game.state.player(1)
+    other = game.state.player(2)
+
+    hand = lucky.hand_size
+    theirs = other.hand_size
+
+    game.runtime.context.apply("draw_loot", [lucky], count=2)
+    game.runtime.run()
+
+    assert lucky.hand_size == hand + 4
+
+    # Twice is not once: the promise lasts the turn, unlike Compost's.
+    game.runtime.context.apply("draw_loot", [lucky], count=1)
+    game.runtime.run()
+
+    assert lucky.hand_size == hand + 6
+
+    game.runtime.context.apply("draw_loot", [other], count=1)
+    game.runtime.run()
+
+    assert other.hand_size == theirs + 1, "nobody else loots double"
+
+
+def test_two_of_clubs_stops_doubling_when_the_turn_ends(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    clubs = give(game, "treasure_deck-active_items-base_game-two_of_clubs")
+
+    assert activate(game, clubs).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(
+        game, 0, list(decision.options).index(game.state.player(0))
+    ).accepted
+
+    end_turn(game)
+
+    assert game.state.promises == []
+
+    lucky = game.state.player(0)
+    hand = lucky.hand_size
+
+    game.runtime.context.apply("draw_loot", [lucky], count=1)
+    game.runtime.run()
+
+    assert lucky.hand_size == hand + 1
+
+
+def test_moms_bra_reduces_the_next_instance_to_one(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    bra = give(game, "treasure_deck-active_items-base_game-mom_s_bra")
+
+    victim = game.state.player(0)
+    toughen(game, victim)
+
+    assert activate(game, bra).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, list(decision.options).index(victim)).accepted
+
+    hp = victim.hp
+
+    game.runtime.context.apply("deal_damage", [victim], amount=3)
+    game.runtime.run()
+
+    assert victim.hp == hp - 1
+
+    # One instance only: the next blow lands whole.
+    game.runtime.context.apply("deal_damage", [victim], amount=2)
+    game.runtime.run()
+
+    assert victim.hp == hp - 3
+
+
+def test_moms_bra_can_spare_a_monster_instead(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    bra = give(game, "treasure_deck-active_items-base_game-mom_s_bra")
+
+    monster = only_monster(game, "monster_deck-bosses-base_game-greed", hp=6)
+
+    assert activate(game, bra).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert choose(game, 0, list(decision.options).index(monster)).accepted
+
+    game.runtime.context.apply("deal_damage", [monster], amount=4)
+    game.runtime.run()
+
+    assert monster.hp == 5
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

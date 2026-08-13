@@ -244,8 +244,9 @@ def expire_turn_modifiers(state: GameState) -> list[TemporaryModifier]:
     """
     Drop everything that only lasted for the turn, and return the modifiers.
 
-    Unspent damage shields go too: a promise to prevent the next damage this
-    turn is worth nothing once the turn is over.
+    Unspent damage shields go too, and so do promises: a change owed to the
+    next damage or the next loot this turn is worth nothing once the turn is
+    over.
 
     A hit point bonus is the one that cannot simply be forgotten. The engine
     stores hit points remaining rather than damage taken, so a player who gained
@@ -256,6 +257,9 @@ def expire_turn_modifiers(state: GameState) -> list[TemporaryModifier]:
     """
     state.shields = [
         shield for shield in state.shields if not shield.expires_at_end_of_turn()
+    ]
+    state.promises = [
+        promise for promise in state.promises if not promise.expires_at_end_of_turn()
     ]
 
     expire_card_modifiers(state)

@@ -46,9 +46,42 @@ def _refill_loot_deck(ctx: EffectContext, state: GameState) -> bool:
     return True
 
 
+DECK = "deck"
+"""Where loot normally comes from."""
+
+DISCARD = "discard"
+"""Where a card can make it come from instead."""
+
+
+def _next_loot(ctx: EffectContext, state: GameState, source: str) -> Any | None:
+    """
+    Take the top card of wherever this loot is coming from.
+
+    Nothing left is not an error: a deck that has run dry and a discard pile
+    that is empty both mean the same thing to the player looting, which is that
+    they do not get a card.
+    """
+    if source == DISCARD:
+        if not state.loot_discard.cards:
+            return None
+
+        return state.loot_discard.draw()
+
+    if not state.loot_deck.cards and not _refill_loot_deck(ctx, state):
+        return None
+
+    return state.loot_deck.draw()
+
+
 def draw_loot(ctx: EffectContext, targets: Sequence[Any], count: int = 1) -> int:
     """
     Draw loot cards into each target player's hand.
+
+    Looting is offered for replacement before it happens, because cards change
+    it: "they loot double that number instead" and "they loot from the top of
+    the discard pile instead" both edit a loot that is about to happen rather
+    than doing anything themselves. So the number and the pile are read back
+    off the proposal instead of being taken for granted.
     """
     if count < 0:
         raise EffectExecutionError("draw_loot count must be non-negative")
@@ -57,11 +90,26 @@ def draw_loot(ctx: EffectContext, targets: Sequence[Any], count: int = 1) -> int
     drawn = 0
 
     for player in _players(targets, "draw_loot"):
-        for _ in range(count):
-            if not state.loot_deck.cards and not _refill_loot_deck(ctx, state):
+        proposal = ctx.propose(
+            EventType.BEFORE_LOOT_DRAW,
+            controller=player.player_id,
+            targets=[player],
+            count=count,
+            source=DECK,
+        )
+
+        if proposal.cancelled:
+            continue
+
+        wanted = max(0, int(proposal.get("count", count)))
+        source = str(proposal.get("source", DECK))
+
+        for _ in range(wanted):
+            card = _next_loot(ctx, state, source)
+
+            if card is None:
                 break
 
-            card = state.loot_deck.draw()
             player.hand.add_top(card)
             drawn += 1
 

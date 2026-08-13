@@ -44,6 +44,17 @@ class EffectSpec:
     ``dice_equals`` without the executor special-casing dice.
     """
 
+    literal: frozenset[str] = frozenset()
+    """
+    Parameters handed to the effect exactly as the card wrote them.
+
+    Most parameters may name a value the ability learns while running —
+    ``{"amount": {"from": "dice"}}`` — and the executor fills those in. An
+    effect whose parameter is itself structured data has to say so, or a card
+    that promises to change how much loot is drawn would have its ``count``
+    read as a question about somebody's hand.
+    """
+
     description: str = ""
 
 
@@ -75,6 +86,7 @@ class EffectRegistry:
         needs_target: bool = False,
         primary: str | None = None,
         stores: str | None = None,
+        literal: frozenset[str] | tuple[str, ...] = (),
         description: str = "",
     ) -> EffectSpec:
         """
@@ -95,6 +107,7 @@ class EffectRegistry:
             needs_target=needs_target,
             primary=primary,
             stores=stores,
+            literal=frozenset(literal),
             description=description,
         )
 
@@ -110,6 +123,7 @@ class EffectRegistry:
         needs_target: bool = False,
         primary: str | None = None,
         stores: str | None = None,
+        literal: frozenset[str] | tuple[str, ...] = (),
         description: str = "",
     ) -> Callable[[EffectHandler], EffectHandler]:
         """
@@ -124,6 +138,7 @@ class EffectRegistry:
                 needs_target=needs_target,
                 primary=primary,
                 stores=stores,
+                literal=literal,
                 description=description,
             )
             return handler

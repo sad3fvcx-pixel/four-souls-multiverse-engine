@@ -10,10 +10,12 @@ nothing to edit, and they say so rather than silently doing nothing.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any
 
-from fsme.state import DamageShield
+from fsme.events import EventType
+from fsme.state import DamageShield, Duration, Promise
+from fsme.state.promises import CHANGES
 
 from ..context import EffectContext
 from ..errors import EffectExecutionError
@@ -98,6 +100,81 @@ def prevent_next_damage(
     return promised
 
 
+
+def promise(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    event: str = "",
+    changes: Any = None,
+    uses: int = 1,
+    unlimited: bool = False,
+) -> int:
+    """
+    Owe a change to an event that has not happened yet.
+
+    "The next time a player would loot, they loot from the discard pile
+    instead" is a replacement written on a card that will be tapped and done
+    long before anybody loots. So the change is recorded on the game and kept
+    when the event arrives, exactly as a promised prevention is.
+
+    With no target the promise is about nobody in particular, which is what
+    "a player" means when the card does not say which. Targets narrow it: a
+    player, or a monster, or anything else an event can be about.
+
+    ``unlimited`` is the difference between "the next time" and "each time till
+    end of turn"; both are printed on cards, and they are not the same promise.
+    """
+    if not event:
+        raise EffectExecutionError("promise requires an event to wait for")
+
+    if str(event) not in {str(known) for known in EventType}:
+        raise EffectExecutionError(f"promise cannot wait for unknown event '{event}'")
+
+    if not isinstance(changes, Mapping) or not changes:
+        raise EffectExecutionError("promise requires the changes it owes")
+
+    for key, change in changes.items():
+        if not isinstance(change, Mapping) or not set(change) <= set(CHANGES):
+            raise EffectExecutionError(
+                f"promise cannot change '{key}' by {change!r}; "
+                f"a change is one of {', '.join(CHANGES)}"
+            )
+
+    owed = {
+        str(key): {str(name): value for name, value in change.items()}
+        for key, change in changes.items()
+    }
+
+    subjects: list[Promise] = []
+
+    if not targets:
+        subjects.append(Promise(event=str(event), changes=dict(owed)))
+
+    for target in targets:
+        player_id = getattr(target, "player_id", None)
+
+        subjects.append(
+            Promise(
+                event=str(event),
+                changes=dict(owed),
+                player_id=None if player_id is None else int(player_id),
+                card_id=(
+                    None
+                    if player_id is not None
+                    else str(getattr(target, "instance_id", ""))
+                ),
+            )
+        )
+
+    for made in subjects:
+        made.uses = None if unlimited else int(uses)
+        made.duration = Duration.END_OF_TURN
+
+        ctx.state.promises.append(made)
+
+    return len(subjects)
+
+
 def cancel_event(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> bool:
     """
     Stop the event from happening at all.
@@ -152,6 +229,14 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="amount",
         description="Promise to reduce the next damage a player takes.",
+    )
+    registry.register(
+        "promise",
+        promise,
+        needs_target=False,
+        primary="event",
+        literal=("changes",),
+        description="Owe a change to the next event of a kind.",
     )
     registry.register(
         "cancel_event",

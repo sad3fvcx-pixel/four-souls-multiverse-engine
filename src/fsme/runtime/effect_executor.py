@@ -49,7 +49,7 @@ class EffectExecutor:
             self._targets.resolve_all(op.asks, context.state, ability, context.rng)
 
         targets = self._resolve_targets(op, context, ability, needs=spec.needs_target)
-        params = _resolve_params(op.params, ability, context)
+        params = _resolve_params(op.params, ability, context, literal=spec.literal)
 
         try:
             value = spec.handler(context, targets, **params)
@@ -113,6 +113,7 @@ def _resolve_params(
     params: Mapping[str, Any],
     ability: AbilityContext,
     context: ExecutionContext,
+    literal: frozenset[str] = frozenset(),
 ) -> dict[str, Any]:
     """
     Fill in the values an ability only learns while it is running.
@@ -134,7 +135,7 @@ def _resolve_params(
     resolved: dict[str, Any] = {}
 
     for key, value in params.items():
-        if not isinstance(value, Mapping):
+        if key in literal or not isinstance(value, Mapping):
             resolved[key] = value
 
         elif "from" in value:

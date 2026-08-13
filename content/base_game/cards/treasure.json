@@ -216,7 +216,23 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "promise",
+              "event": "before_loot_draw",
+              "changes": {
+                "source": {
+                  "value": "discard"
+                }
+              }
+            }
+          ],
+          "description": "The next time a player would loot, they loot from the top of the loot discard instead."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -805,7 +821,31 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "spared"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "promise",
+              "event": "before_damage",
+              "changes": {
+                "amount": {
+                  "cap": 1
+                }
+              },
+              "target": "spared"
+            }
+          ],
+          "description": "Choose a monster or player. The next instance of damage they take this turn is reduced to 1."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -1648,7 +1688,32 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_player": {
+                "as": "doubled"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "promise",
+              "event": "before_loot_draw",
+              "changes": {
+                "count": {
+                  "factor": 2
+                }
+              },
+              "unlimited": true,
+              "target": "doubled"
+            }
+          ],
+          "description": "Choose a player. Till end of turn, if they would loot any number of loot cards, they loot double that number instead."
+        }
+      ],
       "tags": [
         "activated",
         "active"

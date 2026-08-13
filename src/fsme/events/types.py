@@ -67,6 +67,9 @@ class EventType(StrEnum):
 
     # Loot
     BEFORE_LOOT = "before_loot"
+    BEFORE_LOOT_DRAW = "before_loot_draw"
+    """Loot about to be drawn: how many, and from which pile."""
+
     AFTER_LOOT = "after_loot"
     LOOT_DRAWN = "loot_drawn"
     LOOT_DISCARDED = "loot_discarded"

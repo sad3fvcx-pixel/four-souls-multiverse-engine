@@ -11,6 +11,7 @@ from .modifiers import CardModifier, DamageShield, Duration, TemporaryModifier
 from .phase import GamePhase
 from .player_state import PlayerState
 from .priority import PriorityState
+from .promises import Promise
 from .roll import PendingRoll
 from .turn_state import TurnState
 from .zones import Zone, ZoneType
@@ -27,6 +28,7 @@ __all__ = [
     "PendingRoll",
     "PlayerState",
     "PriorityState",
+    "Promise",
     "TemporaryModifier",
     "TurnState",
     "Zone",

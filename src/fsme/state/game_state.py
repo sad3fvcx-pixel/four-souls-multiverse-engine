@@ -18,6 +18,7 @@ from .decision import PendingDecision
 from .modifiers import DamageShield, TemporaryModifier
 from .player_state import PlayerState
 from .priority import PriorityState
+from .promises import Promise
 from .roll import PendingRoll
 from .turn_state import TurnState
 from .zones import Zone, ZoneType
@@ -70,6 +71,14 @@ class GameState:
     shields: list[DamageShield] = field(default_factory=list)
     """
     Damage waiting to be prevented, in the order it was promised.
+    """
+
+    promises: list[Promise] = field(default_factory=list)
+    """
+    Changes owed to events that have not happened yet.
+
+    A card that says "the next time..." is finished resolving long before the
+    next time comes, so what it promised is kept here until it does.
     """
 
     modifiers: list[TemporaryModifier] = field(default_factory=list)

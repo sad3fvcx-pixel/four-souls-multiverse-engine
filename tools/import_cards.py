@@ -19,6 +19,11 @@ never destroys them.
 Usage::
 
     python tools/import_cards.py --database cards.json --content content
+    python tools/import_cards.py --refresh --content content
+
+The second form needs no database. It re-applies ``_abilities.json`` to the
+content already in the tree, which is what you want after writing a card's
+behaviour: the printed data is already there and does not change.
 """
 
 from __future__ import annotations
@@ -507,13 +512,81 @@ def write_set(
         )
 
 
+def set_directories(content: Path) -> list[Path]:
+    """
+    Every set already written into the content tree.
+    """
+    directories = [content / "base_game"]
+    directories.extend(sorted((content / "expansions").glob("*")))
+
+    return [directory for directory in directories if (directory / "cards").is_dir()]
+
+
+def refresh(content: Path, report: ImportReport) -> None:
+    """
+    Re-apply hand-written behaviour to content that is already imported.
+
+    The database is not needed for this and is not consulted: printed numbers,
+    text and copies were settled when the card was imported and do not change
+    because somebody wrote an ability. What does change is the overlay, and a
+    card whose entry has been withdrawn from it goes back to having no
+    behaviour — which is why abilities are cleared before they are merged.
+
+    One thing refresh cannot undo is a tag: overlay tags are added to the ones
+    the database gave a card, and nothing here knows which is which. Removing a
+    tag means re-importing from the database.
+    """
+    for directory in set_directories(content):
+        written = load_abilities(directory)
+
+        for path in sorted((directory / "cards").glob("*.json")):
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            cards = payload.get("cards", [])
+
+            for card in cards:
+                card["abilities"] = []
+                card.pop("statics", None)
+                card.pop("cost", None)
+                card.get("metadata", {}).pop("vanilla", None)
+
+                apply_abilities(card, written, report)
+
+                report.cards += 1
+                report.by_type[card["type"]] += 1
+
+            path.write_text(
+                json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--database", required=True, type=Path)
+    parser.add_argument("--database", type=Path, default=None)
     parser.add_argument("--content", default=Path("content"), type=Path)
     parser.add_argument("--report", type=Path, default=None)
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="re-apply _abilities.json to content already imported",
+    )
 
     args = parser.parse_args()
+
+    if args.refresh or args.database is None:
+        report = ImportReport()
+
+        refresh(args.content, report)
+
+        print(
+            json.dumps(
+                {"cards": report.cards, "implemented": report.implemented},
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+
+        return
 
     rows = json.loads(args.database.read_text(encoding="utf-8"))
 

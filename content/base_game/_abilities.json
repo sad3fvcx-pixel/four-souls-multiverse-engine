@@ -7225,5 +7225,79 @@
         "description": "Choose one: look at a player's hand and you may swap a card with one of theirs; or loot 1, then put a card from your hand on top of the loot deck."
       }
     ]
+  },
+  "treasure_deck-active_items-base_game-compost": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "promise",
+            "event": "before_loot_draw",
+            "changes": {
+              "source": {
+                "value": "discard"
+              }
+            }
+          }
+        ],
+        "description": "The next time a player would loot, they loot from the top of the loot discard instead."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-two_of_clubs": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_player": {
+              "as": "doubled"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "promise",
+            "event": "before_loot_draw",
+            "changes": {
+              "count": {
+                "factor": 2
+              }
+            },
+            "unlimited": true,
+            "target": "doubled"
+          }
+        ],
+        "description": "Choose a player. Till end of turn, if they would loot any number of loot cards, they loot double that number instead."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-mom_s_bra": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_player_or_monster": {
+              "as": "spared"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "promise",
+            "event": "before_damage",
+            "changes": {
+              "amount": {
+                "cap": 1
+              }
+            },
+            "target": "spared"
+          }
+        ],
+        "description": "Choose a monster or player. The next instance of damage they take this turn is reduced to 1."
+      }
+    ]
   }
 }
