@@ -59,7 +59,45 @@
       "type": "starting_item",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Add 1 to the roll.",
+                  "effects": [
+                    {
+                      "modify_roll": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Subtract 1 from the roll.",
+                  "effects": [
+                    {
+                      "modify_roll": -1
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Add or subtract 1 from a roll."
+        },
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "At the end of your turn, recharge this."
+        }
+      ],
       "tags": [
         "activated",
         "eternal"
@@ -335,7 +373,66 @@
       "type": "starting_item",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "charge",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Put a counter on this."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "counters": 1
+          },
+          "effects": [
+            {
+              "modify_roll": 1
+            }
+          ],
+          "description": "Remove 1 counter from this: add 1 to a roll."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "counters": 2
+          },
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "victim"
+            }
+          ],
+          "description": "Remove 2 counters from this: deal 1 damage to a monster or player."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "counters": 5
+          },
+          "effects": [
+            {
+              "effect": "claim_soul",
+              "target": "controller"
+            }
+          ],
+          "description": "Remove 5 counters from this: this becomes a soul and loses all abilities."
+        }
+      ],
       "tags": [
         "activated",
         "eternal",
@@ -507,7 +604,28 @@
       "type": "starting_item",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "reroll": 6
+            }
+          ],
+          "description": "Choose a dice roll. Its controller rerolls it."
+        },
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "At the end of your turn, recharge this."
+        }
+      ],
       "tags": [
         "activated",
         "eternal"

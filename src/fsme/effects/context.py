@@ -56,6 +56,25 @@ class EffectContext(Protocol):
         ...
 
     @property
+    def answerable_rolls(self) -> bool:
+        """
+        Whether a roll must be offered to the table before it counts.
+        """
+        ...
+
+    def take_settled_roll(self) -> int | None:
+        """
+        Take the result of a roll the table has finished answering.
+        """
+        ...
+
+    def request_roll(self, sides: int = 6, *, attack: bool = False) -> None:
+        """
+        Ask for a roll that the table may answer.
+        """
+        ...
+
+    @property
     def event(self) -> Event | None:
         """
         The event currently open for replacement, if any.

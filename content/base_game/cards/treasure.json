@@ -435,7 +435,34 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Change it to a 1.",
+                  "effects": [
+                    {
+                      "set_roll": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Change it to a 6.",
+                  "effects": [
+                    {
+                      "set_roll": 6
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Change the result of a dice roll to a 1 or 6."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -596,7 +623,34 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Add 1.",
+                  "effects": [
+                    {
+                      "modify_roll": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Add 2.",
+                  "effects": [
+                    {
+                      "modify_roll": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Add up to 2 to a non-attack roll."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -618,7 +672,34 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Subtract 1.",
+                  "effects": [
+                    {
+                      "modify_roll": -1
+                    }
+                  ]
+                },
+                {
+                  "description": "Subtract 2.",
+                  "effects": [
+                    {
+                      "modify_roll": -2
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Subtract up to 2 from a roll."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -1176,7 +1257,17 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "modify_roll": 1
+            }
+          ],
+          "description": "Add 1 to a roll."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -2606,7 +2697,28 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "may": [
+                {
+                  "reroll": 6
+                }
+              ],
+              "prompt": "Force that player to reroll the 1?"
+            }
+          ],
+          "description": "Each time a player would roll a 1, you may force that player to reroll it."
+        }
+      ],
       "tags": [
         "passive"
       ],

@@ -20,8 +20,8 @@ from fsme.commands import (
 from fsme.effects import EffectOp, EffectRegistry, builtin_registry
 from fsme.events import Event, EventBus, EventType
 from fsme.rng.rng import RNG
-from fsme.stack import StackItem, StackItemType
-from fsme.state import GameState, PendingDecision, PlayerState
+from fsme.stack import SETTLE_ROLL, StackItem, StackItemType
+from fsme.state import GameState, PendingDecision, PendingRoll, PlayerState
 
 from .ability_context import AbilityContext
 from .condition_evaluator import ConditionEvaluator
@@ -30,6 +30,7 @@ from .errors import (
     AbilityResolutionError,
     DecisionRequired,
     InterpreterError,
+    RollRequired,
     StabilityError,
 )
 from .execution_context import ExecutionContext
@@ -196,10 +197,14 @@ class Runtime:
             emit=self._enqueue,
             push=self._push,
             propose=self._propose,
+            request_roll=self._request_roll,
         )
 
         self._interactive_priority = interactive_priority
         self._max_iterations = max_iterations
+
+        # A roll is worth stopping for only when somebody could answer it.
+        self._context._set_answerable_rolls(interactive_priority)
 
         self._history: list[Event] = []
         self._command_log: list[CommandResult] = []
@@ -855,7 +860,11 @@ class Runtime:
         item = self._state.stack.pop()
         item.mark_resolving()
 
-        if item.ability is not None:
+        if item.label == SETTLE_ROLL:
+            self._settle_roll(item)
+            item.mark_resolved()
+
+        elif item.ability is not None:
             if not self._resolve_ability(item, item.ability):
                 return
 
@@ -959,6 +968,13 @@ class Runtime:
 
             return False
 
+        except RollRequired as request:
+            self._open_roll(
+                request, continuation=(item, ability, context, ops, index)
+            )
+
+            return False
+
         finally:
             self._context._set_actor(None)
             self._context._set_source(None)
@@ -995,6 +1011,93 @@ class Runtime:
             prompt=request.prompt,
             continuation=(item, ability, context, ops, index),
         )
+
+    def _request_roll(self, sides: int, attack: bool) -> None:
+        """
+        Open a roll on behalf of an engine procedure.
+        """
+        self._open_roll(RollRequired(sides, attack=attack))
+
+    def _open_roll(
+        self,
+        request: RollRequired,
+        *,
+        continuation: Any = None,
+    ) -> PendingRoll:
+        """
+        Roll the die and give the table its chance to answer.
+
+        The roll itself happens now — it is the answer that waits, not the die
+        — and everything that changes a roll without being asked has already
+        had its say. What is left is the window: an object on the stack that
+        settles the roll once nobody wants to respond any further.
+        """
+        from fsme.effects.builtin.dice import natural_roll
+
+        state = self._state
+        roller = self._context.actor
+
+        self._context.emit(
+            EventType.BEFORE_ROLL, controller=roller, sides=request.sides
+        )
+
+        value = natural_roll(self._context, request.sides, attack=request.attack)
+
+        state.pending_roll = PendingRoll(
+            roll_id=state.ids.allocate("roll"),
+            sides=request.sides,
+            natural=value,
+            value=value,
+            roller=roller,
+            attack=request.attack,
+            continuation=continuation,
+        )
+
+        self._push(
+            StackItem(
+                kind=StackItemType.DICE,
+                label=SETTLE_ROLL,
+                controller=roller,
+            )
+        )
+
+        return state.pending_roll
+
+    def _settle_roll(self, item: StackItem) -> None:
+        """
+        Close a roll nobody wants to answer any further.
+        """
+        waiting = self._state.pending_roll
+
+        if waiting is None:
+            return
+
+        self._state.pending_roll = None
+
+        self._context.emit(
+            EventType.AFTER_ROLL,
+            controller=waiting.roller,
+            sides=waiting.sides,
+            value=waiting.value,
+            natural=waiting.natural,
+            attack=waiting.attack,
+        )
+
+        if waiting.continuation is None:
+            # A combat round asks for the roll and pushes its own next step, so
+            # there is nothing here to wake up.
+            self._state.combat.settled_roll = waiting.value
+
+            return
+
+        parked, ability, context, ops, index = waiting.continuation
+
+        self._context._set_settled_roll(waiting.value)
+
+        if self._resolve_ability(
+            parked, ability, context=context, ops=ops, index=index
+        ):
+            self._finish(parked)
 
     def _resume(self, decision: PendingDecision) -> None:
         """

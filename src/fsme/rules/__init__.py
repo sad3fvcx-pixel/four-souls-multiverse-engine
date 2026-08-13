@@ -15,6 +15,7 @@ from fsme.commands import CommandRegistry, CommandType
 from fsme.stack import (
     ADVANCE_TURN,
     COMBAT_ROUND,
+    COMBAT_STRIKE,
     DISCARD_PLAYED_LOOT,
     DISCARD_TO_HAND_LIMIT,
 )
@@ -23,6 +24,7 @@ from .activation import ActivateTreasureHandler
 from .combat import (
     AttackHandler,
     combat_round,
+    combat_strike,
     end_combat,
     refill_monsters,
 )
@@ -97,6 +99,7 @@ def default_procedure_registry() -> ProcedureRegistry:
     registry = ProcedureRegistry()
 
     registry.register(COMBAT_ROUND, combat_round)
+    registry.register(COMBAT_STRIKE, combat_strike)
     registry.register(DISCARD_PLAYED_LOOT, discard_played_loot)
     registry.register(ADVANCE_TURN, advance_turn)
 
@@ -131,6 +134,7 @@ __all__ = [
     "StartGameHandler",
     "ADVANCE_TURN",
     "COMBAT_ROUND",
+    "COMBAT_STRIKE",
     "DISCARD_TO_HAND_LIMIT",
     "advance_turn",
     "discard_to_hand_limit",

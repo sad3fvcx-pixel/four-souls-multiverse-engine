@@ -21,11 +21,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **216**. Без правил: **17**. Осталось: **781**.
+Импортировано официальных карт: **1014**. Реализовано: **226**. Без правил: **17**. Осталось: **771**.
 
 | Набор | Карт | Реализовано | Без правил | Осталось |
 |---|---:|---:|---:|---:|
-| `base_game` | 287 | 216 | 17 | 54 |
+| `base_game` | 287 | 226 | 17 | 44 |
 | `requiem` | 246 | 0 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 0 | 99 |
 | `four_souls` | 90 | 0 | 0 | 90 |
@@ -48,7 +48,7 @@
 | `challenges` | 1 | 0 | 0 | 1 |
 | `dick_knots` | 1 | 0 | 0 | 1 |
 | `star` | 1 | 0 | 0 | 1 |
-| **всего** | **1014** | **216** | **17** | **781** |
+| **всего** | **1014** | **226** | **17** | **771** |
 
 ---
 
@@ -56,12 +56,12 @@
 
 | Тип | Карт | Реализовано | Без правил |
 |---|---:|---:|---:|
-| treasure | 105 | 66 | 0 |
+| treasure | 105 | 71 | 0 |
 | monster | 85 | 63 | 17 |
-| loot | 51 | 48 | 0 |
+| loot | 51 | 50 | 0 |
 | event | 17 | 16 | 0 |
 | character | 11 | 9 | 0 |
-| starting_item | 10 | 6 | 0 |
+| starting_item | 10 | 9 | 0 |
 | curse | 5 | 5 | 0 |
 | bonus_soul | 3 | 3 | 0 |
 
@@ -87,14 +87,14 @@
 | Card | Status | Notes |
 |------|--------|-------|
 | Blood Lust | 🟩 |  |
-| Book of Belial | ⬜ |  |
+| Book of Belial | 🟩 |  |
 | Forever Alone | 🟩 |  |
 | Incubus | ⬜ |  |
 | Lazarus' Rags | 🟩 |  |
 | Sleight of Hand | 🟩 |  |
-| The Bone | ⬜ |  |
+| The Bone | 🟩 |  |
 | The Curse | 🟩 |  |
-| The D6 | ⬜ |  |
+| The D6 | 🟩 |  |
 | Yum Heart | 🟩 |  |
 
 ## Treasure
@@ -123,7 +123,7 @@
 | Contract from Below | ⬜ |  |
 | Crystal Ball | ⬜ |  |
 | Curse of the Tower | 🟩 |  |
-| Dad's Lost Coin | ⬜ |  |
+| Dad's Lost Coin | 🟩 |  |
 | Daddy Haunt | ⬜ |  |
 | Dark Bum | 🟩 |  |
 | Dead Bird | ⬜ |  |
@@ -140,7 +140,7 @@
 | Flush! | 🟩 |  |
 | Glass Cannon | 🟩 |  |
 | Goat Head | 🟩 |  |
-| Godhead | ⬜ |  |
+| Godhead | 🟩 |  |
 | Golden Razor Blade | 🟩 |  |
 | Greed's Gullet | 🟩 |  |
 | Guppy's Collar | ⬜ |  |
@@ -149,9 +149,9 @@
 | Host Hat | ⬜ |  |
 | Ipecac | 🟩 |  |
 | Jawbone | 🟩 |  |
-| Lucky Foot | ⬜ |  |
+| Lucky Foot | 🟩 |  |
 | Meat! | 🟩 |  |
-| Mini Mush | ⬜ |  |
+| Mini Mush | 🟩 |  |
 | Modeling Clay | ⬜ |  |
 | Mom's Box | 🟩 |  |
 | Mom's Bra | ⬜ |  |
@@ -180,7 +180,7 @@
 | Shiny Rock | 🟩 |  |
 | Smelter | 🟩 |  |
 | Spider Mod | 🟩 |  |
-| Spoon Bender | ⬜ |  |
+| Spoon Bender | 🟩 |  |
 | Starter Deck | 🟩 |  |
 | Steamy Sale! | 🟩 |  |
 | Suicide King | 🟩 |  |
@@ -226,12 +226,12 @@
 | Counterfeit Penny | 🟩 |  |
 | Curved Horn | 🟩 |  |
 | Dagaz | 🟩 |  |
-| Dice Shard | ⬜ | ×3 |
+| Dice Shard | 🟩 | ×3 |
 | Ehwaz | 🟩 |  |
 | Gold Bomb!! | 🟩 |  |
 | Golden Horseshoe | 🟩 |  |
 | Guppy's Hairball | 🟩 |  |
-| I. The Magician | ⬜ |  |
+| I. The Magician | 🟩 |  |
 | II. The High Priestess | 🟩 |  |
 | III. The Empress | 🟩 |  |
 | IV. The Emperor | 🟩 |  |

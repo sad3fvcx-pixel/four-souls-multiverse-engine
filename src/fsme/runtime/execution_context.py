@@ -10,6 +10,7 @@ from collections.abc import Callable, Sequence
 from typing import Any
 
 from fsme.effects import EffectRegistry
+from fsme.effects.errors import EffectExecutionError
 from fsme.events import Event, EventType
 from fsme.rng.rng import RNG
 from fsme.stack import StackItem
@@ -38,6 +39,9 @@ class ExecutionContext:
         "_actor",
         "_event",
         "_source",
+        "_answerable_rolls",
+        "_settled_roll",
+        "_request_roll",
     )
 
     def __init__(
@@ -49,6 +53,7 @@ class ExecutionContext:
         emit: Callable[[Event], Event],
         push: Callable[[StackItem], StackItem],
         propose: Callable[[Event], Event],
+        request_roll: Callable[[int, bool], None] | None = None,
     ) -> None:
         self._state = state
         self._rng = rng
@@ -59,6 +64,9 @@ class ExecutionContext:
         self._actor: int | None = None
         self._event: Event | None = None
         self._source: Any | None = None
+        self._answerable_rolls = False
+        self._settled_roll: int | None = None
+        self._request_roll = request_roll if request_roll is not None else _no_rolls
 
     @property
     def state(self) -> GameState:
@@ -103,6 +111,45 @@ class ExecutionContext:
         Runtime-only: name the card the next work belongs to.
         """
         self._source = source
+
+    @property
+    def answerable_rolls(self) -> bool:
+        """
+        Whether a roll should stop and let the table respond to it.
+
+        Only true when the game is being played with priority windows: with
+        nobody to answer, opening a window would only add a step.
+        """
+        return self._answerable_rolls
+
+    def _set_answerable_rolls(self, answerable: bool) -> None:
+        self._answerable_rolls = answerable
+
+    def request_roll(self, sides: int = 6, *, attack: bool = False) -> None:
+        """
+        Ask the Runtime to roll and open the roll to the table.
+
+        Used by the engine's own procedures, which cannot be parked the way an
+        ability can: a combat round pushes the blow that follows and then asks
+        for the roll, so the answer resolves in between.
+        """
+        self._request_roll(sides, attack)
+
+    def take_settled_roll(self) -> int | None:
+        """
+        Take the result of a roll the table has finished answering.
+
+        It is taken rather than read: the ability resumes at the very operation
+        that rolled, and that operation must use this result instead of rolling
+        again — but only once.
+        """
+        value = self._settled_roll
+        self._settled_roll = None
+
+        return value
+
+    def _set_settled_roll(self, value: int | None) -> None:
+        self._settled_roll = value
 
     @property
     def event(self) -> Event | None:
@@ -193,3 +240,10 @@ class ExecutionContext:
         Run another registered effect.
         """
         return self._effects.execute(effect, self, targets, **params)
+
+
+def _no_rolls(sides: int, attack: bool) -> None:
+    """
+    What asking for a roll window does when nothing can open one.
+    """
+    raise EffectExecutionError("no Runtime is here to open a roll")

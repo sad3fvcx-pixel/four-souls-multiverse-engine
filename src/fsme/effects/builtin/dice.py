@@ -14,6 +14,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from fsme.events import EventType
+from fsme.runtime.errors import RollRequired
 from fsme.state.modifiers import ROLL
 
 from ..context import EffectContext
@@ -29,10 +30,31 @@ def rolled(ctx: EffectContext, sides: int = 6, attack: bool = False) -> int:
     that adds one to a roll works the same whether the roll came from an
     ability or from an attack. The final value is kept on the die's own face:
     a six-sided die cannot show a seven, however much is added to it.
+
+    When the game is being played with priority windows, the roll does not
+    return here at all: the table has to be given the chance to answer it, and
+    that means parking whatever was rolling. The Runtime does the parking; this
+    function only says that it is needed, and returns the settled result when
+    the ability comes back to the same operation.
     """
     if sides < 1:
         raise EffectExecutionError("a die must have at least one side")
 
+    settled = ctx.take_settled_roll()
+
+    if settled is not None:
+        return int(settled)
+
+    if ctx.answerable_rolls:
+        raise RollRequired(sides, attack=attack)
+
+    return natural_roll(ctx, sides, attack=attack)
+
+
+def natural_roll(ctx: EffectContext, sides: int, *, attack: bool = False) -> int:
+    """
+    Roll the die and apply everything that changes a roll without being asked.
+    """
     natural = ctx.roll(sides)
 
     proposal = ctx.propose(
@@ -90,8 +112,20 @@ def roll_dice(ctx: EffectContext, targets: Sequence[Any], sides: int = 6) -> int
 def reroll(ctx: EffectContext, targets: Sequence[Any], sides: int = 6) -> int:
     """
     Roll again, replacing a previous result.
+
+    A roll the table is answering is rerolled where it lies: it has not
+    happened yet, so there is nothing to announce and nothing to resume.
     """
-    value = rolled(ctx, sides)
+    waiting = ctx.state.pending_roll
+
+    if waiting is not None:
+        value = waiting.settle(natural_roll(ctx, waiting.sides, attack=waiting.attack))
+
+        ctx.emit(EventType.REROLL, sides=waiting.sides, value=value)
+
+        return value
+
+    value = natural_roll(ctx, sides)
 
     ctx.emit(EventType.REROLL, sides=sides, value=value)
     ctx.emit(EventType.AFTER_ROLL, sides=sides, value=value)
@@ -101,13 +135,18 @@ def reroll(ctx: EffectContext, targets: Sequence[Any], sides: int = 6) -> int:
 
 def modify_roll(ctx: EffectContext, targets: Sequence[Any], amount: int = 0) -> int:
     """
-    Shift the roll currently being offered for modification.
+    Shift a roll: the one being replaced, or the one the table is answering.
     """
+    waiting = ctx.state.pending_roll
+
+    if waiting is not None:
+        return waiting.settle(waiting.value + int(amount))
+
     event = ctx.event
 
     if event is None:
         raise EffectExecutionError(
-            "'modify_roll' may only be used while a roll is being modified"
+            "'modify_roll' may only be used while a roll is open"
         )
 
     value = int(event.get("value", 0)) + int(amount)
@@ -115,6 +154,31 @@ def modify_roll(ctx: EffectContext, targets: Sequence[Any], amount: int = 0) -> 
     event.set("value", value)
 
     return value
+
+
+def set_roll(ctx: EffectContext, targets: Sequence[Any], value: int = 1) -> int:
+    """
+    Change a roll to a chosen number.
+
+    A die cannot show a number it does not have, so the result is kept on its
+    face however the card is written.
+    """
+    waiting = ctx.state.pending_roll
+
+    if waiting is not None:
+        return waiting.settle(int(value))
+
+    event = ctx.event
+
+    if event is None:
+        raise EffectExecutionError("'set_roll' may only be used while a roll is open")
+
+    sides = int(event.get("sides", 6))
+    kept = max(1, min(sides, int(value)))
+
+    event.set("value", kept)
+
+    return kept
 
 
 def register(registry: EffectRegistry) -> None:
@@ -134,6 +198,12 @@ def register(registry: EffectRegistry) -> None:
         primary="sides",
         stores="dice",
         description="Roll a die again, replacing the stored result.",
+    )
+    registry.register(
+        "set_roll",
+        set_roll,
+        primary="value",
+        description="Change an open roll to a chosen number.",
     )
     registry.register(
         "modify_roll",

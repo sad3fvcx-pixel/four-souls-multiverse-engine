@@ -17,9 +17,9 @@ from typing import Any
 from fsme.cards import CardType
 from fsme.commands import Command
 from fsme.effects import EffectContext
-from fsme.effects.builtin.dice import rolled
+from fsme.effects.builtin.dice import natural_roll
 from fsme.events import EventType
-from fsme.stack import COMBAT_ROUND, StackItem, StackItemType
+from fsme.stack import COMBAT_ROUND, COMBAT_STRIKE, StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
 from .constants import BASE_PLAYER_ATTACK, DICE_SIDES
@@ -112,7 +112,13 @@ def push_combat_round(
 
 def combat_round(item: StackItem, context: EffectContext) -> None:
     """
-    Resolve one round: roll, then damage one side.
+    Roll for one round of an attack, and let the table answer the roll.
+
+    The round is two stack objects, not one. A roll can be responded to, and a
+    response is an ability that has to resolve before the roll counts — so the
+    blow is pushed first and waits underneath, and the roll is settled above
+    it. With nobody to answer, the roll settles at once and the two steps run
+    back to back.
     """
     state = context.state
     combat = state.combat
@@ -138,7 +144,43 @@ def combat_round(item: StackItem, context: EffectContext) -> None:
 
     state.turn.record_attack_roll()
 
-    roll = rolled(context, DICE_SIDES, attack=True)
+    context.push(
+        StackItem(
+            kind=StackItemType.COMBAT,
+            label=COMBAT_STRIKE,
+            source=monster,
+            controller=attacker.player_id,
+        )
+    )
+
+    if context.answerable_rolls:
+        context.request_roll(DICE_SIDES, attack=True)
+
+        return
+
+    combat.settled_roll = natural_roll(context, DICE_SIDES, attack=True)
+
+
+def combat_strike(item: StackItem, context: EffectContext) -> None:
+    """
+    Apply the roll the table has finished answering.
+    """
+    state = context.state
+    combat = state.combat
+
+    if not combat.active or combat.attacker is None:
+        return
+
+    attacker = state.player(combat.attacker)
+    monster = combat.monster
+
+    if not attacker.alive or monster is None or not getattr(monster, "alive", False):
+        end_combat(context)
+        return
+
+    roll = combat.settled_roll if combat.settled_roll is not None else 1
+    combat.settled_roll = None
+
     required = _required_roll(monster, state)
 
     context.emit(

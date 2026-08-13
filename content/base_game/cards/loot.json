@@ -313,7 +313,66 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Change the result to a 1.",
+                  "effects": [
+                    {
+                      "set_roll": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Change the result to a 2.",
+                  "effects": [
+                    {
+                      "set_roll": 2
+                    }
+                  ]
+                },
+                {
+                  "description": "Change the result to a 3.",
+                  "effects": [
+                    {
+                      "set_roll": 3
+                    }
+                  ]
+                },
+                {
+                  "description": "Change the result to a 4.",
+                  "effects": [
+                    {
+                      "set_roll": 4
+                    }
+                  ]
+                },
+                {
+                  "description": "Change the result to a 5.",
+                  "effects": [
+                    {
+                      "set_roll": 5
+                    }
+                  ]
+                },
+                {
+                  "description": "Change the result to a 6.",
+                  "effects": [
+                    {
+                      "set_roll": 6
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Change the result of a dice roll to a number of your choosing."
+        }
+      ],
       "metadata": {
         "text": "Change the result\nof a dice roll\nto a number of\nyour choosing.\n(Rolls can't go\nbelow 1 or above 6.)",
         "set": "Base Game",
@@ -1368,7 +1427,17 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "reroll": 6
+            }
+          ],
+          "description": "Choose a dice roll. Its controller rerolls it."
+        }
+      ],
       "metadata": {
         "text": "Choose a dice roll.\nIts controller\nrerolls it.",
         "set": "Base Game",

@@ -2982,6 +2982,181 @@ def test_brimstone_splashes_the_damage_its_holder_deals(
 
 
 # ----------------------------------------------------------------------
+# Answering a roll
+# ----------------------------------------------------------------------
+
+
+def answering_game(
+    base_game: ContentLibrary, rolls: list[int], players: int = 2
+) -> Game:
+    """
+    A game where rolls stop and wait for the table, as the rules have them do.
+    """
+    game = Game.from_content(
+        base_game,
+        ["Ann", "Bo", "Cy"][:players],
+        seed=1234,
+        rng=FixedRNG(rolls),
+        interactive_priority=True,
+    )
+
+    assert game.start().accepted
+
+    return game
+
+
+def pass_until_settled(game: Game) -> None:
+    while game.runtime.awaiting_priority:
+        assert game.act(
+            CommandType.PASS_PRIORITY, game.state.priority.holder or 0
+        ).accepted
+
+
+def pass_until_roll(game: Game) -> Any:
+    """
+    Let the stack run until a roll is waiting for the table.
+
+    With priority windows open, a card played does not resolve until everybody
+    has passed, so the roll it makes is a few passes away.
+    """
+    while game.state.pending_roll is None and game.runtime.awaiting_priority:
+        assert game.act(
+            CommandType.PASS_PRIORITY, game.state.priority.holder or 0
+        ).accepted
+
+    return game.state.pending_roll
+
+
+def test_a_roll_waits_for_the_table_before_it_counts(
+    base_game: ContentLibrary,
+) -> None:
+    game = answering_game(base_game, [3])
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    waiting = pass_until_roll(game)
+
+    assert waiting is not None
+    assert waiting.value == 3
+    assert game.state.player(0).pennies == 0, "the roll has not counted yet"
+
+    pass_until_settled(game)
+
+    assert game.state.pending_roll is None
+    assert game.state.player(0).pennies == 7, "3-4 on Pills! pays 7¢"
+
+
+def test_spoon_bender_bends_the_roll_that_is_waiting(
+    base_game: ContentLibrary,
+) -> None:
+    game = answering_game(base_game, [4])
+
+    bender = give(game, "treasure_deck-active_items-base_game-spoon_bender")
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    assert pass_until_roll(game) is not None
+    assert game.state.pending_roll.value == 4
+
+    assert activate(game, bender).accepted
+
+    pass_until_settled(game)
+
+    # A four becomes a five, and Pills! charges 4¢ on 5-6 instead of paying 7¢.
+    assert game.state.player(0).pennies == 0
+
+
+def test_the_d6_rerolls_what_the_die_showed(base_game: ContentLibrary) -> None:
+    game = answering_game(base_game, [1, 5])
+
+    d6 = starting_item(game, "starting_items-base_game-the_d6")
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    assert pass_until_roll(game) is not None
+    assert game.state.pending_roll.value == 1
+
+    assert activate(game, d6).accepted
+
+    pass_until_settled(game)
+
+    assert game.state.player(0).pennies == 0, "a five loses 4¢ where a one gained 4¢"
+
+
+def test_the_magician_names_the_result(base_game: ContentLibrary) -> None:
+    game = answering_game(base_game, [2])
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    assert pass_until_roll(game) is not None
+
+    game.state.player(0).additional_loot_plays += 1
+
+    assert play(
+        game, deal(game, "loot_deck-cards_miscellaneous-base_game-i_the_magician")
+    ).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    while decision is None and game.runtime.awaiting_priority:
+        assert game.act(
+            CommandType.PASS_PRIORITY, game.state.priority.holder or 0
+        ).accepted
+
+        decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert len(decision.options) == 6
+
+    answer(game, "Change the result to a 3.")
+
+    pass_until_settled(game)
+
+    assert game.state.player(0).pennies == 7, "a three on Pills! pays 7¢"
+
+
+def test_an_attack_roll_may_be_answered_too(base_game: ContentLibrary) -> None:
+    game = answering_game(base_game, [1, 6])
+
+    d6 = starting_item(game, "starting_items-base_game-the_d6")
+
+    only_monster(game, "monster_deck-basic_enemies-base_game-dip", hp=1)
+
+    while game.state.turn.phase is not GamePhase.ACTION:
+        assert game.act(CommandType.END_PHASE, 0).accepted
+
+    assert game.act(CommandType.ATTACK, 0, index=0).accepted
+
+    waiting = pass_until_roll(game)
+
+    assert waiting is not None
+    assert waiting.attack is True
+    assert waiting.value == 1, "a miss, until somebody answers it"
+
+    assert activate(game, d6).accepted
+
+    pass_until_settled(game)
+
+    assert not game.state.active_monsters.cards[0].alive or all(
+        monster.definition.id != "monster_deck-basic_enemies-base_game-dip"
+        for monster in game.state.active_monsters.cards
+    )
+
+
+def test_rolls_do_not_wait_when_nobody_can_answer(base_game: ContentLibrary) -> None:
+    """
+    The window is opened for the players, so a game played without priority
+    windows rolls exactly as it always did.
+    """
+    game = new_game(base_game, rolls=[3])
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    assert game.state.pending_roll is None
+    assert game.state.player(0).pennies == 7
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

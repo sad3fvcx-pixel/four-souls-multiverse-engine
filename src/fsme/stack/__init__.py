@@ -19,16 +19,20 @@ from .item import StackItem, StackItemStatus, StackItemType
 from .labels import (
     ADVANCE_TURN,
     COMBAT_ROUND,
+    COMBAT_STRIKE,
     DISCARD_PLAYED_LOOT,
     DISCARD_TO_HAND_LIMIT,
+    SETTLE_ROLL,
 )
 from .stack import Stack
 
 __all__ = [
     "ADVANCE_TURN",
     "COMBAT_ROUND",
+    "COMBAT_STRIKE",
     "DISCARD_PLAYED_LOOT",
     "DISCARD_TO_HAND_LIMIT",
+    "SETTLE_ROLL",
     "Stack",
     "StackItem",
     "StackItemStatus",

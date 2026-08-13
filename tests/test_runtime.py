@@ -237,4 +237,9 @@ def test_execution_context_exposes_only_the_intended_powers() -> None:
         "propose",
         "roll",
         "apply",
+        # A roll may have to wait for the table to answer it, and an effect
+        # needs to know whether it is waiting and what it settled at.
+        "answerable_rolls",
+        "take_settled_roll",
+        "request_roll",
     }

@@ -22,3 +22,9 @@ DISCARD_TO_HAND_LIMIT = "discard_to_hand_limit"
 
 COMBAT_ROUND = "combat_round"
 """Resolve one round of an ongoing attack."""
+
+SETTLE_ROLL = "settle_roll"
+"""Close a roll the table has finished answering, and carry on."""
+
+COMBAT_STRIKE = "combat_strike"
+"""Apply an attack roll once the table has finished answering it."""

@@ -6542,5 +6542,334 @@
         "description": "Each time you take damage, you may recharge your character."
       }
     ]
+  },
+  "treasure_deck-active_items-base_game-spoon_bender": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "modify_roll": 1
+          }
+        ],
+        "description": "Add 1 to a roll."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-lucky_foot": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Add 1.",
+                "effects": [
+                  {
+                    "modify_roll": 1
+                  }
+                ]
+              },
+              {
+                "description": "Add 2.",
+                "effects": [
+                  {
+                    "modify_roll": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Add up to 2 to a non-attack roll."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-mini_mush": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Subtract 1.",
+                "effects": [
+                  {
+                    "modify_roll": -1
+                  }
+                ]
+              },
+              {
+                "description": "Subtract 2.",
+                "effects": [
+                  {
+                    "modify_roll": -2
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Subtract up to 2 from a roll."
+      }
+    ]
+  },
+  "starting_items-base_game-book_of_belial": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Add 1 to the roll.",
+                "effects": [
+                  {
+                    "modify_roll": 1
+                  }
+                ]
+              },
+              {
+                "description": "Subtract 1 from the roll.",
+                "effects": [
+                  {
+                    "modify_roll": -1
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Add or subtract 1 from a roll."
+      },
+      {
+        "trigger": "turn_end",
+        "scope": "controller",
+        "effects": [
+          {
+            "effect": "recharge",
+            "target": "self"
+          }
+        ],
+        "description": "At the end of your turn, recharge this."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-godhead": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Change it to a 1.",
+                "effects": [
+                  {
+                    "set_roll": 1
+                  }
+                ]
+              },
+              {
+                "description": "Change it to a 6.",
+                "effects": [
+                  {
+                    "set_roll": 6
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Change the result of a dice roll to a 1 or 6."
+      }
+    ]
+  },
+  "loot_deck-cards_miscellaneous-base_game-i_the_magician": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Change the result to a 1.",
+                "effects": [
+                  {
+                    "set_roll": 1
+                  }
+                ]
+              },
+              {
+                "description": "Change the result to a 2.",
+                "effects": [
+                  {
+                    "set_roll": 2
+                  }
+                ]
+              },
+              {
+                "description": "Change the result to a 3.",
+                "effects": [
+                  {
+                    "set_roll": 3
+                  }
+                ]
+              },
+              {
+                "description": "Change the result to a 4.",
+                "effects": [
+                  {
+                    "set_roll": 4
+                  }
+                ]
+              },
+              {
+                "description": "Change the result to a 5.",
+                "effects": [
+                  {
+                    "set_roll": 5
+                  }
+                ]
+              },
+              {
+                "description": "Change the result to a 6.",
+                "effects": [
+                  {
+                    "set_roll": 6
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Change the result of a dice roll to a number of your choosing."
+      }
+    ]
+  },
+  "loot_deck-dice_shards_soul_hearts-base_game-dice_shard": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "reroll": 6
+          }
+        ],
+        "description": "Choose a dice roll. Its controller rerolls it."
+      }
+    ]
+  },
+  "starting_items-base_game-the_d6": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "reroll": 6
+          }
+        ],
+        "description": "Choose a dice roll. Its controller rerolls it."
+      },
+      {
+        "trigger": "turn_end",
+        "scope": "controller",
+        "effects": [
+          {
+            "effect": "recharge",
+            "target": "self"
+          }
+        ],
+        "description": "At the end of your turn, recharge this."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-dad_s_lost_coin": {
+    "abilities": [
+      {
+        "trigger": "before_roll",
+        "scope": "any",
+        "conditions": [
+          {
+            "dice_equals": 1
+          }
+        ],
+        "effects": [
+          {
+            "may": [
+              {
+                "reroll": 6
+              }
+            ],
+            "prompt": "Force that player to reroll the 1?"
+          }
+        ],
+        "description": "Each time a player would roll a 1, you may force that player to reroll it."
+      }
+    ]
+  },
+  "starting_items-base_game-the_bone": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_counter",
+            "counter": "charge",
+            "amount": 1,
+            "target": "self"
+          }
+        ],
+        "description": "Put a counter on this."
+      },
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "counters": 1
+        },
+        "effects": [
+          {
+            "modify_roll": 1
+          }
+        ],
+        "description": "Remove 1 counter from this: add 1 to a roll."
+      },
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "counters": 2
+        },
+        "targets": [
+          {
+            "target_player_or_monster": {
+              "as": "victim"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "victim"
+          }
+        ],
+        "description": "Remove 2 counters from this: deal 1 damage to a monster or player."
+      },
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "counters": 5
+        },
+        "effects": [
+          {
+            "effect": "claim_soul",
+            "target": "controller"
+          }
+        ],
+        "description": "Remove 5 counters from this: this becomes a soul and loses all abilities."
+      }
+    ]
   }
 }

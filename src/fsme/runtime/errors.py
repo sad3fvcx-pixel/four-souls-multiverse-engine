@@ -81,3 +81,19 @@ class StabilityError(RuntimeExecutionError):
     that never settles would otherwise hang the engine, so the Runtime stops
     and reports instead.
     """
+
+
+class RollRequired(Exception):  # noqa: N818 - control flow, not a failure
+    """
+    Raised when a roll must be offered to the table before it counts.
+
+    Like DecisionRequired, this is not a failure: the ability is parked, the
+    die is rolled, everybody gets their chance to answer it, and resolution
+    carries on from the same operation with the settled result.
+    """
+
+    def __init__(self, sides: int, *, attack: bool = False) -> None:
+        super().__init__(f"a roll of d{sides} is open to responses")
+
+        self.sides = sides
+        self.attack = attack

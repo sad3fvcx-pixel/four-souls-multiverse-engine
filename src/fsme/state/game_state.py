@@ -18,6 +18,7 @@ from .decision import PendingDecision
 from .modifiers import DamageShield, TemporaryModifier
 from .player_state import PlayerState
 from .priority import PriorityState
+from .roll import PendingRoll
 from .turn_state import TurnState
 from .zones import Zone, ZoneType
 
@@ -80,6 +81,11 @@ class GameState:
     """
 
     pending_decision: PendingDecision | None = None
+
+    pending_roll: PendingRoll | None = None
+    """
+    A roll that has landed and is waiting to be answered.
+    """
 
     ids: IdSequence = field(default_factory=IdSequence)
 

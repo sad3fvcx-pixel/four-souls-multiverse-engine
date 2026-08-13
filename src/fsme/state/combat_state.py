@@ -27,6 +27,11 @@ class CombatState:
 
     round_number: int = 0
 
+    settled_roll: int | None = None
+    """
+    The attack roll the table has finished answering, waiting to be applied.
+    """
+
     active: bool = False
 
     def begin(self, attacker: int, monster: Any) -> None:
