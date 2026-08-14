@@ -29,11 +29,11 @@ CHARACTER = "character"
 
 ROOM = "room"
 """
-The room in play, which belongs to nobody and taps for the table.
+The room in play, which belongs to nobody and is used by the active player.
 
-A room's ability is activated by the player who is entitled to use it, and the
-engine has nothing to say about who that is beyond what the room prints: the
-card is in play, the ability is on it, and whoever holds priority may use it.
+COMPREHENSIVE_RULES.md §12: an activated ability of a room may only be
+activated by the active player. A room belongs to the table rather than to
+anybody at it, and this is the rule that says whose turn it is to use one.
 """
 
 
@@ -54,6 +54,9 @@ def _card_for(command: Command, state: GameState) -> tuple[Any | None, str | Non
         )
 
     if zone == ROOM:
+        if command.player != state.turn.active_player:
+            return None, "only the active player may use the room"
+
         index = command.get("index", 0)
 
         if not isinstance(index, int) or not 0 <= index < len(state.room_area):

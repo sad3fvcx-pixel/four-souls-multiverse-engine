@@ -1048,17 +1048,24 @@ class Runtime:
             if not watcher.spend():
                 self._state.watchers.remove(watcher)
 
-    @staticmethod
-    def _controller_for(card: CardInstance, event: Event) -> int | None:
+    def _controller_for(self, card: CardInstance, event: Event) -> int | None:
         """
         Decide who controls an ability while it resolves.
 
         A card nobody owns — a monster, a room — still has abilities, and they
         act on behalf of the player the event concerns. That is how a monster
         card can award its soul to whoever killed it without naming anyone.
+
+        A room is the exception, and the rules make it one:
+        COMPREHENSIVE_RULES.md §12 says that where a room says "you" without
+        naming a player, it means the active player. So a room's abilities
+        answer to the active player whatever the event was about.
         """
         if card.controller is not None:
             return card.controller
+
+        if any(held is card for held in self._state.room_area.cards):
+            return self._state.turn.active_player
 
         return event.controller
 
@@ -1545,6 +1552,7 @@ class Runtime:
         )
 
         monster.alive = False
+        state.turn.monster_died = True
         from fsme.rules.slots import remove as leave_slot
 
         leave_slot(state, monster)

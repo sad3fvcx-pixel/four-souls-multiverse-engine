@@ -126,6 +126,18 @@ def _build_decks(
 
         zone.cards.extend(cards)
 
+    # Rooms are optional content, added once the table knows the basic rules
+    # (COMPREHENSIVE_RULES.md §12). Content without them is not a broken game;
+    # it is a game without rooms, so the deck is built only if there is one and
+    # shuffled last, after the decks a seed already promised.
+    rooms = index.get(CardType.ROOM, [])
+
+    if rooms:
+        cards = _instances(rooms, "room", state)
+        rng.shuffle(cards)
+
+        state.room_deck.cards.extend(cards)
+
 
 def _lay_out_bonus_souls(
     state: GameState,
@@ -234,7 +246,7 @@ def _open_the_board(
     shop_slots: int,
 ) -> None:
     """
-    Turn the first monsters and shop items face up.
+    Turn the first monsters, shop items and the first room face up.
     """
     open_area(state, monster_slots)
 
@@ -249,6 +261,11 @@ def _open_the_board(
             break
 
         state.treasure_shop.add_top(state.treasure_deck.draw())
+
+    if state.room_deck.cards:
+        # COMPREHENSIVE_RULES.md §12: the top room is turned face up into the
+        # room slot at the start of the game, and that is how it enters play.
+        state.room_area.add_top(state.room_deck.draw())
 
 
 def _first_monster(state: GameState) -> CardInstance:

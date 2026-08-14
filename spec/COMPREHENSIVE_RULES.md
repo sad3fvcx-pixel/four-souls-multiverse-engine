@@ -1,6 +1,6 @@
 # Four Souls Multiverse Engine
 ## Comprehensive Rules, as the engine reads them
-Version: 1.0.0
+Version: 1.1.0
 
 ---
 
@@ -12,6 +12,9 @@ Souls — Всеобъемлющие правила*, compiled by Jon @jonzo11, 
 Два Кадра). `RULES_SPEC.md` says which sources are canonical and how the engine
 treats them; this says what they actually state, in the places where the engine
 had to know and previously did not.
+
+§12 was supplied separately, after the rest: the rulebook transcribed here has
+no room section, and rooms are *Requiem* content.
 
 It is written down for one reason: the engine may not invent a rule. Anything
 not stated here or in another spec is a gap, and a gap is documented in
@@ -194,7 +197,36 @@ A dead player may still refill slots and play event and curse cards.
 
 ---
 
-# 12. Cancelling and fizzling
+# 12. Rooms
+
+Rooms arrived with *Requiem*. They are optional content, added to a game once
+the players know the basic rules, and a game without a room deck is a game with
+no rooms in it.
+
+- The room cards form their own deck. At the start of the game its top card is
+  turned face up into the room slot, which is how it enters play.
+- A room in play is an object, and the object is called *the room*.
+
+**Room abilities.**
+
+- Passive and triggered abilities of a room work exactly as they do on any
+  other card.
+- An activated ability of a room may only be activated by the active player.
+- Where a room's ability says "you" without naming a player, it means the
+  active player.
+
+**Changing rooms.** During the end phase, if a monster died during the turn,
+the active player *may* put the room into the discard pile. If the room slot is
+empty afterwards, it must be filled with the top card of the room deck. The
+active player may instead keep the room that is in play.
+
+A room that arrives during the change of rooms and prints "at the end of the
+turn, discard this" is discarded at the end of the *next* turn: the
+end-of-turn effects of this turn have already resolved.
+
+---
+
+# 13. Cancelling and fizzling
 
 A cancelled effect leaves the queue without resolving; loot cards that were
 cancelled go to the discard pile.

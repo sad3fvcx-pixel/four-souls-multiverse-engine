@@ -304,6 +304,12 @@ def swap_cards(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     state = ctx.state
     first, second = targets
 
+    if first is second:
+        # One card named twice. Exchanging it with itself would move it to
+        # where it already is, and the instruction is passed over for the same
+        # reason a swap with one card is.
+        return 0
+
     left = _zone_of(state, first)
     right = _zone_of(state, second)
 

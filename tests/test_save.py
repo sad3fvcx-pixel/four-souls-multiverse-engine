@@ -44,11 +44,16 @@ def settle(game: Game) -> None:
     while game.runtime.awaiting_decision is not None:
         decision = game.runtime.awaiting_decision
 
+        # As many as the question asks for, taken from the top: a test about
+        # round trips is not about which options were picked.
+        count = len(decision.options)
+        wanted = max(0, min(decision.minimum, count))
+
         assert game.submit(
             Command(
                 type=CommandType.CHOOSE_TARGET,
                 player=decision.player,
-                payload={"choices": [0] if decision.options else []},
+                payload={"choices": list(range(wanted))},
             )
         ).accepted
 
@@ -142,7 +147,14 @@ def test_what_a_card_did_to_another_card_is_kept(everything: ContentLibrary) -> 
 
     assert game.start().accepted
 
-    item = game.state.player(0).treasures.cards[0]
+    settle(game)
+
+    # Whoever has an item: not every character begins with one, and this test
+    # is about what a save keeps, not about who was dealt what.
+    owner = next(
+        player for player in game.state.players if player.treasures.cards
+    )
+    item = owner.treasures.cards[0]
 
     item.tapped = True
     item.counters["gold"] = 2
@@ -154,7 +166,7 @@ def test_what_a_card_did_to_another_card_is_kept(everything: ContentLibrary) -> 
 
     back = Game.load(written(game), everything)
 
-    restored = back.state.player(0).treasures.cards[0]
+    restored = back.state.player(owner.player_id).treasures.cards[0]
 
     assert restored.tapped
     assert restored.counters == {"gold": 2}
@@ -173,6 +185,11 @@ def test_what_the_game_owes_is_kept(everything: ContentLibrary) -> None:
     game = Game.from_content(everything, ["Ann", "Bo"], seed=3)
 
     assert game.start().accepted
+
+    # A deal may open with a question — a character choosing its starting item
+    # — and answering it is not what this test is about. What the game owes is
+    # recorded after the table has settled.
+    settle(game)
 
     context = game.runtime.context
 

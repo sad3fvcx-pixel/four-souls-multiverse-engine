@@ -57,6 +57,15 @@ class TurnState:
     which is the whole of what "each turn" means.
     """
 
+    monster_died: bool = False
+    """
+    Whether a monster has died during this turn.
+
+    COMPREHENSIVE_RULES.md §12: the room may be changed at the end of a turn in
+    which a monster died, so the turn has to remember that it happened — by the
+    end phase the monster is long gone from the table.
+    """
+
     attack_rolls: int = 0
     """
     Attack rolls made this turn, counted as they are made.
@@ -96,6 +105,7 @@ class TurnState:
         self.loot_played = 0
         self.attacks_declared = 0
         self.attack_rolls = 0
+        self.monster_died = False
 
         self.triggers_fired.clear()
         self.obligations.clear()

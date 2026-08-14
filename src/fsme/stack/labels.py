@@ -49,3 +49,12 @@ Begin an attack the attacker declared.
 COMPREHENSIVE_RULES.md §7, same shape as a purchase: the declaration queues,
 and the attack begins when it resolves.
 """
+
+CHANGE_ROOMS = "change_rooms"
+"""
+Offer the active player the change of rooms at the end of a turn.
+
+COMPREHENSIVE_RULES.md §12: in a turn where a monster died, the active player
+may put the room into the discard pile — and if the slot is then empty it is
+filled from the top of the room deck.
+"""

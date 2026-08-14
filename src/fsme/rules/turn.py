@@ -18,6 +18,7 @@ from fsme.effects import EffectContext
 from fsme.events import EventType
 from fsme.stack import (
     ADVANCE_TURN,
+    CHANGE_ROOMS,
     DISCARD_TO_HAND_LIMIT,
     StackItem,
     StackItemType,
@@ -211,6 +212,65 @@ class EndTurnHandler:
                     controller=player.player_id,
                 )
             )
+
+        if _rooms_may_change(state):
+            # Pushed last, so it resolves first: the change of rooms is offered
+            # before the hand is trimmed, and after the effects that answered
+            # the end of the turn — which is why a room arriving now with "at
+            # the end of the turn, discard this" is discarded at the end of the
+            # next one (COMPREHENSIVE_RULES.md §12).
+            context.push(
+                StackItem(
+                    kind=StackItemType.ENGINE_EFFECT,
+                    label=CHANGE_ROOMS,
+                    ability=change_rooms(),
+                    source=state.room_area.cards[0] if state.room_area.cards else None,
+                    controller=player.player_id,
+                )
+            )
+
+
+def _rooms_may_change(state: GameState) -> bool:
+    """
+    Whether the active player is offered a change of rooms at all.
+
+    COMPREHENSIVE_RULES.md §12: only in a turn where a monster died, and only
+    in a game that has rooms in it — asking a table playing without them would
+    be asking about a card nobody put in the box.
+    """
+    if not state.turn.monster_died:
+        return False
+
+    return bool(state.room_area.cards or state.room_deck.cards)
+
+
+def change_rooms() -> Ability:
+    """
+    Build the offer to change rooms.
+
+    Written as an ability for the same reason the hand limit and the death
+    penalty are: "may" is a question, and asking one mid-resolution is
+    something abilities already know how to do.
+
+    Discarding and refilling are one instruction here because the rules make
+    them one: if the slot is empty after the room goes, it *must* be filled.
+    A room deck with nothing left in it simply leaves the slot empty, which is
+    what "the top card of the room deck" means when there is no top card.
+    """
+    return Ability(
+        trigger=str(EventType.TURN_CLEANUP),
+        effects=(
+            {
+                "may": [
+                    {"effect": "leave_room"},
+                    {"effect": "enter_room"},
+                ],
+                "as": "changed_rooms",
+                "prompt": "Put the room into the discard and turn over another?",
+            },
+        ),
+        description="You may change rooms, a monster having died this turn.",
+    )
 
 
 def discard_to_hand_limit(count: int) -> Ability:

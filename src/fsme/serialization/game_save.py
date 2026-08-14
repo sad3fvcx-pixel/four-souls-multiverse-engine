@@ -220,6 +220,7 @@ def _save_turn(state: GameState) -> dict[str, Any]:
         "attacks_declared": turn.attacks_declared,
         "extra_turn_for": turn.extra_turn_for,
         "attack_rolls": turn.attack_rolls,
+        "monster_died": turn.monster_died,
         "triggers_fired": dict(turn.triggers_fired),
         "obligations": [
             {
@@ -762,6 +763,7 @@ def _load_turn(
     turn.attacks_declared = int(saved.get("attacks_declared", 0))
     turn.extra_turn_for = saved.get("extra_turn_for")
     turn.attack_rolls = int(saved.get("attack_rolls", 0))
+    turn.monster_died = bool(saved.get("monster_died", False))
     turn.triggers_fired = dict(saved.get("triggers_fired", {}))
     turn.obligations = [
         Obligation(

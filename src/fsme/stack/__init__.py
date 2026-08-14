@@ -19,6 +19,7 @@ from .item import StackItem, StackItemStatus, StackItemType
 from .labels import (
     ADVANCE_TURN,
     ATTACK_DECLARATION,
+    CHANGE_ROOMS,
     COMBAT_ROUND,
     COMBAT_STRIKE,
     DISCARD_PLAYED_LOOT,
@@ -36,6 +37,7 @@ __all__ = [
     "DISCARD_PLAYED_LOOT",
     "DISCARD_TO_HAND_LIMIT",
     "ATTACK_DECLARATION",
+    "CHANGE_ROOMS",
     "LOOT_STEP",
     "PURCHASE",
     "SETTLE_ROLL",
