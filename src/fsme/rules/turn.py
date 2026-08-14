@@ -10,6 +10,8 @@ taken mid-turn restores mid-turn.
 
 from __future__ import annotations
 
+from typing import Any
+
 from fsme.cards import Ability
 from fsme.commands import Command
 from fsme.effects import EffectContext
@@ -20,6 +22,7 @@ from fsme.stack import (
     StackItem,
     StackItemType,
 )
+from fsme.stack import LOOT_STEP as LOOT_STEP_LABEL
 from fsme.state import GamePhase, GameState
 
 from .combat import end_combat
@@ -27,10 +30,18 @@ from .constants import (
     ATTACKS_PER_TURN,
     HAND_LIMIT,
     LOOT_PLAYS_PER_TURN,
+    LOOT_STEP_CARDS,
     STARTING_HAND_SIZE,
 )
+from .death import restore_everyone
 from .obligations import refuse_to_stop
-from .statics import ATTACKS, LOOT_PLAYS, expire_turn_modifiers, static_value
+from .statics import (
+    ATTACKS,
+    LOOT_PLAYS,
+    LOOT_STEP,
+    expire_turn_modifiers,
+    static_value,
+)
 
 
 class StartGameHandler:
@@ -169,6 +180,13 @@ class EndTurnHandler:
             phase=str(GamePhase.END),
         )
 
+        # COMPREHENSIVE_RULES.md §3.3 opens the end phase with the effects that
+        # answer it, so they are announced here rather than while the turn is
+        # being passed: their abilities go on the stack above the work below
+        # and resolve while this is still the player's turn.
+        context.emit(EventType.TURN_END, controller=player.player_id)
+        context.emit(EventType.TURN_CLEANUP, controller=player.player_id)
+
         # Pushed first, so it resolves last: the turn only passes once the
         # player has finished discarding.
         context.push(
@@ -229,8 +247,11 @@ def advance_turn(item: StackItem, context: EffectContext) -> None:
     # from then on.
     end_combat(context)
 
-    context.emit(EventType.TURN_END, controller=item.controller)
-    context.emit(EventType.TURN_CLEANUP, controller=item.controller)
+    # COMPREHENSIVE_RULES.md §3.3: everybody and every monster heals fully, and
+    # whoever died this turn comes back. This happens before the bonuses that
+    # last "till end of turn" lapse, so a player who bought hit points heals to
+    # the larger number and only then loses the difference.
+    restore_everyone(context)
 
     for modifier in expire_turn_modifiers(state):
         context.emit(
@@ -262,6 +283,42 @@ def advance_turn(item: StackItem, context: EffectContext) -> None:
     _begin_turn(context, active_player=following)
 
 
+def loot_step(item: StackItem, context: EffectContext) -> None:
+    """
+    Draw the cards a turn opens with.
+
+    "Loot +1 during your loot step" is counted here rather than written into
+    the number: a card that adds to the draw is a static like any other.
+    """
+    state = context.state
+    seat = item.controller
+
+    if seat is None or not 0 <= seat < len(state.players):
+        return
+
+    player = state.player(seat)
+
+    if not player.alive:
+        return
+
+    drawn = static_value(state, LOOT_STEP, seat, LOOT_STEP_CARDS)
+
+    if drawn > 0:
+        context.apply("draw_loot", [player], count=drawn)
+
+
+def _character_to_recharge(player: Any) -> list[Any]:
+    """
+    A character card recharges with the items, being tapped like one.
+    """
+    character = player.character
+
+    if character is None or not getattr(character, "tapped", False):
+        return []
+
+    return [character]
+
+
 def _begin_turn(context: EffectContext, *, active_player: int) -> None:
     """
     Run the start of a turn: recharge, refresh allowances, announce.
@@ -278,6 +335,10 @@ def _begin_turn(context: EffectContext, *, active_player: int) -> None:
         # player may answer a card on somebody else's turn.
         seat.loot_played = 0
 
+        # A death is once per turn, and this is the turn it stops being this
+        # turn.
+        seat.died_this_turn = False
+
     player.reset_turn()
 
     player.attacks_left = static_value(
@@ -287,7 +348,7 @@ def _begin_turn(context: EffectContext, *, active_player: int) -> None:
         state, LOOT_PLAYS, active_player, LOOT_PLAYS_PER_TURN
     ) - LOOT_PLAYS_PER_TURN
 
-    tapped = []
+    tapped = [] if player.character is None else _character_to_recharge(player)
 
     for card in player.treasures.cards:
         if not getattr(card, "tapped", False):
@@ -309,6 +370,18 @@ def _begin_turn(context: EffectContext, *, active_player: int) -> None:
     context.emit(EventType.TURN_START, controller=active_player)
 
     state.turn.phase = GamePhase.LOOT
+
+    # COMPREHENSIVE_RULES.md §3.1: the start phase ends by looting, and the
+    # loot goes into the queue rather than being drawn here — the effects that
+    # answer the turn starting resolve first, and a card that looks at the top
+    # of the loot deck must look before this draws from it.
+    context.push(
+        StackItem(
+            kind=StackItemType.ENGINE_EFFECT,
+            label=LOOT_STEP_LABEL,
+            controller=active_player,
+        )
+    )
 
     context.emit(
         EventType.PHASE_CHANGED,

@@ -658,13 +658,15 @@ def test_a_bonus_till_end_of_turn_ends_with_the_turn(
     assert attack_bonus(game, 1) == 0
 
 
-def test_lost_hit_points_are_not_given_back_when_a_bonus_expires(
+def test_a_hit_point_bonus_is_taken_back_with_the_hit_points(
     base_game: ContentLibrary,
 ) -> None:
     """
-    A player who gains +2 HP, takes two damage and then loses the bonus is a
-    player who took two damage. Forgetting the bonus without taking the hit
-    points back would heal them for free.
+    A bonus of +2 HP is two hit points that go when it does.
+
+    COMPREHENSIVE_RULES.md §3.3 puts the full heal before the bonuses lapse, so
+    a blessed player ends the turn healed to the larger number and then loses
+    the difference — not healed for free, and not hurt twice.
     """
     game = new_game(base_game, players=3)
 
@@ -678,7 +680,8 @@ def test_lost_hit_points_are_not_given_back_when_a_bonus_expires(
 
     end_turn(game)
 
-    assert blessed.hp == 0 or not blessed.alive
+    assert blessed.max_hp == 2
+    assert blessed.hp == 2, "healed to four, then two of them expired"
 
 
 # ----------------------------------------------------------------------
@@ -2947,8 +2950,11 @@ def test_the_compass_lets_its_holder_choose_the_order(
     # Chosen in this order, the last one chosen ends up on top.
     assert choose(game, 0, 1, 2, 3, 0).accepted
 
-    assert deck_of(game, "loot")[:4] == [
-        top_four[0],
+    # The turn has passed, and the next player's loot step has already taken
+    # the card the compass put on top.
+    assert game.state.player(1).hand.cards[-1] is top_four[0]
+
+    assert deck_of(game, "loot")[:3] == [
         top_four[3],
         top_four[2],
         top_four[1],
@@ -2991,6 +2997,9 @@ def answering_game(
 ) -> Game:
     """
     A game where rolls stop and wait for the table, as the rules have them do.
+
+    The opening loot step is let through first: a turn begins by putting a loot
+    into the queue, and with the table answering that is a window of its own.
     """
     game = Game.from_content(
         base_game,
@@ -3001,6 +3010,8 @@ def answering_game(
     )
 
     assert game.start().accepted
+
+    pass_until_settled(game)
 
     return game
 
@@ -4039,15 +4050,25 @@ def test_guppys_collar_saves_its_holder_on_a_low_roll(
 ) -> None:
     game = new_game(base_game, rolls=[3])
 
-    give(game, "treasure_deck-passive_items-base_game-guppy_s_collar")
+    # Held by somebody whose turn it is not: the collar also ends the turn of
+    # the player it saves, and this test is about the saving.
+    give(game, "treasure_deck-passive_items-base_game-guppy_s_collar", player=1)
 
-    player = game.state.player(0)
+    player = game.state.player(1)
+
+    toughen(game, player)
+
+    player.hp -= 3
+
+    hp = player.hp
 
     hurt(game, player, amount=player.hp)
 
+    # COMPREHENSIVE_RULES.md §10: a prevented death gives back the health the
+    # lethal blow found.
     assert player.alive
-    assert player.hp == 0, "prevented death leaves a player standing at nothing"
-    assert player.death_prevented
+    assert player.hp == hp
+    assert not player.died_this_turn
 
 
 def test_guppys_collar_lets_its_holder_die_on_a_high_roll(
@@ -4071,12 +4092,14 @@ def test_a_survived_death_is_not_survived_twice(base_game: ContentLibrary) -> No
 
     player = game.state.player(0)
 
+    toughen(game, player)
+
     hurt(game, player, amount=player.hp)
 
-    assert player.alive
+    assert player.alive, "the collar rolled a one and saved them"
 
-    # The next instance of damage is a new death, and this roll does not save.
-    hurt(game, player)
+    # The next lethal blow is a new death, and this roll does not save.
+    hurt(game, player, amount=player.hp)
 
     assert not player.alive
 

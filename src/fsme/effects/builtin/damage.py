@@ -81,9 +81,9 @@ def deal_damage(
 
     for target in targets:
         if isinstance(target, PlayerState):
-            # A player who survived one death does not survive the next by the
-            # same promise: a new instance of damage is a new death.
-            target.death_prevented = False
+            # Remembered before it is lost: a death that is prevented gives
+            # back the health the blow found.
+            target.hp_before_lethal = target.hp
 
         proposal = ctx.propose(
             EventType.BEFORE_DAMAGE,
@@ -240,6 +240,9 @@ def kill(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
 
         if before == 0:
             continue
+
+        if isinstance(target, PlayerState):
+            target.hp_before_lethal = before
 
         target.hp = 0
         killed += 1

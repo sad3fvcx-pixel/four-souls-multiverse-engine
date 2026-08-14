@@ -247,6 +247,58 @@ def test_modify_event_changes_a_carried_value() -> None:
     assert state.player(1).hp == 0
 
 
+def test_a_replacement_inside_a_replacement_gives_the_event_back() -> None:
+    """
+    A replacement may cause an event that is itself replaced.
+
+    The inner replacement has its own event to edit; when it is done, the outer
+    ability must still be editing the one it started on. Losing it would strand
+    a half-applied replacement — the event edited by nobody, and the rest of
+    the ability with nothing to work on.
+    """
+    runtime, state = setup()
+
+    state.player(1).hp = 1
+
+    healing_shield = make_definition(
+        "test.healing_shield",
+        card_type=CardType.TREASURE,
+        abilities=(
+            Ability(
+                trigger="before_damage",
+                effects=(
+                    {"effect": "heal", "amount": 1, "target": "controller"},
+                    "cancel_event",
+                ),
+                replacement=True,
+                scope="any",
+            ),
+        ),
+    )
+    blocker = make_definition(
+        "test.blocker",
+        card_type=CardType.TREASURE,
+        abilities=(
+            Ability(
+                trigger="before_heal",
+                effects=("cancel_event",),
+                replacement=True,
+                scope="any",
+            ),
+        ),
+    )
+
+    give(state, 0, striker(amount=1), "instance:striker")
+    give(state, 0, blocker, "instance:blocker")
+    give(state, 1, healing_shield, "instance:healing_shield")
+
+    activate(runtime)
+
+    # The heal was cancelled by the inner replacement and the damage by the
+    # outer one, which is only possible if the outer one still had its event.
+    assert state.player(1).hp == 1
+
+
 def test_replacement_effects_refuse_to_run_outside_a_window() -> None:
     runtime, state = setup()
 

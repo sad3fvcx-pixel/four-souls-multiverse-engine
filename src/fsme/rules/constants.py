@@ -25,6 +25,9 @@ BASE_PLAYER_ATTACK = 1
 BASE_PLAYER_HP = 2
 """Hit points a character starts with before modifiers."""
 
+LOOT_STEP_CARDS = 1
+"""Loot cards drawn at the start of a turn, before modifiers."""
+
 LOOT_PLAYS_PER_TURN = 1
 """Loot cards playable during the loot phase before modifiers."""
 

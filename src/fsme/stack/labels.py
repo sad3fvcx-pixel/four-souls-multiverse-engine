@@ -28,3 +28,6 @@ SETTLE_ROLL = "settle_roll"
 
 COMBAT_STRIKE = "combat_strike"
 """Apply an attack roll once the table has finished answering it."""
+
+LOOT_STEP = "loot_step"
+"""Draw the cards a turn opens with, once the start-of-turn effects are done."""

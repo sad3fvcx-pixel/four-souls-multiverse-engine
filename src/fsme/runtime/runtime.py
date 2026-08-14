@@ -733,6 +733,13 @@ class Runtime:
             event=event,
         )
 
+        # A replacement may cause an event that is itself replaced, and the
+        # inner replacement must hand the outer one its event back when it is
+        # done. Clearing to nothing would leave the outer ability editing an
+        # event the engine no longer remembers, halfway through editing it.
+        outer_event = self._context.event
+        outer_source = self._context.source
+
         self._context._set_event(event)
         self._context._set_source(card)
 
@@ -753,8 +760,8 @@ class Runtime:
             ) from None
 
         finally:
-            self._context._set_event(None)
-            self._context._set_source(None)
+            self._context._set_event(outer_event)
+            self._context._set_source(outer_source)
 
     def _run_replacement_ops(
         self,
@@ -1336,38 +1343,35 @@ class Runtime:
         Returns True when something changed, which tells the loop to run
         another pass: a death may award a soul, and that soul may win the game.
         """
-        from fsme.rules import refill_monsters, refresh_derived
+        from fsme.rules import kill_player, refill_monsters, refresh_derived
 
         changed = refresh_derived(self._state)
 
         for player in self._state.players:
-            if not player.alive or player.hp > 0 or player.death_prevented:
+            if not player.alive or player.hp > 0:
                 continue
 
             # Death is offered for replacement before it is applied: a card
             # that says "prevent death" is answering the death, not reacting
             # to it. A prevented death leaves the player alive at no hit
             # points, and is not asked again until they take damage.
-            if self._propose(
+            if player.died_this_turn or self._propose(
                 Event(
                     type=EventType.BEFORE_DEATH,
                     controller=player.player_id,
                     targets=[player],
                 )
             ).cancelled:
-                player.death_prevented = True
+                # COMPREHENSIVE_RULES.md §10: a prevented death gives back the
+                # health the lethal blow found, and a player dies only once a
+                # turn — the second nothing is not a second death.
+                player.hp = max(1, min(player.max_hp, player.hp_before_lethal))
                 changed = True
 
                 continue
 
-            player.kill()
+            kill_player(self._context, player)
             changed = True
-
-            self._context.emit(
-                EventType.PLAYER_DIED,
-                controller=player.player_id,
-                targets=[player],
-            )
 
         for monster in list(self._state.active_monsters.cards):
             if not getattr(monster, "alive", False):
@@ -1422,6 +1426,12 @@ class Runtime:
         monster.alive = False
         state.active_monsters.cards.remove(monster)
         state.monster_discard.add_top(monster)
+
+        if state.combat.active and state.combat.monster is monster:
+            from fsme.rules import end_combat
+
+            # An attack ends the moment either fighter dies.
+            end_combat(self._context)
 
         self._context.emit(
             EventType.MONSTER_KILLED,

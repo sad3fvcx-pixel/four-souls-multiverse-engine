@@ -205,3 +205,33 @@ def test_an_ability_may_resolve_between_combat_rounds() -> None:
     attack(runtime)
 
     assert state.player(0).pennies >= 2
+
+
+def test_a_monster_shuffled_back_returns_in_one_piece() -> None:
+    """
+    A beaten monster that finds its way back into the deck comes back whole.
+
+    What the fight did to it belonged to the monster on the table; the card in
+    the deck is only a card. Bringing it up wounded would leave a corpse in a
+    slot that nothing can kill and nothing can clear.
+    """
+    runtime, state = armed_game([6, 6], monsters=1)
+    reach_action_phase(runtime, state)
+
+    monster = state.active_monsters.cards[0]
+
+    attack(runtime)
+
+    assert monster.alive is False
+    assert monster in state.monster_discard.cards
+
+    # However it got there — a card that shuffles the discard back, a card that
+    # puts a monster on top of the deck — the deck is where it is now.
+    state.monster_discard.cards.remove(monster)
+    state.monster_deck.add_top(monster)
+
+    runtime.run()
+
+    assert monster in state.active_monsters.cards
+    assert monster.alive is True
+    assert monster.hp == monster.definition.health

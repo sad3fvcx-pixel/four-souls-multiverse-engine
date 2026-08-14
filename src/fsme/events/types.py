@@ -62,6 +62,15 @@ class EventType(StrEnum):
     """A player about to die, offered for replacement first."""
 
     PLAYER_DIED = "player_died"
+    BEFORE_DEATH_PENALTY = "before_death_penalty"
+    """A death about to be paid for, which cards answer before it is."""
+
+    DEATH_PENALTY = "death_penalty"
+    """The penalty itself, resolving."""
+
+    DEATH_PENALTY_PAID = "death_penalty_paid"
+    """The penalty, once it has been paid."""
+
 
     # Dice
     BEFORE_ROLL = "before_roll"

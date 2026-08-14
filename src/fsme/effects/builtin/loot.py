@@ -330,7 +330,7 @@ def _detach(state: Any, card: Any) -> None:
     ]
 
     for player in state.players:
-        zones.extend((player.hand, player.treasures, player.curses))
+        zones.extend((player.hand, player.treasures, player.curses, player.souls))
 
     for zone in zones:
         if card in zone.cards:

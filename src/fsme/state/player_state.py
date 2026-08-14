@@ -49,15 +49,21 @@ class PlayerState:
 
     alive: bool = True
 
-    death_prevented: bool = False
+    died_this_turn: bool = False
     """
-    Whether this player has already survived the death they are standing in.
+    Whether this player has already died this turn.
 
-    A card that says "prevent death" leaves a player at no hit points and
-    alive, which is a state the engine would otherwise resolve by killing them
-    again on the next pass. The flag says the death has been answered; the next
-    instance of damage clears it, because surviving one death is not surviving
-    the next.
+    A player dies once per turn, and one who is standing at no hit points
+    because they already died is not killed again by the same nothing.
+    """
+
+    hp_before_lethal: int = 0
+    """
+    The hit points this player had before the blow that would kill them.
+
+    COMPREHENSIVE_RULES.md §10: a prevented death gives back the health the
+    player had before the lethal damage or effect, so the number has to be kept
+    from the moment it is about to be lost.
     """
 
     character: Any | None = None

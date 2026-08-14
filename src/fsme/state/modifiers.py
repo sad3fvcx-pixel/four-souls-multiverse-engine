@@ -50,7 +50,16 @@ A card that makes shopping cheaper changes a number the rules read, which is
 what a statistic is for.
 """
 
-STATS = (ATTACK, MAX_HP, ATTACKS, LOOT_PLAYS, ROLL, SHOP_COST)
+LOOT_STEP = "loot_step"
+"""
+Cards drawn by the loot step at the start of a turn.
+
+COMPREHENSIVE_RULES.md §3.1 has the turn begin by looting one card, and cards
+add to that — "Loot +1 during your loot step" is this statistic and not an
+extra loot card played.
+"""
+
+STATS = (ATTACK, MAX_HP, ATTACKS, LOOT_PLAYS, ROLL, SHOP_COST, LOOT_STEP)
 """
 Every statistic a modifier may change.
 

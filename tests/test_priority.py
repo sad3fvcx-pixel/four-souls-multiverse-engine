@@ -14,7 +14,19 @@ from fsme.state import GamePhase
 
 
 def start(runtime):
-    return runtime.submit(Command(type=CommandType.START_GAME, player=0))
+    """
+    Start the game and let the opening loot step resolve.
+
+    COMPREHENSIVE_RULES.md §3.1 opens a turn by putting a loot into the queue,
+    so an interactive game begins with a window already open. A test about
+    windows wants to open its own.
+    """
+    result = runtime.submit(Command(type=CommandType.START_GAME, player=0))
+
+    while runtime.awaiting_priority:
+        pass_priority(runtime, runtime.state.priority.holder or 0)
+
+    return result
 
 
 def pass_priority(runtime, player):

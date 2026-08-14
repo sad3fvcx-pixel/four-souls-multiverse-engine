@@ -25,8 +25,10 @@ def test_starting_deals_hands_and_opens_the_first_turn() -> None:
 
     start(runtime)
 
+    # Everybody is dealt a hand, and the first player has already looted:
+    # COMPREHENSIVE_RULES.md §3.1 ends the start phase by drawing one.
     assert [player.hand_size for player in state.players] == [
-        STARTING_HAND_SIZE,
+        STARTING_HAND_SIZE + 1,
         STARTING_HAND_SIZE,
     ]
     assert state.turn.turn_number == 1
@@ -54,7 +56,12 @@ def test_ending_a_turn_passes_the_seat_on() -> None:
     assert EventType.TURN_CLEANUP in types
 
 
-def test_the_seat_order_skips_dead_players() -> None:
+def test_a_dead_player_is_back_in_time_for_their_turn() -> None:
+    """
+    COMPREHENSIVE_RULES.md §3.3 and §10: everybody heals at the end of a turn,
+    and that is when whoever died comes back. Nobody is skipped, because by the
+    time the turn passes there is nobody left to skip.
+    """
     runtime, state = make_game(players=3)
     start(runtime)
 
@@ -62,7 +69,9 @@ def test_the_seat_order_skips_dead_players() -> None:
 
     end_turn(runtime, 0)
 
-    assert state.turn.active_player == 2
+    assert state.player(1).alive
+    assert state.player(1).hp == state.player(1).max_hp
+    assert state.turn.active_player == 1
 
 
 def test_a_new_turn_recharges_the_active_player_items() -> None:

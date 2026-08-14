@@ -516,22 +516,12 @@
                     "amount": 1
                   }
                 ]
-              },
-              {
-                "description": "Expand room slots by 1.",
-                "effects": [
-                  {
-                    "effect": "expand_slots",
-                    "area": "room",
-                    "amount": 1
-                  }
-                ]
               }
             ],
             "as": "mulligan_choice"
           }
         ],
-        "description": "When this dies, expand monster slots, shop slots, or room slots by 1."
+        "description": "When this dies, expand monster slots or shop slots by 1."
       }
     ]
   },

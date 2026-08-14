@@ -108,7 +108,9 @@ def test_a_game_built_from_content_is_playable() -> None:
     game = Game.from_content(library(), ["Ann", "Bo"], seed=11)
 
     assert game.start().accepted
-    assert all(player.hand_size == 3 for player in game.state.players)
+
+    # Three dealt each, and one more for the player whose turn it is.
+    assert [player.hand_size for player in game.state.players] == [4, 3]
 
     assert game.act(CommandType.PLAY_LOOT, 0, index=0).accepted or (
         game.runtime.awaiting_decision is not None

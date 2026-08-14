@@ -33,10 +33,32 @@ def everything() -> ContentLibrary:
     return ContentLoader(engine_vocabulary()).load_root(CONTENT_ROOT)
 
 
+def settle(game: Game) -> None:
+    """
+    Answer whatever the game is waiting on before it is saved.
+
+    A save is taken between actions. A game suspended inside an ability — a
+    player choosing which loot card their death costs them — is refused, on
+    purpose, and a test about round trips has to get past that first.
+    """
+    while game.runtime.awaiting_decision is not None:
+        decision = game.runtime.awaiting_decision
+
+        assert game.submit(
+            Command(
+                type=CommandType.CHOOSE_TARGET,
+                player=decision.player,
+                payload={"choices": [0] if decision.options else []},
+            )
+        ).accepted
+
+
 def written(game: Game) -> dict[str, Any]:
     """
     Save a game and read it back through JSON, as a file would.
     """
+    settle(game)
+
     return dict(json.loads(json.dumps(game.save(engine_version="test"))))
 
 

@@ -242,7 +242,8 @@ def _save_player(player: PlayerState) -> dict[str, Any]:
         "loot_limit_lifted": player.loot_limit_lifted,
         "loot_played": player.loot_played,
         "alive": player.alive,
-        "death_prevented": player.death_prevented,
+        "died_this_turn": player.died_this_turn,
+        "hp_before_lethal": player.hp_before_lethal,
         "character": _save_card(player.character) if player.character else None,
     }
 
@@ -597,7 +598,8 @@ def _load_player(
     )
 
     player.loot_limit_lifted = bool(saved.get("loot_limit_lifted", False))
-    player.death_prevented = bool(saved.get("death_prevented", False))
+    player.died_this_turn = bool(saved.get("died_this_turn", False))
+    player.hp_before_lethal = int(saved.get("hp_before_lethal", 0))
 
     character = saved.get("character")
 

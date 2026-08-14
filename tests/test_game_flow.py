@@ -22,6 +22,25 @@ def submit(runtime, command_type, player=0, **payload):
     )
 
 
+def settle(runtime):
+    """
+    Answer whatever the game is waiting on, taking the first option.
+
+    A player who dies pays a penalty, and paying it means choosing which loot
+    card and which item to lose. A test about the shape of a turn is not about
+    which card that was.
+    """
+    while runtime.awaiting_decision is not None:
+        decision = runtime.awaiting_decision
+
+        submit(
+            runtime,
+            CommandType.CHOOSE_TARGET,
+            player=decision.player,
+            choices=[0] if decision.options else [],
+        )
+
+
 def test_a_turn_runs_through_every_phase() -> None:
     runtime, state = make_game()
 
@@ -32,11 +51,16 @@ def test_a_turn_runs_through_every_phase() -> None:
     assert submit(runtime, CommandType.END_PHASE).accepted
     assert state.turn.phase is GamePhase.ACTION
 
+    # This attack goes badly: the monster's blow is fatal, and paying for a
+    # death ends the turn of whoever paid it, so the turn passes without
+    # anybody ending it.
     assert submit(runtime, CommandType.ATTACK, index=0).accepted
-    assert submit(runtime, CommandType.END_TURN).accepted
+
+    settle(runtime)
 
     assert state.turn.active_player == 1
     assert state.turn.phase is GamePhase.LOOT
+    assert state.player(0).alive, "and everybody heals when a turn ends"
 
 
 def test_buying_a_treasure_moves_it_and_charges_for_it() -> None:
@@ -116,7 +140,12 @@ def test_several_turns_stay_stable() -> None:
         submit(runtime, CommandType.PLAY_LOOT, player=player, index=0)
         submit(runtime, CommandType.END_PHASE, player=player)
         submit(runtime, CommandType.ATTACK, player=player, index=0)
+
+        settle(runtime)
+
         submit(runtime, CommandType.END_TURN, player=player)
+
+        settle(runtime)
 
         assert runtime.is_stable()
 

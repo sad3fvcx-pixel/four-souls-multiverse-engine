@@ -410,13 +410,19 @@ def _ask(
 
     count = int(params.get("count", 1))
 
+    # A card that says "choose 5" of something there are four of asks for four:
+    # a question nobody could answer would stop the game, and the rules read an
+    # instruction that cannot be carried out as far as it goes.
+    wanted = min(int(params.get("minimum", count)), len(options))
+    allowed = min(int(params.get("maximum", count)), len(options))
+
     raise DecisionRequired(
         kind,
         options,
         bind=str(params.get("as", bind)),
         player=_chooser(context, params),
-        minimum=int(params.get("minimum", count)),
-        maximum=int(params.get("maximum", count)),
+        minimum=min(wanted, allowed),
+        maximum=allowed,
         prompt=str(params.get("prompt", "")),
     )
 

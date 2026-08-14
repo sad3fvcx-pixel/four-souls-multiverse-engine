@@ -161,7 +161,10 @@ def test_a_base_game_can_be_laid_out_and_played(base_game: ContentLibrary) -> No
     assert state.loot_deck.cards
 
     assert game.start().accepted
-    assert all(player.hand_size == 3 for player in state.players)
+
+    # Three dealt to everybody, and the loot step gives the first player a
+    # fourth before they do anything.
+    assert [player.hand_size for player in state.players] == [4, 3, 3]
 
     assert game.act(CommandType.END_PHASE, 0).accepted
     assert game.act(CommandType.ATTACK, 0, index=0).accepted

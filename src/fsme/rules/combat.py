@@ -298,9 +298,33 @@ def refill_monsters(context: EffectContext) -> None:
         elif kind is CardType.CURSE:
             _attach_curse(context, card)
         else:
+            _turn_face_up(card)
+
             state.active_monsters.add_top(card)
 
             context.emit(EventType.ON_ENTER, source=card)
+
+
+def _turn_face_up(card: Any) -> None:
+    """
+    Bring a monster into a slot as the card it is printed as.
+
+    A monster that was beaten and later shuffled back into the deck is a card
+    in a deck, not a corpse: whatever the last fight did to it — its wounds,
+    its counters, the effects that were on it — belonged to the monster that
+    was on the table, and that monster is gone. It comes back up with its
+    printed health, like every other card revealed from the deck.
+    """
+    printed = getattr(getattr(card, "definition", None), "health", None)
+
+    if printed is not None:
+        card.hp = int(printed)
+
+    card.alive = True
+    card.tapped = False
+    card.last_damaged_by = None
+    card.counters.clear()
+    card.modifiers.clear()
 
 
 def _resolve_event(context: EffectContext, card: Any) -> None:

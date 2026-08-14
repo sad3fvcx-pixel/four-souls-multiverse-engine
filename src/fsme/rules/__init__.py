@@ -19,6 +19,9 @@ from fsme.stack import (
     DISCARD_PLAYED_LOOT,
     DISCARD_TO_HAND_LIMIT,
 )
+from fsme.stack import (
+    LOOT_STEP as LOOT_STEP_LABEL,
+)
 
 from .activation import ActivateTreasureHandler
 from .combat import (
@@ -42,6 +45,7 @@ from .constants import (
     TREASURE_COST,
 )
 from .counters import record_trigger, times_this_turn, trigger_key
+from .death import DEATH_PENALTY, kill_player, restore_everyone
 from .decisions import ChooseTargetHandler
 from .errors import RuleError, RuleRegistrationError, UnknownRuleError
 from .loot import PlayLootHandler, discard_played_loot
@@ -56,6 +60,7 @@ from .statics import (
     ATTACKS,
     DIFFICULTY,
     LOOT_PLAYS,
+    LOOT_STEP,
     MAX_HP,
     ROLL,
     STATS,
@@ -74,6 +79,7 @@ from .turn import (
     advance_turn,
     discard_to_hand_limit,
     first_seat,
+    loot_step,
 )
 
 
@@ -107,6 +113,7 @@ def default_procedure_registry() -> ProcedureRegistry:
     registry.register(COMBAT_STRIKE, combat_strike)
     registry.register(DISCARD_PLAYED_LOOT, discard_played_loot)
     registry.register(ADVANCE_TURN, advance_turn)
+    registry.register(LOOT_STEP_LABEL, loot_step)
 
     return registry
 
@@ -121,6 +128,9 @@ __all__ = [
     "PassPriorityHandler",
     "PlayLootHandler",
     "SetupError",
+    "DEATH_PENALTY",
+    "kill_player",
+    "restore_everyone",
     "bonus",
     "cards_in_play",
     "expire_turn_modifiers",
@@ -138,6 +148,7 @@ __all__ = [
     "ATTACK",
     "ATTACKS",
     "LOOT_PLAYS",
+    "LOOT_STEP",
     "DIFFICULTY",
     "MAX_HP",
     "ROLL",

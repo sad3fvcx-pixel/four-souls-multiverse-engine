@@ -136,14 +136,24 @@ def check(game: Game) -> None:
     """
     state = game.state
 
+    # A death is a state-based action, and those are taken when the engine
+    # settles. While an ability is parked on a question there is a moment in
+    # which a player stands at no hit points and has not died yet — the rules
+    # say the same thing: the death goes into the queue, and the queue waits
+    # its turn. So the hit points are checked always and the death only once
+    # the engine has come to rest.
+    settled = game.runtime.awaiting_decision is None
+
     for player in state.players:
         assert 0 <= player.hp <= player.max_hp, (
             f"player {player.player_id} has {player.hp} of {player.max_hp} hit points"
         )
-        assert player.alive == (player.hp > 0 or player.death_prevented), (
-            f"player {player.player_id} is {'alive' if player.alive else 'dead'} "
-            f"at {player.hp} hit points"
-        )
+
+        if settled:
+            assert player.alive == (player.hp > 0), (
+                f"player {player.player_id} is {'alive' if player.alive else 'dead'} "
+                f"at {player.hp} hit points"
+            )
 
     where: dict[int, str] = {}
 

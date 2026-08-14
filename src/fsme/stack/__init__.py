@@ -22,6 +22,7 @@ from .labels import (
     COMBAT_STRIKE,
     DISCARD_PLAYED_LOOT,
     DISCARD_TO_HAND_LIMIT,
+    LOOT_STEP,
     SETTLE_ROLL,
 )
 from .stack import Stack
@@ -32,6 +33,7 @@ __all__ = [
     "COMBAT_STRIKE",
     "DISCARD_PLAYED_LOOT",
     "DISCARD_TO_HAND_LIMIT",
+    "LOOT_STEP",
     "SETTLE_ROLL",
     "Stack",
     "StackItem",
