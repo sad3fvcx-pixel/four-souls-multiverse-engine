@@ -424,6 +424,11 @@ def _first_attack_roll(
     return state.turn.attack_rolls <= 1
 
 
+NTH_TIME = "nth_time_this_turn"
+"""
+The condition that asks which occurrence this is.
+"""
+
 TIMES_THIS_TURN = "__times_this_turn__"
 """
 Where the runtime leaves the occurrence number an ability is looking at.

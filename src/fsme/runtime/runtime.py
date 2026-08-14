@@ -24,7 +24,7 @@ from fsme.stack import SETTLE_ROLL, StackItem, StackItemType
 from fsme.state import GameState, PendingDecision, PendingRoll, PlayerState
 
 from .ability_context import AbilityContext
-from .condition_evaluator import TIMES_THIS_TURN, ConditionEvaluator
+from .condition_evaluator import NTH_TIME, TIMES_THIS_TURN, ConditionEvaluator
 from .effect_executor import EffectExecutor
 from .errors import (
     AbilityResolutionError,
@@ -122,6 +122,33 @@ def in_scope(ability: Ability, card: CardInstance, event: Event) -> bool:
         return card.controller is not None and event.controller == card.controller
 
     return True
+
+
+def counting_conditions(
+    conditions: tuple[Any, ...],
+) -> tuple[list[Any], list[Any]]:
+    """
+    Split an ability's conditions into the counting one and the rest.
+
+    "The third time a player rolls a 6 each turn" counts sixes, not rolls, so
+    the tally is kept only when everything else the card asks for is already
+    true. The occurrence condition is therefore held back and asked last,
+    against the count it just caused.
+
+    Only a condition written at the top level is recognised; one buried inside
+    an ``or`` is asked with the others and counts nothing.
+    """
+    from .condition_evaluator import normalise
+
+    counting: list[Any] = []
+    rest: list[Any] = []
+
+    for node in conditions:
+        name, _ = normalise(node)
+
+        (counting if name == NTH_TIME else rest).append(node)
+
+    return counting, rest
 
 
 def names_ability(event: Event, card: CardInstance, ability: Ability) -> bool:
@@ -583,6 +610,9 @@ class Runtime:
             if not promise.concerns(player_id, kept):
                 continue
 
+            if not promise.about(event.payload):
+                continue
+
             for key, value in promise.apply_to(event.payload).items():
                 event.set(key, value)
 
@@ -665,13 +695,17 @@ class Runtime:
                     event=event,
                 )
 
-                # Counted before the conditions are asked: a card that acts
-                # only the first time still watched the other times go by.
+                counting, rest = counting_conditions(ability.conditions)
+
+                if not self._conditions.evaluate_all(rest, self._state, probe):
+                    continue
+
+                # Counted once everything else the card asks for is true, and
+                # before the occurrence is asked about: a card that acts only
+                # the first time still watched the other times go by.
                 probe.store(TIMES_THIS_TURN, record_trigger(self._state, card, ability))
 
-                if self._conditions.evaluate_all(
-                    ability.conditions, self._state, probe
-                ):
+                if self._conditions.evaluate_all(counting, self._state, probe):
                     matches.append((card, ability))
 
         return matches
@@ -823,13 +857,17 @@ class Runtime:
                     event=event,
                 )
 
-                # Counted before the conditions are asked: a card that acts
-                # only the first time still watched the other times go by.
+                counting, rest = counting_conditions(ability.conditions)
+
+                if not self._conditions.evaluate_all(rest, self._state, probe):
+                    continue
+
+                # Counted once everything else the card asks for is true, and
+                # before the occurrence is asked about: a card that acts only
+                # the first time still watched the other times go by.
                 probe.store(TIMES_THIS_TURN, record_trigger(self._state, card, ability))
 
-                if self._conditions.evaluate_all(
-                    ability.conditions, self._state, probe
-                ):
+                if self._conditions.evaluate_all(counting, self._state, probe):
                     matches.append((card, ability))
 
         return matches

@@ -576,6 +576,144 @@ def test_godhead_reads_a_roll_from_the_other_side(alt_art: ContentLibrary) -> No
     assert game.state.player(0).pennies == 0
 
 
+def attack_the_first_monster(game: Game) -> Any:
+    while game.state.turn.phase is not GamePhase.ACTION:
+        assert game.act(CommandType.END_PHASE, 0).accepted
+
+    return game.act(CommandType.ATTACK, 0, index=0)
+
+
+def test_big_bony_punishes_a_miss(alt_art: ContentLibrary) -> None:
+    # A miss, the die Big Bony makes them roll, then the hit that ends the
+    # fight: a script that only ever misses would run until somebody died.
+    game = new_game(alt_art, rolls=[1, 2, 6])
+
+    only_monster(game, "monster_deck-basic_enemies-alt_art-big_bony", hp=1)
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    hp = player.hp
+
+    assert attack_the_first_monster(game).accepted
+
+    # One from the monster's blow, one for having missed.
+    assert player.hp == hp - 2
+
+
+def test_big_bony_says_nothing_about_a_hit(alt_art: ContentLibrary) -> None:
+    game = new_game(alt_art, rolls=[6])
+
+    bony = only_monster(game, "monster_deck-basic_enemies-alt_art-big_bony", hp=1)
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    hp = player.hp
+
+    assert attack_the_first_monster(game).accepted
+
+    assert player.hp == hp
+    assert not bony.alive
+
+
+def test_polycephalus_turns_the_next_attack_roll_over(
+    alt_art: ContentLibrary,
+) -> None:
+    game = new_game(alt_art, rolls=[2])
+
+    poly = only_monster(game, "monster_deck-bosses-alt_art-polycephalus", hp=2)
+
+    hurt(game, poly, amount=1)
+
+    assert attack_the_first_monster(game).accepted
+
+    # A two would have missed a 4+; read from the other side it is a five.
+    assert not poly.alive
+
+
+def test_polycephalus_leaves_an_unhurt_roll_alone(alt_art: ContentLibrary) -> None:
+    game = new_game(alt_art, rolls=[2, 6])
+
+    poly = only_monster(game, "monster_deck-bosses-alt_art-polycephalus", hp=1)
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    assert attack_the_first_monster(game).accepted
+
+    # Nothing hurt it first, so the two stayed a two and missed.
+    assert player.hp < player.max_hp
+    assert not poly.alive, "the six that followed landed"
+
+
+def test_the_alternate_satan_kills_on_the_third_six(alt_art: ContentLibrary) -> None:
+    game = new_game(alt_art, rolls=[6, 6, 6])
+
+    only_monster(game, "monster_deck-epic_boss-alt_art-satan", hp=6)
+
+    game.state.player(0).additional_loot_plays += 2
+
+    for roll in range(3):
+        assert play(
+            game, deal(game, "loot_deck-pills_runes-base_game-pills")
+        ).accepted
+
+        assert game.state.player(0).alive == (roll < 2)
+
+
+def test_the_alternate_satan_counts_a_five_as_a_six(alt_art: ContentLibrary) -> None:
+    game = new_game(alt_art, rolls=[5, 5, 5])
+
+    only_monster(game, "monster_deck-epic_boss-alt_art-satan", hp=6)
+
+    game.state.player(0).additional_loot_plays += 2
+
+    for _ in range(3):
+        assert play(
+            game, deal(game, "loot_deck-pills_runes-base_game-pills")
+        ).accepted
+
+    assert not game.state.player(0).alive, "every five was a six"
+
+
+def test_the_alternate_satan_spares_a_table_that_rolls_low(
+    alt_art: ContentLibrary,
+) -> None:
+    game = new_game(alt_art, rolls=[4, 4, 4])
+
+    only_monster(game, "monster_deck-epic_boss-alt_art-satan", hp=6)
+
+    game.state.player(0).additional_loot_plays += 2
+
+    for _ in range(3):
+        assert play(
+            game, deal(game, "loot_deck-pills_runes-base_game-pills")
+        ).accepted
+
+    assert game.state.player(0).alive
+
+
+def test_ultra_greed_gilds_an_item_and_takes_it(alt_art: ContentLibrary) -> None:
+    game = new_game(alt_art, rolls=[6])
+
+    greed = only_monster(game, "monster_deck-epic_boss-alt_art-ultra_greed", hp=1)
+
+    theirs = give(game, "treasure_deck-passive_items-base_game-breakfast", player=1)
+    give(game, "treasure_deck-passive_items-base_game-the_relic", player=1)
+
+    assert attack_the_first_monster(game).accepted
+
+    assert pick(game, 0, theirs).accepted
+
+    assert theirs.counters.get("gold") == 1
+    assert not greed.alive
+
+    answer(game, "yes")
+
+    assert theirs in game.state.player(0).treasures.cards
+
+
 def test_every_implemented_alt_art_card_keeps_its_text(
     alt_art: ContentLibrary,
 ) -> None:

@@ -108,6 +108,7 @@ def promise(
     targets: Sequence[Any],
     event: str = "",
     changes: Any = None,
+    when: Any = None,
     uses: int = 1,
     unlimited: bool = False,
 ) -> int:
@@ -147,10 +148,15 @@ def promise(
         for key, change in changes.items()
     }
 
+    if when is not None and not isinstance(when, Mapping):
+        raise EffectExecutionError("promise 'when' must describe what the event carries")
+
+    about = {str(key): value for key, value in (when or {}).items()}
+
     subjects: list[Promise] = []
 
     if not targets:
-        subjects.append(Promise(event=str(event), changes=dict(owed)))
+        subjects.append(Promise(event=str(event), changes=dict(owed), when=dict(about)))
 
     for target in targets:
         player_id = getattr(target, "player_id", None)
@@ -159,6 +165,7 @@ def promise(
             Promise(
                 event=str(event),
                 changes=dict(owed),
+                when=dict(about),
                 player_id=None if player_id is None else int(player_id),
                 card_id=(
                     None
@@ -285,7 +292,7 @@ def register(registry: EffectRegistry) -> None:
         promise,
         needs_target=False,
         primary="event",
-        literal=("changes",),
+        literal=("changes", "when"),
         description="Owe a change to the next event of a kind.",
     )
     registry.register(

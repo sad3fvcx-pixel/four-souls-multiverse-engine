@@ -50,7 +50,42 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "event_value": {
+                "key": "hit",
+                "value": false
+              }
+            }
+          ],
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": {
+                    "value": 3
+                  }
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "event_player"
+                }
+              ]
+            }
+          ],
+          "description": "Each time a player misses an attack roll, they roll- 1-2: they take 1 damage."
+        }
+      ],
       "health": 6,
       "attack": 1,
       "roll": 2,
@@ -1015,7 +1050,27 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "promise",
+              "event": "roll_modified",
+              "when": {
+                "attack": true
+              },
+              "changes": {
+                "value": {
+                  "flip": 7
+                }
+              }
+            }
+          ],
+          "description": "Each time this takes damage, flip the next attack roll this turn. The roll becomes 7 minus the current result."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 4,
@@ -1355,7 +1410,43 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 6
+            },
+            {
+              "nth_time_this_turn": 3
+            }
+          ],
+          "effects": [
+            {
+              "effect": "kill",
+              "target": "all_players"
+            }
+          ],
+          "description": "The third time a player rolls a 6 each turn, kill all players."
+        },
+        {
+          "trigger": "roll_modified",
+          "scope": "any",
+          "replacement": true,
+          "conditions": [
+            {
+              "dice_equals": 5
+            }
+          ],
+          "effects": [
+            {
+              "set_roll": 6
+            }
+          ],
+          "description": "Each time a player would roll a 5, change the result to a 6."
+        }
+      ],
       "health": 6,
       "attack": 1,
       "roll": 4,
@@ -1473,7 +1564,54 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "attack_start",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "gold",
+              "amount": 1,
+              "targets": [
+                {
+                  "target_treasure": {
+                    "exclude_eternal": true,
+                    "as": "gilded"
+                  }
+                }
+              ],
+              "target": "gilded"
+            }
+          ],
+          "description": "When an attack is declared on this, put a gold counter on a non-eternal item."
+        },
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "steal_treasure",
+                  "targets": [
+                    {
+                      "target_treasure": {
+                        "counter": "gold",
+                        "exclude_eternal": true,
+                        "as": "spoils"
+                      }
+                    }
+                  ],
+                  "target": "spoils"
+                }
+              ],
+              "prompt": "Steal an item with a gold counter on it?"
+            }
+          ],
+          "description": "When this dies, the active player may steal an item with a gold counter on it."
+        }
+      ],
       "health": 4,
       "attack": 2,
       "roll": 5,

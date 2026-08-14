@@ -818,6 +818,17 @@ def _all_treasures(
         # "Recharge another item" — the item saying so is not another item.
         treasures = [card for card in treasures if card is not context.source]
 
+    counter = params.get("counter")
+
+    if counter is not None:
+        # "An item with a gold counter on it" is a family the game made rather
+        # than one the card was printed with.
+        treasures = [
+            card
+            for card in treasures
+            if int(getattr(card, "counters", {}).get(str(counter), 0)) > 0
+        ]
+
     tag = params.get("tag")
 
     if tag is not None:

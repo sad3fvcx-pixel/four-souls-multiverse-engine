@@ -37,7 +37,10 @@ CAP = "cap"
 FLOOR = "floor"
 """Raise a number to at least this."""
 
-CHANGES = (VALUE, DELTA, FACTOR, CAP, FLOOR)
+FLIP = "flip"
+"""Read a number from the other side: the flip value less what it was."""
+
+CHANGES = (VALUE, DELTA, FACTOR, CAP, FLOOR, FLIP)
 
 
 @dataclass(slots=True)
@@ -61,6 +64,14 @@ class Promise:
     player_id: int | None = None
     card_id: str | None = None
 
+    when: dict[str, Any] = field(default_factory=dict)
+    """
+    What the event must carry for this promise to be about it.
+
+    "The next attack roll" and "the next roll" are different promises, and the
+    only thing that tells them apart is a value the event carries.
+    """
+
     uses: int | None = 1
 
     duration: Duration = Duration.END_OF_TURN
@@ -79,6 +90,12 @@ class Promise:
             return self.card_id in card_ids
 
         return True
+
+    def about(self, payload: Mapping[str, Any]) -> bool:
+        """
+        Return whether an event is the kind this promise was made about.
+        """
+        return all(payload.get(key) == value for key, value in self.when.items())
 
     def spend(self) -> bool:
         """
@@ -117,6 +134,9 @@ class Promise:
 
             if FLOOR in change:
                 number = max(number, int(change[FLOOR]))
+
+            if FLIP in change:
+                number = int(change[FLIP]) - number
 
             changed[key] = number
 
