@@ -4304,6 +4304,118 @@ def test_the_host_hat_answers_its_own_promise_only(base_game: ContentLibrary) ->
 
 
 # ----------------------------------------------------------------------
+# Splitting damage, counting votes, lifting a limit
+# ----------------------------------------------------------------------
+
+
+def test_pestilence_splits_its_two_damage(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    pestilence = only_monster(game, "monster_deck-bosses-base_game-pestilence")
+    bystander = summon(game, "monster_deck-bosses-base_game-greed")
+
+    victim = game.state.player(1)
+    toughen(game, victim)
+
+    hp = victim.hp
+    monster_hp = bystander.hp
+
+    slay(game, pestilence)
+
+    assert pick(game, 0, victim).accepted
+    assert pick(game, 0, bystander).accepted
+
+    assert victim.hp == hp - 1
+    assert bystander.hp == monster_hp - 1
+
+
+def test_pestilence_may_put_both_points_on_one_target(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    pestilence = only_monster(game, "monster_deck-bosses-base_game-pestilence")
+
+    victim = game.state.player(1)
+    toughen(game, victim)
+
+    give(game, "treasure_deck-passive_items-base_game-dry_baby", player=1)
+
+    hp = victim.hp
+
+    slay(game, pestilence)
+
+    assert pick(game, 0, victim).accepted
+    assert pick(game, 0, victim).accepted
+
+    # A Dry Baby reduces every instance to one, so two points on one player
+    # arriving as a single instance land as a single point.
+    assert victim.hp == hp - 1
+
+
+def test_the_remote_detonator_destroys_what_the_table_voted_for(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, players=3)
+
+    detonator = give(game, "treasure_deck-active_items-base_game-remote_detonator")
+
+    doomed = give(game, "treasure_deck-passive_items-base_game-breakfast", player=1)
+    spared = give(game, "treasure_deck-passive_items-base_game-the_relic", player=2)
+
+    assert activate(game, detonator).accepted
+
+    # One question per player, in seating order.
+    assert pick(game, 0, doomed).accepted
+    assert pick(game, 1, spared).accepted
+    assert pick(game, 2, doomed).accepted
+
+    assert doomed in game.state.treasure_discard.cards
+    assert spared in game.state.player(2).treasures.cards
+
+
+def test_a_tied_vote_destroys_nothing(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    detonator = give(game, "treasure_deck-active_items-base_game-remote_detonator")
+
+    mine = give(game, "treasure_deck-passive_items-base_game-breakfast")
+    theirs = give(game, "treasure_deck-passive_items-base_game-the_relic", player=1)
+
+    assert activate(game, detonator).accepted
+
+    assert pick(game, 0, theirs).accepted
+    assert pick(game, 1, mine).accepted
+
+    assert game.state.treasure_discard.cards == []
+    assert mine in game.state.player(0).treasures.cards
+    assert theirs in game.state.player(1).treasures.cards
+
+
+def test_the_box_buys_as_much_loot_as_you_like(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    box = give(game, "treasure_deck-one_use_items-base_game-box")
+
+    player = game.state.player(0)
+
+    assert play(game, deal(game, "loot_deck-1-base_game-a_penny")).accepted
+    assert not play(game, deal(game, "loot_deck-1-base_game-a_penny")).accepted
+
+    assert activate(game, box).accepted
+
+    assert box in game.state.treasure_discard.cards
+    assert player.loot_limit_lifted
+
+    for _ in range(4):
+        assert play(game, deal(game, "loot_deck-1-base_game-a_penny")).accepted
+
+    end_turn(game)
+
+    assert not player.loot_limit_lifted
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

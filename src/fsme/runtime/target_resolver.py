@@ -155,6 +155,8 @@ class TargetResolver:
         register("previous_result", _previous_result)
 
         register("group", _group)
+        register("vote", _vote)
+        register("most_common", _most_common)
         register("none", _none)
 
 
@@ -948,6 +950,77 @@ def _group(
         members.extend(context.targets.get(str(name), ()))
 
     return members
+
+
+def _vote(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    Ask every living player to pick one thing, one player at a time.
+
+    A vote is several questions, not one, and they are asked in seating order
+    so that a replayed game asks them in the same order. Each answer is bound
+    under a name of its own, which is what lets the ability be suspended and
+    resumed once per voter — the votes already cast are found waiting rather
+    than asked again.
+
+    The result is every vote, in the order cast, duplicates and all: who won is
+    a separate question, and counting is not this function's business.
+    """
+    name = str(params.get("as", "vote"))
+    options = _all_treasures(state, context, dict(params), rng)
+
+    if not options:
+        return []
+
+    votes: list[Any] = []
+
+    for player in state.players:
+        if not player.alive:
+            continue
+
+        cast = context.targets.get(f"{name}:{player.player_id}")
+
+        if cast is None:
+            raise DecisionRequired(
+                DecisionKind.CHOOSE_TREASURE,
+                options,
+                bind=f"{name}:{player.player_id}",
+                player=player.player_id,
+                prompt=str(params.get("prompt", "")),
+            )
+
+        votes.extend(cast)
+
+    return votes
+
+
+def _most_common(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    The one thing a group names more often than any other.
+
+    A tie is not a winner: "if there is a tie, nothing happens" is what the
+    card says, and an empty answer is how an ability says nothing happened.
+    """
+    counted: list[tuple[Any, int]] = []
+
+    for member in _group(state, context, params, rng):
+        for index, (candidate, votes) in enumerate(counted):
+            if candidate is member:
+                counted[index] = (candidate, votes + 1)
+                break
+        else:
+            counted.append((member, 1))
+
+    if not counted:
+        return []
+
+    most = max(votes for _, votes in counted)
+    winners = [candidate for candidate, votes in counted if votes == most]
+
+    return winners if len(winners) == 1 else []
 
 
 def _none(

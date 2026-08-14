@@ -2356,7 +2356,42 @@
       "type": "monster",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "divide_damage",
+              "each": 1,
+              "targets": [
+                {
+                  "target_player_or_monster": {
+                    "as": "first_point",
+                    "prompt": "Where does the first damage go?"
+                  }
+                },
+                {
+                  "target_player_or_monster": {
+                    "as": "second_point",
+                    "prompt": "Where does the second damage go?"
+                  }
+                }
+              ],
+              "target": {
+                "group": {
+                  "of": [
+                    "first_point",
+                    "second_point"
+                  ],
+                  "as": "divided"
+                }
+              }
+            }
+          ],
+          "description": "When this dies, the active player deals 2 damage divided as they choose to any number of monsters or players."
+        }
+      ],
       "health": 4,
       "attack": 1,
       "roll": 4,

@@ -308,6 +308,35 @@ def require_attack(
     return len(monsters) or 1
 
 
+def lift_limit(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    what: str = "loot_plays",
+) -> int:
+    """
+    Let a player do something as often as they like this turn.
+
+    A card that says "any number" is not asking for a bigger allowance, and
+    writing one in would be a guess about how big. The limit is lifted instead,
+    and the turn puts it back.
+    """
+    if what != "loot_plays":
+        raise EffectExecutionError(
+            f"there is no limit called '{what}' to lift; loot_plays is the one"
+        )
+
+    lifted = 0
+
+    for player in targets:
+        if not isinstance(player, PlayerState):
+            raise EffectExecutionError("lift_limit expects player targets")
+
+        player.loot_limit_lifted = True
+        lifted += 1
+
+    return lifted
+
+
 def register(registry: EffectRegistry) -> None:
     """
     Register every card modifier effect.
@@ -348,6 +377,13 @@ def register(registry: EffectRegistry) -> None:
         require_attack,
         primary="times",
         description="Make a player owe an attack this turn.",
+    )
+    registry.register(
+        "lift_limit",
+        lift_limit,
+        needs_target=True,
+        primary="what",
+        description="Let a player act as often as they like this turn.",
     )
     registry.register(
         "add_modifier",

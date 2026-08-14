@@ -31,6 +31,14 @@ class PlayerState:
     attacks_left: int = 1
     additional_loot_plays: int = 0
 
+    loot_limit_lifted: bool = False
+    """
+    Whether this player may play as much loot as they like this turn.
+
+    "You may play any number of additional loot cards till end of turn" is not
+    a bigger allowance; it is no allowance at all, and a number cannot say that.
+    """
+
     loot_played: int = 0
     """
     Loot cards this player has played during the current turn.
@@ -88,6 +96,7 @@ class PlayerState:
         self.attacks_left = 1
         self.additional_loot_plays = 0
         self.loot_played = 0
+        self.loot_limit_lifted = False
 
     @property
     def soul_count(self) -> int:

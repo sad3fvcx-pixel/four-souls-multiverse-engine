@@ -7918,5 +7918,94 @@
         "description": "Before a dice is rolled, choose a number. If the next roll is that number, loot 3."
       }
     ]
+  },
+  "monster_deck-bosses-base_game-pestilence": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "divide_damage",
+            "each": 1,
+            "targets": [
+              {
+                "target_player_or_monster": {
+                  "as": "first_point",
+                  "prompt": "Where does the first damage go?"
+                }
+              },
+              {
+                "target_player_or_monster": {
+                  "as": "second_point",
+                  "prompt": "Where does the second damage go?"
+                }
+              }
+            ],
+            "target": {
+              "group": {
+                "of": [
+                  "first_point",
+                  "second_point"
+                ],
+                "as": "divided"
+              }
+            }
+          }
+        ],
+        "description": "When this dies, the active player deals 2 damage divided as they choose to any number of monsters or players."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-remote_detonator": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "vote": {
+              "as": "votes",
+              "prompt": "Vote for an item to destroy."
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "target": {
+              "most_common": {
+                "of": "votes",
+                "as": "doomed"
+              }
+            }
+          }
+        ],
+        "description": "Each player votes on an item in play. Destroy the item with the most votes. If there is a tie, nothing happens."
+      }
+    ]
+  },
+  "treasure_deck-one_use_items-base_game-box": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "target": "self"
+          },
+          {
+            "if": [
+              "last_effect_did"
+            ],
+            "then": [
+              {
+                "lift_limit": "loot_plays"
+              }
+            ]
+          }
+        ],
+        "description": "Destroy this. If you do, you may play any number of additional loot cards till end of turn."
+      }
+    ]
   }
 }

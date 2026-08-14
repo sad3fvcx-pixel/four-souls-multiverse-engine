@@ -48,7 +48,7 @@ class PlayLootHandler:
 
         allowance = LOOT_PLAYS_PER_TURN + player.additional_loot_plays
 
-        if player.loot_played >= allowance:
+        if not player.loot_limit_lifted and player.loot_played >= allowance:
             return "no loot plays remaining this turn"
 
         index = command.get("index", 0)

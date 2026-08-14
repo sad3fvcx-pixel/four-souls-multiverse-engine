@@ -281,6 +281,9 @@ def expire_turn_modifiers(state: GameState) -> list[TemporaryModifier]:
         watcher for watcher in state.watchers if not watcher.expires_at_end_of_turn()
     ]
 
+    for player in state.players:
+        player.loot_limit_lifted = False
+
     expire_card_modifiers(state)
 
     expired = [modifier for modifier in state.modifiers if modifier.expires_at_end_of_turn()]

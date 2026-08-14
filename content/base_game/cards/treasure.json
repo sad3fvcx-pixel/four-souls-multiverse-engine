@@ -1408,7 +1408,31 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "vote": {
+                "as": "votes",
+                "prompt": "Vote for an item to destroy."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "destroy_treasure",
+              "target": {
+                "most_common": {
+                  "of": "votes",
+                  "as": "doomed"
+                }
+              }
+            }
+          ],
+          "description": "Each player votes on an item in play. Destroy the item with the most votes. If there is a tie, nothing happens."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -1975,7 +1999,28 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "destroy_treasure",
+              "target": "self"
+            },
+            {
+              "if": [
+                "last_effect_did"
+              ],
+              "then": [
+                {
+                  "lift_limit": "loot_plays"
+                }
+              ]
+            }
+          ],
+          "description": "Destroy this. If you do, you may play any number of additional loot cards till end of turn."
+        }
+      ],
       "tags": [
         "activated",
         "one_use"

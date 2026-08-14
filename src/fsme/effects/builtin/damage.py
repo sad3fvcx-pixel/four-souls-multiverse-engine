@@ -126,6 +126,41 @@ def deal_damage(
     return dealt
 
 
+def divide_damage(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    each: int = 1,
+    dealt_by: Any | None = None,
+) -> int:
+    """
+    Deal damage split among the things the player picked.
+
+    "2 damage divided as they choose to any number of monsters or players" is
+    two picks, and picking the same thing twice is not two instances of one
+    damage — it is one instance of two. So the picks are counted first and each
+    target is damaged once, for as much as it was given.
+    """
+    if each < 0:
+        raise EffectExecutionError("divide_damage each must be non-negative")
+
+    shares: list[tuple[Any, int]] = []
+
+    for target in targets:
+        for index, (chosen, amount) in enumerate(shares):
+            if chosen is target:
+                shares[index] = (chosen, amount + each)
+                break
+        else:
+            shares.append((target, each))
+
+    dealt = 0
+
+    for target, amount in shares:
+        dealt += deal_damage(ctx, [target], amount=amount, dealt_by=dealt_by)
+
+    return dealt
+
+
 def heal(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> int:
     """
     Restore hit points, never above the target's maximum.
@@ -265,6 +300,13 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="amount",
         description="Deal damage to a player or monster.",
+    )
+    registry.register(
+        "divide_damage",
+        divide_damage,
+        needs_target=True,
+        primary="each",
+        description="Deal damage split among the things chosen.",
     )
     registry.register(
         "heal", heal, needs_target=True, primary="amount", description="Restore hit points."
