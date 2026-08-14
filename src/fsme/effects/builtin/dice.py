@@ -136,6 +136,10 @@ def reroll(ctx: EffectContext, targets: Sequence[Any], sides: int = 6) -> int:
 def modify_roll(ctx: EffectContext, targets: Sequence[Any], amount: int = 0) -> int:
     """
     Shift a roll: the one being replaced, or the one the table is answering.
+
+    With no roll anywhere there is nothing to shift, and a card played at the
+    wrong moment does nothing rather than breaking the game. Whether it was
+    worth playing is the player's business.
     """
     waiting = ctx.state.pending_roll
 
@@ -145,9 +149,7 @@ def modify_roll(ctx: EffectContext, targets: Sequence[Any], amount: int = 0) -> 
     event = ctx.event
 
     if event is None:
-        raise EffectExecutionError(
-            "'modify_roll' may only be used while a roll is open"
-        )
+        return 0
 
     value = int(event.get("value", 0)) + int(amount)
 
@@ -161,7 +163,8 @@ def set_roll(ctx: EffectContext, targets: Sequence[Any], value: int = 1) -> int:
     Change a roll to a chosen number.
 
     A die cannot show a number it does not have, so the result is kept on its
-    face however the card is written.
+    face however the card is written. With no roll open there is nothing to
+    change, and the card does nothing.
     """
     waiting = ctx.state.pending_roll
 
@@ -171,7 +174,7 @@ def set_roll(ctx: EffectContext, targets: Sequence[Any], value: int = 1) -> int:
     event = ctx.event
 
     if event is None:
-        raise EffectExecutionError("'set_roll' may only be used while a roll is open")
+        return 0
 
     sides = int(event.get("sides", 6))
     kept = max(1, min(sides, int(value)))
@@ -196,7 +199,7 @@ def flip_roll(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     event = ctx.event
 
     if event is None:
-        raise EffectExecutionError("'flip_roll' may only be used while a roll is open")
+        return 0
 
     sides = int(event.get("sides", 6))
     flipped = max(1, min(sides, sides + 1 - int(event.get("value", 1))))

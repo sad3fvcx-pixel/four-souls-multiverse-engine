@@ -22,6 +22,7 @@ from fsme.stack import (
 )
 from fsme.state import GamePhase, GameState
 
+from .combat import end_combat
 from .constants import (
     ATTACKS_PER_TURN,
     HAND_LIMIT,
@@ -221,6 +222,12 @@ def advance_turn(item: StackItem, context: EffectContext) -> None:
 
     if item.controller is None:
         return
+
+    # An attack belongs to the turn that declared it. A card that ends the turn
+    # mid-fight — or cancels everything that has not resolved — leaves the
+    # combat behind, and a combat nobody is resolving would refuse every attack
+    # from then on.
+    end_combat(context)
 
     context.emit(EventType.TURN_END, controller=item.controller)
     context.emit(EventType.TURN_CLEANUP, controller=item.controller)

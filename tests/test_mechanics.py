@@ -143,11 +143,16 @@ def test_attack_rolls_go_through_the_same_window() -> None:
     assert monster.hp == 1
 
 
-def test_modify_roll_refuses_to_run_outside_a_roll() -> None:
+def test_modify_roll_does_nothing_outside_a_roll() -> None:
+    """
+    A card that shifts a roll shifts nothing when no roll is happening.
+
+    It is played at the wrong moment rather than written wrongly, and a game
+    is not stopped because somebody wasted a card.
+    """
     runtime, state = started()
 
-    with pytest.raises(EffectExecutionError):
-        runtime.context.apply("modify_roll", [], amount=1)
+    assert runtime.context.apply("modify_roll", [], amount=1) == 0
 
 
 # ----------------------------------------------------------------------

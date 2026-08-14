@@ -292,12 +292,14 @@ def swap_cards(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     Exchange two cards between the players holding them.
 
     Exactly two: a swap with one card is a gift and a swap with three is not a
-    swap. The cards keep everything about themselves except whose they are.
+    swap, so anything else does nothing at all. The cards keep everything about
+    themselves except whose they are.
     """
     if len(targets) != 2:
-        raise EffectExecutionError(
-            f"swap_cards needs exactly two cards, got {len(targets)}"
-        )
+        # Two cards make a swap, and when the board could only offer one there
+        # is nothing to exchange. The card is passed over, as the rules pass
+        # over an instruction that cannot be carried out.
+        return 0
 
     state = ctx.state
     first, second = targets
