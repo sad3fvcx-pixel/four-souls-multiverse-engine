@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .obligations import Obligation
 from .phase import GamePhase
 
 
@@ -36,6 +37,14 @@ class TurnState:
 
     A card that grants an extra turn resolves long before the turn is over, so
     the promise has to wait somewhere until the turn actually ends.
+    """
+
+    obligations: list[Obligation] = field(default_factory=list)
+    """
+    What the players still owe this turn, in the order it was owed.
+
+    "Must attack that monster this turn if able" is a debt the turn cannot end
+    while it can still be paid, and it lasts exactly one turn.
     """
 
     triggers_fired: dict[str, int] = field(default_factory=dict)
@@ -89,6 +98,7 @@ class TurnState:
         self.attack_rolls = 0
 
         self.triggers_fired.clear()
+        self.obligations.clear()
 
     def record_loot_play(self) -> None:
         self.loot_played += 1

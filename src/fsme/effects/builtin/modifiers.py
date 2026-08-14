@@ -10,7 +10,13 @@ from collections.abc import Sequence
 from typing import Any
 
 from fsme.events import EventType
-from fsme.state import CardModifier, Duration, PlayerState, TemporaryModifier
+from fsme.state import (
+    CardModifier,
+    Duration,
+    Obligation,
+    PlayerState,
+    TemporaryModifier,
+)
 from fsme.state.modifiers import MONSTER_STATS, STATS
 
 from ..context import EffectContext
@@ -258,6 +264,50 @@ def add_counter(
     return amount
 
 
+def require_attack(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    times: int = 1,
+    who: Any = None,
+) -> int:
+    """
+    Make a player owe an attack this turn.
+
+    The engine allows and forbids; this is the third thing cards ask for. A
+    target names what must be attacked — "the active player must attack that
+    monster this turn" — and no target means any monster will do, which is what
+    an extra attack owed after a monster dies means.
+
+    "If able" is not written here. Whether the debt can be paid is asked when
+    the player tries to stop, because by then the board may have changed.
+    """
+    if times < 1:
+        raise EffectExecutionError("require_attack times must be at least one")
+
+    state = ctx.state
+
+    player_id = int(who) if who is not None else state.turn.active_player
+
+    if not 0 <= player_id < len(state.players):
+        return 0
+
+    monsters = [card for card in targets if hasattr(card, "instance_id")]
+
+    if targets and not monsters:
+        raise EffectExecutionError("require_attack expects monster targets")
+
+    for monster in monsters or [None]:
+        state.turn.obligations.append(
+            Obligation(
+                player_id=player_id,
+                card_id=None if monster is None else str(monster.instance_id),
+                remaining=int(times),
+            )
+        )
+
+    return len(monsters) or 1
+
+
 def register(registry: EffectRegistry) -> None:
     """
     Register every card modifier effect.
@@ -292,6 +342,12 @@ def register(registry: EffectRegistry) -> None:
         skip_next_turn,
         needs_target=True,
         description="Take away a player's next turn.",
+    )
+    registry.register(
+        "require_attack",
+        require_attack,
+        primary="times",
+        description="Make a player owe an attack this turn.",
     )
     registry.register(
         "add_modifier",

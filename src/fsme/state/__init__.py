@@ -8,6 +8,7 @@ from .combat_state import CombatState
 from .decision import DecisionKind, PendingDecision
 from .game_state import GameState
 from .modifiers import CardModifier, DamageShield, Duration, TemporaryModifier
+from .obligations import Obligation
 from .phase import GamePhase
 from .player_state import PlayerState
 from .priority import PriorityState
@@ -26,6 +27,7 @@ __all__ = [
     "GameState",
     "PendingDecision",
     "PendingRoll",
+    "Obligation",
     "PlayerState",
     "PriorityState",
     "Promise",

@@ -1080,9 +1080,12 @@
               "stat": "attacks",
               "amount": 1,
               "target": "active_player"
+            },
+            {
+              "require_attack": 1
             }
           ],
-          "description": "When this dies, the active player makes an additional attack."
+          "description": "When this dies, the active player must make an additional attack."
         }
       ],
       "health": 2,
@@ -1622,9 +1625,12 @@
               "stat": "attacks",
               "amount": 1,
               "target": "active_player"
+            },
+            {
+              "require_attack": 1
             }
           ],
-          "description": "When this dies, the active player makes an additional attack."
+          "description": "When this dies, the active player must make an additional attack."
         }
       ],
       "health": 2,
@@ -1801,9 +1807,12 @@
               "stat": "attacks",
               "amount": 1,
               "target": "active_player"
+            },
+            {
+              "require_attack": 1
             }
           ],
-          "description": "When this dies, the active player makes an additional attack."
+          "description": "When this dies, the active player must make an additional attack."
         }
       ],
       "health": 2,

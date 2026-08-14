@@ -5111,9 +5111,12 @@
             "stat": "attacks",
             "amount": 1,
             "target": "active_player"
+          },
+          {
+            "require_attack": 1
           }
         ],
-        "description": "When this dies, the active player makes an additional attack."
+        "description": "When this dies, the active player must make an additional attack."
       }
     ]
   },
@@ -5128,9 +5131,12 @@
             "stat": "attacks",
             "amount": 1,
             "target": "active_player"
+          },
+          {
+            "require_attack": 1
           }
         ],
-        "description": "When this dies, the active player makes an additional attack."
+        "description": "When this dies, the active player must make an additional attack."
       }
     ]
   },
@@ -5145,9 +5151,12 @@
             "stat": "attacks",
             "amount": 1,
             "target": "active_player"
+          },
+          {
+            "require_attack": 1
           }
         ],
-        "description": "When this dies, the active player makes an additional attack."
+        "description": "When this dies, the active player must make an additional attack."
       }
     ]
   },
@@ -7711,6 +7720,28 @@
           }
         ],
         "description": "When you would die, roll- 6: Prevent death. If it's your turn, cancel everything that hasn't resolved and end it."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-monster_manual": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_monster": {
+              "as": "quarry"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "require_attack",
+            "times": 1,
+            "target": "quarry"
+          }
+        ],
+        "description": "Choose a monster. The active player must attack that monster this turn if able."
       }
     ]
   }

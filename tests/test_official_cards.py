@@ -4110,6 +4110,105 @@ def test_the_broken_ankh_only_saves_on_a_six(base_game: ContentLibrary) -> None:
 
 
 # ----------------------------------------------------------------------
+# Cards that oblige
+# ----------------------------------------------------------------------
+
+
+def reach_action_phase(game: Game) -> None:
+    while game.state.turn.phase is not GamePhase.ACTION:
+        assert game.act(CommandType.END_PHASE, game.state.turn.active_player).accepted
+
+
+def test_the_monster_manual_holds_the_turn_open(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    manual = give(game, "treasure_deck-active_items-base_game-monster_manual")
+
+    quarry = only_monster(game, "monster_deck-bosses-base_game-greed", hp=9)
+    summon(game, "monster_deck-basic_enemies-base_game-portal")
+
+    reach_action_phase(game)
+
+    assert activate(game, manual).accepted
+    assert pick(game, 0, quarry).accepted
+
+    refused = game.act(CommandType.END_TURN, 0)
+
+    assert not refused.accepted
+    assert "must still attack" in str(refused.reason)
+
+    # Attacking the monster the manual named pays the debt.
+    assert game.act(
+        CommandType.ATTACK,
+        0,
+        index=list(game.state.active_monsters.cards).index(quarry),
+    ).accepted
+
+    assert game.state.turn.obligations == []
+
+
+def test_the_monster_manual_is_not_paid_by_attacking_anything_else(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    manual = give(game, "treasure_deck-active_items-base_game-monster_manual")
+
+    quarry = only_monster(game, "monster_deck-bosses-base_game-greed", hp=9)
+    other = summon(game, "monster_deck-basic_enemies-base_game-portal")
+
+    reach_action_phase(game)
+
+    assert activate(game, manual).accepted
+    assert pick(game, 0, quarry).accepted
+
+    assert game.act(
+        CommandType.ATTACK,
+        0,
+        index=list(game.state.active_monsters.cards).index(other),
+    ).accepted
+
+    assert game.state.turn.obligations, "the named monster is still unattacked"
+
+
+def test_an_unpayable_duty_does_not_hold_the_turn(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    manual = give(game, "treasure_deck-active_items-base_game-monster_manual")
+
+    quarry = only_monster(game, "monster_deck-bosses-base_game-greed", hp=9)
+
+    reach_action_phase(game)
+
+    assert activate(game, manual).accepted
+    assert pick(game, 0, quarry).accepted
+
+    game.state.player(0).attacks_left = 0
+
+    # "If able" — with no attacks left the debt cannot be paid, and a turn is
+    # not held open by something nobody can do.
+    assert game.act(CommandType.END_TURN, 0).accepted
+
+
+def test_a_portal_owes_the_attack_it_grants(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    portal = only_monster(game, "monster_deck-basic_enemies-base_game-portal")
+    summon(game, "monster_deck-bosses-base_game-greed")
+
+    reach_action_phase(game)
+
+    slay(game, portal)
+
+    assert game.state.player(0).attacks_left == 2, "an extra attack was granted"
+
+    refused = game.act(CommandType.END_TURN, 0)
+
+    assert not refused.accepted
+    assert "must still attack" in str(refused.reason)
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

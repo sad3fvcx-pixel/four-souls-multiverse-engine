@@ -920,7 +920,26 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_monster": {
+                "as": "quarry"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "require_attack",
+              "times": 1,
+              "target": "quarry"
+            }
+          ],
+          "description": "Choose a monster. The active player must attack that monster this turn if able."
+        }
+      ],
       "tags": [
         "activated",
         "active"

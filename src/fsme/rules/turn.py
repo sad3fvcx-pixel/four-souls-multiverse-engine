@@ -28,6 +28,7 @@ from .constants import (
     LOOT_PLAYS_PER_TURN,
     STARTING_HAND_SIZE,
 )
+from .obligations import refuse_to_stop
 from .statics import ATTACKS, LOOT_PLAYS, expire_turn_modifiers, static_value
 
 
@@ -86,6 +87,11 @@ class EndPhaseHandler:
         if not state.stack.is_empty():
             return "the stack must resolve before the phase ends"
 
+        if state.turn.phase is GamePhase.ACTION:
+            # Leaving the action phase is where an unpaid "must attack" stops
+            # a player: before it there is nothing to pay it with.
+            return refuse_to_stop(state, command.player)
+
         return None
 
     def execute(self, command: Command, context: EffectContext) -> None:
@@ -118,7 +124,7 @@ class EndTurnHandler:
         if not state.stack.is_empty():
             return "the stack must resolve before the turn ends"
 
-        return None
+        return refuse_to_stop(state, command.player)
 
     def execute(self, command: Command, context: EffectContext) -> None:
         state = context.state

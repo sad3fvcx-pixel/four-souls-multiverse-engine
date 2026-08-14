@@ -23,6 +23,7 @@ from fsme.stack import COMBAT_ROUND, COMBAT_STRIKE, StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
 from .constants import BASE_PLAYER_ATTACK, DICE_SIDES
+from .obligations import pay as pay_obligation
 from .restrictions import ATTACK as ATTACK_ACTION
 from .restrictions import refuse
 from .statics import ATTACK, DIFFICULTY, monster_value, static_value
@@ -83,6 +84,8 @@ class AttackHandler:
         player.spend_attack()
         state.turn.record_attack()
         state.combat.begin(player.player_id, monster)
+
+        pay_obligation(state, ATTACK_ACTION, player.player_id, monster)
 
         context.emit(
             EventType.ATTACK_START,

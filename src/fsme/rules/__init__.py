@@ -45,6 +45,7 @@ from .counters import record_trigger, times_this_turn, trigger_key
 from .decisions import ChooseTargetHandler
 from .errors import RuleError, RuleRegistrationError, UnknownRuleError
 from .loot import PlayLootHandler, discard_played_loot
+from .obligations import owed_by, refuse_to_stop
 from .priority import PassPriorityHandler
 from .procedures import ProcedureRegistry, StackProcedure
 from .restrictions import ACTIONS, forbidden_by, refuse
@@ -126,6 +127,8 @@ __all__ = [
     "refresh_derived",
     "ACTIONS",
     "forbidden_by",
+    "owed_by",
+    "refuse_to_stop",
     "refuse",
     "static_value",
     "times_this_turn",
