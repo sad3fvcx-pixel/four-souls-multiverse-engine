@@ -57,6 +57,14 @@ class EventType(StrEnum):
 
     AFTER_DAMAGE = "after_damage"
     ATTACK_END = "attack_end"
+
+    ATTACK_FIZZLED = "attack_fizzled"
+    """
+    A declared attack that found nothing to fight.
+
+    COMPREHENSIVE_RULES.md §12: the monster is no longer active. The attack
+    does not begin and is not spent.
+    """
     MONSTER_KILLED = "monster_killed"
     BEFORE_DEATH = "before_death"
     """A player about to die, offered for replacement first."""
@@ -82,6 +90,14 @@ class EventType(StrEnum):
     BEFORE_PURCHASE = "before_purchase"
     AFTER_PURCHASE = "after_purchase"
     TREASURE_BOUGHT = "treasure_bought"
+
+    PURCHASE_FIZZLED = "purchase_fizzled"
+    """
+    A declared purchase that found nothing to buy.
+
+    COMPREHENSIVE_RULES.md §12: the item left its slot, or the money went. The
+    purchase does not happen and is not spent.
+    """
 
     # Loot
     BEFORE_LOOT = "before_loot"

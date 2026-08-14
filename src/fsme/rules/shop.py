@@ -6,10 +6,13 @@ Buying treasures.
 
 from __future__ import annotations
 
+from typing import Any
+
 from fsme.commands import Command
 from fsme.effects import EffectContext
 from fsme.events import EventType
-from fsme.state import GamePhase, GameState
+from fsme.stack import PURCHASE, StackItem, StackItemType
+from fsme.state import GamePhase, GameState, PlayerState
 from fsme.state.modifiers import SHOP_COST
 
 from .constants import TREASURE_COST
@@ -17,6 +20,9 @@ from .statics import bonus
 
 DECK = "deck"
 """What a player buys when they buy the top of the treasure deck, unseen."""
+
+SHOP = "shop"
+"""What a player buys when they buy a card that is face up in a slot."""
 
 
 class BuyTreasureHandler:
@@ -68,49 +74,114 @@ class BuyTreasureHandler:
         return None
 
     def execute(self, command: Command, context: EffectContext) -> None:
+        """
+        Declare the purchase and put the declaration in the queue.
+
+        COMPREHENSIVE_RULES.md §6: buying is declared, and paying and taking
+        the item happen when the declaration resolves. That is the whole reason
+        a purchase can be answered — and the reason it can arrive at its own
+        resolution to find the item gone.
+        """
         state = context.state
         player = state.player(command.player)
 
-        price = shop_price(state, player.player_id)
-
+        # The turn's purchase is spent by declaring it: a player cannot queue
+        # two buys and see which one survives. A purchase that fizzles is given
+        # back when it fizzles, which is what §12 means by "not spent".
         player.spend_purchase()
 
         context.emit(
             EventType.BEFORE_PURCHASE,
             controller=player.player_id,
+            cost=shop_price(state, player.player_id),
+        )
+
+        context.push(
+            StackItem(
+                kind=StackItemType.ENGINE_EFFECT,
+                label=PURCHASE,
+                controller=player.player_id,
+                payload={
+                    "source": str(command.get("source", SHOP)),
+                    "index": int(command.get("index", 0) or 0),
+                },
+            )
+        )
+
+
+def purchase(item: StackItem, context: EffectContext) -> None:
+    """
+    Carry out a declared purchase, or let it fizzle.
+
+    COMPREHENSIVE_RULES.md §12: a purchase fizzles when the shop item it named
+    has left its slot, or the buyer no longer has the money — and a purchase
+    that fizzles is not spent, so the turn's buy is handed back.
+    """
+    state = context.state
+    seat = item.controller
+
+    if seat is None or not 0 <= seat < len(state.players):
+        return
+
+    player = state.player(seat)
+    price = shop_price(state, seat)
+
+    card = _what_was_bought(state, item)
+
+    if card is None or player.pennies < price or not player.alive:
+        _give_the_purchase_back(player)
+
+        context.emit(
+            EventType.PURCHASE_FIZZLED,
+            controller=seat,
+            targets=[player],
             cost=price,
         )
 
-        context.apply("lose_coins", [player], amount=price)
+        return
 
-        if command.get("source") == DECK:
-            card = state.treasure_deck.draw()
-        else:
-            card = state.treasure_shop.cards.pop(int(command.get("index", 0)))
+    context.apply("lose_coins", [player], amount=price)
 
-        card.owner = player.player_id
-        card.controller = player.player_id
-        card.zone = str(player.treasures.zone_type)
+    card.owner = seat
+    card.controller = seat
+    card.zone = str(player.treasures.zone_type)
 
-        player.treasures.add_top(card)
+    player.treasures.add_top(card)
 
-        refill_shop(context)
+    refill_shop(context)
 
-        context.emit(
-            EventType.TREASURE_BOUGHT,
-            source=card,
-            controller=player.player_id,
-        )
-        context.emit(
-            EventType.ON_ENTER,
-            source=card,
-            controller=player.player_id,
-        )
-        context.emit(
-            EventType.AFTER_PURCHASE,
-            source=card,
-            controller=player.player_id,
-        )
+    context.emit(EventType.TREASURE_BOUGHT, source=card, controller=seat)
+    context.emit(EventType.ON_ENTER, source=card, controller=seat)
+    context.emit(EventType.AFTER_PURCHASE, source=card, controller=seat)
+
+
+def _what_was_bought(state: GameState, item: StackItem) -> Any | None:
+    """
+    Take the declared card out of the shop or off the deck, if it is still there.
+    """
+    if str(item.payload.get("source", SHOP)) == DECK:
+        if not state.treasure_deck.cards:
+            return None
+
+        drawn: Any = state.treasure_deck.draw()
+
+        return drawn
+
+    index = int(item.payload.get("index", 0))
+
+    if not 0 <= index < len(state.treasure_shop):
+        return None
+
+    bought: Any = state.treasure_shop.cards.pop(index)
+
+    return bought
+
+
+def _give_the_purchase_back(player: PlayerState) -> None:
+    """
+    Return the turn's buy to a player whose purchase came to nothing.
+    """
+    player.purchases_left += 1
 
 
 def shop_price(state: GameState, player_id: int) -> int:

@@ -57,6 +57,22 @@ def attack(runtime, player=0, index=0):
     )
 
 
+def drain(runtime, state, limit=12) -> None:
+    """
+    Let every open window close, so the queue is empty again.
+
+    A purchase and an attack may only be declared into an empty queue, and an
+    interactive game opens a window for the loot step before anybody acts.
+    """
+    for _ in range(limit):
+        if not runtime.awaiting_priority:
+            return
+
+        runtime.submit(
+            Command(type=CommandType.PASS_PRIORITY, player=state.priority.holder or 0)
+        )
+
+
 def test_attack_is_refused_outside_the_action_phase() -> None:
     runtime, state = make_game()
     runtime.submit(Command(type=CommandType.START_GAME, player=0))
@@ -308,3 +324,58 @@ def test_attacking_an_empty_monster_deck_is_refused() -> None:
 
     assert result.rejected
     assert "empty" in result.reason
+
+
+def test_an_attack_on_a_monster_that_leaves_fizzles_and_is_not_spent() -> None:
+    """
+    COMPREHENSIVE_RULES.md §12: the monster is no longer active, so the attack
+    does not begin — and the attack is not spent.
+    """
+    runtime, state = armed_game([6, 6], monsters=1, interactive_priority=True)
+    runtime.submit(Command(type=CommandType.START_GAME, player=0))
+    drain(runtime, state)
+    runtime.submit(Command(type=CommandType.END_PHASE, player=0))
+    drain(runtime, state)
+
+    monster = state.active_monsters.cards[0]
+
+    assert attack(runtime).accepted
+    assert state.player(0).attacks_left == 0, "declaring spends the attack"
+
+    # Something answers the declaration by removing the monster from its slot.
+    runtime.context.apply("discard_monsters", [monster])
+
+    for _ in range(4):
+        if not runtime.awaiting_priority:
+            break
+
+        runtime.submit(
+            Command(type=CommandType.PASS_PRIORITY, player=state.priority.holder or 0)
+        )
+
+    assert state.combat.active is False
+    assert state.player(0).attacks_left == 1, "an attack that fizzles is not spent"
+    assert EventType.ATTACK_FIZZLED in [event.type for event in runtime.history]
+
+
+def test_an_attack_that_resolves_begins_the_fight() -> None:
+    runtime, state = armed_game([6, 6], monsters=1, interactive_priority=True)
+    runtime.submit(Command(type=CommandType.START_GAME, player=0))
+    drain(runtime, state)
+    runtime.submit(Command(type=CommandType.END_PHASE, player=0))
+    drain(runtime, state)
+
+    monster = state.active_monsters.cards[0]
+
+    assert attack(runtime).accepted
+
+    for _ in range(4):
+        if not runtime.awaiting_priority:
+            break
+
+        runtime.submit(
+            Command(type=CommandType.PASS_PRIORITY, player=state.priority.holder or 0)
+        )
+
+    assert state.combat.active is True
+    assert state.combat.monster is monster

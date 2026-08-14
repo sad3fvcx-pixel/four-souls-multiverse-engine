@@ -19,7 +19,13 @@ from fsme.commands import Command
 from fsme.effects import EffectContext
 from fsme.effects.builtin.dice import natural_roll
 from fsme.events import EventType
-from fsme.stack import COMBAT_ROUND, COMBAT_STRIKE, StackItem, StackItemType
+from fsme.stack import (
+    ATTACK_DECLARATION,
+    COMBAT_ROUND,
+    COMBAT_STRIKE,
+    StackItem,
+    StackItemType,
+)
 from fsme.state import GamePhase, GameState
 from fsme.state.obligations import MONSTER_DECK
 
@@ -38,6 +44,9 @@ DEFAULT_MONSTER_ATTACK = 1
 
 DECK = "deck"
 """What a player attacks when they attack the monster deck rather than a slot."""
+
+SLOT = "slot"
+"""What a player attacks when they attack a monster that is face up."""
 
 
 class AttackHandler:
@@ -87,44 +96,110 @@ class AttackHandler:
         return refuse(state, ATTACK_ACTION, player=command.player, card=monsters[index])
 
     def execute(self, command: Command, context: EffectContext) -> None:
+        """
+        Declare the attack and put the declaration in the queue.
+
+        COMPREHENSIVE_RULES.md §7: the attack begins when the declaration
+        resolves, not when it is made. Which is why a card may answer an
+        attack before a die is rolled, and why an attack can arrive at its own
+        resolution to find the monster gone.
+        """
         state = context.state
         player = state.player(command.player)
 
-        attacked_the_deck = command.get("source") == DECK
-
-        if attacked_the_deck:
-            monster = _reveal_for_attack(context, player.player_id)
-        else:
-            monster = state.active_monsters.cards[int(command.get("index", 0))]
-
-        # COMPREHENSIVE_RULES.md §7: the attack is spent when it is declared,
-        # including the one that turned over a card and found no monster.
+        # Declaring spends the turn's attack; §12 hands it back if the
+        # declaration finds nothing to fight.
         player.spend_attack()
         state.turn.record_attack()
 
-        # The debt is to the deck, and turning a card over pays it whether or
-        # not there was a monster under it.
-        pay_obligation(
-            state,
-            ATTACK_ACTION,
-            player.player_id,
-            monster,
-            card_id=MONSTER_DECK if attacked_the_deck else None,
+        monsters = state.active_monsters.cards
+        index = int(command.get("index", 0) or 0)
+
+        context.push(
+            StackItem(
+                kind=StackItemType.ENGINE_EFFECT,
+                label=ATTACK_DECLARATION,
+                controller=player.player_id,
+                source=None if command.get("source") == DECK else monsters[index],
+                payload={"source": str(command.get("source", SLOT))},
+            )
         )
 
-        if monster is None:
+
+def attack_declaration(item: StackItem, context: EffectContext) -> None:
+    """
+    Begin a declared attack, or let it fizzle.
+
+    COMPREHENSIVE_RULES.md §12: an attack fizzles when the monster it named is
+    no longer active, and an attack that fizzles is not spent.
+    """
+    state = context.state
+    seat = item.controller
+
+    if seat is None or not 0 <= seat < len(state.players):
+        return
+
+    player = state.player(seat)
+
+    if not player.alive or state.combat.active:
+        _give_the_attack_back(player)
+
+        return
+
+    attacked_the_deck = str(item.payload.get("source", SLOT)) == DECK
+
+    if attacked_the_deck:
+        monster = _reveal_for_attack(context, seat)
+    else:
+        monster = item.source
+
+        if monster not in state.active_monsters.cards or not getattr(
+            monster, "alive", False
+        ):
+            _give_the_attack_back(player)
+
+            context.emit(
+                EventType.ATTACK_FIZZLED,
+                source=monster,
+                controller=seat,
+                targets=[player],
+            )
+
             return
 
-        state.combat.begin(player.player_id, monster)
+    # The debt is to the deck, and turning a card over pays it whether or not
+    # there was a monster under it.
+    pay_obligation(
+        state,
+        ATTACK_ACTION,
+        seat,
+        monster,
+        card_id=MONSTER_DECK if attacked_the_deck else None,
+    )
 
-        context.emit(
-            EventType.ATTACK_START,
-            source=monster,
-            controller=player.player_id,
-            targets=[monster],
-        )
+    if monster is None:
+        # COMPREHENSIVE_RULES.md §7: the card turned over was not a monster.
+        # It has been played, and the attack is over — but it was made, so it
+        # is not handed back.
+        return
 
-        push_combat_round(context, player.player_id, monster)
+    state.combat.begin(seat, monster)
+
+    context.emit(
+        EventType.ATTACK_START,
+        source=monster,
+        controller=seat,
+        targets=[monster],
+    )
+
+    push_combat_round(context, seat, monster)
+
+
+def _give_the_attack_back(player: Any) -> None:
+    """
+    Return the turn's attack to a player whose declaration came to nothing.
+    """
+    player.attacks_left += 1
 
 
 def _reveal_for_attack(context: EffectContext, attacker: int) -> Any | None:

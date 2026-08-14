@@ -187,6 +187,10 @@ def test_passing_without_a_window_is_refused() -> None:
 
 
 def test_combat_rounds_are_interruptible_under_priority() -> None:
+    """
+    COMPREHENSIVE_RULES.md §7: the declaration is answered, then the attack
+    begins, and then each round is answered in its turn.
+    """
     runtime, state = make_game(interactive_priority=True)
     start(runtime)
 
@@ -199,8 +203,15 @@ def test_combat_rounds_are_interruptible_under_priority() -> None:
     )
 
     assert runtime.awaiting_priority is True
+    assert state.combat.active is False, "the declaration has not resolved yet"
+
+    for _ in range(len(state.players)):
+        runtime.submit(
+            Command(type=CommandType.PASS_PRIORITY, player=state.priority.holder or 0)
+        )
+
     assert state.combat.active is True
-    assert state.combat.round_number == 0
+    assert runtime.awaiting_priority is True, "and the round waits to be answered"
 
 
 def test_a_death_is_settled_before_the_table_is_asked() -> None:

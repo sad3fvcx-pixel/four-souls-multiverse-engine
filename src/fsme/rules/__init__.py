@@ -14,10 +14,12 @@ from __future__ import annotations
 from fsme.commands import CommandRegistry, CommandType
 from fsme.stack import (
     ADVANCE_TURN,
+    ATTACK_DECLARATION,
     COMBAT_ROUND,
     COMBAT_STRIKE,
     DISCARD_PLAYED_LOOT,
     DISCARD_TO_HAND_LIMIT,
+    PURCHASE,
 )
 from fsme.stack import (
     LOOT_STEP as LOOT_STEP_LABEL,
@@ -26,6 +28,7 @@ from fsme.stack import (
 from .activation import ActivateTreasureHandler
 from .combat import (
     AttackHandler,
+    attack_declaration,
     combat_round,
     combat_strike,
     end_combat,
@@ -54,7 +57,7 @@ from .priority import PassPriorityHandler
 from .procedures import ProcedureRegistry, StackProcedure
 from .restrictions import ACTIONS, forbidden_by, refuse
 from .setup import SetupError, new_game
-from .shop import BuyTreasureHandler, refill_shop
+from .shop import BuyTreasureHandler, purchase, refill_shop
 from .statics import (
     ATTACK,
     ATTACKS,
@@ -109,6 +112,8 @@ def default_procedure_registry() -> ProcedureRegistry:
     """
     registry = ProcedureRegistry()
 
+    registry.register(ATTACK_DECLARATION, attack_declaration)
+    registry.register(PURCHASE, purchase)
     registry.register(COMBAT_ROUND, combat_round)
     registry.register(COMBAT_STRIKE, combat_strike)
     registry.register(DISCARD_PLAYED_LOOT, discard_played_loot)
@@ -121,6 +126,7 @@ def default_procedure_registry() -> ProcedureRegistry:
 __all__ = [
     "ActivateTreasureHandler",
     "AttackHandler",
+    "attack_declaration",
     "BuyTreasureHandler",
     "ChooseTargetHandler",
     "EndPhaseHandler",
@@ -169,6 +175,7 @@ __all__ = [
     "default_command_registry",
     "new_game",
     "default_procedure_registry",
+    "purchase",
     "discard_played_loot",
     "end_combat",
     "refill_monsters",

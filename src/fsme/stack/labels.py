@@ -31,3 +31,21 @@ COMBAT_STRIKE = "combat_strike"
 
 LOOT_STEP = "loot_step"
 """Draw the cards a turn opens with, once the start-of-turn effects are done."""
+
+PURCHASE = "purchase"
+"""
+Carry out a purchase the buyer declared.
+
+COMPREHENSIVE_RULES.md §6: what a player does is declare the buy, and the
+declaration goes into the queue. Paying and taking the item happen when it
+resolves — which is why a card may answer a purchase, and why a purchase can
+find, on resolving, that there is nothing left to buy.
+"""
+
+ATTACK_DECLARATION = "attack_declaration"
+"""
+Begin an attack the attacker declared.
+
+COMPREHENSIVE_RULES.md §7, same shape as a purchase: the declaration queues,
+and the attack begins when it resolves.
+"""

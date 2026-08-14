@@ -41,6 +41,20 @@ def settle(runtime):
         )
 
 
+def drain(runtime, state, limit=12) -> None:
+    """
+    Let every open window close, so the queue is empty again.
+
+    A purchase and an attack may only be declared into an empty queue, and an
+    interactive game opens a window for the loot step before anybody acts.
+    """
+    for _ in range(limit):
+        if not runtime.awaiting_priority:
+            return
+
+        submit(runtime, CommandType.PASS_PRIORITY, state.priority.holder or 0)
+
+
 def test_a_turn_runs_through_every_phase() -> None:
     runtime, state = make_game()
 
@@ -274,3 +288,63 @@ def test_the_deck_and_the_shop_share_one_purchase() -> None:
     again = submit(runtime, CommandType.BUY_TREASURE, index=0)
 
     assert again.rejected
+
+
+def test_a_purchase_of_an_item_that_leaves_fizzles_and_is_not_spent() -> None:
+    """
+    COMPREHENSIVE_RULES.md §12: the shop item left its slot, so the purchase
+    does not happen — and the purchase is not spent.
+    """
+    runtime, state = make_game(interactive_priority=True)
+
+    submit(runtime, CommandType.START_GAME)
+    drain(runtime, state)
+    submit(runtime, CommandType.END_PHASE)
+    drain(runtime, state)
+
+    player = state.player(0)
+    player.pennies = TREASURE_COST
+
+    assert submit(runtime, CommandType.BUY_TREASURE, index=0).accepted
+    assert player.purchases_left == 0, "declaring spends the purchase"
+
+    # Something answers the declaration by emptying the shop slot.
+    state.treasure_shop.cards.clear()
+
+    for _ in range(4):
+        if not runtime.awaiting_priority:
+            break
+
+        submit(runtime, CommandType.PASS_PRIORITY, state.priority.holder or 0)
+
+    assert player.pennies == TREASURE_COST, "nothing was paid"
+    assert player.purchases_left == 1, "a purchase that fizzles is not spent"
+    assert EventType.PURCHASE_FIZZLED in [
+        event.type for event in runtime.history
+    ]
+
+
+def test_a_purchase_resolves_after_the_table_has_answered_it() -> None:
+    runtime, state = make_game(interactive_priority=True)
+
+    submit(runtime, CommandType.START_GAME)
+    drain(runtime, state)
+    submit(runtime, CommandType.END_PHASE)
+    drain(runtime, state)
+
+    player = state.player(0)
+    player.pennies = TREASURE_COST
+
+    offered = state.treasure_shop.cards[0]
+
+    assert submit(runtime, CommandType.BUY_TREASURE, index=0).accepted
+    assert offered not in player.treasures.cards, "the declaration has not resolved"
+
+    for _ in range(4):
+        if not runtime.awaiting_priority:
+            break
+
+        submit(runtime, CommandType.PASS_PRIORITY, state.priority.holder or 0)
+
+    assert offered in player.treasures.cards
+    assert player.pennies == 0
