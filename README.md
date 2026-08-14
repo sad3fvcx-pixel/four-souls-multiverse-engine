@@ -17,6 +17,22 @@ fsme play --seed 3  # play one through with nobody watching
 fsme cards          # what the content holds, and how much of it is implemented
 ```
 
+### Journals
+
+A journal is a whole game written down: where it stood at every decision, what
+the engine would have accepted, what was chosen, and everything that followed.
+
+```bash
+fsme play --seed 3 --journal party.json --offers
+fsme show party.json          # read it as a game
+fsme replay party.json        # play it back and check it still holds
+```
+
+It is a replay as well as a reading — it holds the commands and a fingerprint
+of the position after each — so `fsme replay` reports the first entry whose
+outcome no longer matches instead of only that something changed. A game played
+in the browser keeps one too, at `/api/journal`.
+
 `fsme serve` opens a page showing the table, the stack, the log and every move
 the engine will accept; clicking one submits it. The page is a client and
 nothing more — it decides no rule, and every button on it came from the

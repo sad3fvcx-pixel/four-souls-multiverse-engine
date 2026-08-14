@@ -20,6 +20,7 @@ from typing import Any
 from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary, ContentLoader
 from fsme.game import Game
+from fsme.journal import Journal, JournalKeeper
 from fsme.runtime.vocabulary import engine_vocabulary
 
 from .moves import legal_moves
@@ -72,11 +73,23 @@ class Session:
 
         game.start()
 
+        # The journal is kept from the deal onwards, without the alternatives:
+        # a client already knows what it offered, and asking the engine again
+        # before every click would double the work of playing.
+        self._keeper = JournalKeeper(game)
+
         return game
 
     @property
     def game(self) -> Game:
         return self._game
+
+    @property
+    def journal(self) -> Journal:
+        """
+        The story of the game so far.
+        """
+        return self._keeper.journal
 
     def restart(self, *, seed: int | None = None, players: int | None = None) -> None:
         """
@@ -113,12 +126,13 @@ class Session:
         """
         kind = self._command_type(str(command.get("type", "")))
 
-        result = self._game.submit(
+        result = self._keeper.submit(
             Command(
                 type=kind,
                 player=int(command.get("player", 0)),
                 payload=dict(command.get("payload", {})),
-            )
+            ),
+            label=str(command.get("label", "")),
         )
 
         return {"accepted": bool(result.accepted), "reason": result.reason or ""}

@@ -93,6 +93,12 @@ class GameHandler(BaseHTTPRequestHandler):
 
             return
 
+        if path == "/api/journal":
+            with self.lock:
+                self._json(self.session.journal.to_dict())
+
+            return
+
         self._send(HTML, b"not here", status=404)
 
     def do_POST(self) -> None:  # noqa: N802 - the base class names it

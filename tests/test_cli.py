@@ -71,3 +71,27 @@ def test_a_double_clicked_build_opens_the_game(monkeypatch: pytest.MonkeyPatch) 
 def test_a_named_command_is_still_obeyed(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["cards"]) == 0
     assert "total" in capsys.readouterr().out
+
+
+def test_a_played_game_can_be_written_down_and_read_back(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """
+    The whole loop from the outside: play, write, read, replay.
+    """
+    journal = tmp_path / "party.json"
+
+    assert main(["play", "--seed", "3", "--journal", str(journal), "--offers"]) == 0
+    assert journal.is_file()
+
+    capsys.readouterr()
+
+    assert main(["show", str(journal)]) == 0
+
+    told = capsys.readouterr().out
+
+    assert "FSME journal" in told
+    assert "could have:" in told
+
+    assert main(["replay", str(journal)]) == 0
+    assert "came out the same" in capsys.readouterr().out

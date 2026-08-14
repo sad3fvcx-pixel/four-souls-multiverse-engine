@@ -21,6 +21,9 @@ from typing import Any
 
 from fsme.api import Session, load_content
 from fsme.content import ContentLibrary
+from fsme.game import Game
+
+DEFAULT_NAMES = ("Ann", "Bo", "Cy", "Di")
 
 VERSION = "0.1.0"
 
@@ -99,18 +102,34 @@ def play(args: argparse.Namespace) -> int:
     The players are not clever. This is here because a person setting the
     engine up wants to know it runs, and a game played end to end says so more
     convincingly than a version number.
+
+    With ``--journal`` the whole game is written down as it goes: what was
+    offered, what was chosen, and everything that followed.
     """
     from fsme.api.moves import legal_moves
+    from fsme.commands import Command, CommandType
+    from fsme.journal import JournalKeeper
 
-    session = Session(
+    game = Game.from_content(
         library(args),
-        players=args.players,
+        list(DEFAULT_NAMES[: args.players]),
         seed=args.seed,
         interactive_priority=False,
     )
 
-    game = session.game
+    game.start()
+
+    keeper = JournalKeeper(
+        game,
+        offers=(
+            (lambda played: [move["label"] for move in legal_moves(played)])
+            if args.journal and args.offers
+            else None
+        ),
+    )
+
     rng = random.Random(args.seed)
+    outcome = 0
 
     for step in range(args.steps):
         if game.is_over:
@@ -121,7 +140,7 @@ def play(args: argparse.Namespace) -> int:
                 f"after {step} moves"
             )
 
-            return 0
+            break
 
         decision = game.runtime.awaiting_decision
 
@@ -130,18 +149,17 @@ def play(args: argparse.Namespace) -> int:
             lowest = max(0, min(decision.minimum, count))
             highest = max(lowest, min(decision.maximum, count))
 
-            session.submit(
-                {
-                    "type": "choose_target",
-                    "player": decision.player,
-                    "payload": {
-                        "choices": rng.sample(
-                            range(count), rng.randint(lowest, highest)
-                        )
-                        if count
-                        else []
-                    },
-                }
+            picks = (
+                rng.sample(range(count), rng.randint(lowest, highest)) if count else []
+            )
+
+            keeper.submit(
+                Command(
+                    type=CommandType.CHOOSE_TARGET,
+                    player=decision.player,
+                    payload={"choices": picks},
+                ),
+                label=_answer(decision, picks),
             )
 
             continue
@@ -151,13 +169,88 @@ def play(args: argparse.Namespace) -> int:
         if not moves:
             print(f"nothing could be done after {step} moves")
 
-            return 1
+            outcome = 1
 
-        session.submit(rng.choice(moves))
+            break
 
-    print(f"still going after {args.steps} moves")
+        move = rng.choice(moves)
+
+        keeper.submit(
+            Command(
+                type=CommandType(move["type"]),
+                player=move["player"],
+                payload=dict(move["payload"]),
+            ),
+            label=move["label"],
+        )
+    else:
+        print(f"still going after {args.steps} moves")
+
+    if args.journal:
+        written = keeper.journal.save(args.journal)
+
+        print(f"journal written to {written} ({len(keeper.journal)} commands)")
+
+    return outcome
+
+
+def _answer(decision: Any, picks: Sequence[int]) -> str:
+    """
+    Say an answer to a question in the words the question offered.
+    """
+    options = list(decision.options)
+
+    chosen = [
+        str(getattr(options[index], "name", options[index]))
+        for index in picks
+        if 0 <= index < len(options)
+    ]
+
+    asked = decision.prompt or str(decision.kind)
+
+    return f"{asked} → " + (", ".join(chosen) if chosen else "nothing")
+
+
+def show(args: argparse.Namespace) -> int:
+    """
+    Read a journal out loud.
+    """
+    from fsme.journal import Journal, render
+
+    journal = Journal.load(args.file)
+
+    print(render(journal, full=args.full))
 
     return 0
+
+
+def replay(args: argparse.Namespace) -> int:
+    """
+    Play a journal back through the engine and say whether it still holds.
+    """
+    from fsme.journal import Journal, replay_journal, summarise
+
+    journal = Journal.load(args.file)
+    playback = replay_journal(journal, library(args))
+    told = summarise(playback, journal)
+
+    if args.json:
+        print(json.dumps(told, indent=2))
+
+        return 0 if playback.faithful else 1
+
+    if playback.faithful:
+        print(
+            f"{told['replayed']} commands replayed, and the game came out the "
+            f"same every step of the way"
+        )
+
+        return 0
+
+    print(f"replayed {told['replayed']} of {told['commands']} commands, then:")
+    print(f"  {told['divergence']}")
+
+    return 1
 
 
 def cards(args: argparse.Namespace) -> int:
@@ -223,7 +316,26 @@ def build_parser() -> argparse.ArgumentParser:
     quick = commands.add_parser("play", help="play a game through with nobody watching")
     shared(quick)
     quick.add_argument("--steps", type=int, default=5000)
+    quick.add_argument("--journal", help="write the whole game down to this file")
+    quick.add_argument(
+        "--offers",
+        action="store_true",
+        help="record what else could have been done at each point",
+    )
     quick.set_defaults(run=play)
+
+    reading = commands.add_parser("show", help="read a journal out loud")
+    reading.add_argument("file", help="the journal to read")
+    reading.add_argument(
+        "--full", action="store_true", help="keep the engine's housekeeping too"
+    )
+    reading.set_defaults(run=show)
+
+    again = commands.add_parser("replay", help="play a journal back through the engine")
+    shared(again)
+    again.add_argument("file", help="the journal to replay")
+    again.add_argument("--json", action="store_true")
+    again.set_defaults(run=replay)
 
     listing = commands.add_parser("cards", help="what the content holds")
     shared(listing)

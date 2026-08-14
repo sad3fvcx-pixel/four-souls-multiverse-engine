@@ -154,3 +154,20 @@ def test_anything_else_is_not_here(address: str) -> None:
         get(address, "/api/whatever")
 
     assert raised.value.code == 404
+
+
+def test_the_journal_of_the_browser_game_can_be_fetched(address: str) -> None:
+    """
+    A game played in a browser is a game somebody may want to read afterwards.
+    """
+    view = get(address, "/api/view?since=0")
+    move = next(move for move in view["moves"] if move["type"] == "pass_priority")
+
+    post(address, "/api/command?since=0", move)
+
+    journal = get(address, "/api/journal")
+
+    assert journal["format"]
+    assert journal["seed"] == 7
+    assert len(journal["entries"]) == 1
+    assert journal["entries"][0]["label"] == move["label"]
