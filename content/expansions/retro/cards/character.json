@@ -6,7 +6,60 @@
       "type": "character",
       "expansion": "retro",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        },
+        {
+          "trigger": "game_start",
+          "scope": "any",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "treasure",
+                "from_top": 3,
+                "as": "starting",
+                "prompt": "Choose your starting item."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "take_card",
+              "to": "treasures",
+              "target": "starting"
+            },
+            {
+              "effect": "make_eternal",
+              "target": "starting"
+            },
+            {
+              "effect": "move_cards",
+              "deck": "treasure",
+              "position": "bottom",
+              "target": {
+                "target_deck_card": {
+                  "deck": "treasure",
+                  "from_top": 2,
+                  "minimum": 2,
+                  "maximum": 2,
+                  "as": "rest",
+                  "prompt": "Put the rest on the bottom of the deck in any order."
+                }
+              }
+            }
+          ],
+          "description": "When you start the game, look at the top 3 cards of the treasure deck, choose one, it becomes your starting item and gains eternal. Put the rest on the bottom of the deck in any order."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [

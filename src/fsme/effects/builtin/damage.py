@@ -37,6 +37,16 @@ def _attribute(target: Any, actor: int | None) -> None:
         target.last_damaged_by = actor
 
 
+def _kind_of(target: Any) -> str:
+    """
+    What a damage event is about, in one word.
+
+    Cards distinguish "damage to a monster" from "damage to a player", and the
+    only thing that knows which is the thing being damaged.
+    """
+    return "player" if isinstance(target, PlayerState) else "monster"
+
+
 def _hit_points(target: Any) -> int:
     hp = getattr(target, "hp", None)
 
@@ -80,6 +90,7 @@ def deal_damage(
             source=dealt_by,
             controller=_controller_of(target),
             targets=[target],
+            target_kind=_kind_of(target),
             amount=amount,
             actor=ctx.actor,
             combat=combat,
@@ -107,6 +118,7 @@ def deal_damage(
             source=dealt_by,
             controller=_controller_of(target),
             targets=[target],
+            target_kind=_kind_of(target),
             amount=before - after,
             remaining_hp=after,
             actor=ctx.actor,
@@ -118,6 +130,7 @@ def deal_damage(
             source=dealt_by,
             controller=_controller_of(target),
             targets=[target],
+            target_kind=_kind_of(target),
             amount=before - after,
             combat=combat,
             roll=roll,
@@ -161,9 +174,17 @@ def divide_damage(
     return dealt
 
 
-def heal(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> int:
+def heal(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    amount: int = 1,
+    full: bool = False,
+) -> int:
     """
     Restore hit points, never above the target's maximum.
+
+    ``full`` is what a card means by "heal to full HP": not a number of hearts
+    but all of them, however hurt the target turned out to be.
     """
     if amount < 0:
         raise EffectExecutionError("heal amount must be non-negative")
@@ -171,17 +192,23 @@ def heal(ctx: EffectContext, targets: Sequence[Any], amount: int = 1) -> int:
     healed = 0
 
     for target in targets:
+        wanted = (
+            max(0, int(getattr(target, "max_hp", 0)) - _hit_points(target))
+            if full
+            else amount
+        )
+
         proposal = ctx.propose(
             EventType.BEFORE_HEAL,
             controller=_controller_of(target),
             targets=[target],
-            amount=amount,
+            amount=wanted,
         )
 
         if proposal.cancelled:
             continue
 
-        amount = max(0, int(proposal.get("amount", amount)))
+        amount = max(0, int(proposal.get("amount", wanted)))
 
         before = _hit_points(target)
         maximum = int(getattr(target, "max_hp", before + amount))

@@ -6,7 +6,38 @@
       "type": "monster",
       "expansion": "gish",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_start",
+          "scope": "any",
+          "effects": [
+            {
+              "effect": "require_attack",
+              "times": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each player must attack this on their turn."
+        },
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "targets": [
+            {
+              "target_player": {
+                "as": "idler"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "skip_next_turn",
+              "target": "idler"
+            }
+          ],
+          "description": "When this dies, choose a player. That player skips their next turn."
+        }
+      ],
       "health": 6,
       "attack": 1,
       "roll": 3,

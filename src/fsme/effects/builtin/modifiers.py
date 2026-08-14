@@ -363,6 +363,23 @@ def make_eternal(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     return granted
 
 
+def hold_tapped(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Keep tapped items from waking up at their controller's next turn.
+
+    A tapped item recharges by rule, and this is the card that says one of them
+    does not. Nothing else about it changes: it is still tapped, still in play,
+    and still recharged by anything that recharges it on purpose.
+    """
+    held = 0
+
+    for card in _cards(targets, "hold_tapped"):
+        card.recharge_skipped = True
+        held += 1
+
+    return held
+
+
 def register(registry: EffectRegistry) -> None:
     """
     Register every card modifier effect.
@@ -403,6 +420,12 @@ def register(registry: EffectRegistry) -> None:
         require_attack,
         primary="times",
         description="Make a player owe an attack this turn.",
+    )
+    registry.register(
+        "hold_tapped",
+        hold_tapped,
+        needs_target=True,
+        description="Keep an item from recharging at its next turn.",
     )
     registry.register(
         "make_eternal",

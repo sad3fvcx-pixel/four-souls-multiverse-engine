@@ -6,9 +6,79 @@
       "type": "starting_item",
       "expansion": "nendoroid",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_player": {
+                "exclude_controller": true,
+                "as": "lucky"
+              }
+            },
+            {
+              "target_loot": {
+                "as": "gift"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "take_card",
+              "to": "hand",
+              "player": {
+                "player_of": "lucky"
+              },
+              "target": "gift"
+            },
+            {
+              "if": [
+                "last_effect_did"
+              ],
+              "then": [
+                {
+                  "effect": "move_cards",
+                  "deck": "loot",
+                  "position": "top",
+                  "target": {
+                    "target_deck_card": {
+                      "deck": "loot",
+                      "from_top": 2,
+                      "minimum": 2,
+                      "maximum": 2,
+                      "as": "ordered",
+                      "prompt": "Put the top 2 loot cards back in any order, last chosen on top."
+                    }
+                  }
+                },
+                {
+                  "draw_loot": 1
+                }
+              ]
+            }
+          ],
+          "description": "Give a loot card to another player. If you do, look at the top 2 cards of the loot deck. Put them back in any order, then loot 1."
+        },
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 4
+            }
+          ],
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "Each time a player rolls a 4, recharge this."
+        }
+      ],
       "tags": [
-        "activated"
+        "activated",
+        "guppy"
       ],
       "metadata": {
         "text": "↷: Give a loot card to\nanother player. If you do,\nlook at the top 2 cards of\nthe loot deck. Put them back\nin any order, then loot 1.\n------------------------------\nEach time a player rolls\na 4, recharge this.\n------------------------------\n-Eternal, Guppy-",

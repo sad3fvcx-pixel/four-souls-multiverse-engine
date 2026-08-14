@@ -74,6 +74,15 @@ class CardInstance:
     being edited.
     """
 
+    recharge_skipped: bool = False
+    """
+    Whether this card sits out the next recharge it would get.
+
+    "That item does not recharge at the start of its controller's next turn"
+    changes one recharge and no others, so the card carries the fact until that
+    recharge comes round and takes it away.
+    """
+
     copy_expires: str = ""
     """
     When the copy lapses, empty when it does not.

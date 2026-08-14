@@ -69,10 +69,10 @@ def unpayable(
     if cards > player.hand_size:
         return f"discarding {cards} loot card(s) needs a bigger hand"
 
-    counters = int(cost.get(COUNTERS, 0))
+    counter, counters = _counter_cost(cost)
 
-    if counters > int(getattr(card, "counters", {}).get("charge", 0)):
-        return f"'{_name(card)}' does not have {counters} counters"
+    if counters > int(getattr(card, "counters", {}).get(counter, 0)):
+        return f"'{_name(card)}' does not have {counters} {counter} counter(s)"
 
     hp = int(cost.get(HP, 0))
 
@@ -112,15 +112,37 @@ def pay(ability: Ability, card: Any, context: EffectContext) -> None:
     if cards:
         context.apply("discard_loot", [player], count=cards)
 
-    counters = int(cost.get(COUNTERS, 0))
+    counter, counters = _counter_cost(cost)
 
     if counters:
-        context.apply("add_counter", [card], counter="charge", amount=-counters)
+        context.apply("add_counter", [card], counter=counter, amount=-counters)
 
     hp = int(cost.get(HP, 0))
 
     if hp:
         context.apply("deal_damage", [player], amount=hp)
+
+
+CHARGE = "charge"
+"""
+The counter an ability spends when the card does not name one.
+
+Most items that charge counters have only one kind on them, so "remove 2
+counters" needs no name. A card that keeps several — egg counters, gold
+counters — says which it is spending.
+"""
+
+
+def _counter_cost(cost: Mapping[str, Any]) -> tuple[str, int]:
+    """
+    Read a counter price, written as a number or as a named number.
+    """
+    written = cost.get(COUNTERS, 0)
+
+    if isinstance(written, Mapping):
+        return str(written.get("counter", CHARGE)), int(written.get("amount", 0))
+
+    return CHARGE, int(written)
 
 
 def _name(card: Any) -> str:

@@ -6,7 +6,39 @@
       "type": "treasure",
       "expansion": "retro",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_death",
+          "scope": "controller",
+          "replacement": true,
+          "conditions": [
+            "player_active"
+          ],
+          "effects": [
+            {
+              "effect": "destroy_treasure",
+              "target": "self"
+            },
+            {
+              "effect": "cancel_event"
+            },
+            {
+              "effect": "heal",
+              "full": true,
+              "target": "controller"
+            },
+            {
+              "end_attack": {}
+            },
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1
+            }
+          ],
+          "description": "If you would die during your turn, destroy this, prevent death, heal to full HP, and cancel your attack if able. You may attack an additional time this turn."
+        }
+      ],
       "tags": [
         "passive"
       ],

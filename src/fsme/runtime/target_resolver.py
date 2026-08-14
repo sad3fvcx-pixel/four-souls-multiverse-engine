@@ -555,6 +555,13 @@ def _target_player_or_monster(
     question the card never asked.
     """
     options: list[Any] = list(state.living_players())
+
+    if params.get("exclude_controller", False):
+        # "A monster or another player" excludes one seat and no monsters.
+        options = [
+            player for player in options if player.player_id != context.controller
+        ]
+
     options.extend(_all_monsters(state, context, params, rng))
 
     return _ask(

@@ -6,7 +6,54 @@
       "type": "treasure",
       "expansion": "mewgenics",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "any",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "nuke",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time a monster dies, put a counter on this."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "counters": {
+              "counter": "nuke",
+              "amount": 9
+            }
+          },
+          "effects": [
+            {
+              "effect": "destroy_treasure",
+              "target": "self"
+            },
+            {
+              "if": [
+                "last_effect_did"
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 999,
+                  "target": "all_monsters"
+                },
+                {
+                  "effect": "deal_damage",
+                  "amount": 999,
+                  "target": "all_players"
+                }
+              ]
+            }
+          ],
+          "description": "Remove 9 counters from this: destroy this. If you do, deal 999 damage to each monster and each player."
+        }
+      ],
       "tags": [
         "one_use",
         "paid"

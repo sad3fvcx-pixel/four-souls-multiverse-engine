@@ -6,7 +6,19 @@
       "type": "character",
       "expansion": "tapeworm",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [

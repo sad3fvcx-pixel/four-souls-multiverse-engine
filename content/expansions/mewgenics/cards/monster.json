@@ -6,7 +6,41 @@
       "type": "monster",
       "expansion": "mewgenics",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_start",
+          "scope": "any",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": {
+                    "value": 4
+                  }
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "random_player"
+                }
+              ],
+              "else": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "random_monster"
+                }
+              ]
+            }
+          ],
+          "description": "At the start of each turn, the active player rolls- 1-3: deal 2 damage to a player chosen at random. 4-6: deal 2 damage to a monster chosen at random."
+        }
+      ],
       "health": 4,
       "attack": 1,
       "roll": 4,

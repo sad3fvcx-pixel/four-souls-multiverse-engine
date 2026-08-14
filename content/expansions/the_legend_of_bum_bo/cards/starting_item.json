@@ -6,7 +6,55 @@
       "type": "starting_item",
       "expansion": "the_legend_of_bum_bo",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "coins": 3
+          },
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Pay 3¢: play an additional loot card this turn."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "coins": 4
+          },
+          "effects": [
+            {
+              "draw_loot": 1
+            }
+          ],
+          "description": "Pay 4¢: loot 1."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "coins": 6
+          },
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "struck"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "struck"
+            }
+          ],
+          "description": "Pay 6¢: deal 1 damage to a monster or player."
+        }
+      ],
       "tags": [
         "eternal",
         "paid"

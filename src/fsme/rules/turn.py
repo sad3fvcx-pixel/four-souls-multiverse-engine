@@ -280,7 +280,19 @@ def _begin_turn(context: EffectContext, *, active_player: int) -> None:
         state, LOOT_PLAYS, active_player, LOOT_PLAYS_PER_TURN
     ) - LOOT_PLAYS_PER_TURN
 
-    tapped = [card for card in player.treasures.cards if getattr(card, "tapped", False)]
+    tapped = []
+
+    for card in player.treasures.cards:
+        if not getattr(card, "tapped", False):
+            continue
+
+        if getattr(card, "recharge_skipped", False):
+            # One recharge is missed, not every recharge: the card is let off
+            # as it is passed over.
+            card.recharge_skipped = False
+            continue
+
+        tapped.append(card)
 
     if tapped:
         context.apply("recharge", tapped)

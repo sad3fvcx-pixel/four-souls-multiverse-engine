@@ -73,6 +73,31 @@ def end_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     return 1
 
 
+def end_attack(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> bool:
+    """
+    Call off the attack in progress.
+
+    "Cancel your attack if able" is not cancelling a card: the rounds still to
+    come are the engine's own, and an attack that is already over cancels
+    nothing.
+    """
+    from fsme.rules import end_combat
+
+    state = ctx.state
+
+    if not state.combat.active:
+        return False
+
+    for item in list(state.stack):
+        if item.kind is StackItemType.COMBAT:
+            state.stack.remove(item)
+            item.cancel()
+
+    end_combat(ctx)
+
+    return True
+
+
 def register(registry: EffectRegistry) -> None:
     """
     Register every stack effect.
@@ -82,6 +107,11 @@ def register(registry: EffectRegistry) -> None:
         cancel_stack,
         needs_target=True,
         description="Cancel an ability or card waiting on the stack.",
+    )
+    registry.register(
+        "end_attack",
+        end_attack,
+        description="Call off the attack in progress.",
     )
     registry.register(
         "end_turn",

@@ -109,6 +109,7 @@ def take_card(
     targets: Sequence[Any],
     to: str = "hand",
     shuffle: str = "",
+    player: Any = None,
 ) -> int:
     """
     Move chosen cards out of wherever they are and into a player's keeping.
@@ -116,9 +117,12 @@ def take_card(
     ``to`` is ``hand`` or ``treasures``. ``shuffle`` names a deck to shuffle
     afterwards, which is what stops a search from telling everybody the order
     of what was left behind.
+
+    ``player`` says who ends up with the card when it is not the player doing
+    it: "give a loot card to another player" is this effect pointed elsewhere.
     """
     state = ctx.state
-    owner = ctx.actor
+    owner = ctx.actor if player is None else int(player)
 
     if owner is None or not 0 <= owner < len(state.players):
         return 0
