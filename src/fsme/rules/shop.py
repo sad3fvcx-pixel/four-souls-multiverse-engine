@@ -15,10 +15,17 @@ from fsme.state.modifiers import SHOP_COST
 from .constants import TREASURE_COST
 from .statics import bonus
 
+DECK = "deck"
+"""What a player buys when they buy the top of the treasure deck, unseen."""
+
 
 class BuyTreasureHandler:
     """
-    Buys the chosen shop item for the official price.
+    Buys a shop item, or the top card of the treasure deck, for the price.
+
+    COMPREHENSIVE_RULES.md §6: both are the same purchase and cost the same,
+    and a player gets one of them per turn. The difference is only that one
+    card is face up and the other is not.
     """
 
     def validate(self, command: Command, state: GameState) -> str | None:
@@ -39,10 +46,19 @@ class BuyTreasureHandler:
         if not player.alive:
             return "a dead player may not buy"
 
+        if not player.can_buy():
+            return "no purchases remaining this turn"
+
         price = shop_price(state, player.player_id)
 
         if player.pennies < price:
             return f"buying costs {price} cents, player has {player.pennies}"
+
+        if command.get("source") == DECK:
+            if not state.treasure_deck.cards:
+                return "the treasure deck is empty"
+
+            return None
 
         index = command.get("index", 0)
 
@@ -57,6 +73,8 @@ class BuyTreasureHandler:
 
         price = shop_price(state, player.player_id)
 
+        player.spend_purchase()
+
         context.emit(
             EventType.BEFORE_PURCHASE,
             controller=player.player_id,
@@ -65,7 +83,10 @@ class BuyTreasureHandler:
 
         context.apply("lose_coins", [player], amount=price)
 
-        card = state.treasure_shop.cards.pop(int(command.get("index", 0)))
+        if command.get("source") == DECK:
+            card = state.treasure_deck.draw()
+        else:
+            card = state.treasure_shop.cards.pop(int(command.get("index", 0)))
 
         card.owner = player.player_id
         card.controller = player.player_id

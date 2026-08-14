@@ -47,6 +47,7 @@ def state_fingerprint(state: GameState) -> tuple[Any, ...]:
             player.pennies,
             player.alive,
             player.attacks_left,
+            player.purchases_left,
             player.additional_loot_plays,
             _zone_fingerprint(player.hand.cards),
             _zone_fingerprint(player.treasures.cards),

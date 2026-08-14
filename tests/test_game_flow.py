@@ -214,3 +214,63 @@ def test_the_same_seed_produces_the_same_game_through_commands() -> None:
 
     assert play(2024) == play(2024)
     assert play(2024) != play(9999)
+
+
+def test_the_top_of_the_treasure_deck_can_be_bought_unseen() -> None:
+    """
+    COMPREHENSIVE_RULES.md §6: a purchase is a shop item or the top of the deck.
+    """
+    runtime, state = make_game()
+
+    submit(runtime, CommandType.START_GAME)
+    submit(runtime, CommandType.END_PHASE)
+
+    unseen = make_instance(
+        treasure_definition("test.unseen"), instance_id="treasure:unseen"
+    )
+    state.treasure_deck.add_top(unseen)
+
+    player = state.player(0)
+    player.pennies = TREASURE_COST
+
+    shop = list(state.treasure_shop.cards)
+
+    assert submit(runtime, CommandType.BUY_TREASURE, source="deck").accepted
+
+    assert unseen in player.treasures.cards
+    assert unseen.owner == 0
+    assert player.pennies == 0
+    assert list(state.treasure_shop.cards) == shop, "the shop was not the seller"
+
+
+def test_buying_from_an_empty_treasure_deck_is_refused() -> None:
+    runtime, state = make_game()
+
+    submit(runtime, CommandType.START_GAME)
+    submit(runtime, CommandType.END_PHASE)
+
+    state.player(0).pennies = TREASURE_COST
+
+    result = submit(runtime, CommandType.BUY_TREASURE, source="deck")
+
+    assert result.rejected
+    assert "empty" in result.reason
+
+
+def test_the_deck_and_the_shop_share_one_purchase() -> None:
+    runtime, state = make_game()
+
+    submit(runtime, CommandType.START_GAME)
+    submit(runtime, CommandType.END_PHASE)
+
+    state.treasure_deck.add_top(
+        make_instance(treasure_definition("test.unseen"), instance_id="treasure:unseen")
+    )
+
+    state.player(0).pennies = TREASURE_COST * 2
+
+    assert submit(runtime, CommandType.BUY_TREASURE, source="deck").accepted
+
+    again = submit(runtime, CommandType.BUY_TREASURE, index=0)
+
+    assert again.rejected

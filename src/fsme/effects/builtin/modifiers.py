@@ -125,6 +125,9 @@ def _apply_now(player: PlayerState, stat: str, amount: int) -> None:
     elif stat == "attacks":
         player.attacks_left = max(0, player.attacks_left + amount)
 
+    elif stat == "purchases":
+        player.purchases_left = max(0, player.purchases_left + amount)
+
     elif stat == "loot_plays":
         player.additional_loot_plays = max(
             0, player.additional_loot_plays + amount

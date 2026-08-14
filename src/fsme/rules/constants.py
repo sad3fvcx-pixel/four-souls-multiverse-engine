@@ -34,6 +34,9 @@ LOOT_PLAYS_PER_TURN = 1
 ATTACKS_PER_TURN = 1
 """Attacks declarable per turn before modifiers."""
 
+PURCHASES_PER_TURN = 1
+"""Items buyable per turn before modifiers."""
+
 DICE_SIDES = 6
 """The game uses a single six-sided die."""
 

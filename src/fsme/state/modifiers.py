@@ -31,6 +31,9 @@ ATTACKS = "attacks"
 LOOT_PLAYS = "loot_plays"
 """Loot cards a player may play per turn."""
 
+PURCHASES = "purchases"
+"""Items a player may buy per turn."""
+
 ROLL = "roll"
 """
 What a player adds to a die they roll.
@@ -59,7 +62,16 @@ add to that — "Loot +1 during your loot step" is this statistic and not an
 extra loot card played.
 """
 
-STATS = (ATTACK, MAX_HP, ATTACKS, LOOT_PLAYS, ROLL, SHOP_COST, LOOT_STEP)
+STATS = (
+    ATTACK,
+    MAX_HP,
+    ATTACKS,
+    LOOT_PLAYS,
+    PURCHASES,
+    ROLL,
+    SHOP_COST,
+    LOOT_STEP,
+)
 """
 Every statistic a modifier may change.
 

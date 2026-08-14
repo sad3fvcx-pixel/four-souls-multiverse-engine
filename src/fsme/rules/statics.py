@@ -25,6 +25,7 @@ from fsme.state.modifiers import (
     LOOT_PLAYS,
     LOOT_STEP,
     MAX_HP,
+    PURCHASES,
     ROLL,
     STATS,
 )
@@ -45,6 +46,7 @@ __all__ = [
     "DIFFICULTY",
     "MAX_HP",
     "MONSTER_SCOPES",
+    "PURCHASES",
     "ROLL",
     "STATS",
     "bonus",

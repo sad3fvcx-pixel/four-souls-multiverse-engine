@@ -31,6 +31,7 @@ from .constants import (
     HAND_LIMIT,
     LOOT_PLAYS_PER_TURN,
     LOOT_STEP_CARDS,
+    PURCHASES_PER_TURN,
     STARTING_HAND_SIZE,
 )
 from .death import restore_everyone
@@ -39,6 +40,7 @@ from .statics import (
     ATTACKS,
     LOOT_PLAYS,
     LOOT_STEP,
+    PURCHASES,
     expire_turn_modifiers,
     static_value,
 )
@@ -343,6 +345,9 @@ def _begin_turn(context: EffectContext, *, active_player: int) -> None:
 
     player.attacks_left = static_value(
         state, ATTACKS, active_player, ATTACKS_PER_TURN
+    )
+    player.purchases_left = static_value(
+        state, PURCHASES, active_player, PURCHASES_PER_TURN
     )
     player.additional_loot_plays = static_value(
         state, LOOT_PLAYS, active_player, LOOT_PLAYS_PER_TURN

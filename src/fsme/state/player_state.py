@@ -29,6 +29,7 @@ class PlayerState:
     pennies: int = 0
 
     attacks_left: int = 1
+    purchases_left: int = 1
     additional_loot_plays: int = 0
 
     loot_limit_lifted: bool = False
@@ -95,11 +96,20 @@ class PlayerState:
             raise ValueError("player has no attacks remaining")
         self.attacks_left -= 1
 
+    def can_buy(self) -> bool:
+        return self.alive and self.purchases_left > 0
+
+    def spend_purchase(self) -> None:
+        if self.purchases_left <= 0:
+            raise ValueError("player has no purchases remaining")
+        self.purchases_left -= 1
+
     def reset_turn(self) -> None:
         """
         Restore values refreshed at the beginning of a turn.
         """
         self.attacks_left = 1
+        self.purchases_left = 1
         self.additional_loot_plays = 0
         self.loot_played = 0
         self.loot_limit_lifted = False

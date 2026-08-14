@@ -35,9 +35,13 @@ DEFAULT_MONSTER_ATTACK = 1
 """Damage a monster deals when its card does not print an attack value."""
 
 
+DECK = "deck"
+"""What a player attacks when they attack the monster deck rather than a slot."""
+
+
 class AttackHandler:
     """
-    Declares an attack against an active monster.
+    Declares an attack against an active monster or against the monster deck.
     """
 
     def validate(self, command: Command, state: GameState) -> str | None:
@@ -64,6 +68,12 @@ class AttackHandler:
         if state.combat.active:
             return "an attack is already in progress"
 
+        if command.get("source") == DECK:
+            if not state.monster_deck.cards:
+                return "the monster deck is empty"
+
+            return refuse(state, ATTACK_ACTION, player=command.player)
+
         index = command.get("index", 0)
         monsters = state.active_monsters.cards
 
@@ -79,10 +89,19 @@ class AttackHandler:
         state = context.state
         player = state.player(command.player)
 
-        monster = state.active_monsters.cards[int(command.get("index", 0))]
+        if command.get("source") == DECK:
+            monster = _reveal_for_attack(context, player.player_id)
+        else:
+            monster = state.active_monsters.cards[int(command.get("index", 0))]
 
+        # COMPREHENSIVE_RULES.md §7: the attack is spent when it is declared,
+        # including the one that turned over a card and found no monster.
         player.spend_attack()
         state.turn.record_attack()
+
+        if monster is None:
+            return
+
         state.combat.begin(player.player_id, monster)
 
         pay_obligation(state, ATTACK_ACTION, player.player_id, monster)
@@ -95,6 +114,43 @@ class AttackHandler:
         )
 
         push_combat_round(context, player.player_id, monster)
+
+
+def _reveal_for_attack(context: EffectContext, attacker: int) -> Any | None:
+    """
+    Turn over the top card of the monster deck and see what was attacked.
+
+    COMPREHENSIVE_RULES.md §7: a monster comes into the monster area and the
+    attack goes on against it. Anything else is played instead, and the attack
+    is over before a die is rolled.
+
+    Where exactly the new monster stands is the one thing the engine cannot say
+    faithfully: the rules put it in a slot on top of the monster already there,
+    and the engine's monster area is a list with a count rather than a row of
+    slots. So it joins the area, is attacked, and the area returns to its usual
+    size once it is dealt with.
+    """
+    state = context.state
+    card = state.monster_deck.draw()
+    kind = getattr(getattr(card, "definition", None), "type", None)
+
+    if kind is CardType.EVENT:
+        _resolve_event(context, card)
+
+        return None
+
+    if kind is CardType.CURSE:
+        _attach_curse(context, card)
+
+        return None
+
+    _turn_face_up(card)
+
+    state.active_monsters.add_top(card)
+
+    context.emit(EventType.ON_ENTER, source=card, controller=attacker)
+
+    return card
 
 
 def push_combat_round(

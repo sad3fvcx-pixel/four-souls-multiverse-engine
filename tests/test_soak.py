@@ -115,6 +115,11 @@ def step(game: Game, rng: random.Random) -> bool:
         for index in range(len(state.treasure_shop)):
             moves.append((CommandType.BUY_TREASURE, {"index": index}))
 
+        # The two moves that do not name a card: attacking the monster deck and
+        # buying the top of the treasure deck, both unseen.
+        moves.append((CommandType.ATTACK, {"source": "deck"}))
+        moves.append((CommandType.BUY_TREASURE, {"source": "deck"}))
+
     rng.shuffle(moves)
 
     for kind, payload in moves:

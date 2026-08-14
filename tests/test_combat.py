@@ -5,13 +5,14 @@ Combat: rounds on the stack, damage, death and rewards.
 from __future__ import annotations
 
 from conftest import (
+    make_definition,
     make_game,
     make_instance,
     monster_definition,
     treasure_definition,
 )
 
-from fsme.cards import CardInstance
+from fsme.cards import CardInstance, CardType
 from fsme.commands import Command, CommandType
 from fsme.events import EventType
 from fsme.rng.rng import RNG
@@ -235,3 +236,75 @@ def test_a_monster_shuffled_back_returns_in_one_piece() -> None:
     assert monster in state.active_monsters.cards
     assert monster.alive is True
     assert monster.hp == monster.definition.health
+
+
+def stock_monster_deck(state, *cards) -> None:
+    """
+    Put cards on the monster deck, last one on top.
+    """
+    for card in cards:
+        state.monster_deck.add_top(card)
+
+
+def test_the_monster_deck_can_be_attacked() -> None:
+    """
+    COMPREHENSIVE_RULES.md §7: the revealed monster joins the area and is fought.
+    """
+    runtime, state = armed_game([6, 6], monsters=1)
+    reach_action_phase(runtime, state)
+
+    revealed = CardInstance(
+        definition=monster_definition("test.revealed", health=2),
+        instance_id="monster:revealed",
+        controller=None,
+        owner=None,
+    )
+    stock_monster_deck(state, revealed)
+
+    assert runtime.submit(
+        Command(type=CommandType.ATTACK, player=0, payload={"source": "deck"})
+    ).accepted
+
+    assert revealed.alive is False, "it was the revealed monster that was fought"
+    assert state.player(0).soul_count == 1
+    assert state.active_monsters.cards[0].alive is True, "the slot was not attacked"
+
+
+def test_turning_over_something_that_is_not_a_monster_ends_the_attack() -> None:
+    """
+    §7: anything that is not a monster is played, and the attack is over.
+    """
+    runtime, state = armed_game([6, 6], monsters=1)
+    reach_action_phase(runtime, state)
+
+    event = CardInstance(
+        definition=make_definition(
+            "test.happening",
+            name="Test Event",
+            card_type=CardType.EVENT,
+        ),
+        instance_id="monster:happening",
+        controller=None,
+        owner=None,
+    )
+    stock_monster_deck(state, event)
+
+    assert runtime.submit(
+        Command(type=CommandType.ATTACK, player=0, payload={"source": "deck"})
+    ).accepted
+
+    assert state.combat.active is False
+    assert event in state.monster_discard.cards
+    assert state.player(0).can_attack() is False, "the attack was spent all the same"
+
+
+def test_attacking_an_empty_monster_deck_is_refused() -> None:
+    runtime, state = armed_game([6], monsters=1)
+    reach_action_phase(runtime, state)
+
+    result = runtime.submit(
+        Command(type=CommandType.ATTACK, player=0, payload={"source": "deck"})
+    )
+
+    assert result.rejected
+    assert "empty" in result.reason
