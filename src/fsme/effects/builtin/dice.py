@@ -181,6 +181,31 @@ def set_roll(ctx: EffectContext, targets: Sequence[Any], value: int = 1) -> int:
     return kept
 
 
+def flip_roll(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Turn a roll over: a one becomes a six, a two a five.
+
+    The die is not rolled again. It is read from the other side, which is why
+    the result is one more than the number of faces less what it showed.
+    """
+    waiting = ctx.state.pending_roll
+
+    if waiting is not None:
+        return waiting.settle(waiting.sides + 1 - waiting.value)
+
+    event = ctx.event
+
+    if event is None:
+        raise EffectExecutionError("'flip_roll' may only be used while a roll is open")
+
+    sides = int(event.get("sides", 6))
+    flipped = max(1, min(sides, sides + 1 - int(event.get("value", 1))))
+
+    event.set("value", flipped)
+
+    return flipped
+
+
 def register(registry: EffectRegistry) -> None:
     """
     Register every dice effect.
@@ -204,6 +229,11 @@ def register(registry: EffectRegistry) -> None:
         set_roll,
         primary="value",
         description="Change an open roll to a chosen number.",
+    )
+    registry.register(
+        "flip_roll",
+        flip_roll,
+        description="Read an open roll from the other side of the die.",
     )
     registry.register(
         "modify_roll",

@@ -6,7 +6,18 @@
       "type": "loot",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "kill",
+              "target": "all_players"
+            }
+          ],
+          "description": "Kill all players."
+        }
+      ],
       "metadata": {
         "text": "Kill all players.",
         "set": "Alt Art",
@@ -25,7 +36,24 @@
       "type": "loot",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "gain_treasure",
+              "count": 1,
+              "target": "all_players"
+            },
+            {
+              "effect": "gain_treasure",
+              "count": 1,
+              "target": "controller"
+            }
+          ],
+          "description": "Each player gains +1 treasure, then you gain +1 treasure."
+        }
+      ],
       "metadata": {
         "text": "Each player gains\n+1 treasure, then\nyou gain +1 treasure.",
         "set": "Alt Art",

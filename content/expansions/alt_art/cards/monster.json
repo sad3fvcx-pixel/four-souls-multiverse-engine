@@ -26,7 +26,23 @@
         "version": "Alt Ability",
         "artist": "@davecorreia",
         "notes": "Unlocked via 4,000 backers for the Requiem Kickstarter."
-      }
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 2,
+          "scope": "self",
+          "conditions": [
+            {
+              "monster_hp": {
+                "operator": "<=",
+                "value": 2
+              }
+            }
+          ],
+          "description": "While this is at 2 HP or less, it has +2 DC."
+        }
+      ]
     },
     {
       "id": "monster_deck-basic_enemies-alt_art-big_bony",
@@ -81,7 +97,8 @@
         "subcategory": "Basic Enemies",
         "version": "Alt Ability",
         "artist": "@rich_werner",
-        "notes": "Unlocked via 32,000 backers for the Requiem Kickstarter."
+        "notes": "Unlocked via 32,000 backers for the Requiem Kickstarter.",
+        "vanilla": true
       }
     },
     {
@@ -118,7 +135,52 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "turn_start",
+          "scope": "any",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": {
+                    "value": 3
+                  }
+                }
+              ],
+              "then": [
+                {
+                  "effect": "require_attack",
+                  "times": 1,
+                  "target": "self"
+                }
+              ]
+            }
+          ],
+          "description": "At the start of each turn the active player rolls- 1-2: they must attack this this turn."
+        },
+        {
+          "trigger": "damage_dealt",
+          "scope": "any",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "cancel_stack",
+              "target": "all_stack"
+            },
+            {
+              "end_turn": {}
+            }
+          ],
+          "description": "When this deals combat damage, cancel everything that hasn't resolved and end the turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 3,
@@ -146,7 +208,44 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "targets": [
+                {
+                  "target_monster": {
+                    "as": "struck_monster"
+                  }
+                }
+              ],
+              "target": "struck_monster"
+            },
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "targets": [
+                {
+                  "target_player": {
+                    "as": "struck_player"
+                  }
+                }
+              ],
+              "target": "struck_player"
+            },
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "When this dies, the active player deals 1 damage each to a monster, player, and themselves."
+        }
+      ],
       "health": 1,
       "attack": 4,
       "roll": 3,
@@ -174,7 +273,50 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Expand monster slots by 1.",
+                  "effects": [
+                    {
+                      "effect": "expand_slots",
+                      "area": "monster",
+                      "amount": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Expand shop slots by 1.",
+                  "effects": [
+                    {
+                      "effect": "expand_slots",
+                      "area": "shop",
+                      "amount": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Expand room slots by 1.",
+                  "effects": [
+                    {
+                      "effect": "expand_slots",
+                      "area": "room",
+                      "amount": 1
+                    }
+                  ]
+                }
+              ],
+              "as": "mulligan_choice"
+            }
+          ],
+          "description": "When this dies, expand monster slots, shop slots, or room slots by 1."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 3,
@@ -259,7 +401,26 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "all_monsters"
+            }
+          ],
+          "description": "Each time a player rolls a 1, each monster gains +1 AT till end of turn."
+        }
+      ],
       "health": 5,
       "attack": 0,
       "roll": 5,
@@ -288,7 +449,21 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 2,
+              "target": "self"
+            }
+          ],
+          "description": "Each time this takes damage, it gains +2 AT till end of turn."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 3,
@@ -343,7 +518,30 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "targets": [
+            {
+              "active_player": {
+                "as": "loser"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "discard_loot",
+              "count": {
+                "count": "loot",
+                "of": "loser"
+              },
+              "target": "loser"
+            }
+          ],
+          "description": "When this dies, the active player discards their hand."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 2,
@@ -430,7 +628,24 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "any",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "random_monster"
+            }
+          ],
+          "description": "Each time this deals combat damage, it deals 1 damage to a monster chosen at random."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 5,
@@ -480,7 +695,23 @@
         "version": "Alt Ability",
         "artist": "@16BitsofGlass",
         "notes": "Unlocked on the second roll against The Beast during the Requiem Kickstarter."
-      }
+      },
+      "statics": [
+        {
+          "stat": "attack",
+          "amount": 1,
+          "scope": "self",
+          "conditions": [
+            {
+              "monster_hp": {
+                "operator": "<=",
+                "value": 2
+              }
+            }
+          ],
+          "description": "While this is at 2 HP or less, it has +1 AT."
+        }
+      ]
     },
     {
       "id": "monster_deck-bosses-alt_art-little_horn",
@@ -576,7 +807,39 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": {
+                    "value": 4
+                  }
+                }
+              ],
+              "then": [
+                {
+                  "effect": "destroy_treasure",
+                  "target": {
+                    "random_treasure": {
+                      "owner": "controller",
+                      "exclude_eternal": true,
+                      "as": "unlucky_item"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "description": "When this dies, the active player rolls- 1-3: destroy a non-eternal item they control chosen at random."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -635,7 +898,40 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "targets": [
+            {
+              "target_player": {
+                "as": "chosen"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "chosen"
+            },
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "targets": [
+                {
+                  "target_player": {
+                    "chooser": "chosen",
+                    "as": "their_victim"
+                  }
+                }
+              ],
+              "target": "their_victim"
+            }
+          ],
+          "description": "When this dies, the active player chooses a player. That player takes 1 damage, then deals 1 damage to a player."
+        }
+      ],
       "health": 4,
       "attack": 1,
       "roll": 4,
@@ -664,7 +960,33 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_target",
+            "combat_damage",
+            {
+              "or": [
+                {
+                  "dice_equals": 5
+                },
+                {
+                  "dice_equals": 6
+                }
+              ]
+            }
+          ],
+          "effects": [
+            {
+              "cancel_event": {}
+            }
+          ],
+          "description": "This takes no combat damage on attack rolls of 5 or 6."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -722,7 +1044,41 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "or": [
+                    {
+                      "dice_equals": 1
+                    },
+                    {
+                      "dice_equals": 6
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "effect": "move_cards",
+                  "deck": "monster",
+                  "position": "top",
+                  "depth_from": 1,
+                  "target": "self"
+                }
+              ]
+            }
+          ],
+          "description": "When this dies, after gaining rewards, the active player rolls- 1 or 6: put this in the monster deck 1 card from the top."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "roll": 4,
@@ -809,7 +1165,20 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "expand_slots",
+              "area": "monster",
+              "amount": 2
+            }
+          ],
+          "description": "When this dies, expand monster slots by 2."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 4,
@@ -1046,7 +1415,35 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "lose_soul",
+                  "targets": [
+                    {
+                      "target_player": {
+                        "exclude_controller": true,
+                        "count": 2,
+                        "minimum": 2,
+                        "maximum": 2,
+                        "as": "mourners"
+                      }
+                    }
+                  ],
+                  "target": "mourners"
+                }
+              ],
+              "prompt": "Choose 2 other players to destroy a soul each?"
+            }
+          ],
+          "description": "When this dies, the active player may choose 2 other players. They each destroy a soul they control."
+        }
+      ],
       "health": 6,
       "attack": 6,
       "roll": 3,

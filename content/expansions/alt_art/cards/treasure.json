@@ -6,7 +6,24 @@
       "type": "treasure",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "all_monsters"
+            },
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "controller"
+            }
+          ],
+          "description": "Deal 1 damage to each monster and yourself."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -29,7 +46,17 @@
       "type": "treasure",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "flip_roll": {}
+            }
+          ],
+          "description": "Flip a dice roll. The roll becomes 7 minus the current result."
+        }
+      ],
       "tags": [
         "activated",
         "active"

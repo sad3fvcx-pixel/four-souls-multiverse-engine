@@ -122,6 +122,7 @@ class TargetResolver:
         register("another_player", _opponents)
         register("random_player", _random_player)
         register("character", _character)
+        register("target_character", _target_character)
         register("player_left", _player_left)
         register("player_right", _player_right)
         register("random_loot", _random_loot)
@@ -141,6 +142,7 @@ class TargetResolver:
         register("target_deck_card", _target_deck_card)
         register("deck_top", _deck_top)
         register("target_treasure", _target_treasure)
+        register("random_treasure", _random_treasure)
         register("owned_treasure", _owned_treasure)
         register("all_treasures", _all_treasures)
         register("shop_items", _shop_items)
@@ -265,6 +267,27 @@ def _character(
     character = state.player(context.controller).character
 
     return [character] if character is not None else []
+
+
+def _target_character(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    Any character card at the table, chosen.
+
+    "Recharge up to 1 character" is not "recharge your character": a character
+    taps like an item, and waking somebody else's is the point of the card that
+    says so.
+    """
+    characters = [
+        player.character
+        for player in state.players
+        if player.alive and player.character is not None
+    ]
+
+    return _ask(
+        DecisionKind.CHOOSE_CARD, characters, context, params, "target_character"
+    )
 
 
 def _neighbour(state: GameState, seat: int, step: int) -> list[Any]:
@@ -950,6 +973,24 @@ def _group(
         members.extend(context.targets.get(str(name), ()))
 
     return members
+
+
+def _random_treasure(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    One item taken blindly from those a card is talking about.
+
+    "Destroy a non-eternal item you control chosen at random" is nobody's
+    choice, so nobody is asked and the RNG is consumed here in a documented
+    order.
+    """
+    options = _all_treasures(state, context, dict(params), rng)
+
+    if not options:
+        return []
+
+    return [options[rng.randint(0, len(options) - 1)]]
 
 
 def _vote(

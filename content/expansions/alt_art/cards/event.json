@@ -25,7 +25,57 @@
       "type": "event",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Put this into discard.",
+                  "effects": []
+                },
+                {
+                  "description": "Gain 6¢. Take 1 damage.",
+                  "effects": [
+                    {
+                      "gain_coins": 6
+                    },
+                    {
+                      "effect": "deal_damage",
+                      "amount": 1,
+                      "target": "controller"
+                    }
+                  ]
+                },
+                {
+                  "description": "Take 2 damage. Search the loot deck for a loot card, put it in your hand, then shuffle the loot deck.",
+                  "effects": [
+                    {
+                      "effect": "deal_damage",
+                      "amount": 2,
+                      "target": "controller"
+                    },
+                    {
+                      "effect": "take_card",
+                      "to": "hand",
+                      "shuffle": "loot",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "loot",
+                          "as": "found"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "as": "devil_choice"
+            }
+          ],
+          "description": "Choose one- Put this into discard; gain 6¢ and take 1 damage; or take 2 damage, search the loot deck for a loot card, put it in your hand, then shuffle the loot deck."
+        }
+      ],
       "metadata": {
         "text": "Choose one-\n•Put this into discard.\n------------------------------\n•Gain 6¢. Take 1 damage.\n------------------------------\n•Take 2 damage. Search\nthe loot deck for a loot\ncard, put it in your hand,\nthen shuffle the loot deck.",
         "set": "Alt Art",

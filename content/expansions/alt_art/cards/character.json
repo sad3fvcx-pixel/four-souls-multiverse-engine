@@ -6,7 +6,19 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -30,7 +42,19 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -54,7 +78,56 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        },
+        {
+          "trigger": "game_start",
+          "scope": "any",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "treasure",
+                "from_top": 3,
+                "as": "starting",
+                "prompt": "Choose your starting item."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "take_card",
+              "to": "treasures",
+              "target": "starting"
+            },
+            {
+              "effect": "make_eternal",
+              "target": "starting"
+            },
+            {
+              "effect": "move_cards",
+              "deck": "treasure",
+              "position": "bottom",
+              "target": {
+                "deck_top": {
+                  "deck": "treasure",
+                  "count": 2
+                }
+              }
+            }
+          ],
+          "description": "When you start the game, look at the top 3 cards of the treasure deck and choose one. It becomes your starting item and gains eternal. Put the rest on the bottom of the treasure deck."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -77,7 +150,19 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -101,7 +186,19 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -125,7 +222,19 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -149,7 +258,19 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -173,7 +294,44 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Play an additional loot card this turn.",
+                  "effects": [
+                    {
+                      "effect": "add_modifier",
+                      "stat": "loot_plays",
+                      "amount": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Put a shop item into discard.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "treasure",
+                      "position": "discard",
+                      "target": {
+                        "target_shop_item": {
+                          "as": "swept"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "as": "capricious_choice"
+            }
+          ],
+          "description": "Choose one- Play an additional loot card this turn; or put a shop item into discard."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -197,7 +355,19 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -221,7 +391,19 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -245,7 +427,19 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
@@ -269,7 +463,42 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        },
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "recharge",
+                  "targets": [
+                    {
+                      "target_character": {
+                        "as": "woken"
+                      }
+                    }
+                  ],
+                  "target": "woken"
+                }
+              ],
+              "prompt": "Recharge a character?"
+            }
+          ],
+          "description": "At the end of your turn, recharge up to 1 character."
+        }
+      ],
       "health": 1,
       "attack": 1,
       "tags": [
@@ -293,7 +522,19 @@
       "type": "character",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
