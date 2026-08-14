@@ -1,10 +1,17 @@
 # src/fsme/rules/activation.py
 
 """
-Activating treasures.
+Activating a card that taps for something.
+
+An item is the usual one, but not the only one: a character card taps for its
+ability, and so does a room. What they have in common is the whole mechanic —
+a printed "↷: do this" and one use until it recharges — so they share the
+command, and the command says which card it means.
 """
 
 from __future__ import annotations
+
+from typing import Any
 
 from fsme.commands import Command
 from fsme.effects import EffectContext
@@ -14,15 +21,52 @@ from fsme.state import GameState
 from .costs import pay, unpayable
 from .restrictions import ACTIVATE, refuse
 
+TREASURES = "treasures"
+"""The item area, which is where a card is activated from unless it is not."""
 
-def _is_character(command: Command) -> bool:
-    """
-    Whether this command activates a character rather than an item.
+CHARACTER = "character"
+"""A player's own character card, which taps for its ability like an item."""
 
-    A character card taps for its ability exactly as an item does, and it is
-    not in the item area, so the command says which card it means.
+ROOM = "room"
+"""
+The room in play, which belongs to nobody and taps for the table.
+
+A room's ability is activated by the player who is entitled to use it, and the
+engine has nothing to say about who that is beyond what the room prints: the
+card is in play, the ability is on it, and whoever holds priority may use it.
+"""
+
+
+def _zone_of(command: Command) -> str:
+    return str(command.get("zone", TREASURES))
+
+
+def _card_for(command: Command, state: GameState) -> tuple[Any | None, str | None]:
     """
-    return str(command.get("zone", "treasures")) == "character"
+    Find the card a command means, or say why there is not one.
+    """
+    zone = _zone_of(command)
+    player = state.player(command.player)
+
+    if zone == CHARACTER:
+        return player.character, (
+            None if player.character is not None else "this player has no character card"
+        )
+
+    if zone == ROOM:
+        index = command.get("index", 0)
+
+        if not isinstance(index, int) or not 0 <= index < len(state.room_area):
+            return None, f"no room at index {index!r}"
+
+        return state.room_area.cards[index], None
+
+    index = command.get("index", 0)
+
+    if not isinstance(index, int) or not 0 <= index < player.treasure_count:
+        return None, f"no treasure at index {index!r}"
+
+    return player.treasures.cards[index], None
 
 
 class ActivateTreasureHandler:
@@ -50,18 +94,10 @@ class ActivateTreasureHandler:
         if not player.alive:
             return "a dead player may not activate items"
 
-        if _is_character(command):
-            card = player.character
+        card, refusal = _card_for(command, state)
 
-            if card is None:
-                return "this player has no character card"
-        else:
-            index = command.get("index", 0)
-
-            if not isinstance(index, int) or not 0 <= index < player.treasure_count:
-                return f"no treasure at index {index!r}"
-
-            card = player.treasures.cards[index]
+        if refusal is not None:
+            return refusal
 
         # The face, not the definition: an item copying another item is
         # activated for the ability it is currently wearing.
@@ -90,11 +126,7 @@ class ActivateTreasureHandler:
         state = context.state
         player = state.player(command.player)
 
-        card = (
-            player.character
-            if _is_character(command)
-            else player.treasures.cards[int(command.get("index", 0))]
-        )
+        card, _ = _card_for(command, state)
 
         if card is None:
             return
