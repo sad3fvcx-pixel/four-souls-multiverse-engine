@@ -788,7 +788,7 @@ def _all_treasures(
         treasures = [
             card
             for card in treasures
-            if not getattr(getattr(card, "definition", None), "is_eternal", False)
+            if not getattr(card, "is_eternal", False)
         ]
 
     if params.get("exclude_source", False):

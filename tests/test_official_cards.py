@@ -4416,6 +4416,93 @@ def test_the_box_buys_as_much_loot_as_you_like(base_game: ContentLibrary) -> Non
 
 
 # ----------------------------------------------------------------------
+# Characters that change how a game begins
+# ----------------------------------------------------------------------
+
+
+def seated_as(
+    base_game: ContentLibrary,
+    card_id: str,
+    seat: int = 1,
+    players: int = 2,
+) -> Game:
+    """
+    Deal one named character to one seat, then start the game.
+
+    Which character a player gets is the shuffle's business, and a test about
+    Cain cannot wait for Cain to turn up.
+    """
+    game = Game.from_content(base_game, ["Ann", "Bo", "Cy"][:players], seed=1234)
+
+    player = game.state.player(seat)
+
+    player.character = CardInstance(
+        definition=game.runtime.cards.get(card_id),
+        instance_id=game.state.ids.allocate("character"),
+        owner=seat,
+        controller=seat,
+    )
+    player.treasures.cards.clear()
+
+    assert game.start().accepted
+
+    return game
+
+
+def test_cain_takes_the_first_turn(base_game: ContentLibrary) -> None:
+    game = seated_as(base_game, "characters-base_game-cain", seat=1)
+
+    assert game.state.turn.active_player == 1
+
+
+def test_the_first_seat_starts_when_nobody_says_otherwise(
+    base_game: ContentLibrary,
+) -> None:
+    game = seated_as(base_game, "characters-base_game-isaac", seat=1)
+
+    assert game.state.turn.active_player == 0
+
+
+def test_eden_chooses_a_starting_item_from_the_top_three(
+    base_game: ContentLibrary,
+) -> None:
+    game = seated_as(base_game, "characters-base_game-eden", seat=1)
+
+    top = list(reversed(game.state.treasure_deck.cards[-3:]))
+    below = list(game.state.treasure_deck.cards[:-3])
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert decision.player == 1
+    assert list(decision.options) == top
+
+    chosen = top[1]
+
+    assert choose(game, 1, 1).accepted
+
+    assert chosen in game.state.player(1).treasures.cards
+    assert chosen.is_eternal, "a granted eternal belongs to the card in play"
+
+    # The two it did not take go under the deck, and nothing else moved.
+    assert list(game.state.treasure_deck.cards[:2]) == [top[2], top[0]]
+    assert list(game.state.treasure_deck.cards[2:]) == below
+
+
+def test_edens_item_cannot_be_destroyed(base_game: ContentLibrary) -> None:
+    game = seated_as(base_game, "characters-base_game-eden", seat=1)
+
+    assert choose(game, 1, 0).accepted
+
+    item = game.state.player(1).treasures.cards[0]
+
+    game.runtime.context.apply("destroy_treasure", [item])
+    game.runtime.run()
+
+    assert item in game.state.player(1).treasures.cards
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

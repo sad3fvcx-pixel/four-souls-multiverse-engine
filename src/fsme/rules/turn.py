@@ -49,10 +49,12 @@ class StartGameHandler:
     def execute(self, command: Command, context: EffectContext) -> None:
         state = context.state
 
+        first = first_seat(state)
+
         state.started = True
         state.turn.turn_number = 1
-        state.turn.active_player = 0
-        state.turn.priority_player = 0
+        state.turn.active_player = first
+        state.turn.priority_player = first
         state.turn.phase = GamePhase.START
 
         context.emit(EventType.GAME_START)
@@ -60,7 +62,35 @@ class StartGameHandler:
         for player in state.players:
             context.apply("draw_loot", [player], count=STARTING_HAND_SIZE)
 
-        _begin_turn(context, active_player=0)
+        _begin_turn(context, active_player=first)
+
+
+FIRST_PLAYER = "first_player"
+"""
+The tag a character carries when it decides who starts.
+
+"If you control this as the game starts, you go first" is not an ability: it
+resolves nothing and happens before there is anything to resolve into. It is a
+question the setup asks of the characters that were dealt, and the answer is
+printed on one of them.
+"""
+
+
+def first_seat(state: GameState) -> int:
+    """
+    Return the seat that takes the first turn.
+
+    The first seat unless a character says otherwise, and the earliest such
+    character if somehow two do: a game must start with exactly one player,
+    however the content is arranged.
+    """
+    for player in state.players:
+        character = player.character
+
+        if character is not None and character.has_tag(FIRST_PLAYER):
+            return player.player_id
+
+    return 0
 
 
 class EndPhaseHandler:

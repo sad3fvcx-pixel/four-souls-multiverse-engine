@@ -67,11 +67,13 @@ from .statics import (
     static_value,
 )
 from .turn import (
+    FIRST_PLAYER,
     EndPhaseHandler,
     EndTurnHandler,
     StartGameHandler,
     advance_turn,
     discard_to_hand_limit,
+    first_seat,
 )
 
 
@@ -143,6 +145,8 @@ __all__ = [
     "ProcedureRegistry",
     "StackProcedure",
     "StartGameHandler",
+    "FIRST_PLAYER",
+    "first_seat",
     "ADVANCE_TURN",
     "COMBAT_ROUND",
     "COMBAT_STRIKE",

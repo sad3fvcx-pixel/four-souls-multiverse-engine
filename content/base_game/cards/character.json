@@ -42,11 +42,24 @@
       "type": "character",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [
-        "activated"
+        "activated",
+        "first_player"
       ],
       "metadata": {
         "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\n------------------------------\nIf you control this as the\ngame starts, you go first.\n------------------------------\nStarting item:\nSleight of Hand",
@@ -65,7 +78,56 @@
       "type": "character",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        },
+        {
+          "trigger": "game_start",
+          "scope": "any",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "treasure",
+                "from_top": 3,
+                "as": "starting",
+                "prompt": "Choose your starting item."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "take_card",
+              "to": "treasures",
+              "target": "starting"
+            },
+            {
+              "effect": "make_eternal",
+              "target": "starting"
+            },
+            {
+              "effect": "move_cards",
+              "deck": "treasure",
+              "position": "bottom",
+              "target": {
+                "deck_top": {
+                  "deck": "treasure",
+                  "count": 2
+                }
+              }
+            }
+          ],
+          "description": "When you start the game, look at the top 3 cards of the treasure deck and choose one. It becomes your starting item and gains eternal. Put the rest on the bottom of the treasure deck."
+        }
+      ],
       "health": 2,
       "attack": 1,
       "tags": [

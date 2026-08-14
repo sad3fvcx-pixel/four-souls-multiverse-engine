@@ -55,6 +55,15 @@ class CardInstance:
     is kept beside the definition rather than in place of it.
     """
 
+    eternal: bool = False
+    """
+    Whether this one card cannot be destroyed, whatever its definition says.
+
+    Most eternal items are printed eternal. One card grants it — "it becomes
+    your starting item and gains eternal" — and that is about the copy in play,
+    not about every copy of the card.
+    """
+
     copy_expires: str = ""
     """
     When the copy lapses, empty when it does not.
@@ -93,6 +102,13 @@ class CardInstance:
     @property
     def max_hp(self) -> int:
         return self.definition.health or 0
+
+    @property
+    def is_eternal(self) -> bool:
+        """
+        Whether this card is beyond destroying, stealing or giving away.
+        """
+        return self.eternal or self.face.is_eternal
 
     def has_tag(self, tag: str) -> bool:
         return self.face.has_tag(tag)

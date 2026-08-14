@@ -117,9 +117,7 @@ def _detach(state: Any, card: Any) -> None:
 
 
 def _is_eternal(card: Any) -> bool:
-    definition = getattr(card, "definition", None)
-
-    return bool(getattr(definition, "is_eternal", False))
+    return bool(getattr(card, "is_eternal", False))
 
 
 def _holder(state: Any, card: Any) -> Any | None:

@@ -337,6 +337,23 @@ def lift_limit(
     return lifted
 
 
+def make_eternal(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
+    """
+    Make particular cards beyond destroying.
+
+    Eternal is usually printed, and printed things belong to the definition
+    every copy shares. This is granted to one card in one game, so it is kept
+    on the card in play.
+    """
+    granted = 0
+
+    for card in _cards(targets, "make_eternal"):
+        card.eternal = True
+        granted += 1
+
+    return granted
+
+
 def register(registry: EffectRegistry) -> None:
     """
     Register every card modifier effect.
@@ -377,6 +394,12 @@ def register(registry: EffectRegistry) -> None:
         require_attack,
         primary="times",
         description="Make a player owe an attack this turn.",
+    )
+    registry.register(
+        "make_eternal",
+        make_eternal,
+        needs_target=True,
+        description="Make a card in play eternal.",
     )
     registry.register(
         "lift_limit",
