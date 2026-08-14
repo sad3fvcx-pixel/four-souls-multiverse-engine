@@ -264,7 +264,134 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Name a 1.",
+                  "effects": [
+                    {
+                      "effect": "watch_for",
+                      "event": "after_roll",
+                      "conditions": [
+                        {
+                          "dice_equals": 1
+                        }
+                      ],
+                      "effects": [
+                        {
+                          "draw_loot": 3
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "description": "Name a 2.",
+                  "effects": [
+                    {
+                      "effect": "watch_for",
+                      "event": "after_roll",
+                      "conditions": [
+                        {
+                          "dice_equals": 2
+                        }
+                      ],
+                      "effects": [
+                        {
+                          "draw_loot": 3
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "description": "Name a 3.",
+                  "effects": [
+                    {
+                      "effect": "watch_for",
+                      "event": "after_roll",
+                      "conditions": [
+                        {
+                          "dice_equals": 3
+                        }
+                      ],
+                      "effects": [
+                        {
+                          "draw_loot": 3
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "description": "Name a 4.",
+                  "effects": [
+                    {
+                      "effect": "watch_for",
+                      "event": "after_roll",
+                      "conditions": [
+                        {
+                          "dice_equals": 4
+                        }
+                      ],
+                      "effects": [
+                        {
+                          "draw_loot": 3
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "description": "Name a 5.",
+                  "effects": [
+                    {
+                      "effect": "watch_for",
+                      "event": "after_roll",
+                      "conditions": [
+                        {
+                          "dice_equals": 5
+                        }
+                      ],
+                      "effects": [
+                        {
+                          "draw_loot": 3
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "description": "Name a 6.",
+                  "effects": [
+                    {
+                      "effect": "watch_for",
+                      "event": "after_roll",
+                      "conditions": [
+                        {
+                          "dice_equals": 6
+                        }
+                      ],
+                      "effects": [
+                        {
+                          "draw_loot": 3
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "as": "named_number",
+              "prompt": "Choose a number. If the next roll is that number, loot 3."
+            }
+          ],
+          "description": "Before a dice is rolled, choose a number. If the next roll is that number, loot 3."
+        }
+      ],
       "tags": [
         "activated",
         "active"
@@ -665,7 +792,48 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "prevent_next_damage",
+              "amount": 1,
+              "label": "host_hat",
+              "target": "controller"
+            },
+            {
+              "effect": "watch_for",
+              "event": "damage_prevented",
+              "mine": true,
+              "conditions": [
+                {
+                  "event_value": {
+                    "key": "shield",
+                    "value": "host_hat"
+                  }
+                }
+              ],
+              "effects": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "targets": [
+                    {
+                      "target_player": {
+                        "exclude_controller": true,
+                        "as": "bystander"
+                      }
+                    }
+                  ],
+                  "target": "bystander"
+                }
+              ]
+            }
+          ],
+          "description": "Prevent the next 1 damage you would take this turn. When you prevent damage this way, deal 1 damage to another player."
+        }
+      ],
       "tags": [
         "activated",
         "active"

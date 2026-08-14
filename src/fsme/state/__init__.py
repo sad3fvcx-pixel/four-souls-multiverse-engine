@@ -15,6 +15,7 @@ from .priority import PriorityState
 from .promises import Promise
 from .roll import PendingRoll
 from .turn_state import TurnState
+from .watchers import Watcher
 from .zones import Zone, ZoneType
 
 __all__ = [
@@ -33,6 +34,7 @@ __all__ = [
     "Promise",
     "TemporaryModifier",
     "TurnState",
+    "Watcher",
     "Zone",
     "ZoneType",
 ]

@@ -21,6 +21,7 @@ from .priority import PriorityState
 from .promises import Promise
 from .roll import PendingRoll
 from .turn_state import TurnState
+from .watchers import Watcher
 from .zones import Zone, ZoneType
 
 
@@ -79,6 +80,14 @@ class GameState:
 
     A card that says "the next time..." is finished resolving long before the
     next time comes, so what it promised is kept here until it does.
+    """
+
+    watchers: list[Watcher] = field(default_factory=list)
+    """
+    Abilities waiting for an event with no card left to wait on.
+
+    A promise edits the event it was waiting for; a watcher resolves an ability
+    because of it. Both outlive the card that set them up.
     """
 
     modifiers: list[TemporaryModifier] = field(default_factory=list)

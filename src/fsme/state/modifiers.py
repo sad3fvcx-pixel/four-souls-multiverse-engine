@@ -126,6 +126,14 @@ class DamageShield:
     next instance of damage" does not care how big the instance is.
     """
 
+    label: str = ""
+    """
+    What the card that promised this calls it.
+
+    A card that acts "when you prevent damage this way" means this shield and
+    not another, so the announcement of a prevention carries the name back.
+    """
+
     duration: Duration = Duration.END_OF_TURN
 
     def expires_at_end_of_turn(self) -> bool:

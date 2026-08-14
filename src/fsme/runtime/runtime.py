@@ -617,6 +617,22 @@ class Runtime:
                 event.set("amount", after)
                 self._state.shields.remove(shield)
 
+                if before > after:
+                    # Announced, because cards care that they prevented damage
+                    # and not only that they took none: "when you prevent
+                    # damage this way, deal 1 damage to another player".
+                    self._enqueue(
+                        Event(
+                            type=EventType.DAMAGE_PREVENTED,
+                            controller=player_id,
+                            targets=[target],
+                            payload={
+                                "amount": before - after,
+                                "shield": shield.label,
+                            },
+                        )
+                    )
+
                 if after == 0:
                     event.cancel()
 
@@ -767,6 +783,8 @@ class Runtime:
             for source, ability in self._triggered_by(event):
                 self._push_ability(source, ability, event)
 
+            self._wake_watchers(event)
+
             event.mark_resolved()
 
         self._history.append(event)
@@ -815,6 +833,76 @@ class Runtime:
                     matches.append((card, ability))
 
         return matches
+
+    def _wake_watchers(self, event: Event) -> None:
+        """
+        Let abilities with no card in play answer an event.
+
+        A watcher is a triggered ability that outlived the card that set it up,
+        so it is placed on the stack exactly as one, and the card it came from
+        is still named as its source — a card in the discard pile is still the
+        reason the ability is resolving.
+        """
+        for watcher in list(self._state.watchers):
+            if watcher.event != str(event.type):
+                continue
+
+            if event.event_id and event.event_id in watcher.fired:
+                continue
+
+            player_id = event.controller
+
+            for target in event.targets:
+                seat = getattr(target, "player_id", None)
+
+                if seat is not None:
+                    player_id = seat
+                    break
+
+            if not watcher.concerns(player_id):
+                continue
+
+            ability = Ability(
+                trigger=watcher.event,
+                conditions=tuple(watcher.conditions),
+                effects=tuple(watcher.effects),
+                scope="any",
+            )
+
+            probe = AbilityContext(
+                source=watcher.source,
+                ability=ability,
+                controller=watcher.controller,
+                event=event,
+            )
+
+            if event.event_id:
+                watcher.fired.append(event.event_id)
+
+            if not self._conditions.evaluate_all(
+                ability.conditions, self._state, probe
+            ):
+                # The event was not what the card was hoping for. Whether that
+                # uses the watcher up is the card's business: a die that showed
+                # something else was still the next roll.
+                if not watcher.waits and not watcher.spend():
+                    self._state.watchers.remove(watcher)
+
+                continue
+
+            self._push(
+                StackItem(
+                    kind=StackItemType.TRIGGERED_ABILITY,
+                    label=watcher.label or f"watcher:{watcher.event}",
+                    source=watcher.source,
+                    ability=ability,
+                    controller=watcher.controller,
+                    event=event,
+                )
+            )
+
+            if not watcher.spend():
+                self._state.watchers.remove(watcher)
 
     @staticmethod
     def _controller_for(card: CardInstance, event: Event) -> int | None:

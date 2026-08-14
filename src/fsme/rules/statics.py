@@ -277,6 +277,9 @@ def expire_turn_modifiers(state: GameState) -> list[TemporaryModifier]:
     state.promises = [
         promise for promise in state.promises if not promise.expires_at_end_of_turn()
     ]
+    state.watchers = [
+        watcher for watcher in state.watchers if not watcher.expires_at_end_of_turn()
+    ]
 
     expire_card_modifiers(state)
 

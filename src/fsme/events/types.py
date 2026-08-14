@@ -52,6 +52,9 @@ class EventType(StrEnum):
     BEFORE_ATTACK_ROLL = "before_attack_roll"
     AFTER_ATTACK_ROLL = "after_attack_roll"
     BEFORE_DAMAGE = "before_damage"
+    DAMAGE_PREVENTED = "damage_prevented"
+    """Damage that was promised away, and did not land."""
+
     AFTER_DAMAGE = "after_damage"
     ATTACK_END = "attack_end"
     MONSTER_KILLED = "monster_killed"

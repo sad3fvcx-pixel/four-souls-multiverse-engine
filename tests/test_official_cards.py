@@ -4209,6 +4209,101 @@ def test_a_portal_owes_the_attack_it_grants(base_game: ContentLibrary) -> None:
 
 
 # ----------------------------------------------------------------------
+# Waiting for something that has not happened yet
+# ----------------------------------------------------------------------
+
+
+def test_the_crystal_ball_pays_off_on_the_number_it_named(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, rolls=[3])
+
+    ball = give(game, "treasure_deck-active_items-base_game-crystal_ball")
+
+    assert activate(game, ball).accepted
+
+    answer(game, "Name a 3.")
+
+    hand = game.state.player(0).hand_size
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    # The card played left the hand it was dealt into; three came in.
+    assert game.state.player(0).hand_size == hand + 3
+    assert game.state.watchers == []
+
+
+def test_the_crystal_ball_is_spent_by_the_next_roll_whatever_it_shows(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, rolls=[5, 3])
+
+    ball = give(game, "treasure_deck-active_items-base_game-crystal_ball")
+
+    assert activate(game, ball).accepted
+
+    answer(game, "Name a 3.")
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    assert game.state.watchers == [], "the next roll was the next roll"
+
+    hand = game.state.player(0).hand_size
+
+    game.state.player(0).additional_loot_plays += 1
+
+    assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
+
+    assert game.state.player(0).hand_size == hand, "nothing was drawn"
+
+
+def test_the_host_hat_passes_the_blow_on(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    hat = give(game, "treasure_deck-active_items-base_game-host_hat")
+
+    mine = game.state.player(0)
+    theirs = game.state.player(1)
+
+    toughen(game, mine)
+    toughen(game, theirs)
+
+    assert activate(game, hat).accepted
+
+    hp = mine.hp
+    theirs_hp = theirs.hp
+
+    hurt(game, mine, amount=1)
+
+    assert mine.hp == hp, "the damage was prevented"
+    assert theirs.hp == theirs_hp - 1, "and dealt to somebody else"
+
+
+def test_the_host_hat_answers_its_own_promise_only(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    hat = give(game, "treasure_deck-active_items-base_game-host_hat")
+
+    mine = game.state.player(0)
+    theirs = game.state.player(1)
+
+    toughen(game, mine)
+
+    # A shield promised by something else is spent first, and the hat says
+    # nothing about damage it did not prevent.
+    game.runtime.context.apply("prevent_next_damage", [mine], amount=1)
+    game.runtime.run()
+
+    assert activate(game, hat).accepted
+
+    theirs_hp = theirs.hp
+
+    hurt(game, mine, amount=1)
+
+    assert theirs.hp == theirs_hp
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 

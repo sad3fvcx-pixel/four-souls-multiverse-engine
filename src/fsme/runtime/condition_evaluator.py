@@ -178,6 +178,7 @@ class ConditionEvaluator:
         register("combat_damage", _combat_damage)
         register("is_damage_source", _is_event_source)
         register("is_event_source", _is_event_source)
+        register("event_value", _event_value)
         register("is_damage_target", _is_damage_target)
         register("is_damage_actor", _is_damage_actor)
         register("dice_equals", _dice_equals)
@@ -484,6 +485,31 @@ def _combat_damage(
     True when the damage being answered came from an attack.
     """
     return bool(context.event is not None and context.event.get("combat", False))
+
+
+def _event_value(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    Compare something the event carries with what the card expects.
+
+    Events carry more than the engine has conditions for, and a card that cares
+    about one of those values should not need a condition of its own written
+    for it. "When you prevent damage this way" is this: the announcement says
+    which promise was spent, and the card asks whether it was theirs.
+    """
+    if context.event is None:
+        return False
+
+    carried = context.event.get(str(params.get("key", "")))
+    expected = params.get("value")
+
+    if isinstance(expected, int) and not isinstance(expected, bool):
+        number = int(carried) if isinstance(carried, int) else 0
+
+        return _compare(number, params)
+
+    return bool(carried == expected)
 
 
 def _is_event_source(

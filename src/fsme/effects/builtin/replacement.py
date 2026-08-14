@@ -14,7 +14,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from fsme.events import EventType
-from fsme.state import DamageShield, Duration, Promise
+from fsme.state import DamageShield, Duration, Promise, Watcher
 from fsme.state.promises import CHANGES
 
 from ..context import EffectContext
@@ -64,6 +64,7 @@ def prevent_next_damage(
     ctx: EffectContext,
     targets: Sequence[Any],
     amount: int | None = None,
+    label: str = "",
 ) -> int:
     """
     Promise that the next damage a player takes will be reduced.
@@ -92,6 +93,7 @@ def prevent_next_damage(
             DamageShield(
                 player_id=int(player_id),
                 amount=None if amount is None else int(amount),
+                label=str(label),
             )
         )
 
@@ -175,6 +177,54 @@ def promise(
     return len(subjects)
 
 
+def watch_for(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    event: str = "",
+    effects: Any = None,
+    conditions: Any = None,
+    uses: int = 1,
+    unlimited: bool = False,
+    mine: bool = False,
+    waits: bool = False,
+) -> int:
+    """
+    Wait for an event that has not happened yet, and act when it does.
+
+    This is a promise's other half. A promise edits the event it was waiting
+    for; this resolves an ability because of it, on the stack, where it can ask
+    questions and be responded to like any other triggered ability.
+
+    ``mine`` narrows it to the controller's own events: "the next time *you*
+    would loot" is not the next time anybody would.
+    """
+    if not event:
+        raise EffectExecutionError("watch_for requires an event to wait for")
+
+    if str(event) not in {str(known) for known in EventType}:
+        raise EffectExecutionError(f"watch_for cannot wait for unknown event '{event}'")
+
+    if not isinstance(effects, (list, tuple)) or not effects:
+        raise EffectExecutionError("watch_for requires the effects it will run")
+
+    watching = Watcher(
+        event=str(event),
+        controller=ctx.actor,
+        source=ctx.source,
+        label=f"{getattr(ctx.source, 'id', 'watcher')}:{event}",
+        conditions=tuple(conditions or ()),
+        effects=tuple(effects),
+        player_id=ctx.actor if mine else None,
+        uses=None if unlimited else int(uses),
+        duration=Duration.END_OF_TURN,
+        waits=bool(waits),
+    )
+
+    ctx.state.watchers.append(watching)
+
+    return 1
+
+
 def cancel_event(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> bool:
     """
     Stop the event from happening at all.
@@ -237,6 +287,14 @@ def register(registry: EffectRegistry) -> None:
         primary="event",
         literal=("changes",),
         description="Owe a change to the next event of a kind.",
+    )
+    registry.register(
+        "watch_for",
+        watch_for,
+        needs_target=False,
+        primary="event",
+        literal=("effects", "conditions"),
+        description="Wait for an event and resolve an ability when it happens.",
     )
     registry.register(
         "cancel_event",
