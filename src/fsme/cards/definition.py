@@ -82,6 +82,17 @@ class Ability:
     ability, while a turn starting concerns everybody.
     """
 
+    zone: str = ""
+    """
+    Where the card has to be for this ability to work.
+
+    Empty means in play, which is where nearly every ability works from. A few
+    cards act from somewhere else — "when a player with an egg counter dies and
+    this is in discard, put this back into a monster slot" — and naming the
+    zone is how such an ability says so. Nothing else in a discard pile wakes
+    up: an ability without a zone is not looked at there.
+    """
+
     description: str = ""
 
     @classmethod
@@ -98,6 +109,7 @@ class Ability:
             cost=freeze(data.get("cost", {})) or _EMPTY_MAP,
             replacement=bool(data.get("replacement", False)),
             scope=str(data["scope"]) if data.get("scope") else None,
+            zone=str(data.get("zone", "")),
             description=str(data.get("description", "")),
         )
 

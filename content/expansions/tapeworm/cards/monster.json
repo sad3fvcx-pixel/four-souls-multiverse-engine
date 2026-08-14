@@ -6,7 +6,55 @@
       "type": "monster",
       "expansion": "tapeworm",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "egg",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "When this dies put an egg counter on the active player."
+        },
+        {
+          "trigger": "player_died",
+          "scope": "any",
+          "conditions": [
+            {
+              "player_counters": {
+                "counter": "egg",
+                "operator": ">=",
+                "value": 1
+              }
+            }
+          ],
+          "targets": [
+            {
+              "event_player": {
+                "as": "hatched"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "egg",
+              "clear": true,
+              "target": "hatched"
+            },
+            {
+              "effect": "place_monster",
+              "target": "self"
+            }
+          ],
+          "description": "When a player with an egg counter dies and this is in discard, remove their egg counters and put this back into an active monster slot.",
+          "zone": "monster_discard"
+        }
+      ],
       "health": 4,
       "attack": 4,
       "roll": 2,

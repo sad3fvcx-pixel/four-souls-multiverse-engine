@@ -4728,3 +4728,93 @@ def test_ambush_is_written_from_its_printed_text(base_game: ContentLibrary) -> N
     game = new_game(base_game)
 
     assert "monster deck" in text_of(game, "monster_deck-bad_events-base_game-ambush")
+
+
+# ----------------------------------------------------------------------
+# The cards the engine's own gaps were blocking
+# ----------------------------------------------------------------------
+
+
+def test_dinga_doubles_its_rewards_on_a_six(base_game: ContentLibrary) -> None:
+    """
+    "When this dies on an attack roll of 6, double its rewards."
+    """
+    game = new_game(base_game, rolls=[6, 6, 6])
+
+    dinga = only_monster(game, "monster_deck-basic_enemies-base_game-dinga", hp=1)
+    printed = int(dinga.definition.rewards.get("cents", 0))
+
+    before = game.state.player(0).pennies
+
+    fight(game)
+
+    assert dinga.alive is False
+    assert game.state.player(0).pennies - before == printed * 2
+
+
+def test_dinga_pays_what_it_prints_on_anything_else(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, rolls=[3, 3, 3])
+
+    dinga = only_monster(game, "monster_deck-basic_enemies-base_game-dinga", hp=1)
+    printed = int(dinga.definition.rewards.get("cents", 0))
+
+    before = game.state.player(0).pennies
+
+    fight(game)
+
+    assert dinga.alive is False
+    assert game.state.player(0).pennies - before == printed
+
+
+def test_peep_calls_the_bloat_out_of_the_deck(base_game: ContentLibrary) -> None:
+    """
+    "When this dies, search the monster deck for a card named The Bloat and put
+    it in a monster slot not being attacked."
+    """
+    game = new_game(base_game)
+
+    peep = only_monster(game, "monster_deck-bosses-base_game-peep")
+
+    def bloats(cards) -> int:
+        return sum(1 for card in cards if card.name == "The Bloat")
+
+    in_the_deck = bloats(game.state.monster_deck.cards)
+
+    assert in_the_deck, "the base game deck holds one, which is what Peep hunts"
+
+    slay(game, peep)
+
+    while game.runtime.awaiting_decision is not None:
+        decision = game.runtime.awaiting_decision
+        choose(game, decision.player, *([0] if decision.options else []))
+
+    assert bloats(game.state.active_monsters.cards) == 1, "it was called out"
+    assert bloats(game.state.monster_deck.cards) == in_the_deck - 1
+
+
+def test_placebo_borrows_another_items_tap_ability(base_game: ContentLibrary) -> None:
+    """
+    "This copies a tap ability of a non-eternal item."
+    """
+    game = new_game(base_game)
+
+    placebo = give(game, "treasure_deck-active_items-base_game-placebo")
+    sack = give(game, "treasure_deck-active_items-base_game-sack_of_pennies", player=1)
+
+    before = game.state.player(0).pennies
+
+    assert activate(game, placebo).accepted
+
+    while game.runtime.awaiting_decision is not None:
+        decision = game.runtime.awaiting_decision
+
+        options = list(decision.options)
+        pick = next(
+            (index for index, card in enumerate(options) if card is sack), 0
+        )
+
+        choose(game, decision.player, pick)
+
+    assert placebo.tapped is True
+    assert sack.tapped is False, "the copied item was used by nobody"
+    assert game.state.player(0).pennies == before + 1, "Placebo gained the cent"

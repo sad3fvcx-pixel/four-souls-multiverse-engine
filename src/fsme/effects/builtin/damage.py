@@ -320,10 +320,85 @@ def discard_monsters(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> in
     return discarded
 
 
+def place_monster(
+    ctx: EffectContext,
+    targets: Sequence[Any],
+    slot: str = "free",
+) -> int:
+    """
+    Stand a monster in a slot of the monster area, from wherever it was.
+
+    ``slot`` says which: ``free`` takes an empty one, and ``unattacked`` takes
+    any slot whose monster is not the one being fought — "put it in a monster
+    slot not being attacked" is printed on a card, and the difference matters
+    only while an attack is going on.
+    """
+    from fsme.rules.slots import empty_slot, place, slot_of
+
+    state = ctx.state
+    placed = 0
+
+    for monster in targets:
+        if not hasattr(monster, "definition"):
+            raise EffectExecutionError("place_monster expects monster targets")
+
+        _detach_monster(state, monster)
+
+        monster.hp = getattr(monster.definition, "health", monster.hp)
+        monster.alive = True
+        monster.tapped = False
+        monster.last_damaged_by = None
+
+        wanted: int | None = empty_slot(state)
+
+        if slot == "unattacked" and wanted is None:
+            fighting = slot_of(state, state.combat.monster)
+
+            wanted = next(
+                (
+                    index
+                    for index in range(len(state.monster_area))
+                    if index != fighting
+                ),
+                None,
+            )
+
+        place(state, monster, wanted)
+
+        placed += 1
+
+        ctx.emit(EventType.ON_ENTER, source=monster, controller=ctx.actor)
+
+    return placed
+
+
+def _detach_monster(state: Any, monster: Any) -> None:
+    """
+    Take a monster out of whichever pile is holding it.
+    """
+    from fsme.rules.slots import remove as leave_slot
+
+    if leave_slot(state, monster) is not None:
+        return
+
+    for zone in (state.monster_deck, state.monster_discard):
+        if monster in zone.cards:
+            zone.cards.remove(monster)
+
+            return
+
+
 def register(registry: EffectRegistry) -> None:
     """
     Register every health effect.
     """
+    registry.register(
+        "place_monster",
+        place_monster,
+        needs_target=True,
+        primary="slot",
+        description="Stand a monster in a slot of the monster area.",
+    )
     registry.register(
         "deal_damage",
         deal_damage,

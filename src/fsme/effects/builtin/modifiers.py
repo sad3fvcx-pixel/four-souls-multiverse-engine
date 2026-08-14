@@ -198,6 +198,17 @@ def skip_next_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     return skipped
 
 
+def _counted(targets: Sequence[Any], effect: str) -> list[Any]:
+    """
+    Everything a counter may sit on: a card, or a player.
+    """
+    for target in targets:
+        if not hasattr(target, "counters"):
+            raise EffectExecutionError(f"'{effect}' expects a card or a player")
+
+    return list(targets)
+
+
 def _cards(targets: Sequence[Any], effect: str) -> list[Any]:
     for target in targets:
         if not hasattr(target, "tapped"):
@@ -256,23 +267,35 @@ def add_counter(
     counter: str = "",
     amount: int = 1,
     silences: bool = False,
+    clear: bool = False,
 ) -> int:
     """
-    Change a named counter on target cards.
+    Change a named counter on target cards or players.
 
     ``silences`` is for the counters that do more than count: a card carrying
     one has no abilities while it is there, which is what a poo counter is.
+    ``clear`` takes them all off, which is what "remove their egg counters"
+    asks for and no number can say.
+
+    A counter cannot go below nothing: taking two off a card that has one takes
+    one off, the way the rules read an instruction that cannot be carried out.
     """
     if not counter:
         raise EffectExecutionError("add_counter requires a counter name")
 
-    for card in _cards(targets, "add_counter"):
-        card.counters[counter] = card.counters.get(counter, 0) + amount
+    for target in _counted(targets, "add_counter"):
+        if clear:
+            target.counters.pop(counter, None)
 
-        if silences:
+            continue
+
+        target.counters[counter] = max(0, target.counters.get(counter, 0) + amount)
+
+        if silences and not isinstance(target, PlayerState):
             # The counter is what silences the card, so the card watches for
-            # this counter and speaks again when it is gone.
-            card.silenced_while = counter
+            # this counter and speaks again when it is gone. A player is not
+            # silenced by anything: they have no abilities to lose.
+            target.silenced_while = counter
 
     return amount
 

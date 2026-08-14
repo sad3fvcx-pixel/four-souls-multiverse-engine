@@ -662,6 +662,17 @@ def _target_deck_card(
             if str(tag) in getattr(getattr(card, "definition", None), "tags", ())
         ]
 
+    named = params.get("named")
+
+    if named is not None:
+        # "Search the monster deck for a card named The Bloat" asks for one
+        # card by its printed name, which is not a family and not a type.
+        options = [
+            card
+            for card in options
+            if str(getattr(getattr(card, "definition", None), "name", "")) == str(named)
+        ]
+
     return _ask(
         DecisionKind.CHOOSE_CARD, options, context, params, "target_deck_card"
     )

@@ -1274,7 +1274,28 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_treasure": {
+                "exclude_eternal": true,
+                "exclude_source": true,
+                "as": "copied",
+                "prompt": "Copy the tap ability of a non-eternal item."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "copy_ability",
+              "target": "copied"
+            }
+          ],
+          "description": "This copies a tap ability of a non-eternal item."
+        }
+      ],
       "tags": [
         "activated",
         "active"

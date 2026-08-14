@@ -66,6 +66,14 @@ class EventType(StrEnum):
     does not begin and is not spent.
     """
     MONSTER_KILLED = "monster_killed"
+
+    BEFORE_REWARDS = "before_rewards"
+    """
+    What a defeated monster is about to pay, offered for replacement first.
+
+    A card that doubles a monster's rewards is editing this, not paying a
+    second reward of its own.
+    """
     BEFORE_DEATH = "before_death"
     """A player about to die, offered for replacement first."""
 

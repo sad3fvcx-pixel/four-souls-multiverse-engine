@@ -75,6 +75,15 @@ class PlayerState:
     player without one is a player the rules cannot fully describe.
     """
 
+    counters: dict[str, int] = field(default_factory=dict)
+    """
+    Counters sitting on this player rather than on a card.
+
+    "Put an egg counter on a player" has nowhere else to go: the counter is not
+    on their character, not on an item, and not on the card that put it there —
+    it is on them, and it stays when everything else they own changes hands.
+    """
+
     hand: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.HAND))
     treasures: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.TREASURE))
     souls: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.SOUL))

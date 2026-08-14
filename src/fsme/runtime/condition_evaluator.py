@@ -175,6 +175,8 @@ class ConditionEvaluator:
         register("attack_roll", _attack_roll)
         register("is_attacked", _is_attacked)
         register("card_counters", _card_counters)
+        register("player_counters", _player_counters)
+        register("card_in_zone", _card_in_zone)
         register("combat_damage", _combat_damage)
         register("is_damage_source", _is_event_source)
         register("is_event_source", _is_event_source)
@@ -607,6 +609,50 @@ def _card_counters(
     name = str(params.get("counter", "charge"))
 
     return _compare(int(counters.get(name, 0)), dict(params))
+
+
+def _player_counters(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    Compare the counters on a player with a number.
+
+    A counter on a player is not on any card they own: it stays when their
+    items are destroyed and travels with nothing. Which player is asked about
+    is the ability's controller unless the card names somebody else.
+    """
+    seat = params.get("player", context.controller)
+
+    if seat is None or not 0 <= int(seat) < len(state.players):
+        return False
+
+    counters = state.player(int(seat)).counters
+    name = str(params.get("counter", "charge"))
+
+    return _compare(int(counters.get(name, 0)), dict(params))
+
+
+def _card_in_zone(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    Whether the card this ability belongs to is sitting in a named zone.
+
+    An ability that only works from the discard pile has to be able to ask —
+    "when a player dies and this is in discard" is a card watching the table
+    from somewhere it is not in play.
+    """
+    source = context.source
+
+    if source is None:
+        return False
+
+    zone = getattr(state, str(params.get("zone", "")), None)
+
+    if zone is None:
+        return False
+
+    return any(card is source for card in getattr(zone, "cards", ()))
 
 
 def _is_attacked(

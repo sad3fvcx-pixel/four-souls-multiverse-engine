@@ -8202,5 +8202,97 @@
         "description": "The active player must attack the monster deck 2 times this turn."
       }
     ]
+  },
+  "monster_deck-basic_enemies-base_game-dinga": {
+    "abilities": [
+      {
+        "trigger": "before_rewards",
+        "scope": "self",
+        "replacement": true,
+        "conditions": [
+          {
+            "dice_equals": 6
+          }
+        ],
+        "effects": [
+          {
+            "effect": "modify_event",
+            "key": "cents",
+            "factor": 2
+          },
+          {
+            "effect": "modify_event",
+            "key": "loot",
+            "factor": 2
+          },
+          {
+            "effect": "modify_event",
+            "key": "treasure",
+            "factor": 2
+          },
+          {
+            "effect": "modify_event",
+            "key": "souls",
+            "factor": 2
+          }
+        ],
+        "description": "When this dies on an attack roll of 6, double its rewards."
+      }
+    ]
+  },
+  "monster_deck-bosses-base_game-peep": {
+    "abilities": [
+      {
+        "trigger": "monster_killed",
+        "scope": "self",
+        "targets": [
+          {
+            "target_deck_card": {
+              "deck": "monster",
+              "named": "The Bloat",
+              "as": "bloat",
+              "minimum": 0,
+              "prompt": "Search the monster deck for The Bloat."
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "place_monster",
+            "slot": "unattacked",
+            "target": "bloat"
+          },
+          {
+            "effect": "shuffle_deck",
+            "deck": "monster"
+          }
+        ],
+        "description": "When this dies, search the monster deck for a card named The Bloat and put it in a monster slot not being attacked, then shuffle the monster deck."
+      }
+    ]
+  },
+  "treasure_deck-active_items-base_game-placebo": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_treasure": {
+              "exclude_eternal": true,
+              "exclude_source": true,
+              "as": "copied",
+              "prompt": "Copy the tap ability of a non-eternal item."
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "copy_ability",
+            "target": "copied"
+          }
+        ],
+        "description": "This copies a tap ability of a non-eternal item."
+      }
+    ]
   }
 }

@@ -46,6 +46,7 @@ def state_fingerprint(state: GameState) -> tuple[Any, ...]:
             player.max_hp,
             player.pennies,
             player.alive,
+            tuple(sorted(player.counters.items())),
             player.attacks_left,
             player.purchases_left,
             player.additional_loot_plays,

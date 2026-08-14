@@ -76,6 +76,19 @@ Activating an item fires that item's ability, not every item in play. Triggers
 outside this set — a turn starting, a monster dying — concern the whole table.
 """
 
+OUT_OF_PLAY_ZONES = (
+    "monster_discard",
+    "loot_discard",
+    "treasure_discard",
+    "room_discard",
+)
+"""
+Where a card may still be doing something without being in play.
+
+Only the abilities that name one of these are ever looked at there, so the
+piles cost a glance per card and nothing more.
+"""
+
 RESPONSE_COMMANDS = frozenset(
     {
         CommandType.PASS_PRIORITY,
@@ -866,8 +879,22 @@ class Runtime:
 
         matches: list[tuple[CardInstance, Ability]] = []
 
+        from fsme.rules import cards_in_play
+
+        in_play = {id(card) for card in cards_in_play(self._state)}
+
+        # Whatever the event is about answers for itself wherever it is: a
+        # loot card being played is in no zone, and a monster answering the
+        # blow that killed it is already off the table.
+        about = {id(event.source)} | {id(target) for target in event.targets}
+
         for card in self._candidates(event):
             for ability in card.face.abilities_for(str(event.type)):
+                if id(card) not in about and not self._where_it_works(
+                    card, ability, in_play
+                ):
+                    continue
+
                 if ability.replacement:
                     # A replacement already had its say before the event was
                     # queued. It is not also a trigger, or preventing damage
@@ -902,6 +929,32 @@ class Runtime:
                     matches.append((card, ability))
 
         return matches
+
+    def _where_it_works(
+        self,
+        card: CardInstance,
+        ability: Ability,
+        in_play: set[int],
+    ) -> bool:
+        """
+        Whether this ability works from where its card is standing.
+
+        An ability naming a zone works there and nowhere else; an ability
+        naming none works in play and nowhere else. Which is why a card in the
+        discard pile does not go on quietly doing what it did on the table.
+
+        The card the event is about is exempt: a loot card being played is in
+        no zone at all, and a monster answering the blow that killed it has
+        already left the table.
+        """
+        if not ability.zone:
+            return id(card) in in_play
+
+        zone = getattr(self._state, ability.zone, None)
+
+        return zone is not None and any(
+            held is card for held in getattr(zone, "cards", ())
+        )
 
     def _wake_watchers(self, event: Event) -> None:
         """
@@ -1021,6 +1074,34 @@ class Runtime:
 
             seen.add(id(card))
             yield card
+
+        for card in self._watching_from_elsewhere():
+            if id(card) in seen:
+                continue
+
+            seen.add(id(card))
+            yield card
+
+    def _watching_from_elsewhere(self) -> Iterator[CardInstance]:
+        """
+        Yield the cards that act from somewhere other than play.
+
+        A discard pile is not in play and almost nothing in it can do anything.
+        The exceptions say so on their abilities, by naming the zone they work
+        from, and only those are looked at here.
+        """
+        for name in OUT_OF_PLAY_ZONES:
+            zone = getattr(self._state, name, None)
+
+            if zone is None:
+                continue
+
+            for card in zone.cards:
+                if not isinstance(card, CardInstance):
+                    continue
+
+                if any(ability.zone for ability in card.face.abilities):
+                    yield card
 
     def _ability_sources(self) -> Iterator[CardInstance]:
         """
@@ -1469,25 +1550,46 @@ class Runtime:
     def _pay_rewards(self, monster: CardInstance, player: PlayerState) -> None:
         """
         Hand a defeated monster's printed rewards to the player who beat it.
+
+        What is printed is offered for replacement first, because cards change
+        it: "when this dies on an attack roll of 6, double its rewards" is a
+        card editing a payment the rules are about to make. So the numbers are
+        read back off the proposal rather than off the card.
         """
         definition = monster.definition
-
-        if definition.souls > 0:
-            self._context.apply("gain_soul", [player], count=definition.souls)
-
         rewards = definition.rewards
 
-        cents = int(rewards.get("cents", 0))
+        offer = self._propose(
+            Event(
+                type=EventType.BEFORE_REWARDS,
+                source=monster,
+                controller=player.player_id,
+                targets=[player],
+                payload={
+                    "souls": int(definition.souls),
+                    "cents": int(rewards.get("cents", 0)),
+                    "loot": int(rewards.get("loot", 0)),
+                    "treasure": int(rewards.get("treasure", 0)),
+                },
+            )
+        )
 
-        if cents > 0:
-            self._context.apply("gain_coins", [player], amount=cents)
+        if offer.cancelled:
+            return
 
-        loot = int(rewards.get("loot", 0))
+        paid = {
+            name: max(0, int(offer.get(name, 0)))
+            for name in ("souls", "cents", "loot", "treasure")
+        }
 
-        if loot > 0:
-            self._context.apply("draw_loot", [player], count=loot)
+        if paid["souls"] > 0:
+            self._context.apply("gain_soul", [player], count=paid["souls"])
 
-        treasure = int(rewards.get("treasure", 0))
+        if paid["cents"] > 0:
+            self._context.apply("gain_coins", [player], amount=paid["cents"])
 
-        if treasure > 0:
-            self._context.apply("gain_treasure", [player], count=treasure)
+        if paid["loot"] > 0:
+            self._context.apply("draw_loot", [player], count=paid["loot"])
+
+        if paid["treasure"] > 0:
+            self._context.apply("gain_treasure", [player], count=paid["treasure"])

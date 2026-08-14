@@ -610,3 +610,36 @@ def test_every_implemented_promo_card_keeps_its_text(promos: Any) -> None:
                 continue
 
             assert definition.metadata.get("text", "").strip(), definition.id
+
+
+def test_the_tapeworm_lays_an_egg_and_hatches_from_the_discard(promos: Any) -> None:
+    """
+    "When this dies put an egg counter on the active player. When a player with
+    an egg counter dies and this is in discard, remove their egg counters and
+    put this back into an active monster slot."
+    """
+    game = new_game(library_with(promos, "tapeworm"), players=2)
+
+    worm = only_monster(game, "monster_deck-basic_enemies-tapeworm-tapeworm", hp=1)
+
+    active = game.state.turn.active_player
+
+    slay(game, worm, killer=active)
+
+    while game.runtime.awaiting_decision is not None:
+        decision = game.runtime.awaiting_decision
+        choose(game, decision.player, *([0] if decision.options else []))
+
+    assert game.state.player(active).counters.get("egg") == 1
+    assert worm in game.state.monster_discard.cards
+
+    game.runtime.context.apply("kill", [game.state.player(active)])
+    game.runtime.run()
+
+    while game.runtime.awaiting_decision is not None:
+        decision = game.runtime.awaiting_decision
+        choose(game, decision.player, *([0] if decision.options else []))
+
+    assert game.state.player(active).counters.get("egg", 0) == 0
+    assert worm in game.state.active_monsters.cards
+    assert worm.alive is True
