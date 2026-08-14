@@ -303,10 +303,11 @@ def discard_monsters(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> in
     discarded = 0
 
     for monster in targets:
-        if monster not in state.active_monsters.cards:
+        from fsme.rules.slots import remove as leave_slot
+
+        if leave_slot(state, monster) is None:
             continue
 
-        state.active_monsters.cards.remove(monster)
         state.monster_discard.add_top(monster)
         discarded += 1
 

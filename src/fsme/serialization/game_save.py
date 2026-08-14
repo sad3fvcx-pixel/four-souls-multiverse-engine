@@ -33,6 +33,7 @@ from fsme.state import (
     Duration,
     GamePhase,
     GameState,
+    MonsterSlot,
     Obligation,
     PendingDecision,
     PendingRoll,
@@ -63,7 +64,6 @@ GLOBAL_ZONES = (
     "loot_discard",
     "monster_deck",
     "monster_discard",
-    "active_monsters",
     "treasure_deck",
     "treasure_discard",
     "treasure_shop",
@@ -130,6 +130,9 @@ def save_game(
         },
         "players": [_save_player(player) for player in state.players],
         "zones": {name: _save_zone(getattr(state, name)) for name in GLOBAL_ZONES},
+        "monster_area": [
+            [_save_card(card) for card in slot.cards] for slot in state.monster_area
+        ],
         "stack": [_save_stack_item(item) for item in state.stack],
         "events": [_save_event(event) for event in state.events],
         "shields": [
@@ -472,6 +475,8 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
         if saved is not None:
             _load_zone(getattr(state, name), saved, cards, index)
 
+    _load_monster_area(state, data.get("monster_area", ()), cards, index)
+
     for saved_player in data.get("players", ()):
         state.add_player(_load_player(saved_player, cards, index))
 
@@ -628,6 +633,31 @@ def _load_zone(
 
     for written in saved.get("cards", ()):
         zone.cards.append(_load_card(written, cards, index))
+
+
+def _load_monster_area(
+    state: GameState,
+    saved: Any,
+    cards: CardRegistry,
+    index: dict[str, Any],
+) -> None:
+    """
+    Rebuild the row of slots, and the face-up view over it.
+
+    The slots are what is written down: which monster is standing on which
+    other one is part of the position, and a save that kept only the face-up
+    cards would reload a board with the buried monsters gone.
+    """
+    from fsme.rules.slots import sync
+
+    state.monster_area.clear()
+
+    for written in saved:
+        state.monster_area.append(
+            MonsterSlot(cards=[_load_card(card, cards, index) for card in written])
+        )
+
+    sync(state)
 
 
 def _by_name(written: Any, choices: Any, fallback: Any, what: str) -> Any:
@@ -836,6 +866,8 @@ def zones_of(state: GameState) -> Sequence[tuple[str, Zone[Any]]]:
     named: list[tuple[str, Zone[Any]]] = [
         (name, getattr(state, name)) for name in GLOBAL_ZONES
     ]
+
+    named.append(("active_monsters", state.active_monsters))
 
     for player in state.players:
         for name in PLAYER_ZONES:

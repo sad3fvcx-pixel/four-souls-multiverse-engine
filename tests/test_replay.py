@@ -21,6 +21,7 @@ from fsme.replay import (
     state_digest,
 )
 from fsme.rng.rng import RNG
+from fsme.rules.slots import place
 from fsme.runtime import Runtime
 from fsme.state import GameState, PlayerState
 
@@ -45,7 +46,7 @@ def build_state() -> GameState:
         )
 
     for index in range(3):
-        state.active_monsters.add_top(
+        place(state, 
             CardInstance(
                 definition=monster_definition(f"test.monster{index}"),
                 instance_id=f"monster:{index}",

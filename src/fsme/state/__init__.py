@@ -14,6 +14,7 @@ from .player_state import PlayerState
 from .priority import PriorityState
 from .promises import Promise
 from .roll import PendingRoll
+from .slots import MonsterSlot
 from .turn_state import TurnState
 from .watchers import Watcher
 from .zones import Zone, ZoneType
@@ -27,6 +28,7 @@ __all__ = [
     "GamePhase",
     "GameState",
     "PendingDecision",
+    "MonsterSlot",
     "PendingRoll",
     "Obligation",
     "PlayerState",

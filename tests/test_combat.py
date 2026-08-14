@@ -16,6 +16,7 @@ from fsme.cards import CardInstance, CardType
 from fsme.commands import Command, CommandType
 from fsme.events import EventType
 from fsme.rng.rng import RNG
+from fsme.rules.slots import place
 from fsme.state import GamePhase
 
 
@@ -181,7 +182,7 @@ def test_the_monster_roll_value_decides_a_hit() -> None:
     runtime, state = armed_game([5, 6], monsters=0)
     runtime.submit(Command(type=CommandType.START_GAME, player=0))
 
-    state.active_monsters.add_top(
+    place(state, 
         CardInstance(
             definition=monster_definition("test.tough", health=1, roll=6),
             instance_id="monster:tough",

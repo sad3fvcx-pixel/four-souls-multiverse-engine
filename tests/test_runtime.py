@@ -10,6 +10,7 @@ from conftest import make_definition, make_instance, make_runtime, make_state
 
 from fsme.cards import Ability, CardType
 from fsme.events import Event, EventType
+from fsme.rules.slots import place
 
 
 def treasure(effects, *, trigger: str = "on_activate", conditions=(), card_id="test.item"):
@@ -150,7 +151,7 @@ def test_dead_monster_leaves_play() -> None:
     state = make_state()
 
     gaper = make_instance(monster(), controller=None, owner=None)
-    state.active_monsters.add_top(gaper)
+    place(state, gaper)
 
     card = make_instance(
         treasure([{"effect": "deal_damage", "amount": 2, "target": "current_monster"}])

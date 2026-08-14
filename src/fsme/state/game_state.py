@@ -20,6 +20,7 @@ from .player_state import PlayerState
 from .priority import PriorityState
 from .promises import Promise
 from .roll import PendingRoll
+from .slots import MonsterSlot
 from .turn_state import TurnState
 from .watchers import Watcher
 from .zones import Zone, ZoneType
@@ -49,6 +50,23 @@ class GameState:
     monster_deck: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DECK))
     monster_discard: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DISCARD))
     active_monsters: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.MONSTER))
+    """
+    The face-up monsters, one per occupied slot, in slot order.
+
+    This is a view of ``monster_area`` and not a second copy of the truth: the
+    rules put monsters into slots, and ``fsme.rules.slots`` keeps this in step
+    so that everything which only wants to know what can be attacked — cards,
+    targets, the save file, a client — can ask one short question.
+    """
+
+    monster_area: list[MonsterSlot] = field(default_factory=list)
+    """
+    The monster area as the rules lay it out: a row of slots.
+
+    A slot holds a pile, and its face-up card is its active monster. Attacking
+    the monster deck puts a monster on top of one; killing that monster brings
+    back the one underneath.
+    """
 
     treasure_deck: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DECK))
     treasure_discard: Zone[Any] = field(default_factory=lambda: Zone(ZoneType.DISCARD))

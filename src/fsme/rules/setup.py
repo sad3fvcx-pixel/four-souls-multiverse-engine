@@ -23,6 +23,7 @@ from fsme.state import GameState, PlayerState
 
 from .constants import MONSTER_SLOTS, SHOP_SLOTS, SOULS_TO_WIN
 from .errors import RuleError
+from .slots import open_area, place
 
 
 class SetupError(RuleError):
@@ -235,11 +236,13 @@ def _open_the_board(
     """
     Turn the first monsters and shop items face up.
     """
+    open_area(state, monster_slots)
+
     for _ in range(monster_slots):
         if not state.monster_deck.cards:
             break
 
-        state.active_monsters.add_top(_first_monster(state))
+        place(state, _first_monster(state))
 
     for _ in range(shop_slots):
         if not state.treasure_deck.cards:

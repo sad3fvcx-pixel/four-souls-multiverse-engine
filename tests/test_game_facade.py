@@ -10,6 +10,7 @@ from fsme.cards import CardInstance
 from fsme.commands import CommandType
 from fsme.events import Event, EventType
 from fsme.game import Game
+from fsme.rules.slots import place
 from fsme.state import GamePhase, GameState, PlayerState
 
 
@@ -27,7 +28,7 @@ def build_game(*, players: int = 2, seed: int = 5) -> Game:
             )
         )
 
-    state.active_monsters.add_top(
+    place(state, 
         CardInstance(
             definition=monster_definition("test.monster"),
             instance_id="monster:0",

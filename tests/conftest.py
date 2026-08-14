@@ -10,6 +10,7 @@ import pytest
 
 from fsme.cards import Ability, CardDefinition, CardInstance, CardType
 from fsme.rng.rng import RNG
+from fsme.rules.slots import place
 from fsme.runtime import Runtime
 from fsme.state import GameState, PlayerState
 
@@ -166,13 +167,14 @@ def make_game(
         )
 
     for index in range(monsters):
-        state.active_monsters.add_top(
+        place(
+            state,
             CardInstance(
                 definition=monster_definition(f"test.monster{index}"),
                 instance_id=f"monster:{index}",
                 controller=None,
                 owner=None,
-            )
+            ),
         )
 
     for index in range(shop_items):

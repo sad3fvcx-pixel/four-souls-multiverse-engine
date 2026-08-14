@@ -296,6 +296,8 @@ def test_the_plain_functions_work_without_the_facade(
     """
     game = play(everything, 7, 2, steps=40)
 
+    settle(game)
+
     data = save_game(
         game.state, engine_version="bare", rng_state=game.runtime.rng.get_state()
     )

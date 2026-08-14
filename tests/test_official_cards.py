@@ -25,8 +25,9 @@ from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary, ContentLoader
 from fsme.events import EventType
 from fsme.game import Game
+from fsme.rules.slots import sync
 from fsme.runtime.vocabulary import engine_vocabulary
-from fsme.state import DecisionKind, GamePhase
+from fsme.state import DecisionKind, GamePhase, MonsterSlot
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
@@ -1827,10 +1828,12 @@ def test_shiny_rock_pays_for_activating_anything(base_game: ContentLibrary) -> N
 
 def summon(game: Game, card_id: str) -> CardInstance:
     """
-    Put a named published monster into the first monster slot.
+    Stand a named published monster in a slot of its own, at the front.
 
     Waiting for the shuffle to deal the wanted monster would make the test
-    about the shuffle.
+    about the shuffle. A slot of its own rather than the first free one: a
+    summoned monster must not land on top of another and hide it, and it is
+    first so that a test can attack it by index without counting the board.
     """
     monster = CardInstance(
         definition=game.runtime.cards.get(card_id),
@@ -1840,7 +1843,9 @@ def summon(game: Game, card_id: str) -> CardInstance:
     monster.hp = monster.definition.health
     monster.alive = True
 
-    game.state.active_monsters.cards.insert(0, monster)
+    game.state.monster_area.insert(0, MonsterSlot(cards=[monster]))
+
+    sync(game.state)
 
     return monster
 
@@ -2555,7 +2560,10 @@ def only_monster(game: Game, card_id: str, hp: int | None = None) -> CardInstanc
     """
     Clear the board and put one named monster in the first slot.
     """
-    game.state.active_monsters.cards.clear()
+    for slot in game.state.monster_area:
+        slot.cards.clear()
+
+    sync(game.state)
 
     monster = summon(game, card_id)
 

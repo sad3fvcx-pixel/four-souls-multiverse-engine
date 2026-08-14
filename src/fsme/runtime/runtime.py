@@ -1442,7 +1442,9 @@ class Runtime:
         )
 
         monster.alive = False
-        state.active_monsters.cards.remove(monster)
+        from fsme.rules.slots import remove as leave_slot
+
+        leave_slot(state, monster)
         state.monster_discard.add_top(monster)
 
         if state.combat.active and state.combat.monster is monster:

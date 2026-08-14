@@ -9,6 +9,7 @@ from conftest import make_definition, make_game, make_instance, treasure_definit
 from fsme.cards import CardInstance, CardType
 from fsme.commands import Command, CommandType
 from fsme.events import EventType
+from fsme.rules.slots import place
 
 
 def rich_monster(card_id="test.rich", *, souls=1, **rewards):
@@ -34,7 +35,7 @@ def board(monster_definition, **kwargs):
         controller=None,
         owner=None,
     )
-    state.active_monsters.add_top(monster)
+    place(state, monster)
 
     return runtime, state, monster
 

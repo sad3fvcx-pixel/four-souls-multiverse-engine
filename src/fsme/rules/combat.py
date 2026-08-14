@@ -33,6 +33,7 @@ from .constants import BASE_PLAYER_ATTACK, DICE_SIDES, STALLED_COMBAT_ROUNDS
 from .obligations import pay as pay_obligation
 from .restrictions import ATTACK as ATTACK_ACTION
 from .restrictions import refuse
+from .slots import cover, empty_slot, open_area, place
 from .statics import ATTACK, DIFFICULTY, monster_value, static_value
 
 DEFAULT_MONSTER_ROLL = 4
@@ -232,7 +233,9 @@ def _reveal_for_attack(context: EffectContext, attacker: int) -> Any | None:
 
     _turn_face_up(card)
 
-    state.active_monsters.add_top(card)
+    # COMPREHENSIVE_RULES.md §7: it goes into a slot, on top of the monster
+    # standing there, and the attack goes on against it.
+    cover(state, card)
 
     context.emit(EventType.ON_ENTER, source=card, controller=attacker)
 
@@ -431,7 +434,9 @@ def refill_monsters(context: EffectContext) -> None:
     """
     state = context.state
 
-    while len(state.active_monsters) < state.monster_slots and state.monster_deck.cards:
+    open_area(state)
+
+    while empty_slot(state) is not None and state.monster_deck.cards:
         card = state.monster_deck.draw()
         kind = getattr(getattr(card, "definition", None), "type", None)
 
@@ -442,7 +447,7 @@ def refill_monsters(context: EffectContext) -> None:
         else:
             _turn_face_up(card)
 
-            state.active_monsters.add_top(card)
+            place(state, card)
 
             context.emit(EventType.ON_ENTER, source=card)
 
