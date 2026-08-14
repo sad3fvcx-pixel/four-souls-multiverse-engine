@@ -160,3 +160,19 @@ def test_builtin_registry_covers_the_documented_vocabulary() -> None:
         "roll_dice",
     ):
         assert expected in names
+
+
+def test_giving_an_item_to_nobody_does_nothing(runtime, state) -> None:
+    """
+    "Give an item to another player" in a game whose other players are all
+    dead names nobody, and the rules pass over what cannot be carried out.
+    """
+    from conftest import make_instance, treasure_definition
+
+    item = make_instance(
+        treasure_definition("test.gift"), controller=0, owner=0, instance_id="gift"
+    )
+    state.player(0).treasures.add_top(item)
+
+    assert runtime.context.apply("give_treasure", [item], to=None) == 0
+    assert item in state.player(0).treasures.cards

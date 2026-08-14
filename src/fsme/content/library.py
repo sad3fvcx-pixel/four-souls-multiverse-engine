@@ -10,7 +10,7 @@ and a game that could gain cards halfway through would not be reproducible.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 
 from fsme.cards import CardDefinition, CardRegistry, CardType
@@ -98,6 +98,35 @@ class ContentLibrary:
             cards.extend(self.expansions[expansion_id].definitions)
 
         return tuple(cards)
+
+    def without(self, card_ids: Iterable[str]) -> ContentLibrary:
+        """
+        The same library with some cards taken out of it.
+
+        This is what a card test runs against: the game as it would be if the
+        card had never been printed. Nothing is loaded again and nothing is
+        mutated — the expansions are rebuilt around the cards that remain, so
+        the library asked the question keeps its own answer.
+        """
+        removing = frozenset(card_ids)
+
+        smaller = ContentLibrary()
+
+        for expansion_id in sorted(self.expansions):
+            expansion = self.expansions[expansion_id]
+
+            smaller.add(
+                Expansion(
+                    manifest=expansion.manifest,
+                    definitions=tuple(
+                        definition
+                        for definition in expansion.definitions
+                        if definition.id not in removing
+                    ),
+                )
+            )
+
+        return smaller
 
     def check_dependencies(self) -> None:
         """

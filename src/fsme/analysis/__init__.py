@@ -11,7 +11,16 @@ difference between a balance report and a misleading one.
 
 from __future__ import annotations
 
+from .compare import Comparison, Difference, compare, read_out
 from .report import report
 from .tally import Seen, Tally
 
-__all__ = ["Seen", "Tally", "report"]
+__all__ = [
+    "Comparison",
+    "Difference",
+    "Seen",
+    "Tally",
+    "compare",
+    "read_out",
+    "report",
+]

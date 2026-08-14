@@ -95,3 +95,44 @@ def test_a_played_game_can_be_written_down_and_read_back(
 
     assert main(["replay", str(journal)]) == 0
     assert "came out the same" in capsys.readouterr().out
+
+
+def test_a_run_can_be_played_on_several_cores(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(["simulate", "--games", "4", "--jobs", "2", "--top", "2"]) == 0
+
+    told = capsys.readouterr().out
+
+    assert "4 games" in told
+    assert "random" in told, "the report says who was playing"
+
+
+def test_a_card_can_be_tested_against_its_own_absence(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert (
+        main(
+            [
+                "test-card",
+                "treasure_deck-active_items-base_game-guppy_s_paw",
+                "--games",
+                "4",
+                "--jobs",
+                "2",
+            ]
+        )
+        == 0
+    )
+
+    told = capsys.readouterr().out
+
+    assert "Card test" in told
+    assert "4 games with it, 4 without" in told
+
+
+def test_a_card_nobody_has_heard_of_is_refused(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(["test-card", "not.a.card", "--games", "2"]) == 2
+    assert "no card called" in capsys.readouterr().out

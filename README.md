@@ -59,7 +59,8 @@ Windows machine.
 ### Simulation
 
 ```bash
-fsme simulate --games 100 --players 3
+fsme simulate --games 100 --players 3 --jobs 4
+fsme test-card treasure_deck-active_items-base_game-guppy_s_paw --games 500
 ```
 
 Plays a run of games — each from its own seed, each through the ordinary engine
@@ -70,6 +71,12 @@ tally as data.
 The numbers describe the game under a table that chooses at random among legal
 moves, and the report says so. A card's "won %" is how often the player holding
 it went on to win — a correlation, not the card's doing.
+
+`test-card` is the tool that can do better: it plays the same seeds with the
+card in the content and without it, and reports each difference with the noise
+it sits in. Taking a card out reshuffles every game, so when a card reached the
+table rarely the report marks nothing and says the difference is the deck
+rather than the card.
 
 ## Documentation
 

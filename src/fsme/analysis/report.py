@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from .tally import Seen, Tally
+from .tally import Seen, Tally, by_games, by_times
 
 WIDTH = 78
 
@@ -59,7 +59,7 @@ def _lines(tally: Tally, *, top: int, width: int) -> Iterator[str]:
 
     yield from _table(
         "Characters",
-        sorted(tally.characters.values(), key=lambda seen: -seen.games)[:top],
+        [seen for _, seen in by_games(tally.characters)][:top],
         columns=("games", "won", "winrate", "avg turns"),
         row=lambda seen: (
             str(seen.games),
@@ -72,7 +72,7 @@ def _lines(tally: Tally, *, top: int, width: int) -> Iterator[str]:
 
     yield from _table(
         "Cards — played, and how often the player holding one won",
-        sorted(tally.cards.values(), key=lambda seen: -seen.times)[:top],
+        [seen for _, seen in by_times(tally.cards)][:top],
         columns=("games", "times", "won", "won %"),
         row=lambda seen: (
             str(seen.games),
@@ -89,7 +89,7 @@ def _lines(tally: Tally, *, top: int, width: int) -> Iterator[str]:
 
     yield from _table(
         "Monsters",
-        sorted(tally.monsters.values(), key=lambda seen: -seen.games)[:top],
+        [seen for _, seen in by_games(tally.monsters)][:top],
         columns=("games", "seen", "beaten", "turns alive"),
         row=lambda seen: (
             str(seen.games),
@@ -105,7 +105,9 @@ def _lines(tally: Tally, *, top: int, width: int) -> Iterator[str]:
     yield "-" * width
     yield ""
 
-    for kind, count in list(tally.events.most_common(top)):
+    for kind, count in sorted(
+        tally.events.items(), key=lambda item: (-item[1], item[0])
+    )[:top]:
         yield f"  {kind:<32} {count:>10}"
 
     yield ""

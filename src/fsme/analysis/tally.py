@@ -234,6 +234,39 @@ class Tally:
             seen.turns += sum(lives)
             seen.measured += len(lives)
 
+    def merge(self, other: Tally) -> None:
+        """
+        Fold another tally into this one.
+
+        Counting is addition, so it does not matter who counted what or in
+        which order — which is what lets a run be split across processes and
+        added back up into the same numbers.
+        """
+        self.games += other.games
+        self.finished += other.finished
+        self.turns += other.turns
+        self.commands += other.commands
+        self.deaths += other.deaths
+        self.attack_rolls += other.attack_rolls
+        self.attack_hits += other.attack_hits
+
+        self.wins_by_seat.update(other.wins_by_seat)
+        self.events.update(other.events)
+
+        for mine, theirs in (
+            (self.characters, other.characters),
+            (self.cards, other.cards),
+            (self.monsters, other.monsters),
+        ):
+            for key, seen in theirs.items():
+                here = mine.setdefault(key, Seen(name=seen.name))
+
+                here.games += seen.games
+                here.times += seen.times
+                here.wins += seen.wins
+                here.turns += seen.turns
+                here.measured += seen.measured
+
     def average_turns(self) -> float | None:
         return self.turns / self.games if self.games else None
 
@@ -260,24 +293,37 @@ class Tally:
             },
             "characters": {
                 key: seen.to_dict()
-                for key, seen in sorted(
-                    self.characters.items(), key=lambda item: -item[1].games
-                )
+                for key, seen in by_games(self.characters)
             },
-            "cards": {
-                key: seen.to_dict()
-                for key, seen in sorted(
-                    self.cards.items(), key=lambda item: -item[1].times
-                )
-            },
+            "cards": {key: seen.to_dict() for key, seen in by_times(self.cards)},
             "monsters": {
-                key: seen.to_dict()
-                for key, seen in sorted(
-                    self.monsters.items(), key=lambda item: -item[1].games
+                key: seen.to_dict() for key, seen in by_games(self.monsters)
+            },
+            "events": {
+                kind: count
+                for kind, count in sorted(
+                    self.events.items(), key=lambda item: (-item[1], item[0])
                 )
             },
-            "events": dict(self.events.most_common()),
         }
+
+
+def by_games(seen: dict[str, Seen]) -> list[tuple[str, Seen]]:
+    """
+    Most-seen first, and ties broken by name.
+
+    The tiebreak is not tidiness. Two runs of the same games must print the
+    same table, and a sort that leaves ties where it found them prints them in
+    whatever order the games happened to be counted in.
+    """
+    return sorted(seen.items(), key=lambda item: (-item[1].games, item[0]))
+
+
+def by_times(seen: dict[str, Seen]) -> list[tuple[str, Seen]]:
+    """
+    Most-used first, and ties broken by name.
+    """
+    return sorted(seen.items(), key=lambda item: (-item[1].times, item[0]))
 
 
 def _last_turn(journal: Journal) -> int:

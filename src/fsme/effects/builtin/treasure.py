@@ -251,11 +251,16 @@ def give_treasure(ctx: EffectContext, targets: Sequence[Any], to: Any = None) ->
 
     Giving is not stealing: the item is offered, so ownership follows control
     the way it does when a card changes hands willingly.
+
+    Nobody to give to is not an error. "Give an item to another player" in a
+    two-player game whose other player is dead names nobody, and the rules pass
+    over an instruction that cannot be carried out — which is what every other
+    effect here does when its recipient turns out not to exist.
     """
     state = ctx.state
 
     if to is None or not 0 <= int(to) < len(state.players):
-        raise EffectExecutionError("give_treasure needs a player to give to")
+        return 0
 
     receiver = state.player(int(to))
     given = 0

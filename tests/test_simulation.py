@@ -229,3 +229,148 @@ def test_the_report_says_what_it_knows_and_no_more(a_few: list) -> None:
 
     # The one claim that must never be overstated.
     assert "a correlation, not the card's doing" in told
+
+
+# ----------------------------------------------------------------------
+# On more than one core
+# ----------------------------------------------------------------------
+
+
+def test_the_same_run_split_across_cores_gives_the_same_numbers(
+    everything: ContentLibrary,
+) -> None:
+    """
+    The property the whole idea of a parallel run rests on.
+    """
+    from fsme.simulation import run_on_many_cores
+
+    alone = Tally()
+
+    for outcome in run(everything, 6, 2):
+        alone.add(outcome.journal)
+
+    together = Tally()
+
+    for done in run_on_many_cores(CONTENT_ROOT, 6, 2, jobs=3):
+        together.merge(done.tally)
+
+    assert together.to_dict() == alone.to_dict()
+
+
+def test_a_game_that_falls_over_is_counted_rather_than_fatal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """
+    A run of a thousand games must not be lost to one of them.
+    """
+    from fsme.simulation import pool
+
+    monkeypatch.setattr(pool, "_library", object())
+
+    def explode(*args: object, **kwargs: object) -> None:
+        raise RuntimeError("the table caught fire")
+
+    monkeypatch.setattr(pool, "play_one", explode)
+
+    done = pool._one((7, 2, 10, None, False))
+
+    assert done.seed == 7
+    assert done.finished is False
+    assert "the table caught fire" in done.broke
+    assert done.tally.games == 0
+
+
+# ----------------------------------------------------------------------
+# Comparing two runs
+# ----------------------------------------------------------------------
+
+
+def make_tally(games: int, turns_each: int, deaths_each: int = 1) -> Tally:
+    tally = Tally()
+
+    tally.games = games
+    tally.finished = games
+    tally.turns = turns_each * games
+    tally.commands = turns_each * games * 4
+    tally.deaths = deaths_each * games
+
+    return tally
+
+
+def test_a_difference_within_the_noise_is_not_offered_as_a_finding() -> None:
+    from fsme.analysis import compare
+
+    told = compare(
+        "a card",
+        make_tally(50, 100),
+        make_tally(50, 101),
+        appeared=40,
+    )
+
+    turns = next(d for d in told.differences if d.name == "turns a game")
+
+    assert turns.change == pytest.approx(-1.0)
+    assert not turns.tells_us_anything
+
+
+def test_a_difference_well_beyond_the_noise_is() -> None:
+    from fsme.analysis import compare
+
+    told = compare(
+        "a card",
+        make_tally(200, 100),
+        make_tally(200, 140),
+        appeared=150,
+    )
+
+    turns = next(d for d in told.differences if d.name == "turns a game")
+
+    assert turns.tells_us_anything
+    assert told.can_be_about_the_card
+
+
+def test_a_card_that_never_reached_the_table_explains_nothing() -> None:
+    """
+    Removing a card reshuffles every game, so two runs differ everywhere.
+    """
+    from fsme.analysis import compare, read_out
+
+    told = compare(
+        "a card",
+        make_tally(200, 100),
+        make_tally(200, 140),
+        appeared=2,
+    )
+
+    assert not told.can_be_about_the_card
+
+    reading = read_out(told)
+
+    assert "too rarely" in reading
+    assert "Nothing is marked" in reading
+    assert "*" not in reading.split("Nothing is marked")[0].split("change")[1]
+
+
+def test_a_comparison_is_plain_data() -> None:
+    from fsme.analysis import compare
+
+    told = compare("a card", make_tally(10, 50), make_tally(10, 60), appeared=8)
+
+    written = told.to_dict()
+
+    assert json.loads(json.dumps(written)) == written
+
+
+def test_a_library_can_be_asked_for_itself_without_a_card(
+    everything: ContentLibrary,
+) -> None:
+    card = "treasure_deck-active_items-base_game-guppy_s_paw"
+
+    smaller = everything.without([card])
+
+    assert card in {definition.id for definition in everything.definitions()}
+    assert card not in {definition.id for definition in smaller.definitions()}
+    assert len(smaller.definitions()) == len(everything.definitions()) - 1
+
+    # And the library that was asked keeps its own answer.
+    assert card in {definition.id for definition in everything.definitions()}

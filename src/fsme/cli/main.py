@@ -276,16 +276,30 @@ def simulate(args: argparse.Namespace) -> int:
             flush=True,
         )
 
-    for outcome in play_them(
-        library(args),
-        args.games,
-        args.players,
-        first_seed=args.seed,
-        offers=args.offers,
-        journals_into=into,
-        watching=tick,
-    ):
-        tally.add(outcome.journal)
+    if args.jobs > 1:
+        from fsme.simulation import run_on_many_cores
+
+        for done in run_on_many_cores(
+            content_root(args.content),
+            args.games,
+            args.players,
+            jobs=args.jobs,
+            first_seed=args.seed,
+            offers=args.offers,
+            journals_into=into,
+        ):
+            tally.merge(done.tally)
+    else:
+        for outcome in play_them(
+            library(args),
+            args.games,
+            args.players,
+            first_seed=args.seed,
+            offers=args.offers,
+            journals_into=into,
+            watching=tick,
+        ):
+            tally.add(outcome.journal)
 
     spent = time.perf_counter() - started
 
@@ -311,6 +325,72 @@ def simulate(args: argparse.Namespace) -> int:
 
     if into is not None:
         print(f"journals written to {into}")
+
+    return 0
+
+
+def test_card(args: argparse.Namespace) -> int:
+    """
+    Play the same seeds with a card in the game and without it, and compare.
+    """
+    from fsme.analysis import Tally, compare, read_out
+    from fsme.simulation import run_on_many_cores
+
+    root = content_root(args.content)
+    loaded = library(args)
+
+    try:
+        card = loaded.registry().get(args.card)
+    except Exception:
+        print(f"no card called {args.card!r} — try `fsme cards` to see the sets")
+
+        return 2
+
+    runs: dict[str, Tally] = {}
+    broken: dict[str, list[str]] = {"with": [], "without": []}
+    appeared = 0
+
+    for label, drop in (("with", ()), ("without", (args.card,))):
+        tally = Tally()
+
+        for done in run_on_many_cores(
+            root,
+            args.games,
+            args.players,
+            jobs=max(1, args.jobs),
+            first_seed=args.seed,
+            without=drop,
+        ):
+            tally.merge(done.tally)
+
+            if done.broke:
+                broken[label].append(f"seed {done.seed}: {done.broke}")
+
+        runs[label] = tally
+
+        if label == "with":
+            seen = tally.cards.get(args.card)
+            appeared = seen.games if seen else 0
+
+    told = compare(
+        f"{card.name} ({args.card})",
+        runs["with"],
+        runs["without"],
+        appeared=appeared,
+        errors_with=len(broken["with"]),
+        errors_without=len(broken["without"]),
+    )
+
+    if args.json:
+        print(json.dumps(told.to_dict(), indent=2))
+
+        return 0
+
+    print(read_out(told))
+
+    for label, failures in broken.items():
+        for failure in failures[:5]:
+            print(f"  fell over {label} it — {failure}")
 
     return 0
 
@@ -410,7 +490,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="record what else could have been done at each point",
     )
     many.add_argument("--json", action="store_true")
+    many.add_argument(
+        "--jobs", type=int, default=1, help="play on this many cores at once"
+    )
     many.set_defaults(run=simulate)
+
+    trial = commands.add_parser(
+        "test-card", help="play the game with a card and without it"
+    )
+    shared(trial)
+    trial.add_argument("card", help="the identifier of the card under test")
+    trial.add_argument("--games", type=int, default=100, help="games in each run")
+    trial.add_argument("--jobs", type=int, default=1)
+    trial.add_argument("--json", action="store_true")
+    trial.set_defaults(run=test_card)
 
     listing = commands.add_parser("cards", help="what the content holds")
     shared(listing)
