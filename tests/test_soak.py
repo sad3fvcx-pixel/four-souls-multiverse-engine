@@ -196,12 +196,22 @@ def check(game: Game) -> None:
             where[id(card)] = name
 
 
-def play(library: ContentLibrary, seed: int, players: int, steps: int = STEPS) -> Game:
+def play(
+    library: ContentLibrary,
+    seed: int,
+    players: int,
+    steps: int = STEPS,
+    *,
+    interactive: bool = False,
+) -> Game:
     """
     Play one game as far as the budget allows, checking as it goes.
     """
     game = Game.from_content(
-        library, ["Ann", "Bo", "Cy", "Di"][:players], seed=seed
+        library,
+        ["Ann", "Bo", "Cy", "Di"][:players],
+        seed=seed,
+        interactive_priority=interactive,
     )
 
     assert game.start().accepted
@@ -253,3 +263,19 @@ def test_the_same_seed_plays_the_same_game(
     assert [str(event.type) for event in first.history] == [
         str(event.type) for event in second.history
     ]
+
+
+@pytest.mark.parametrize("seed", SEEDS)
+@pytest.mark.parametrize("players", TABLES)
+def test_a_table_that_is_asked_can_always_answer(
+    everything: ContentLibrary, seed: int, players: int
+) -> None:
+    """
+    The same games, played with the priority windows open.
+
+    This is the mode any interface runs in, and it is a different engine path
+    from end to end: every effect stops to be answered, every roll is offered
+    to the table, and the run loop returns to the client far more often. Things
+    hold together here that do not hold together with nobody to ask.
+    """
+    play(everything, seed, players, interactive=True)

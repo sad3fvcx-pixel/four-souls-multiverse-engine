@@ -201,3 +201,44 @@ def test_combat_rounds_are_interruptible_under_priority() -> None:
     assert runtime.awaiting_priority is True
     assert state.combat.active is True
     assert state.combat.round_number == 0
+
+
+def test_a_death_is_settled_before_the_table_is_asked() -> None:
+    """
+    The position a player is asked about is one the rules already agree with.
+
+    A player at no hit points is dead before anybody responds to anything.
+    Opening a window over a board that still calls them alive would let the
+    table answer a question about a game that does not exist — and their death,
+    which is answerable like anything else, would never reach the queue at all.
+    """
+    runtime, state = make_game(players=2, interactive_priority=True)
+    runtime.submit(Command(type=CommandType.START_GAME, player=0))
+
+    striker = make_instance(
+        treasure_definition(
+            "test.striker",
+            effects=({"effect": "deal_damage", "amount": 5, "target": "opponents"},),
+        ),
+        controller=0,
+        owner=0,
+        instance_id="instance:striker",
+    )
+    state.player(0).treasures.add_top(striker)
+
+    runtime.submit(
+        Command(type=CommandType.ACTIVATE_TREASURE, player=0, payload={"index": 0})
+    )
+
+    for _ in range(20):
+        if not runtime.awaiting_priority:
+            break
+
+        runtime.submit(
+            Command(type=CommandType.PASS_PRIORITY, player=state.priority.holder or 0)
+        )
+
+    assert state.player(1).hp == 0
+    assert state.player(1).alive is False, (
+        "a player at no hit points is dead whether or not a window is open"
+    )

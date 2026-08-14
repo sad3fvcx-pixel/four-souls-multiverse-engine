@@ -49,8 +49,10 @@ def striker(card_id="test.striker", *, amount=2, target="opponents"):
     )
 
 
-def setup(*, players=2):
-    runtime, state = make_game(players=players)
+def setup(*, players=2, interactive_priority=False):
+    runtime, state = make_game(
+        players=players, interactive_priority=interactive_priority
+    )
     runtime.submit(Command(type=CommandType.START_GAME, player=0))
 
     return runtime, state
@@ -63,6 +65,19 @@ def give(state, player_id, definition, instance_id):
     state.player(player_id).treasures.add_top(card)
 
     return card
+
+
+def pass_around(runtime, state, limit=40):
+    """
+    Let every window close, so the stack resolves in an interactive game.
+    """
+    for _ in range(limit):
+        if not runtime.awaiting_priority:
+            return
+
+        runtime.submit(
+            Command(type=CommandType.PASS_PRIORITY, player=state.priority.holder or 0)
+        )
 
 
 def activate(runtime, player=0, index=0):
@@ -297,6 +312,40 @@ def test_a_replacement_inside_a_replacement_gives_the_event_back() -> None:
     # The heal was cancelled by the inner replacement and the damage by the
     # outer one, which is only possible if the outer one still had its event.
     assert state.player(1).hp == 1
+
+
+def test_a_replacement_rolls_its_die_on_the_spot() -> None:
+    """
+    A replacement gets no window, so its roll cannot wait for one.
+
+    The table answers a roll by responding to it, and there is nothing to
+    respond to yet: the event being replaced has not happened. A death is
+    offered for replacement by the State-Based Actions, which are not an
+    ability and cannot be parked — so a replacement that rolled there used to
+    throw the roll straight out of the engine, past the command that caused it.
+    """
+    runtime, state = setup(interactive_priority=True)
+
+    lucky = make_definition(
+        "test.lucky",
+        card_type=CardType.TREASURE,
+        abilities=(
+            Ability(
+                trigger="before_death",
+                effects=({"effect": "roll_dice", "sides": 6}, "cancel_event"),
+                replacement=True,
+                scope="any",
+            ),
+        ),
+    )
+
+    give(state, 1, lucky, "instance:lucky")
+
+    runtime.context.apply("kill", [state.player(1)])
+    runtime.run()
+
+    assert state.player(1).alive is True, "the death was replaced"
+    assert state.pending_roll is None, "no roll was left open"
 
 
 def test_replacement_effects_refuse_to_run_outside_a_window() -> None:

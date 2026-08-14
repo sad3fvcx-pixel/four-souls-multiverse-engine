@@ -475,6 +475,15 @@ class Runtime:
 
             if not self._state.stack.is_empty():
                 if self.awaiting_priority:
+                    # The table is about to be asked what it wants to do, and
+                    # it must be asked about a position the rules already
+                    # agree with: a player at no hit points is dead before
+                    # anybody responds to anything, not after. A death queued
+                    # here is answerable like any other, which is the whole
+                    # point of asking now rather than later.
+                    if self._state_based_actions():
+                        continue
+
                     return
 
                 self._resolve_top()
@@ -743,6 +752,14 @@ class Runtime:
         self._context._set_event(event)
         self._context._set_source(card)
 
+        # A replacement that rolls a die rolls it here and now. The table
+        # answers a roll by responding to it, and there is nothing yet to
+        # respond to: the event being replaced has not happened. So the roll is
+        # taken unanswered, for the same reason the decision below is refused.
+        answerable = self._context.answerable_rolls
+
+        self._context._set_answerable_rolls(False)
+
         try:
             self._target_resolver.resolve_all(
                 ability.targets, self._state, context, self._rng
@@ -760,6 +777,7 @@ class Runtime:
             ) from None
 
         finally:
+            self._context._set_answerable_rolls(answerable)
             self._context._set_event(outer_event)
             self._context._set_source(outer_source)
 
