@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FSME</title>
+<style>
+:root {
+  color-scheme: dark;
+  --ink: #e8e4dc;
+  --dim: #8d8578;
+  --line: #2e2a26;
+  --panel: #17151300;
+  --bg: #100e0d;
+  --hot: #c8552f;
+  --good: #6f9b58;
+  --gold: #c9a227;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 5;
+  flex-wrap: wrap;
+}
+h1 { font-size: 15px; margin: 0; letter-spacing: .14em; text-transform: uppercase; }
+.turn { color: var(--dim); }
+.turn b { color: var(--ink); font-weight: 600; }
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 0;
+  min-height: calc(100vh - 46px);
+}
+@media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
+#table { padding: 16px; min-width: 0; }
+aside {
+  border-left: 1px solid var(--line);
+  padding: 16px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+@media (max-width: 900px) { aside { border-left: 0; border-top: 1px solid var(--line); } }
+h2 {
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+section { margin-bottom: 20px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+.card {
+  border: 1px solid var(--line);
+  padding: 6px 9px;
+  min-width: 0;
+  max-width: 220px;
+  background: var(--panel);
+}
+.card .name { font-weight: 600; }
+.card .meta { color: var(--dim); font-size: 12px; }
+.card.tapped { opacity: .45; }
+.card.dead { text-decoration: line-through; opacity: .5; }
+.buried { color: var(--dim); font-size: 12px; margin-top: 4px; }
+.seat {
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.seat.active { border-color: var(--gold); }
+.seat.dead { opacity: .55; }
+.seat h3 { margin: 0 0 6px; font-size: 14px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.tag { color: var(--dim); font-weight: 400; font-size: 12px; }
+.tag.priority { color: var(--gold); }
+.stats { color: var(--dim); font-size: 12px; margin-bottom: 8px; }
+.stats b { color: var(--ink); font-weight: 600; }
+button {
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+button:hover { border-color: var(--hot); }
+button.wide { display: block; width: 100%; margin-bottom: 6px; }
+.who { color: var(--dim); }
+#log {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 46vh;
+  border: 1px solid var(--line);
+  padding: 8px;
+  font-size: 12px;
+}
+#log div { padding: 1px 0; color: var(--dim); }
+#log div b { color: var(--ink); font-weight: 600; }
+#waiting { border: 1px solid var(--line); padding: 10px 12px; }
+#waiting.decision { border-color: var(--hot); }
+.pill {
+  display: inline-block;
+  border: 1px solid var(--line);
+  padding: 1px 7px;
+  font-size: 12px;
+  color: var(--dim);
+}
+.won { color: var(--good); }
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+input {
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line);
+  padding: 4px 6px;
+  width: 5em;
+}
+.empty { color: var(--dim); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Four Souls Multiverse Engine</h1>
+  <div class="turn" id="turn"></div>
+  <div class="controls">
+    <label class="tag">seed <input id="seed" type="number" value="0"></label>
+    <label class="tag">players <input id="player-count" type="number" min="2" max="4" value="2"></label>
+    <button id="restart">Deal again</button>
+  </div>
+</header>
+
+<main>
+  <div id="table">
+    <section>
+      <h2>Monsters</h2>
+      <div class="row" id="monsters"></div>
+    </section>
+    <section>
+      <h2>Shop</h2>
+      <div class="row" id="shop"></div>
+    </section>
+    <section id="room-section" hidden>
+      <h2>Room</h2>
+      <div class="row" id="room"></div>
+    </section>
+    <section>
+      <h2>Players</h2>
+      <div id="players"></div>
+    </section>
+    <section>
+      <h2>Decks</h2>
+      <div class="row" id="decks"></div>
+    </section>
+  </div>
+
+  <aside>
+    <div>
+      <h2>Waiting on</h2>
+      <div id="waiting"></div>
+    </div>
+    <div>
+      <h2>Stack</h2>
+      <div id="stack"></div>
+    </div>
+    <div>
+      <h2>Moves</h2>
+      <div id="moves"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;min-height:0;">
+      <h2>Log</h2>
+      <div id="log"></div>
+    </div>
+  </aside>
+</main>
+
+<script>
+"use strict";
+
+// This page draws what the engine says and posts back what the player clicks.
+// It works out nothing for itself: every button it shows came from the moves
+// list the engine produced, and every label on a card is text the engine sent.
+
+const el = (id) => document.getElementById(id);
+let seen = 0;
+
+async function get(path) {
+  const response = await fetch(path);
+  return response.json();
+}
+
+async function post(path, body) {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body || {}),
+  });
+  return response.json();
+}
+
+function card(data) {
+  if (!data) return `<div class="card empty">—</div>`;
+
+  const classes = ["card"];
+  if (data.tapped) classes.push("tapped");
+  if (data.alive === false) classes.push("dead");
+
+  const bits = [];
+  if (data.hp !== undefined) bits.push(`${data.hp}/${data.max_hp} hp`);
+  if (data.attack !== undefined) bits.push(`${data.attack} at`);
+  if (data.roll !== undefined) bits.push(`${data.roll}+`);
+  if (data.souls) bits.push(`${data.souls} souls`);
+  if (data.eternal) bits.push("eternal");
+  if (data.copying) bits.push(`copying ${data.copying}`);
+  for (const [name, count] of Object.entries(data.counters || {})) {
+    if (count) bits.push(`${count} ${name}`);
+  }
+
+  return `<div class="${classes.join(" ")}">
+    <div class="name">${escape(data.name)}</div>
+    <div class="meta">${escape(bits.join(" · "))}</div>
+  </div>`;
+}
+
+function escape(text) {
+  return String(text ?? "").replace(/[&<>"]/g, (ch) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]
+  ));
+}
+
+function drawTable(state) {
+  el("turn").innerHTML = state.over
+    ? `<span class="won">${escape(state.players[state.winner]?.name || "somebody")} wins</span>`
+    : `turn <b>${state.turn.number}</b> · <b>${escape(state.turn.phase)}</b> phase · `
+      + `<b>${escape(state.players[state.turn.active_player]?.name || "")}</b> to act`;
+
+  el("monsters").innerHTML = state.board.monster_slots.map((slot) => {
+    const buried = slot.buried.length
+      ? `<div class="buried">over ${slot.buried.map((c) => escape(c.name)).join(", ")}</div>`
+      : "";
+    const fighting = state.board.combat.active
+      && state.board.combat.monster
+      && slot.active
+      && state.board.combat.monster.instance === slot.active.instance;
+    return `<div>${card(slot.active)}${buried}${fighting ? '<div class="buried">under attack</div>' : ""}</div>`;
+  }).join("") || `<div class="empty">no slots</div>`;
+
+  el("shop").innerHTML = state.board.shop.map(card).join("") || `<div class="empty">empty</div>`;
+
+  el("room-section").hidden = state.board.room.length === 0;
+  el("room").innerHTML = state.board.room.map(card).join("");
+
+  el("decks").innerHTML = Object.entries(state.board.decks)
+    .map(([name, count]) => `<span class="pill">${escape(name)} ${count}</span>`)
+    .join(" ");
+
+  el("players").innerHTML = state.players.map((player) => {
+    const classes = ["seat"];
+    if (player.active) classes.push("active");
+    if (!player.alive) classes.push("dead");
+
+    const counters = Object.entries(player.counters || {})
+      .filter(([, n]) => n)
+      .map(([name, n]) => `${n} ${name}`)
+      .join(" · ");
+
+    return `<div class="${classes.join(" ")}">
+      <h3>${escape(player.name)}
+        ${player.active ? '<span class="tag">active</span>' : ""}
+        ${player.has_priority ? '<span class="tag priority">priority</span>' : ""}
+        ${player.alive ? "" : '<span class="tag">dead</span>'}
+      </h3>
+      <div class="stats">
+        <b>${player.hp}</b>/${player.max_hp} hp ·
+        <b>${player.pennies}</b>¢ ·
+        <b>${player.souls}</b> souls ·
+        ${player.attacks_left} attacks · ${player.purchases_left} buys
+        ${counters ? " · " + escape(counters) : ""}
+      </div>
+      <div class="row">
+        ${card(player.character)}
+        ${player.treasures.map(card).join("")}
+        ${player.curses.map(card).join("")}
+      </div>
+      <div class="row" style="margin-top:8px">${player.hand.map(card).join("")}</div>
+    </div>`;
+  }).join("");
+
+  el("stack").innerHTML = state.stack.length
+    ? state.stack.slice().reverse().map((item) => `<div class="card">
+        <div class="name">${escape(item.source || item.label)}</div>
+        <div class="meta">${escape(item.description || item.kind)}</div>
+      </div>`).join("")
+    : `<div class="empty">empty</div>`;
+}
+
+function drawWaiting(state) {
+  const waiting = state.waiting;
+  const box = el("waiting");
+  box.className = waiting.kind === "decision" ? "decision" : "";
+
+  const who = state.players[waiting.player]?.name ?? "nobody";
+
+  if (waiting.kind === "decision") {
+    const buttons = waiting.options.map((option, index) =>
+      `<button class="wide" data-choice="${index}">${escape(option)}</button>`
+    ).join("");
+
+    box.innerHTML = `<div><b>${escape(who)}</b> — ${escape(waiting.prompt)}</div>
+      <div class="stats">choose between ${waiting.minimum} and ${waiting.maximum}</div>
+      ${buttons}
+      <button class="wide" data-choice="none">Choose nothing</button>`;
+    return;
+  }
+
+  box.innerHTML = waiting.kind === "priority"
+    ? `<b>${escape(who)}</b> holds priority`
+    : `<b>${escape(who)}</b> to act`;
+}
+
+function drawMoves(moves, state) {
+  el("moves").innerHTML = moves.length
+    ? moves.map((move, index) => `<button class="wide" data-move="${index}">
+        <span class="who">${escape(state.players[move.player]?.name || move.player)}:</span>
+        ${escape(move.label)}
+      </button>`).join("")
+    : `<div class="empty">nothing to do — answer the question above</div>`;
+}
+
+function drawLog(events) {
+  const log = el("log");
+  for (const event of events) {
+    const line = document.createElement("div");
+    const bits = [];
+    for (const [key, value] of Object.entries(event.payload || {})) {
+      if (value !== null && value !== undefined && value !== "") bits.push(`${key} ${value}`);
+    }
+    line.innerHTML = `<b>${escape(event.type)}</b> `
+      + escape([event.source, (event.targets || []).join(", "), bits.join(" ")]
+        .filter(Boolean).join(" · "));
+    log.appendChild(line);
+  }
+  if (events.length) log.scrollTop = log.scrollHeight;
+}
+
+let current = { moves: [], state: null };
+
+function draw(view) {
+  current = view;
+  drawTable(view.state);
+  drawWaiting(view.state);
+  drawMoves(view.moves, view.state);
+  drawLog(view.events);
+  seen = view.history_length;
+}
+
+document.addEventListener("click", async (occasion) => {
+  const button = occasion.target.closest("button");
+  if (!button) return;
+
+  if (button.id === "restart") {
+    el("log").innerHTML = "";
+    seen = 0;
+    const answer = await post("/api/restart", {
+      seed: Number(el("seed").value),
+      players: Number(el("player-count").value),
+    });
+    if (answer.view) draw(answer.view);
+    return;
+  }
+
+  if (button.dataset.move !== undefined) {
+    const move = current.moves[Number(button.dataset.move)];
+    const answer = await post(`/api/command?since=${seen}`, move);
+    if (answer.view) draw(answer.view);
+    return;
+  }
+
+  if (button.dataset.choice !== undefined) {
+    const waiting = current.state.waiting;
+    const choices = button.dataset.choice === "none"
+      ? []
+      : [Number(button.dataset.choice)];
+    const answer = await post(`/api/command?since=${seen}`, {
+      type: "choose_target",
+      player: waiting.player,
+      payload: { choices },
+    });
+    if (answer.view) draw(answer.view);
+  }
+});
+
+get("/api/view?since=0").then(draw);
+</script>
+</body>
+</html>

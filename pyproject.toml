@@ -32,6 +32,9 @@ classifiers = [
 
 dependencies = []
 
+[project.scripts]
+fsme = "fsme.cli:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
@@ -40,11 +43,15 @@ dev = [
     "mypy>=1.10"
 ]
 
+build = [
+    "pyinstaller>=6.6"
+]
+
 [tool.setuptools]
 package-dir = { "" = "src" }
 
 [tool.setuptools.package-data]
-fsme = ["py.typed"]
+fsme = ["py.typed", "web/static/*.html"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

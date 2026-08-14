@@ -340,7 +340,7 @@ class Runtime:
         given an identifier, because allocating one would advance state that a
         replay has to reproduce.
         """
-        reason = self._refuse_reason(command)
+        reason = self._gate_reason(command)
 
         if reason is not None:
             return self._log(CommandResult.reject(command, reason))
@@ -379,7 +379,29 @@ class Runtime:
             CommandResult.accept(command, tuple(self._history[first_event:]))
         )
 
-    def _refuse_reason(self, command: Command) -> str | None:
+    def refuse_reason(self, command: Command) -> str | None:
+        """
+        Say why this command would be refused, or nothing if it would be taken.
+
+        A client has to know what a player may do before offering it, and the
+        only honest answer is the one the engine would give. Asking costs
+        nothing and changes nothing: the gate below and every handler's
+        ``validate`` read the state and never touch it, which is what makes a
+        rejected command unable to leave a game half-changed.
+        """
+        gate = self._gate_reason(command)
+
+        if gate is not None:
+            return gate
+
+        try:
+            handler = self._commands.handler(command.type)
+        except UnknownCommandError as error:
+            return str(error)
+
+        return handler.validate(command, self._state)
+
+    def _gate_reason(self, command: Command) -> str | None:
         """
         Return why the engine cannot even look at a command right now.
         """
