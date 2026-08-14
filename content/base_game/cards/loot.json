@@ -2050,7 +2050,55 @@
       "type": "loot",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        },
+        {
+          "trigger": "before_death",
+          "scope": "controller",
+          "replacement": true,
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 6
+                }
+              ],
+              "then": [
+                {
+                  "effect": "cancel_event"
+                },
+                {
+                  "if": [
+                    "player_active"
+                  ],
+                  "then": [
+                    {
+                      "effect": "cancel_stack",
+                      "target": "all_stack"
+                    },
+                    {
+                      "effect": "end_turn"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "When you would die, roll- 6: Prevent death. If it's your turn, cancel everything that hasn't resolved and end it."
+        }
+      ],
       "tags": [
         "trinket"
       ],

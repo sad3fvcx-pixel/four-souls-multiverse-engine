@@ -41,6 +41,17 @@ class PlayerState:
 
     alive: bool = True
 
+    death_prevented: bool = False
+    """
+    Whether this player has already survived the death they are standing in.
+
+    A card that says "prevent death" leaves a player at no hit points and
+    alive, which is a state the engine would otherwise resolve by killing them
+    again on the next pass. The flag says the death has been answered; the next
+    instance of damage clears it, because surviving one death is not surviving
+    the next.
+    """
+
     character: Any | None = None
     """
     The character card this player is playing.

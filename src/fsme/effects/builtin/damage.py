@@ -70,6 +70,11 @@ def deal_damage(
     dealt = 0
 
     for target in targets:
+        if isinstance(target, PlayerState):
+            # A player who survived one death does not survive the next by the
+            # same promise: a new instance of damage is a new death.
+            target.death_prevented = False
+
         proposal = ctx.propose(
             EventType.BEFORE_DAMAGE,
             source=dealt_by,

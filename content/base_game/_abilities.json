@@ -6319,6 +6319,47 @@
   "treasure_deck-passive_items-base_game-guppy_s_collar": {
     "tags": [
       "guppy"
+    ],
+    "abilities": [
+      {
+        "trigger": "before_death",
+        "scope": "controller",
+        "replacement": true,
+        "effects": [
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_less": {
+                  "value": 4
+                }
+              }
+            ],
+            "then": [
+              {
+                "effect": "cancel_event"
+              },
+              {
+                "if": [
+                  "player_active"
+                ],
+                "then": [
+                  {
+                    "effect": "cancel_stack",
+                    "target": "all_stack"
+                  },
+                  {
+                    "effect": "end_turn"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "Each time you would die, roll- 1-3: Prevent death. If it's your turn, cancel everything that hasn't resolved and end your turn."
+      }
     ]
   },
   "treasure_deck-passive_items-base_game-the_map": {
@@ -7619,6 +7660,57 @@
           }
         ],
         "description": "When another monster dies, this dies."
+      }
+    ]
+  },
+  "loot_deck-trinkets-base_game-broken_ankh": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "effect": "put_into_play",
+            "target": "self"
+          }
+        ],
+        "description": "This loot becomes an item under your control when it resolves."
+      },
+      {
+        "trigger": "before_death",
+        "scope": "controller",
+        "replacement": true,
+        "effects": [
+          {
+            "roll_dice": 6
+          },
+          {
+            "if": [
+              {
+                "dice_equals": 6
+              }
+            ],
+            "then": [
+              {
+                "effect": "cancel_event"
+              },
+              {
+                "if": [
+                  "player_active"
+                ],
+                "then": [
+                  {
+                    "effect": "cancel_stack",
+                    "target": "all_stack"
+                  },
+                  {
+                    "effect": "end_turn"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "description": "When you would die, roll- 6: Prevent death. If it's your turn, cancel everything that hasn't resolved and end it."
       }
     ]
   }

@@ -1209,15 +1209,33 @@ class Runtime:
         changed = refresh_derived(self._state)
 
         for player in self._state.players:
-            if player.alive and player.hp <= 0:
-                player.kill()
-                changed = True
+            if not player.alive or player.hp > 0 or player.death_prevented:
+                continue
 
-                self._context.emit(
-                    EventType.PLAYER_DIED,
+            # Death is offered for replacement before it is applied: a card
+            # that says "prevent death" is answering the death, not reacting
+            # to it. A prevented death leaves the player alive at no hit
+            # points, and is not asked again until they take damage.
+            if self._propose(
+                Event(
+                    type=EventType.BEFORE_DEATH,
                     controller=player.player_id,
                     targets=[player],
                 )
+            ).cancelled:
+                player.death_prevented = True
+                changed = True
+
+                continue
+
+            player.kill()
+            changed = True
+
+            self._context.emit(
+                EventType.PLAYER_DIED,
+                controller=player.player_id,
+                targets=[player],
+            )
 
         for monster in list(self._state.active_monsters.cards):
             if not getattr(monster, "alive", False):

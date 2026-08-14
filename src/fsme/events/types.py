@@ -55,6 +55,9 @@ class EventType(StrEnum):
     AFTER_DAMAGE = "after_damage"
     ATTACK_END = "attack_end"
     MONSTER_KILLED = "monster_killed"
+    BEFORE_DEATH = "before_death"
+    """A player about to die, offered for replacement first."""
+
     PLAYER_DIED = "player_died"
 
     # Dice

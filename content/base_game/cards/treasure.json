@@ -3635,7 +3635,47 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_death",
+          "scope": "controller",
+          "replacement": true,
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": {
+                    "value": 4
+                  }
+                }
+              ],
+              "then": [
+                {
+                  "effect": "cancel_event"
+                },
+                {
+                  "if": [
+                    "player_active"
+                  ],
+                  "then": [
+                    {
+                      "effect": "cancel_stack",
+                      "target": "all_stack"
+                    },
+                    {
+                      "effect": "end_turn"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Each time you would die, roll- 1-3: Prevent death. If it's your turn, cancel everything that hasn't resolved and end your turn."
+        }
+      ],
       "tags": [
         "guppy",
         "passive"

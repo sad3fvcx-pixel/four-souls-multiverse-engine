@@ -4030,6 +4030,86 @@ def test_stoney_dies_with_the_next_monster_to_die(base_game: ContentLibrary) -> 
 
 
 # ----------------------------------------------------------------------
+# Surviving a death
+# ----------------------------------------------------------------------
+
+
+def test_guppys_collar_saves_its_holder_on_a_low_roll(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, rolls=[3])
+
+    give(game, "treasure_deck-passive_items-base_game-guppy_s_collar")
+
+    player = game.state.player(0)
+
+    hurt(game, player, amount=player.hp)
+
+    assert player.alive
+    assert player.hp == 0, "prevented death leaves a player standing at nothing"
+    assert player.death_prevented
+
+
+def test_guppys_collar_lets_its_holder_die_on_a_high_roll(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game, rolls=[4])
+
+    give(game, "treasure_deck-passive_items-base_game-guppy_s_collar")
+
+    player = game.state.player(0)
+
+    hurt(game, player, amount=player.hp)
+
+    assert not player.alive
+
+
+def test_a_survived_death_is_not_survived_twice(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, rolls=[1, 6])
+
+    give(game, "treasure_deck-passive_items-base_game-guppy_s_collar")
+
+    player = game.state.player(0)
+
+    hurt(game, player, amount=player.hp)
+
+    assert player.alive
+
+    # The next instance of damage is a new death, and this roll does not save.
+    hurt(game, player)
+
+    assert not player.alive
+
+
+def test_a_prevented_death_on_your_turn_ends_it(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, rolls=[6])
+
+    play(game, deal(game, "loot_deck-trinkets-base_game-broken_ankh"))
+
+    player = game.state.player(0)
+
+    assert player.treasure_count == 2, "the trinket stays in play"
+
+    hurt(game, player, amount=player.hp)
+
+    assert player.alive
+    assert game.state.stack.is_empty()
+    assert game.state.turn.active_player != 0, "the turn was ended"
+
+
+def test_the_broken_ankh_only_saves_on_a_six(base_game: ContentLibrary) -> None:
+    game = new_game(base_game, rolls=[5])
+
+    play(game, deal(game, "loot_deck-trinkets-base_game-broken_ankh"))
+
+    player = game.state.player(0)
+
+    hurt(game, player, amount=player.hp)
+
+    assert not player.alive
+
+
+# ----------------------------------------------------------------------
 # The implemented set as a whole
 # ----------------------------------------------------------------------
 
