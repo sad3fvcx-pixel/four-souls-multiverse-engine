@@ -6,7 +6,7 @@ Session facade for Four Souls Multiverse Engine.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
 from fsme.cards import CardRegistry
@@ -78,6 +78,55 @@ class Game:
         return cls(
             state,
             cards=library.registry(),
+            interactive_priority=interactive_priority,
+            rng=rng,
+        )
+
+    def save(self, *, engine_version: str = "") -> dict[str, Any]:
+        """
+        Write the game out as plain data that can be reloaded later.
+
+        The generator's position is taken from the live game rather than from
+        GameState: the Runtime owns it while a game is running, and a save that
+        forgot it would reload into a game that rolls different dice.
+        """
+        from fsme.serialization import save_game
+
+        return save_game(
+            self._runtime.state,
+            engine_version=engine_version,
+            rng_state=self._runtime.rng.get_state(),
+        )
+
+    @classmethod
+    def load(
+        cls,
+        data: Mapping[str, Any],
+        library: ContentLibrary,
+        *,
+        interactive_priority: bool = False,
+    ) -> Game:
+        """
+        Rebuild a saved game against the content it was played with.
+
+        The cards come from the library, not from the file: a save holds what
+        happened to a card, never what is printed on it, so reloading against
+        different content is a content mismatch and is refused as one.
+        """
+        from fsme.rng.rng import RNG
+        from fsme.serialization import load_game
+
+        registry = library.registry()
+        state = load_game(data, registry)
+
+        rng = RNG(state.seed)
+
+        if state.rng_state is not None:
+            rng.set_state(state.rng_state)
+
+        return cls(
+            state,
+            cards=registry,
             interactive_priority=interactive_priority,
             rng=rng,
         )

@@ -34,6 +34,16 @@ class CombatState:
 
     active: bool = False
 
+    stalled_rounds: int = 0
+    """
+    Rounds in a row in which neither side's hit points moved.
+
+    An attack ends when somebody dies, so an attack in which nobody can be hurt
+    would never end. Counting the rounds that changed nothing is how the engine
+    notices, and it is a safeguard rather than a rule of the game: no card
+    describes it, and content that deals damage never reaches it.
+    """
+
     def begin(self, attacker: int, monster: Any) -> None:
         """
         Start an attack.
@@ -41,6 +51,7 @@ class CombatState:
         self.attacker = attacker
         self.monster = monster
         self.round_number = 0
+        self.stalled_rounds = 0
         self.active = True
 
     def next_round(self) -> int:
@@ -58,4 +69,5 @@ class CombatState:
         self.attacker = None
         self.monster = None
         self.round_number = 0
+        self.stalled_rounds = 0
         self.active = False

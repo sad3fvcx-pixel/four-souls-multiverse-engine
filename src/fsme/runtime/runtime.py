@@ -356,6 +356,12 @@ class Runtime:
 
         self.run()
 
+        # The generator's position is part of the game, not of the session: a
+        # replay compares it, and a save has to reload rolling the same dice.
+        # It is written down at the one moment the game is quiet enough for it
+        # to mean anything — after a command has been fully carried out.
+        self._state.rng_state = self._rng.get_state()
+
         return self._log(
             CommandResult.accept(command, tuple(self._history[first_event:]))
         )

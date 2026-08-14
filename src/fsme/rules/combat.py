@@ -22,7 +22,7 @@ from fsme.events import EventType
 from fsme.stack import COMBAT_ROUND, COMBAT_STRIKE, StackItem, StackItemType
 from fsme.state import GamePhase, GameState
 
-from .constants import BASE_PLAYER_ATTACK, DICE_SIDES
+from .constants import BASE_PLAYER_ATTACK, DICE_SIDES, STALLED_COMBAT_ROUNDS
 from .obligations import pay as pay_obligation
 from .restrictions import ATTACK as ATTACK_ACTION
 from .restrictions import refuse
@@ -186,6 +186,8 @@ def combat_strike(item: StackItem, context: EffectContext) -> None:
     roll = combat.settled_roll if combat.settled_roll is not None else 1
     combat.settled_roll = None
 
+    before = (attacker.hp, getattr(monster, "hp", 0))
+
     required = _required_roll(monster, state)
 
     context.emit(
@@ -215,6 +217,19 @@ def combat_strike(item: StackItem, context: EffectContext) -> None:
             dealt_by=monster,
             roll=roll,
         )
+
+    if (attacker.hp, getattr(monster, "hp", 0)) == before:
+        combat.stalled_rounds += 1
+    else:
+        combat.stalled_rounds = 0
+
+    if combat.stalled_rounds >= STALLED_COMBAT_ROUNDS:
+        # Neither side can hurt the other, and an attack that cannot progress
+        # is over. Nothing on a card says so; the engine says so, because a
+        # command has to finish.
+        end_combat(context)
+
+        return
 
     # The next round waits behind anything the damage triggered. If either side
     # died, State-Based Actions run first and this round ends the attack.

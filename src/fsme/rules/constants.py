@@ -42,3 +42,14 @@ MONSTER_SLOTS = 2
 
 SHOP_SLOTS = 2
 """Treasures face-up in the shop."""
+
+STALLED_COMBAT_ROUNDS = 3
+"""
+How many rounds an attack may change nothing before it is called off.
+
+An attack ends when one side dies. If neither side can hurt the other — every
+point prevented, every blow reduced to nothing — the rounds would go on for
+ever, so the engine stops them. This is a safeguard, not a rule of the game:
+nothing printed on a card describes it, and any attack in which damage lands
+resets the count.
+"""

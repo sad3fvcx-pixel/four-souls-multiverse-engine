@@ -30,7 +30,7 @@ from fsme.state import GamePhase
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
-SEEDS = (0, 1, 2, 7)
+SEEDS = (0, 1, 2, 7, 23)
 TABLES = (2, 3, 4)
 
 STEPS = 250

@@ -84,7 +84,7 @@
         {
           "trigger": "before_damage",
           "replacement": true,
-          "scope": "any",
+          "scope": "controller",
           "effects": [
             {
               "prevent_damage": 1

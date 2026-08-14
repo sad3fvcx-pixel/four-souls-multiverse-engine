@@ -35,7 +35,7 @@
         {
           "trigger": "before_damage",
           "replacement": true,
-          "scope": "any",
+          "scope": "controller",
           "conditions": [{ "player_hp": { "operator": "<=", "value": 1 } }],
           "effects": [{ "prevent_damage": 1 }],
           "description": "Prevent 1 damage while you are on your last hit point."
