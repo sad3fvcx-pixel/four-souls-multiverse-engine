@@ -4,11 +4,16 @@ The command line.
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
 
 from fsme.cli.main import content_root, main
+
+# ``fsme.cli`` re-exports ``main`` the function, which shadows ``main`` the
+# module on the package, so the module is taken from the import table instead.
+entry_point = sys.modules["fsme.cli.main"]
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
@@ -42,3 +47,27 @@ def test_the_version_is_printed(capsys: pytest.CaptureFixture[str]) -> None:
 
     assert raised.value.code == 0
     assert "fsme" in capsys.readouterr().out
+
+
+def test_a_double_clicked_build_opens_the_game(monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Somebody who ran the executable with no arguments wants to play, not to
+    read a usage message.
+    """
+    asked: dict[str, object] = {}
+
+    def remember(args: object) -> int:
+        asked["command"] = getattr(args, "command", None)
+        asked["open"] = getattr(args, "open", None)
+
+        return 0
+
+    monkeypatch.setattr(entry_point, "serve", remember)
+
+    assert main([]) == 0
+    assert asked == {"command": "serve", "open": True}
+
+
+def test_a_named_command_is_still_obeyed(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["cards"]) == 0
+    assert "total" in capsys.readouterr().out

@@ -22,10 +22,23 @@ the engine will accept; clicking one submits it. The page is a client and
 nothing more — it decides no rule, and every button on it came from the
 engine's own validators.
 
-For people without Python, `pyinstaller packaging/fsme.spec` builds a single
-executable carrying the cards and the page inside it. An executable cannot be
-cross-compiled, so Windows and macOS builds come from
-`.github/workflows/build.yml`.
+### A single executable
+
+For people without Python:
+
+```bash
+pip install -e ".[build]"
+pyinstaller packaging/fsme.spec     # → dist/fsme, or dist/fsme.exe on Windows
+```
+
+The build carries the cards and the page inside itself and needs nothing
+installed to run. Started with no arguments — double-clicked, as an `.exe`
+usually is — it serves the game and opens a browser at it.
+
+An executable cannot be cross-compiled: a Windows `.exe` has to be built on
+Windows. `.github/workflows/build.yml` does that for Windows, macOS and Linux
+and uploads all three, so a tag is enough to get an `.exe` without owning a
+Windows machine.
 
 ## Documentation
 

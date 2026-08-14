@@ -201,7 +201,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action="version", version=f"fsme {VERSION}")
 
-    commands = parser.add_subparsers(dest="command", required=True)
+    commands = parser.add_subparsers(dest="command")
 
     def shared(sub: argparse.ArgumentParser) -> None:
         sub.add_argument("--content", help="where the card content lives")
@@ -234,8 +234,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    given = list(sys.argv[1:] if argv is None else argv)
+
+    if not given:
+        # Somebody double-clicked the executable. They did not come to read a
+        # usage message: open the game and the browser looking at it.
+        given = ["serve", "--open"]
+
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args(given)
 
     run: Any = args.run
 
