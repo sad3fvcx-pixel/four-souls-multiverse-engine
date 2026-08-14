@@ -75,18 +75,23 @@ def _prepare(root: str, drop: tuple[str, ...]) -> None:
     _library = loaded.without(_drop) if _drop else loaded
 
 
-def _one(work: tuple[int, int, int, str | None, bool]) -> Finished:
+def _one(work: tuple[int, int, int, str | None, bool, tuple[int, ...]]) -> Finished:
     """
     Play one game in a worker and send back what was counted.
     """
-    seed, players, steps, journals_into, offers = work
+    seed, players, steps, journals_into, offers, thinking_seats = work
 
     if _library is None:
         raise RuntimeError("this worker was never given any content")
 
     try:
         journal, game = play_one(
-            _library, seed, players, steps=steps, offers=offers
+            _library,
+            seed,
+            players,
+            steps=steps,
+            offers=offers,
+            thinking_seats=thinking_seats,
         )
     except Exception as error:  # noqa: BLE001 - a game that falls over is data
         return Finished(
@@ -126,6 +131,7 @@ def run_on_many_cores(
     offers: bool = False,
     journals_into: Path | None = None,
     without: tuple[str, ...] = (),
+    thinking_seats: tuple[int, ...] = (),
 ) -> Iterator[Finished]:
     """
     Play a run across several processes, yielding each game as it finishes.
@@ -143,6 +149,7 @@ def run_on_many_cores(
             steps,
             str(journals_into) if journals_into else None,
             offers,
+            thinking_seats,
         )
         for offset in range(games)
     ]

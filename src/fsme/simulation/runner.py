@@ -16,10 +16,12 @@ that runs out of memory at ten thousand.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
+from fsme.bot import HeuristicBot
 from fsme.content import ContentLibrary
 from fsme.game import Game
 from fsme.journal import Journal, JournalKeeper
@@ -82,9 +84,14 @@ def play_one(
     *,
     steps: int = DEFAULT_STEPS,
     offers: bool = False,
+    thinking_seats: tuple[int, ...] = (),
 ) -> tuple[Journal, Game]:
     """
     Play one game to its end, keeping a journal of it.
+
+    ``thinking_seats`` names the seats played by the heuristic bot; the rest
+    choose at random. A table of both is how a bot is measured — the same game,
+    the same rules, and the only difference at the table being who is thinking.
     """
     game = Game.from_content(library, list(NAMES[:players]), seed=seed)
 
@@ -93,24 +100,53 @@ def play_one(
     keeper = JournalKeeper(game, offers=_offered if offers else None)
 
     agent = ScriptedAgent(seed)
+    bot = HeuristicBot(seed) if thinking_seats else None
 
     for _ in range(steps):
         if game.is_over:
             break
 
-        chosen = agent.choose(game)
+        decision: Mapping[str, Any] | None = None
 
-        if chosen is None:
-            break
+        if bot is not None and _whose_move(game) in thinking_seats:
+            thought = bot.choose(game)
 
-        command, label = chosen
+            if thought is None:
+                break
 
-        if not keeper.submit(command, label=label).accepted:
-            # The agent only ever offers what the engine approved, so a refusal
+            command, label, working = thought
+            decision = working.to_dict()
+        else:
+            chosen = agent.choose(game)
+
+            if chosen is None:
+                break
+
+            command, label = chosen
+
+        if not keeper.submit(command, label=label, decision=decision).accepted:
+            # A player only ever offers what the engine approved, so a refusal
             # here means the two disagree — which is a bug and not a move.
             break
 
     return keeper.journal, game
+
+
+def _whose_move(game: Game) -> int:
+    """
+    Whose turn it is to say something: the player being asked, or the one to act.
+    """
+    waiting = game.runtime.awaiting_decision
+
+    if waiting is not None:
+        return int(waiting.player)
+
+    holder = game.state.priority.holder
+
+    if game.runtime.awaiting_priority and holder is not None:
+        return int(holder)
+
+    return int(game.state.turn.active_player)
 
 
 def _offered(game: Game) -> list[str]:
@@ -131,6 +167,7 @@ def run(
     steps: int = DEFAULT_STEPS,
     offers: bool = False,
     journals_into: Path | None = None,
+    thinking_seats: tuple[int, ...] = (),
     watching: Callable[[Progress], None] | None = None,
 ) -> Iterator[Outcome]:
     """
@@ -150,7 +187,12 @@ def run(
         seed = first_seed + offset
 
         journal, game = play_one(
-            library, seed, players, steps=steps, offers=offers
+            library,
+            seed,
+            players,
+            steps=steps,
+            offers=offers,
+            thinking_seats=thinking_seats,
         )
 
         finished = bool(game.state.game_over)

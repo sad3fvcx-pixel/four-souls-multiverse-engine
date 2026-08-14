@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import random
 import sys
 import time
 import webbrowser
@@ -22,11 +21,22 @@ from typing import Any
 
 from fsme.api import Session, load_content
 from fsme.content import ContentLibrary
-from fsme.game import Game
 
 DEFAULT_NAMES = ("Ann", "Bo", "Cy", "Di")
 
 VERSION = "0.1.0"
+
+
+def seats_of(given: str) -> tuple[int, ...]:
+    """
+    Read a comma-separated list of seats.
+    """
+    if not given.strip():
+        return ()
+
+    return tuple(
+        int(part) for part in given.replace(" ", "").split(",") if part.isdigit()
+    )
 
 
 def content_root(given: str | None) -> Path:
@@ -100,116 +110,47 @@ def play(args: argparse.Namespace) -> int:
     """
     Play a game through with nobody watching, and say how it went.
 
-    The players are not clever. This is here because a person setting the
-    engine up wants to know it runs, and a game played end to end says so more
-    convincingly than a version number.
+    This is here because a person setting the engine up wants to know it runs,
+    and a game played end to end says so more convincingly than a version
+    number. It is the same game a simulation plays, one of it.
 
     With ``--journal`` the whole game is written down as it goes: what was
-    offered, what was chosen, and everything that followed.
+    offered, what was chosen, why — if a bot was choosing — and everything that
+    followed.
     """
-    from fsme.api.moves import legal_moves
-    from fsme.commands import Command, CommandType
-    from fsme.journal import JournalKeeper
+    from fsme.simulation import play_one
 
-    game = Game.from_content(
+    thinking = seats_of(args.bot_seats)
+
+    journal, game = play_one(
         library(args),
-        list(DEFAULT_NAMES[: args.players]),
-        seed=args.seed,
-        interactive_priority=False,
+        args.seed,
+        args.players,
+        steps=args.steps,
+        offers=bool(args.journal and args.offers),
+        thinking_seats=thinking,
     )
 
-    game.start()
+    state = game.state
 
-    keeper = JournalKeeper(
-        game,
-        offers=(
-            (lambda played: [move["label"] for move in legal_moves(played)])
-            if args.journal and args.offers
-            else None
-        ),
-    )
-
-    rng = random.Random(args.seed)
-    outcome = 0
-
-    for step in range(args.steps):
-        if game.is_over:
-            winner = game.state.players[game.state.winner or 0]
-
-            print(
-                f"{winner.name} won on turn {game.state.turn.turn_number} "
-                f"after {step} moves"
-            )
-
-            break
-
-        decision = game.runtime.awaiting_decision
-
-        if decision is not None:
-            count = len(decision.options)
-            lowest = max(0, min(decision.minimum, count))
-            highest = max(lowest, min(decision.maximum, count))
-
-            picks = (
-                rng.sample(range(count), rng.randint(lowest, highest)) if count else []
-            )
-
-            keeper.submit(
-                Command(
-                    type=CommandType.CHOOSE_TARGET,
-                    player=decision.player,
-                    payload={"choices": picks},
-                ),
-                label=_answer(decision, picks),
-            )
-
-            continue
-
-        moves = legal_moves(game)
-
-        if not moves:
-            print(f"nothing could be done after {step} moves")
-
-            outcome = 1
-
-            break
-
-        move = rng.choice(moves)
-
-        keeper.submit(
-            Command(
-                type=CommandType(move["type"]),
-                player=move["player"],
-                payload=dict(move["payload"]),
-            ),
-            label=move["label"],
+    if state.game_over and state.winner is not None:
+        print(
+            f"{state.players[state.winner].name} won on turn "
+            f"{state.turn.turn_number} after {len(journal)} moves"
         )
+
+        outcome = 0
     else:
-        print(f"still going after {args.steps} moves")
+        print(f"unfinished after {len(journal)} moves")
+
+        outcome = 1
 
     if args.journal:
-        written = keeper.journal.save(args.journal)
+        written = journal.save(args.journal)
 
-        print(f"journal written to {written} ({len(keeper.journal)} commands)")
+        print(f"journal written to {written} ({len(journal)} commands)")
 
     return outcome
-
-
-def _answer(decision: Any, picks: Sequence[int]) -> str:
-    """
-    Say an answer to a question in the words the question offered.
-    """
-    options = list(decision.options)
-
-    chosen = [
-        str(getattr(options[index], "name", options[index]))
-        for index in picks
-        if 0 <= index < len(options)
-    ]
-
-    asked = decision.prompt or str(decision.kind)
-
-    return f"{asked} → " + (", ".join(chosen) if chosen else "nothing")
 
 
 def show(args: argparse.Namespace) -> int:
@@ -276,6 +217,8 @@ def simulate(args: argparse.Namespace) -> int:
             flush=True,
         )
 
+    thinking = seats_of(args.bot_seats)
+
     if args.jobs > 1:
         from fsme.simulation import run_on_many_cores
 
@@ -287,6 +230,7 @@ def simulate(args: argparse.Namespace) -> int:
             first_seed=args.seed,
             offers=args.offers,
             journals_into=into,
+            thinking_seats=thinking,
         ):
             tally.merge(done.tally)
     else:
@@ -297,6 +241,7 @@ def simulate(args: argparse.Namespace) -> int:
             first_seed=args.seed,
             offers=args.offers,
             journals_into=into,
+            thinking_seats=thinking,
             watching=tick,
         ):
             tally.add(outcome.journal)
@@ -318,10 +263,17 @@ def simulate(args: argparse.Namespace) -> int:
         f"({spent / max(1, args.games):.2f}s each), seeds "
         f"{args.seed}–{args.seed + args.games - 1}"
     )
-    print(
-        "Played by a table that chooses at random among legal moves. These are "
-        "numbers about the game under random play, not about how it plays."
-    )
+    if thinking:
+        print(
+            f"Seats {', '.join(str(seat) for seat in thinking)} played by the "
+            f"bot; the rest chose at random among legal moves."
+        )
+    else:
+        print(
+            "Played by a table that chooses at random among legal moves. These "
+            "are numbers about the game under random play, not about how it "
+            "plays."
+        )
 
     if into is not None:
         print(f"journals written to {into}")
@@ -460,6 +412,11 @@ def build_parser() -> argparse.ArgumentParser:
     quick.add_argument("--steps", type=int, default=5000)
     quick.add_argument("--journal", help="write the whole game down to this file")
     quick.add_argument(
+        "--bot-seats",
+        default="",
+        help="seats played by the bot, comma separated; the rest play at random",
+    )
+    quick.add_argument(
         "--offers",
         action="store_true",
         help="record what else could have been done at each point",
@@ -492,6 +449,11 @@ def build_parser() -> argparse.ArgumentParser:
     many.add_argument("--json", action="store_true")
     many.add_argument(
         "--jobs", type=int, default=1, help="play on this many cores at once"
+    )
+    many.add_argument(
+        "--bot-seats",
+        default="",
+        help="seats played by the bot, comma separated; the rest play at random",
     )
     many.set_defaults(run=simulate)
 

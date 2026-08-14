@@ -175,6 +175,16 @@ class Entry:
 
     events: tuple[Happening, ...] = ()
 
+    decision: Mapping[str, Any] | None = None
+    """
+    The working a bot showed for this move, when a bot made it.
+
+    Kept as it was handed over rather than reshaped: it is the bot's own
+    arithmetic, and a journal that tidied it would no longer be evidence about
+    the bot. Empty for a move made by a person or by a player that does not
+    reason.
+    """
+
     digest: str = ""
     """
     Fingerprint of the game once the command had been carried out.
@@ -200,6 +210,9 @@ class Entry:
         if self.offered:
             written["offered"] = list(self.offered)
 
+        if self.decision is not None:
+            written["decision"] = dict(self.decision)
+
         return written
 
     @classmethod
@@ -215,6 +228,9 @@ class Entry:
                 offered=tuple(str(move) for move in data.get("offered", ())),
                 events=tuple(
                     Happening.from_dict(event) for event in data.get("events", ())
+                ),
+                decision=(
+                    dict(data["decision"]) if data.get("decision") is not None else None
                 ),
                 digest=str(data.get("digest", "")),
             )

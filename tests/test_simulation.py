@@ -272,7 +272,7 @@ def test_a_game_that_falls_over_is_counted_rather_than_fatal(
 
     monkeypatch.setattr(pool, "play_one", explode)
 
-    done = pool._one((7, 2, 10, None, False))
+    done = pool._one((7, 2, 10, None, False, ()))
 
     assert done.seed == 7
     assert done.finished is False

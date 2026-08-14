@@ -16,7 +16,8 @@ worse than no retelling at all.
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterator, Mapping, Sequence
+from typing import Any
 
 from .entry import Entry, Happening, Journal
 
@@ -102,6 +103,8 @@ def _entry(entry: Entry, journal: Journal, *, full: bool) -> Iterator[str]:
     yield ""
     yield f"    did: {entry.label or _spell(entry)}"
 
+    yield from _working(entry)
+
     happenings = [
         event
         for event in entry.events
@@ -116,6 +119,63 @@ def _entry(entry: Entry, journal: Journal, *, full: bool) -> Iterator[str]:
             yield f"      {_read(event, journal)}"
 
     yield ""
+
+
+def _working(entry: Entry) -> Iterator[str]:
+    """
+    Say what a bot was thinking, when a bot was thinking.
+
+    The chosen move first with its own arithmetic, then what it was chosen
+    over. A reader disagreeing with the choice can see which number to argue
+    with, which is the only thing a decision log is for.
+    """
+    decision = entry.decision
+
+    if not decision:
+        return
+
+    chosen = decision.get("chosen") or {}
+    reasons = chosen.get("reasons") or []
+
+    yield ""
+    yield f"    {decision.get('by', 'a bot')} scored it {_score(chosen)}:"
+
+    for reason in reasons:
+        worth = _amount(reason.get("worth"))
+        value = reason.get("value")
+
+        yield (
+            f"      {reason.get('what', '')}"
+            + (f" — {value:g}" if isinstance(value, (int, float)) else "")
+            + (f"  {worth:+.1f}" if worth else "")
+        )
+
+    others = [
+        other
+        for other in (decision.get("considered") or [])
+        if other.get("move") != chosen.get("move")
+    ]
+
+    if others:
+        yield ""
+        yield "    over:"
+
+        for other in sorted(others, key=lambda item: -_amount(item.get("score")))[:4]:
+            yield f"      {_score(other)}  {other.get('move', '')}"
+
+    for note in decision.get("notes") or ():
+        yield f"      ({note})"
+
+
+def _score(evaluation: Mapping[str, Any]) -> str:
+    return f"{_amount(evaluation.get('score')):+.1f}"
+
+
+def _amount(value: Any) -> float:
+    """
+    Read a number out of a journal, which holds whatever was written into it.
+    """
+    return float(value) if isinstance(value, (int, float)) else 0.0
 
 
 def _spell(entry: Entry) -> str:

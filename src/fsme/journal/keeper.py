@@ -17,7 +17,7 @@ without paying for the part nobody will read.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
 from fsme.commands import Command, CommandResult
@@ -72,7 +72,13 @@ class JournalKeeper:
     def journal(self) -> Journal:
         return self._journal
 
-    def submit(self, command: Command, *, label: str = "") -> CommandResult:
+    def submit(
+        self,
+        command: Command,
+        *,
+        label: str = "",
+        decision: Mapping[str, Any] | None = None,
+    ) -> CommandResult:
         """
         Play one command, and write down what it was and what came of it.
 
@@ -80,6 +86,10 @@ class JournalKeeper:
         separate argument rather than something smuggled through the payload:
         the payload is what the engine reads, and a journal must not be able to
         change the game it is recording.
+
+        ``decision`` is the working of whatever chose the move, when it showed
+        any. It is written down as handed over: a journal that reshaped a bot's
+        reasoning would stop being evidence about the bot.
 
         A rejected command is not written down. It changed nothing, so it is
         part of the session and not part of the game — the same reason a replay
@@ -103,6 +113,7 @@ class JournalKeeper:
                 before=before,
                 offered=offered,
                 events=tuple(_happening(event) for event in result.events),
+                decision=dict(decision) if decision is not None else None,
                 digest=state_digest(self._game.state),
             )
         )
