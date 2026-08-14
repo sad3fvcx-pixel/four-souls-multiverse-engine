@@ -44,7 +44,9 @@ engine asks it the same way it asks every other question: by stopping and
 waiting. Nothing else about ``may`` is special.
 """
 
-_MODIFIER_KEYS = frozenset({"target", "as", "optional", "description", "prompt"})
+_MODIFIER_KEYS = frozenset(
+    {"target", "as", "optional", "description", "prompt", "store"}
+)
 
 DEFAULT_MAX_OPS = 512
 
@@ -338,6 +340,7 @@ class Interpreter:
 
         resolved = dict(params)
         asks = resolved.pop("targets", ())
+        store = str(resolved.pop("store", ""))
         shorthand = resolved.pop("__value__", None)
 
         if shorthand is not None:
@@ -354,6 +357,7 @@ class Interpreter:
             params=resolved,
             target=target,
             asks=tuple(asks) if isinstance(asks, (list, tuple)) else (asks,),
+            store=store,
         )
 
 
@@ -428,7 +432,11 @@ def normalise(node: Any) -> tuple[str, Mapping[str, Any], Any | None]:
     name = names[0]
     value = node[name]
 
-    if isinstance(value, Mapping):
-        return str(name), dict(value), target
+    # A modifier written beside the shorthand still belongs to the effect:
+    # {"roll_dice": 6, "store": "first"} is one roll kept under a name.
+    params = dict(value) if isinstance(value, Mapping) else {"__value__": value}
 
-    return str(name), {"__value__": value}, target
+    if "store" in node:
+        params["store"] = node["store"]
+
+    return str(name), params, target

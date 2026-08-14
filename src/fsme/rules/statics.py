@@ -51,6 +51,7 @@ __all__ = [
     "expire_turn_modifiers",
     "monster_value",
     "refresh_derived",
+    "static_amount",
     "static_conditions_hold",
     "static_value",
 ]
@@ -131,6 +132,22 @@ def _in_scope(static: Static, source: CardInstance, player_id: int) -> bool:
     return source.controller == player_id
 
 
+def static_amount(static: Static, source: CardInstance) -> int:
+    """
+    What one static is worth right now.
+
+    Usually its printed amount. A static that is worth something per counter is
+    worth nothing while the card carries none, which is why counting happens
+    here rather than when the card is written.
+    """
+    if not static.per_counter:
+        return static.amount
+
+    counters = int(getattr(source, "counters", {}).get(static.per_counter, 0))
+
+    return static.amount * counters
+
+
 def bonus(state: GameState, stat: str, player_id: int) -> int:
     """
     Return the total modifier to a stat for one player.
@@ -148,7 +165,7 @@ def bonus(state: GameState, stat: str, player_id: int) -> int:
                 continue
 
             if _applies_to(static, card, player_id, state):
-                total += static.amount
+                total += static_amount(static, card)
 
     for modifier in state.modifiers:
         if modifier.stat == stat and modifier.player_id == player_id:
@@ -184,7 +201,7 @@ def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
             continue
 
         if static_conditions_hold(static, monster, state):
-            total += static.amount
+            total += static_amount(static, monster)
 
     for card in cards_in_play(state):
         if card is monster:
@@ -195,7 +212,7 @@ def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
                 continue
 
             if static_conditions_hold(static, card, state):
-                total += static.amount
+                total += static_amount(static, card)
 
     for modifier in getattr(monster, "modifiers", ()):
         if modifier.stat == stat:

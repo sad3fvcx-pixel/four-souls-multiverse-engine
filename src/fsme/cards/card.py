@@ -6,7 +6,7 @@ Runtime card objects for Four Souls Multiverse Engine.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from .definition import CardDefinition
@@ -64,6 +64,16 @@ class CardInstance:
     not about every copy of the card.
     """
 
+    silenced_while: str = ""
+    """
+    A counter that takes this card's rules away for as long as it is here.
+
+    "That item loses all abilities for as long as it has a poo counter on it"
+    is not a change to the card; it is a change to what the card is while
+    something sits on it, so the card remembers what to watch for rather than
+    being edited.
+    """
+
     copy_expires: str = ""
     """
     When the copy lapses, empty when it does not.
@@ -86,7 +96,13 @@ class CardInstance:
         card *is* asks the definition: a copy of an item is still the card it
         was printed as, and goes to its own discard pile.
         """
-        return self.copy_of if self.copy_of is not None else self.definition
+        printed = self.copy_of if self.copy_of is not None else self.definition
+
+        if self.silenced_while and self.counters.get(self.silenced_while, 0) > 0:
+            # Still the same card, still in play, and saying nothing.
+            return replace(printed, abilities=(), statics=())
+
+        return printed
 
     @property
     def id(self) -> str:

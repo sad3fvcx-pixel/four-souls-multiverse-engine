@@ -524,7 +524,30 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "poo",
+              "amount": 1,
+              "silences": true,
+              "targets": [
+                {
+                  "target_treasure": {
+                    "exclude_eternal": true,
+                    "as": "fouled"
+                  }
+                }
+              ],
+              "target": "fouled"
+            }
+          ],
+          "description": "Each time this takes damage, the active player puts a poo counter on a non-eternal item. That item loses all abilities for as long as it has a poo counter on it."
+        }
+      ],
       "health": 2,
       "attack": 2,
       "roll": 3,
@@ -605,7 +628,21 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "fistula",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time this takes damage, put a counter on this."
+        }
+      ],
       "health": 3,
       "attack": 1,
       "roll": 4,
@@ -626,7 +663,16 @@
         "version": "Alt Ability",
         "artist": "Tom Bunk",
         "notes": "Unlocked via 26,000 backers for the Requiem Kickstarter."
-      }
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 1,
+          "per_counter": "fistula",
+          "scope": "other_monsters",
+          "description": "Other monsters have +1 DC for each counter on this."
+        }
+      ]
     },
     {
       "id": "monster_deck-bosses-alt_art-gurdy",
@@ -1191,7 +1237,49 @@
       "type": "monster",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "self",
+          "conditions": [
+            {
+              "event_value": {
+                "key": "hit",
+                "value": false
+              }
+            }
+          ],
+          "effects": [
+            {
+              "roll_dice": 6,
+              "store": "first_die"
+            },
+            {
+              "roll_dice": 6,
+              "store": "second_die"
+            },
+            {
+              "if": [
+                {
+                  "values_equal": {
+                    "of": [
+                      "first_die",
+                      "second_die"
+                    ]
+                  }
+                }
+              ],
+              "then": [
+                {
+                  "effect": "kill",
+                  "target": "event_player"
+                }
+              ]
+            }
+          ],
+          "description": "Each time the attacking player misses an attack roll, they roll 2 dice- if the results are the same, they die."
+        }
+      ],
       "health": 5,
       "attack": 1,
       "roll": 4,

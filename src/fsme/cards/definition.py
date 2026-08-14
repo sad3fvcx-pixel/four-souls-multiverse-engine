@@ -128,6 +128,15 @@ class Static:
     turn" has no moment at which it happens either.
     """
 
+    per_counter: str = ""
+    """
+    A counter this static is worth its amount for each of.
+
+    "+1 DC for each counter on this" is one static whose value the board
+    decides, not several statics. What is counted sits on the card carrying the
+    static, which is the only card the printed text can mean by "this".
+    """
+
     scope: str = "controller"
     """
     Who the modifier applies to: ``controller``, ``opponents`` or
@@ -151,6 +160,7 @@ class Static:
             stat=str(data.get("stat", "")),
             amount=int(data.get("amount", 0)),
             forbids=str(data.get("forbids", "")),
+            per_counter=str(data.get("per_counter", "")),
             scope=str(data.get("scope", "controller")),
             conditions=tuple(
                 freeze(item) for item in data.get("conditions", ())

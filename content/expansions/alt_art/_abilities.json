@@ -990,5 +990,150 @@
         "description": "When this dies, the active player may steal an item with a gold counter on it."
       }
     ]
+  },
+  "monster_deck-bosses-alt_art-fistula": {
+    "abilities": [
+      {
+        "trigger": "after_damage",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "add_counter",
+            "counter": "fistula",
+            "amount": 1,
+            "target": "self"
+          }
+        ],
+        "description": "Each time this takes damage, put a counter on this."
+      }
+    ],
+    "statics": [
+      {
+        "stat": "difficulty",
+        "amount": 1,
+        "per_counter": "fistula",
+        "scope": "other_monsters",
+        "description": "Other monsters have +1 DC for each counter on this."
+      }
+    ]
+  },
+  "treasure_deck-active_items-alt_art-guppy_s_paw": {
+    "tags": [
+      "guppy"
+    ],
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "targets": [
+              {
+                "target_treasure": {
+                  "owner": "controller",
+                  "exclude_source": true,
+                  "as": "given_up"
+                }
+              }
+            ],
+            "target": "given_up"
+          },
+          {
+            "if": [
+              "last_effect_did"
+            ],
+            "then": [
+              {
+                "effect": "add_counter",
+                "counter": "paw",
+                "amount": 1,
+                "target": "self"
+              }
+            ]
+          }
+        ],
+        "description": "Destroy an item you control. If you do, put a counter on this."
+      }
+    ],
+    "statics": [
+      {
+        "stat": "max_hp",
+        "amount": 1,
+        "per_counter": "paw",
+        "scope": "controller",
+        "description": "You have +1 HP for each counter on this."
+      }
+    ]
+  },
+  "monster_deck-bosses-alt_art-dingle": {
+    "abilities": [
+      {
+        "trigger": "after_damage",
+        "scope": "self",
+        "effects": [
+          {
+            "effect": "add_counter",
+            "counter": "poo",
+            "amount": 1,
+            "silences": true,
+            "targets": [
+              {
+                "target_treasure": {
+                  "exclude_eternal": true,
+                  "as": "fouled"
+                }
+              }
+            ],
+            "target": "fouled"
+          }
+        ],
+        "description": "Each time this takes damage, the active player puts a poo counter on a non-eternal item. That item loses all abilities for as long as it has a poo counter on it."
+      }
+    ]
+  },
+  "monster_deck-bosses-alt_art-the_bloat": {
+    "abilities": [
+      {
+        "trigger": "after_attack_roll",
+        "scope": "self",
+        "conditions": [
+          {
+            "event_value": {
+              "key": "hit",
+              "value": false
+            }
+          }
+        ],
+        "effects": [
+          {
+            "roll_dice": 6,
+            "store": "first_die"
+          },
+          {
+            "roll_dice": 6,
+            "store": "second_die"
+          },
+          {
+            "if": [
+              {
+                "values_equal": {
+                  "of": [
+                    "first_die",
+                    "second_die"
+                  ]
+                }
+              }
+            ],
+            "then": [
+              {
+                "effect": "kill",
+                "target": "event_player"
+              }
+            ]
+          }
+        ],
+        "description": "Each time the attacking player misses an attack roll, they roll 2 dice- if the results are the same, they die."
+      }
+    ]
   }
 }

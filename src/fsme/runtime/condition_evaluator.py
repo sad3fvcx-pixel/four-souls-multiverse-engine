@@ -179,6 +179,7 @@ class ConditionEvaluator:
         register("is_damage_source", _is_event_source)
         register("is_event_source", _is_event_source)
         register("event_value", _event_value)
+        register("values_equal", _values_equal)
         register("is_damage_target", _is_damage_target)
         register("is_damage_actor", _is_damage_actor)
         register("dice_equals", _dice_equals)
@@ -515,6 +516,33 @@ def _event_value(
         return _compare(number, params)
 
     return bool(carried == expected)
+
+
+def _values_equal(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any]
+) -> bool:
+    """
+    True when everything the ability stored under these names is the same.
+
+    "They roll 2 dice- if the results are the same" is two rolls kept apart and
+    then compared, which is why the rolls had to be named in the first place.
+    """
+    names = params.get("of", ())
+
+    if isinstance(names, str):
+        names = [names]
+
+    if len(names) < 2:
+        return False
+
+    values = [context.get(str(name)) for name in names]
+
+    if any(value is None for value in values):
+        # Nothing was stored under one of these names, and two absences are
+        # not a match: a comparison nobody set up is simply false.
+        return False
+
+    return all(value == values[0] for value in values[1:])
 
 
 def _is_event_source(

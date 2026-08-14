@@ -330,7 +330,17 @@ _CONTROL_NAMES = frozenset(
 )
 
 _MODIFIER_KEYS = frozenset(
-    {"effect", "target", "targets", "optional", "description", "params", "as", "prompt"}
+    {
+        "effect",
+        "target",
+        "targets",
+        "optional",
+        "description",
+        "params",
+        "as",
+        "prompt",
+        "store",
+    }
 )
 
 _BRANCH_KEYS = ("effects", "then", "else", "may")

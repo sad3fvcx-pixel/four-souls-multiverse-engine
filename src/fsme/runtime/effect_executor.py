@@ -73,6 +73,9 @@ class EffectExecutor:
         if spec.stores is not None:
             ability.store(spec.stores, value)
 
+        if op.store:
+            ability.store(op.store, value)
+
         return ability.record(result)
 
     def _resolve_targets(

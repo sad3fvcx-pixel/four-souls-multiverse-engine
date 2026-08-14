@@ -79,10 +79,44 @@
       "type": "treasure",
       "expansion": "alt_art",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "destroy_treasure",
+              "targets": [
+                {
+                  "target_treasure": {
+                    "owner": "controller",
+                    "exclude_source": true,
+                    "as": "given_up"
+                  }
+                }
+              ],
+              "target": "given_up"
+            },
+            {
+              "if": [
+                "last_effect_did"
+              ],
+              "then": [
+                {
+                  "effect": "add_counter",
+                  "counter": "paw",
+                  "amount": 1,
+                  "target": "self"
+                }
+              ]
+            }
+          ],
+          "description": "Destroy an item you control. If you do, put a counter on this."
+        }
+      ],
       "tags": [
         "activated",
-        "active"
+        "active",
+        "guppy"
       ],
       "metadata": {
         "text": "↷: Destroy an item\nyou control. If you\ndo, put a counter on this.\n------------------------------\nYou have +1 HP for each\ncounter on this.\n------------------------------\n-Guppy-",
@@ -94,7 +128,16 @@
         "version": "Alt Ability",
         "artist": "@Zombolis",
         "notes": "Unlocked on the fifth roll against The Beast during the Requiem Kickstarter."
-      }
+      },
+      "statics": [
+        {
+          "stat": "max_hp",
+          "amount": 1,
+          "per_counter": "paw",
+          "scope": "controller",
+          "description": "You have +1 HP for each counter on this."
+        }
+      ]
     },
     {
       "id": "treasure_deck-passive_items-alt_art-brimstone",

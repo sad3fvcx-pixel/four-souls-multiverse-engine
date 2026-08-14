@@ -251,15 +251,24 @@ def add_counter(
     targets: Sequence[Any],
     counter: str = "",
     amount: int = 1,
+    silences: bool = False,
 ) -> int:
     """
     Change a named counter on target cards.
+
+    ``silences`` is for the counters that do more than count: a card carrying
+    one has no abilities while it is there, which is what a poo counter is.
     """
     if not counter:
         raise EffectExecutionError("add_counter requires a counter name")
 
     for card in _cards(targets, "add_counter"):
         card.counters[counter] = card.counters.get(counter, 0) + amount
+
+        if silences:
+            # The counter is what silences the card, so the card watches for
+            # this counter and speaks again when it is gone.
+            card.silenced_while = counter
 
     return amount
 

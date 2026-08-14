@@ -49,6 +49,15 @@ class EffectOp:
     written on the effect are resolved here, in order, when the effect runs.
     """
 
+    store: str = ""
+    """
+    A name to keep this operation's result under.
+
+    An effect already stores its result where the engine expects it — a roll
+    under ``dice`` — and that is one place, overwritten by the next roll. A
+    card that rolls twice and compares the two needs both, so it names them.
+    """
+
     def param(self, key: str, default: Any = None) -> Any:
         """
         Read a parameter value.

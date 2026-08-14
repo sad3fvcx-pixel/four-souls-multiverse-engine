@@ -714,6 +714,102 @@ def test_ultra_greed_gilds_an_item_and_takes_it(alt_art: ContentLibrary) -> None
     assert theirs in game.state.player(0).treasures.cards
 
 
+def test_fistula_hardens_its_neighbours_as_it_is_hurt(
+    alt_art: ContentLibrary,
+) -> None:
+    game = new_game(alt_art)
+
+    fistula = only_monster(game, "monster_deck-bosses-alt_art-fistula", hp=9)
+    other = summon(game, "monster_deck-bosses-base_game-greed")
+
+    printed = int(other.definition.roll or 0)
+
+    assert difficulty_of(game, other) == printed
+
+    hurt(game, fistula, amount=1)
+
+    assert difficulty_of(game, other) == printed + 1
+
+    hurt(game, fistula, amount=1)
+
+    assert difficulty_of(game, other) == printed + 2
+    assert difficulty_of(game, fistula) == int(fistula.definition.roll or 0), (
+        "other monsters, not this one"
+    )
+
+
+def test_the_alternate_guppys_paw_pays_hit_points_for_items(
+    alt_art: ContentLibrary,
+) -> None:
+    game = new_game(alt_art)
+
+    paw = give(game, "treasure_deck-active_items-alt_art-guppy_s_paw")
+
+    fodder = give(game, "treasure_deck-passive_items-base_game-the_relic")
+    give(game, "treasure_deck-passive_items-base_game-dry_baby")
+
+    before = game.state.player(0).max_hp
+
+    assert activate(game, paw).accepted
+    assert pick(game, 0, fodder).accepted
+
+    assert fodder in game.state.treasure_discard.cards
+    assert paw.counters.get("paw") == 1
+    assert game.state.player(0).max_hp == before + 1, "a counter is worth a heart"
+
+
+def test_dingle_silences_the_item_it_fouls(alt_art: ContentLibrary) -> None:
+    game = new_game(alt_art)
+
+    dingle = only_monster(game, "monster_deck-bosses-alt_art-dingle", hp=9)
+
+    meal = give(game, "treasure_deck-passive_items-base_game-breakfast", player=1)
+    give(game, "treasure_deck-passive_items-base_game-the_relic", player=1)
+
+    fed = game.state.player(1).max_hp
+
+    hurt(game, dingle, amount=1)
+
+    assert pick(game, 0, meal).accepted
+
+    assert meal.counters.get("poo") == 1
+    assert not meal.face.statics, "a fouled item says nothing"
+    assert game.state.player(1).max_hp == fed - 1
+
+    meal.counters["poo"] = 0
+
+    assert meal.face.statics, "and speaks again when the counter is gone"
+
+
+def test_the_alternate_bloat_kills_on_a_matching_pair(
+    alt_art: ContentLibrary,
+) -> None:
+    game = new_game(alt_art, rolls=[1, 3, 3])
+
+    only_monster(game, "monster_deck-bosses-alt_art-the_bloat", hp=5)
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    assert attack_the_first_monster(game).accepted
+
+    assert not player.alive
+
+
+def test_the_alternate_bloat_spares_a_mismatch(alt_art: ContentLibrary) -> None:
+    game = new_game(alt_art, rolls=[1, 3, 4, 6])
+
+    bloat = only_monster(game, "monster_deck-bosses-alt_art-the_bloat", hp=1)
+
+    player = game.state.player(0)
+    toughen(game, player)
+
+    assert attack_the_first_monster(game).accepted
+
+    assert player.alive
+    assert not bloat.alive, "the six that followed the miss landed"
+
+
 def test_every_implemented_alt_art_card_keeps_its_text(
     alt_art: ContentLibrary,
 ) -> None:
