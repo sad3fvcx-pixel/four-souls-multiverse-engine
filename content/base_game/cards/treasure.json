@@ -1902,7 +1902,13 @@
               ],
               "then": [
                 {
-                  "gain_treasure": 1
+                  "effect": "gain_treasure",
+                  "count": 1,
+                  "target": {
+                    "holder": {
+                      "of": "rerolled"
+                    }
+                  }
                 }
               ]
             }
@@ -2211,6 +2217,13 @@
       "abilities": [
         {
           "trigger": "on_activate",
+          "targets": [
+            {
+              "target_player": {
+                "as": "rerolled_player"
+              }
+            }
+          ],
           "effects": [
             {
               "effect": "destroy_treasure",
@@ -2233,18 +2246,13 @@
                       "effect": "destroy_treasure"
                     },
                     {
-                      "gain_treasure": 1
+                      "effect": "gain_treasure",
+                      "count": 1,
+                      "target": "rerolled_player"
                     }
                   ]
                 }
               ]
-            }
-          ],
-          "targets": [
-            {
-              "target_player": {
-                "as": "rerolled_player"
-              }
             }
           ],
           "description": "Destroy this. If you do, choose a player. They reroll each item they control."

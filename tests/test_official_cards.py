@@ -4818,3 +4818,82 @@ def test_placebo_borrows_another_items_tap_ability(base_game: ContentLibrary) ->
     assert placebo.tapped is True
     assert sack.tapped is False, "the copied item was used by nobody"
     assert game.state.player(0).pennies == before + 1, "Placebo gained the cent"
+
+
+def test_the_d20_replaces_an_item_for_whoever_owned_it(
+    base_game: ContentLibrary,
+) -> None:
+    """
+    "Reroll an item: destroy that item and replace it with the top card of the
+    treasure deck." The replacement goes to the item's owner, who need not be
+    the player rerolling it.
+    """
+    game = new_game(base_game, players=2)
+
+    d20 = give(game, "treasure_deck-active_items-base_game-the_d20")
+    theirs = give(game, "treasure_deck-passive_items-base_game-breakfast", player=1)
+
+    before = game.state.player(1).treasure_count
+
+    assert activate(game, d20).accepted
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+
+    options = list(decision.options)
+    pick = next(index for index, card in enumerate(options) if card is theirs)
+
+    choose(game, decision.player, pick)
+
+    while game.runtime.awaiting_decision is not None:
+        pending = game.runtime.awaiting_decision
+        choose(game, pending.player, *([0] if pending.options else []))
+
+    assert theirs not in game.state.player(1).treasures.cards
+    assert game.state.player(1).treasure_count == before, "one out, one in"
+
+
+def test_the_d4_rerolls_the_items_of_the_player_it_names(
+    base_game: ContentLibrary,
+) -> None:
+    """
+    "Destroy this. If you do, choose a player. They reroll each item they
+    control." The new items are theirs, not the activating player's.
+    """
+    game = new_game(base_game, players=2)
+
+    d4 = give(game, "treasure_deck-one_use_items-base_game-the_d4")
+
+    theirs = [
+        give(game, "treasure_deck-passive_items-base_game-breakfast", player=1),
+        give(game, "treasure_deck-passive_items-base_game-dinner", player=1),
+    ]
+
+    # Their starting item is eternal and is not rerolled, which is the rule and
+    # not an oversight — so the test is about the two that can be.
+    before = game.state.player(1).treasure_count
+    mine = game.state.player(0).treasure_count
+
+    assert activate(game, d4).accepted
+
+    while game.runtime.awaiting_decision is not None:
+        pending = game.runtime.awaiting_decision
+
+        options = list(pending.options)
+        seat = next(
+            (
+                index
+                for index, option in enumerate(options)
+                if getattr(option, "player_id", None) == 1
+            ),
+            0,
+        )
+
+        choose(game, pending.player, seat)
+
+    for card in theirs:
+        assert card not in game.state.player(1).treasures.cards, "each was rerolled"
+
+    assert game.state.player(1).treasure_count == before, "and each was replaced"
+    assert game.state.player(0).treasure_count <= mine, "the roller gained nothing"

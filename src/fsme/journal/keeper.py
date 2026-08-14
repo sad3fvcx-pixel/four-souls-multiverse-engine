@@ -188,6 +188,7 @@ def _happening(event: Event) -> Happening:
     return Happening(
         type=str(event.type),
         source=getattr(event.source, "name", None),
+        source_id=getattr(getattr(event.source, "definition", None), "id", None),
         controller=event.controller,
         targets=tuple(
             str(getattr(target, "name", getattr(target, "player_id", target)))

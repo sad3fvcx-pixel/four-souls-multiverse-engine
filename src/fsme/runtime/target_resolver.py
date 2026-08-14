@@ -142,6 +142,7 @@ class TargetResolver:
         register("target_deck_card", _target_deck_card)
         register("deck_top", _deck_top)
         register("target_treasure", _target_treasure)
+        register("holder", _holder)
         register("random_treasure", _random_treasure)
         register("owned_treasure", _owned_treasure)
         register("all_treasures", _all_treasures)
@@ -719,6 +720,41 @@ def _target_treasure(
     )
 
 
+def _holder(
+    state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
+) -> list[Any]:
+    """
+    The player holding a card this ability has already named.
+
+    "Destroy that item and replace it with the top card of the treasure deck"
+    replaces it for whoever owned it, which need not be the player doing the
+    destroying — so the card has to be able to point at its holder rather than
+    at a seat.
+    """
+    named = params.get("of")
+
+    if named is None:
+        return []
+
+    seats: list[Any] = []
+
+    for card in context.targets.get(str(named), ()):
+        seat = getattr(card, "controller", None)
+
+        if seat is None:
+            seat = getattr(card, "owner", None)
+
+        if seat is None or not 0 <= int(seat) < len(state.players):
+            continue
+
+        player = state.player(int(seat))
+
+        if player not in seats:
+            seats.append(player)
+
+    return seats
+
+
 def _holders(
     state: GameState, context: AbilityContext, params: Mapping[str, Any]
 ) -> list[Any]:
@@ -787,10 +823,24 @@ def _random_monster(
 def _owned_treasure(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
+    """
+    The items some player controls.
+
+    ``exclude_eternal`` leaves out the ones no effect may touch, and means the
+    same thing here as everywhere else: a card that says "each item they
+    control other than eternal ones" must not be handed one, or it will do the
+    rest of its work once too often — destroying nothing and replacing it all
+    the same.
+    """
     treasures: list[Any] = []
 
     for player in _holders(state, context, params):
         treasures.extend(player.treasures.cards)
+
+    if params.get("exclude_eternal", False):
+        treasures = [
+            card for card in treasures if not getattr(card, "is_eternal", False)
+        ]
 
     return treasures
 

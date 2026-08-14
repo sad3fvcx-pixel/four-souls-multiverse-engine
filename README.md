@@ -56,6 +56,21 @@ Windows. `.github/workflows/build.yml` does that for Windows, macOS and Linux
 and uploads all three, so a tag is enough to get an `.exe` without owning a
 Windows machine.
 
+### Simulation
+
+```bash
+fsme simulate --games 100 --players 3
+```
+
+Plays a run of games — each from its own seed, each through the ordinary engine
+— and counts what happened across all of them: characters, cards, monsters and
+events. `--journals DIR` keeps every game as a journal; `--json` prints the
+tally as data.
+
+The numbers describe the game under a table that chooses at random among legal
+moves, and the report says so. A card's "won %" is how often the player holding
+it went on to win — a correlation, not the card's doing.
+
 ## Documentation
 
 - [Project Plan](docs/PROJECT_PLAN.md) — structure, stages, current state

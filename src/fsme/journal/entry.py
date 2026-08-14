@@ -97,12 +97,23 @@ class Happening:
 
     type: str
     source: str | None = None
+
+    source_id: str | None = None
+    """
+    The identifier of the card this came from, when a card did.
+
+    The name is for reading and this is for counting. Two sets print cards with
+    the same name and different rules — the alternate Larry Jr. is not the
+    printed one — and a tally that added them together would be measuring a
+    word rather than a card.
+    """
+
     controller: int | None = None
     targets: tuple[str, ...] = ()
     payload: Mapping[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        written: dict[str, Any] = {
             "type": self.type,
             "source": self.source,
             "controller": self.controller,
@@ -110,11 +121,17 @@ class Happening:
             "payload": dict(self.payload),
         }
 
+        if self.source_id:
+            written["source_id"] = self.source_id
+
+        return written
+
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> Happening:
         return cls(
             type=str(data.get("type", "")),
             source=data.get("source"),
+            source_id=data.get("source_id"),
             controller=(
                 None if data.get("controller") is None else int(data["controller"])
             ),

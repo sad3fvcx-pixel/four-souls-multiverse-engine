@@ -14,6 +14,7 @@ import argparse
 import json
 import random
 import sys
+import time
 import webbrowser
 from collections.abc import Sequence
 from pathlib import Path
@@ -253,6 +254,67 @@ def replay(args: argparse.Namespace) -> int:
     return 1
 
 
+def simulate(args: argparse.Namespace) -> int:
+    """
+    Play a run of games and say what happened across all of them.
+    """
+    from fsme.analysis import Tally, report
+    from fsme.simulation import run as play_them
+
+    into = Path(args.journals).expanduser() if args.journals else None
+
+    tally = Tally()
+    started = time.perf_counter()
+
+    def tick(progress: Any) -> None:
+        if args.json or progress.played % 25:
+            return
+
+        print(
+            f"  {progress.played}/{args.games} games, "
+            f"{progress.abandoned} abandoned",
+            flush=True,
+        )
+
+    for outcome in play_them(
+        library(args),
+        args.games,
+        args.players,
+        first_seed=args.seed,
+        offers=args.offers,
+        journals_into=into,
+        watching=tick,
+    ):
+        tally.add(outcome.journal)
+
+    spent = time.perf_counter() - started
+
+    if args.json:
+        told = tally.to_dict()
+        told["seconds"] = round(spent, 3)
+
+        print(json.dumps(told, indent=2))
+
+        return 0
+
+    print()
+    print(report(tally, top=args.top))
+    print(
+        f"{args.games} games in {spent:.1f}s "
+        f"({spent / max(1, args.games):.2f}s each), seeds "
+        f"{args.seed}–{args.seed + args.games - 1}"
+    )
+    print(
+        "Played by a table that chooses at random among legal moves. These are "
+        "numbers about the game under random play, not about how it plays."
+    )
+
+    if into is not None:
+        print(f"journals written to {into}")
+
+    return 0
+
+
 def cards(args: argparse.Namespace) -> int:
     """
     Say what is in the content directory, and how much of it the engine knows.
@@ -336,6 +398,19 @@ def build_parser() -> argparse.ArgumentParser:
     again.add_argument("file", help="the journal to replay")
     again.add_argument("--json", action="store_true")
     again.set_defaults(run=replay)
+
+    many = commands.add_parser("simulate", help="play a run of games and count")
+    shared(many)
+    many.add_argument("--games", type=int, default=100, help="how many to play")
+    many.add_argument("--top", type=int, default=15, help="rows per table")
+    many.add_argument("--journals", help="write every journal into this directory")
+    many.add_argument(
+        "--offers",
+        action="store_true",
+        help="record what else could have been done at each point",
+    )
+    many.add_argument("--json", action="store_true")
+    many.set_defaults(run=simulate)
 
     listing = commands.add_parser("cards", help="what the content holds")
     shared(listing)
