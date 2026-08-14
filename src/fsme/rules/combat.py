@@ -21,6 +21,7 @@ from fsme.effects.builtin.dice import natural_roll
 from fsme.events import EventType
 from fsme.stack import COMBAT_ROUND, COMBAT_STRIKE, StackItem, StackItemType
 from fsme.state import GamePhase, GameState
+from fsme.state.obligations import MONSTER_DECK
 
 from .constants import BASE_PLAYER_ATTACK, DICE_SIDES, STALLED_COMBAT_ROUNDS
 from .obligations import pay as pay_obligation
@@ -89,7 +90,9 @@ class AttackHandler:
         state = context.state
         player = state.player(command.player)
 
-        if command.get("source") == DECK:
+        attacked_the_deck = command.get("source") == DECK
+
+        if attacked_the_deck:
             monster = _reveal_for_attack(context, player.player_id)
         else:
             monster = state.active_monsters.cards[int(command.get("index", 0))]
@@ -99,12 +102,20 @@ class AttackHandler:
         player.spend_attack()
         state.turn.record_attack()
 
+        # The debt is to the deck, and turning a card over pays it whether or
+        # not there was a monster under it.
+        pay_obligation(
+            state,
+            ATTACK_ACTION,
+            player.player_id,
+            monster,
+            card_id=MONSTER_DECK if attacked_the_deck else None,
+        )
+
         if monster is None:
             return
 
         state.combat.begin(player.player_id, monster)
-
-        pay_obligation(state, ATTACK_ACTION, player.player_id, monster)
 
         context.emit(
             EventType.ATTACK_START,

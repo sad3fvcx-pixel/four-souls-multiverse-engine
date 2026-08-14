@@ -19,6 +19,14 @@ from dataclasses import dataclass
 ATTACK = "attack"
 """Declaring an attack."""
 
+MONSTER_DECK = "monster_deck"
+"""
+The monster deck, named as the thing an attack must be made on.
+
+"Attack the monster deck 2 times this turn" owes an attack on a card nobody
+has seen yet, so the debt names the deck the way another debt names a monster.
+"""
+
 
 @dataclass(slots=True)
 class Obligation:

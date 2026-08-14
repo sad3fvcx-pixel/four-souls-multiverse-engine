@@ -4556,3 +4556,167 @@ def test_the_engine_still_deals_the_same_game(base_game: ContentLibrary) -> None
         return [card.id for card in state.loot_deck.cards]
 
     assert opening(2024) == opening(2024)
+
+
+# ----------------------------------------------------------------------
+# The rules the comprehensive rulebook wrote in: the loot step, the death
+# penalty, the second purchase and the monster deck as a target.
+# ----------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "card_id",
+    (
+        "treasure_deck-passive_items-base_game-mom_s_purse",
+        "treasure_deck-passive_items-base_game-mom_s_coin_purse",
+    ),
+)
+def test_a_purse_loots_one_more_at_the_start_of_the_turn(
+    base_game: ContentLibrary, card_id: str
+) -> None:
+    """
+    "Loot +1 during your loot step."
+    """
+    game = new_game(base_game, players=2)
+
+    give(game, card_id, player=1)
+
+    before = game.state.player(1).hand_size
+
+    game.act(CommandType.END_PHASE, 0)
+    game.act(CommandType.END_TURN, 0)
+
+    while game.runtime.awaiting_decision is not None:
+        decision = game.runtime.awaiting_decision
+        choose(game, decision.player, *([0] if decision.options else []))
+
+    assert game.state.turn.active_player == 1
+    assert game.state.player(1).hand_size == before + 2, "one for the step, one more"
+
+
+def test_theres_options_pays_for_a_second_item(base_game: ContentLibrary) -> None:
+    """
+    "You may purchase an additional time on your turn."
+    """
+    game = new_game(base_game, players=2)
+
+    give(game, "treasure_deck-passive_items-base_game-there_s_options", player=1)
+
+    # The allowance is counted out at the start of a turn, so the item has to
+    # be in play before the turn it pays for.
+    game.act(CommandType.END_PHASE, 0)
+    game.act(CommandType.END_TURN, 0)
+
+    while game.runtime.awaiting_decision is not None:
+        pending = game.runtime.awaiting_decision
+        choose(game, pending.player, *([0] if pending.options else []))
+
+    assert game.state.turn.active_player == 1
+    assert game.state.player(1).purchases_left == 2
+
+    game.act(CommandType.END_PHASE, 1)
+
+    game.state.player(1).pennies = 20
+
+    assert game.act(CommandType.BUY_TREASURE, 1, index=0).accepted
+    assert game.act(CommandType.BUY_TREASURE, 1, index=0).accepted
+    assert game.act(CommandType.BUY_TREASURE, 1, index=0).rejected
+
+
+def test_a_purse_and_options_are_written_from_their_printed_text(
+    base_game: ContentLibrary,
+) -> None:
+    game = new_game(base_game)
+
+    assert "Loot +1" in text_of(
+        game, "treasure_deck-passive_items-base_game-mom_s_purse"
+    )
+    assert "additional time" in text_of(
+        game, "treasure_deck-passive_items-base_game-there_s_options"
+    )
+
+
+def test_a_haunt_changes_hands_when_its_owner_dies(base_game: ContentLibrary) -> None:
+    """
+    "When you die, before paying penalties, give this to another player."
+    """
+    game = new_game(base_game, players=3)
+
+    haunt = give(game, "treasure_deck-passive_items-base_game-baby_haunt", player=1)
+
+    game.runtime.context.apply("kill", [game.state.player(1)])
+    game.runtime.run()
+
+    decision = game.runtime.awaiting_decision
+
+    assert decision is not None
+    assert decision.player == 1, "the dying player chooses who is haunted next"
+
+    choose(game, 1, 0)
+
+    while game.runtime.awaiting_decision is not None:
+        pending = game.runtime.awaiting_decision
+        choose(game, pending.player, *([0] if pending.options else []))
+
+    assert haunt not in game.state.player(1).treasures.cards
+    assert any(
+        haunt in game.state.player(seat).treasures.cards for seat in (0, 2)
+    ), "somebody else has it now"
+
+
+def test_daddy_haunt_adds_one_to_the_damage_its_owner_takes(
+    base_game: ContentLibrary,
+) -> None:
+    """
+    "If you would take any amount of damage, take that much damage +1 instead."
+    """
+    game = new_game(base_game, players=2)
+
+    player = game.state.player(0)
+    toughen(game, player, amount=6)
+
+    give(game, "treasure_deck-passive_items-base_game-daddy_haunt")
+
+    before = player.hp
+
+    game.runtime.context.apply("deal_damage", [player], amount=1)
+    game.runtime.run()
+
+    assert player.hp == before - 2
+
+
+def test_ambush_owes_two_attacks_on_the_monster_deck(
+    base_game: ContentLibrary,
+) -> None:
+    """
+    "The active player must attack the monster deck 2 times this turn."
+    """
+    game = new_game(base_game)
+
+    game.act(CommandType.END_PHASE, 0)
+
+    ambush = CardInstance(
+        definition=game.runtime.cards.get("monster_deck-bad_events-base_game-ambush"),
+        instance_id=game.state.ids.allocate("monster"),
+    )
+    game.state.monster_deck.add_top(ambush)
+
+    # An event on top of the monster deck is played by whoever turns it over,
+    # and a slot that has just been emptied turns it over at once.
+    game.runtime.context.apply("kill", [game.state.active_monsters.cards[0]])
+    game.runtime.run()
+
+    assert ambush in game.state.monster_discard.cards
+
+    refused = game.act(CommandType.END_TURN, 0)
+
+    assert refused.rejected
+    assert "attack" in refused.reason
+
+    assert game.act(CommandType.ATTACK, 0, source="deck").accepted
+
+
+def test_ambush_is_written_from_its_printed_text(base_game: ContentLibrary) -> None:
+    game = new_game(base_game)
+
+    assert "monster deck" in text_of(game, "monster_deck-bad_events-base_game-ambush")

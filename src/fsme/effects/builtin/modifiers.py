@@ -18,6 +18,7 @@ from fsme.state import (
     TemporaryModifier,
 )
 from fsme.state.modifiers import MONSTER_STATS, STATS
+from fsme.state.obligations import MONSTER_DECK
 
 from ..context import EffectContext
 from ..errors import EffectExecutionError
@@ -281,6 +282,7 @@ def require_attack(
     targets: Sequence[Any],
     times: int = 1,
     who: Any = None,
+    what: str = "",
 ) -> int:
     """
     Make a player owe an attack this turn.
@@ -289,6 +291,9 @@ def require_attack(
     target names what must be attacked — "the active player must attack that
     monster this turn" — and no target means any monster will do, which is what
     an extra attack owed after a monster dies means.
+
+    ``what`` names something no target can: "attack the monster deck 2 times
+    this turn" owes attacks on a card nobody has seen.
 
     "If able" is not written here. Whether the debt can be paid is asked when
     the player tries to stop, because by then the board may have changed.
@@ -302,6 +307,23 @@ def require_attack(
 
     if not 0 <= player_id < len(state.players):
         return 0
+
+    if what:
+        if what != MONSTER_DECK:
+            raise EffectExecutionError(
+                f"require_attack cannot ask for '{what}'; "
+                f"the only thing it names is '{MONSTER_DECK}'"
+            )
+
+        state.turn.obligations.append(
+            Obligation(
+                player_id=player_id,
+                card_id=MONSTER_DECK,
+                remaining=int(times),
+            )
+        )
+
+        return 1
 
     monsters = [card for card in targets if hasattr(card, "instance_id")]
 

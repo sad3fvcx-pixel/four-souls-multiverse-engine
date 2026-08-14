@@ -2611,7 +2611,32 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_death_penalty",
+          "scope": "controller",
+          "targets": [
+            {
+              "target_player": {
+                "exclude_controller": true,
+                "as": "heir",
+                "prompt": "Give this to another player."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "take_card",
+              "to": "treasures",
+              "player": {
+                "player_of": "heir"
+              },
+              "target": "self"
+            }
+          ],
+          "description": "When you die, before paying penalties, give this to another player."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -2624,7 +2649,18 @@
         "subcategory": "Passive Items",
         "version": "Original",
         "artist": "@rojen241"
-      }
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 1,
+          "scope": "all_monsters",
+          "conditions": [
+            "player_active"
+          ],
+          "description": "Monsters have +1 DC on your turn."
+        }
+      ]
     },
     {
       "id": "treasure_deck-passive_items-base_game-belly_button",
@@ -3318,7 +3354,45 @@
       "type": "treasure",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "controller",
+          "replacement": true,
+          "effects": [
+            {
+              "effect": "modify_event",
+              "key": "amount",
+              "delta": 1
+            }
+          ],
+          "description": "If you would take any amount of damage, take that much damage +1 instead."
+        },
+        {
+          "trigger": "before_death_penalty",
+          "scope": "controller",
+          "targets": [
+            {
+              "target_player": {
+                "exclude_controller": true,
+                "as": "heir",
+                "prompt": "Give this to another player."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "take_card",
+              "to": "treasures",
+              "player": {
+                "player_of": "heir"
+              },
+              "target": "self"
+            }
+          ],
+          "description": "When you die, before paying penalties, give this to another player."
+        }
+      ],
       "tags": [
         "passive"
       ],
@@ -4075,7 +4149,15 @@
         "subcategory": "Passive Items",
         "version": "Original",
         "artist": "TAR_HEAD"
-      }
+      },
+      "statics": [
+        {
+          "stat": "loot_step",
+          "amount": 1,
+          "scope": "self",
+          "description": "Loot +1 during your loot step."
+        }
+      ]
     },
     {
       "id": "treasure_deck-passive_items-base_game-mom_s_purse",
@@ -4096,7 +4178,15 @@
         "subcategory": "Passive Items",
         "version": "Original",
         "artist": "TAR_HEAD"
-      }
+      },
+      "statics": [
+        {
+          "stat": "loot_step",
+          "amount": 1,
+          "scope": "self",
+          "description": "Loot +1 during your loot step."
+        }
+      ]
     },
     {
       "id": "treasure_deck-passive_items-base_game-mom_s_razor",
@@ -4998,7 +5088,15 @@
         "subcategory": "Passive Items",
         "version": "Original",
         "artist": "TAR_HEAD"
-      }
+      },
+      "statics": [
+        {
+          "stat": "purchases",
+          "amount": 1,
+          "scope": "self",
+          "description": "You may purchase an additional time on your turn."
+        }
+      ]
     },
     {
       "id": "treasure_deck-passive_items-base_game-trinity_shield",

@@ -6,7 +6,19 @@
       "type": "event",
       "expansion": "base_game",
       "schema_version": "1",
-      "abilities": [],
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "require_attack",
+              "what": "monster_deck",
+              "times": 2
+            }
+          ],
+          "description": "The active player must attack the monster deck 2 times this turn."
+        }
+      ],
       "metadata": {
         "text": "The active player\nmust attack the\nmonster deck 2\ntimes this turn.",
         "set": "Base Game",

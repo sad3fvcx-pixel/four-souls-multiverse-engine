@@ -21,11 +21,11 @@
 
 # Итог
 
-Импортировано официальных карт: **1014**. Реализовано: **319**. Без правил: **18**. Осталось: **677**.
+Импортировано официальных карт: **1014**. Реализовано: **325**. Без правил: **18**. Осталось: **671**.
 
 | Набор | Карт | Реализовано | Без правил | Осталось |
 |---|---:|---:|---:|---:|
-| `base_game` | 287 | 256 | 17 | 14 |
+| `base_game` | 287 | 262 | 17 | 8 |
 | `requiem` | 246 | 0 | 0 | 246 |
 | `warp_zone` | 99 | 0 | 0 | 99 |
 | `four_souls` | 90 | 0 | 0 | 90 |
@@ -48,7 +48,7 @@
 | `challenges` | 1 | 0 | 0 | 1 |
 | `dick_knots` | 1 | 1 | 0 | 0 |
 | `star` | 1 | 0 | 0 | 1 |
-| **всего** | **1014** | **319** | **18** | **677** |
+| **всего** | **1014** | **325** | **18** | **671** |
 
 ---
 
@@ -56,10 +56,10 @@
 
 | Тип | Карт | Реализовано | Без правил |
 |---|---:|---:|---:|
-| treasure | 105 | 94 | 0 |
+| treasure | 105 | 99 | 0 |
 | monster | 85 | 66 | 17 |
 | loot | 51 | 51 | 0 |
-| event | 17 | 16 | 0 |
+| event | 17 | 17 | 0 |
 | character | 11 | 11 | 0 |
 | starting_item | 10 | 10 | 0 |
 | curse | 5 | 5 | 0 |
@@ -101,7 +101,7 @@
 
 | Card | Status | Notes |
 |------|--------|-------|
-| Baby Haunt | ⬜ |  |
+| Baby Haunt | 🟩 |  |
 | Battery Bum | 🟩 |  |
 | Belly Button | 🟩 |  |
 | Blank Card | ⬜ |  |
@@ -124,7 +124,7 @@
 | Crystal Ball | 🟩 |  |
 | Curse of the Tower | 🟩 |  |
 | Dad's Lost Coin | 🟩 |  |
-| Daddy Haunt | ⬜ |  |
+| Daddy Haunt | 🟩 |  |
 | Dark Bum | 🟩 |  |
 | Dead Bird | 🟩 |  |
 | Decoy | 🟩 |  |
@@ -155,8 +155,8 @@
 | Modeling Clay | 🟩 |  |
 | Mom's Box | 🟩 |  |
 | Mom's Bra | 🟩 |  |
-| Mom's Coin Purse | ⬜ |  |
-| Mom's Purse | ⬜ |  |
+| Mom's Coin Purse | 🟩 |  |
+| Mom's Purse | 🟩 |  |
 | Mom's Razor | 🟩 |  |
 | Mom's Shovel | 🟩 |  |
 | Monster Manual | 🟩 |  |
@@ -203,7 +203,7 @@
 | The Poop | 🟩 |  |
 | The Relic | 🟩 |  |
 | The Shovel | 🟩 |  |
-| There's Options | ⬜ |  |
+| There's Options | 🟩 |  |
 | Trinity Shield | 🟩 |  |
 | Two of Clubs | 🟩 |  |
 
@@ -357,7 +357,7 @@
 
 | Card | Status | Notes |
 |------|--------|-------|
-| Ambush! | ⬜ |  |
+| Ambush! | 🟩 |  |
 | Chest | 🟩 |  |
 | Chest | 🟩 |  |
 | Cursed Chest | 🟩 |  |

@@ -8077,5 +8077,130 @@
         "description": "When you start the game, look at the top 3 cards of the treasure deck and choose one. It becomes your starting item and gains eternal. Put the rest on the bottom of the treasure deck."
       }
     ]
+  },
+  "treasure_deck-passive_items-base_game-baby_haunt": {
+    "abilities": [
+      {
+        "trigger": "before_death_penalty",
+        "scope": "controller",
+        "targets": [
+          {
+            "target_player": {
+              "exclude_controller": true,
+              "as": "heir",
+              "prompt": "Give this to another player."
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "take_card",
+            "to": "treasures",
+            "player": {
+              "player_of": "heir"
+            },
+            "target": "self"
+          }
+        ],
+        "description": "When you die, before paying penalties, give this to another player."
+      }
+    ],
+    "statics": [
+      {
+        "stat": "difficulty",
+        "amount": 1,
+        "scope": "all_monsters",
+        "conditions": [
+          "player_active"
+        ],
+        "description": "Monsters have +1 DC on your turn."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-daddy_haunt": {
+    "abilities": [
+      {
+        "trigger": "before_damage",
+        "scope": "controller",
+        "replacement": true,
+        "effects": [
+          {
+            "effect": "modify_event",
+            "key": "amount",
+            "delta": 1
+          }
+        ],
+        "description": "If you would take any amount of damage, take that much damage +1 instead."
+      },
+      {
+        "trigger": "before_death_penalty",
+        "scope": "controller",
+        "targets": [
+          {
+            "target_player": {
+              "exclude_controller": true,
+              "as": "heir",
+              "prompt": "Give this to another player."
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "take_card",
+            "to": "treasures",
+            "player": {
+              "player_of": "heir"
+            },
+            "target": "self"
+          }
+        ],
+        "description": "When you die, before paying penalties, give this to another player."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-mom_s_purse": {
+    "statics": [
+      {
+        "stat": "loot_step",
+        "amount": 1,
+        "scope": "self",
+        "description": "Loot +1 during your loot step."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-mom_s_coin_purse": {
+    "statics": [
+      {
+        "stat": "loot_step",
+        "amount": 1,
+        "scope": "self",
+        "description": "Loot +1 during your loot step."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-base_game-there_s_options": {
+    "statics": [
+      {
+        "stat": "purchases",
+        "amount": 1,
+        "scope": "self",
+        "description": "You may purchase an additional time on your turn."
+      }
+    ]
+  },
+  "monster_deck-bad_events-base_game-ambush": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "effect": "require_attack",
+            "what": "monster_deck",
+            "times": 2
+          }
+        ],
+        "description": "The active player must attack the monster deck 2 times this turn."
+      }
+    ]
   }
 }

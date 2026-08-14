@@ -14,7 +14,7 @@ from __future__ import annotations
 from typing import Any
 
 from fsme.state import GameState, Obligation
-from fsme.state.obligations import ATTACK
+from fsme.state.obligations import ATTACK, MONSTER_DECK
 
 from .restrictions import ATTACK as ATTACK_ACTION
 from .restrictions import forbidden_by
@@ -46,6 +46,12 @@ def _payable(state: GameState, obligation: Obligation) -> bool:
     if not player.alive or not player.can_attack():
         return False
 
+    if obligation.card_id == MONSTER_DECK:
+        # A deck with nothing left in it is a debt nobody can pay.
+        return bool(state.monster_deck.cards) and (
+            forbidden_by(state, ATTACK_ACTION, player=obligation.player_id) is None
+        )
+
     return any(_attackable(state, monster, obligation) for monster in _monsters(state))
 
 
@@ -68,14 +74,25 @@ def _attackable(state: GameState, monster: Any, obligation: Obligation) -> bool:
     )
 
 
-def pay(state: GameState, action: str, player_id: int, card: Any | None = None) -> None:
+def pay(
+    state: GameState,
+    action: str,
+    player_id: int,
+    card: Any | None = None,
+    card_id: str | None = None,
+) -> None:
     """
     Record that a player has done something they owed.
 
     The oldest matching debt is paid first, and a debt paid down to nothing is
     forgotten rather than left at zero.
+
+    ``card_id`` is for what a player did to something that is not a card in
+    play: an attack on the monster deck pays a debt owed to the deck, whatever
+    the card turned over.
     """
-    card_id = getattr(card, "instance_id", None)
+    if card_id is None:
+        card_id = getattr(card, "instance_id", None)
 
     for obligation in state.turn.obligations:
         if not obligation.matches(action, player_id, card_id):
