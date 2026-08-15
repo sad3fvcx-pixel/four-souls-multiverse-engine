@@ -101,6 +101,32 @@ button {
 button:hover { border-color: var(--hot); }
 button.wide { display: block; width: 100%; margin-bottom: 6px; }
 .who { color: var(--dim); }
+#story {
+  overflow-y: auto;
+  max-height: 34vh;
+  font-size: 13px;
+  line-height: 1.55;
+}
+#story .said { padding: 2px 0; }
+#story .said:nth-child(odd) { opacity: .92; }
+#reading {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  max-width: 340px;
+  z-index: 20;
+  background: var(--panel, #fff);
+  border: 1px solid var(--edge, #ccc);
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.18);
+}
+.reading-name { font-weight: 600; margin-bottom: 2px; }
+.reading-type { opacity: .7; font-size: 12px; margin-bottom: 8px; }
+.reading-text { white-space: pre-wrap; margin: 0; font: inherit; font-size: 12.5px; }
+.card.has-text { cursor: pointer; }
+.hint { opacity: .65; font-size: 12px; }
+
 #log {
   flex: 1;
   overflow-y: auto;
@@ -139,13 +165,17 @@ input {
   <div class="turn" id="turn"></div>
   <div class="controls">
     <label class="tag">seed <input id="seed" type="number" value="0"></label>
+    <button id="roll-seed" title="A seed you did not have to invent. Keep it and the same game deals again.">Random seed</button>
+    <button id="copy-seed" title="Copy the seed, so this exact game can be dealt again or reported in an issue.">Copy</button>
     <label class="tag">players <input id="player-count" type="number" min="2" max="4" value="2"></label>
     <button id="restart">Deal again</button>
+    <button id="autoplay" hidden title="The bots take every seat and play it out while you watch.">Let the bots play</button>
   </div>
 </header>
 
 <main>
   <div id="table">
+    <div id="reading" hidden></div>
     <section>
       <h2>Monsters</h2>
       <div class="row" id="monsters"></div>
@@ -169,6 +199,10 @@ input {
   </div>
 
   <aside>
+    <div style="display:flex;flex-direction:column;min-height:0;">
+      <h2>What is happening</h2>
+      <div id="story"></div>
+    </div>
     <div>
       <h2>Waiting on</h2>
       <div id="waiting"></div>
@@ -181,10 +215,12 @@ input {
       <h2>Moves</h2>
       <div id="moves"></div>
     </div>
-    <div style="display:flex;flex-direction:column;min-height:0;">
-      <h2>Log</h2>
+    <details>
+      <summary><h2 style="display:inline">Every event</h2></summary>
+      <p class="hint">Everything the engine did, including the bookkeeping. The
+        account above is the same events, read out.</p>
       <div id="log"></div>
-    </div>
+    </details>
   </aside>
 </main>
 
@@ -230,7 +266,14 @@ function card(data) {
     if (count) bits.push(`${count} ${name}`);
   }
 
-  return `<div class="${classes.join(" ")}">
+  // The printed text comes from the card data the engine loaded; the page
+  // stores it so a click can show it without asking the server again.
+  const has = data.text ? " has-text" : "";
+
+  return `<div class="${classes.join(" ")}${has}"
+    data-name="${escape(data.name)}"
+    data-type="${escape(data.type || "")}"
+    data-text="${escape(data.text || "")}">
     <div class="name">${escape(data.name)}</div>
     <div class="meta">${escape(bits.join(" · "))}</div>
   </div>`;
@@ -341,6 +384,23 @@ function drawMoves(moves, state) {
     : `<div class="empty">nothing to do — answer the question above</div>`;
 }
 
+function drawStory(events) {
+  const story = el("story");
+
+  for (const event of events) {
+    if (!event.said) continue;
+
+    const line = document.createElement("div");
+
+    line.className = "said";
+    line.textContent = event.said;
+
+    story.appendChild(line);
+  }
+
+  if (events.length) story.scrollTop = story.scrollHeight;
+}
+
 function drawLog(events) {
   const log = el("log");
   for (const event of events) {
@@ -364,9 +424,95 @@ function draw(view) {
   drawTable(view.state);
   drawWaiting(view.state);
   drawMoves(view.moves, view.state);
+  drawStory(view.events);
   drawLog(view.events);
   seen = view.history_length;
 }
+
+// A card shows what it says. The text is the printed text the engine loaded,
+// carried on the element rather than fetched, so reading a card costs nothing.
+document.addEventListener("click", (occasion) => {
+  const chosen = occasion.target.closest(".card.has-text");
+  const reading = el("reading");
+
+  if (!chosen) {
+    if (!occasion.target.closest("#reading")) reading.hidden = true;
+    return;
+  }
+
+  reading.innerHTML =
+    `<div class="reading-name">${escape(chosen.dataset.name)}</div>`
+    + `<div class="reading-type">${escape(chosen.dataset.type)}</div>`
+    + `<pre class="reading-text">${escape(chosen.dataset.text)}</pre>`
+    + `<div class="hint">click anywhere to close</div>`;
+
+  reading.hidden = false;
+});
+
+// A seed nobody has to invent, and one they can keep.
+el("roll-seed").addEventListener("click", () => {
+  el("seed").value = Math.floor(Math.random() * 1000000);
+});
+
+el("copy-seed").addEventListener("click", async () => {
+  const seed = el("seed").value;
+
+  try {
+    await navigator.clipboard.writeText(seed);
+    el("copy-seed").textContent = "Copied";
+  } catch (error) {
+    // Clipboard permission is not always given; showing it is enough.
+    el("copy-seed").textContent = `seed ${seed}`;
+  }
+
+  setTimeout(() => (el("copy-seed").textContent = "Copy"), 1500);
+});
+
+// Bots playing every seat, one move at a time, so the table redraws as it
+// goes. Whether this button exists at all is the server's answer: the plain
+// game server has no bot, and only the desk does.
+let playing = false;
+
+async function botTurn() {
+  const button = el("autoplay");
+
+  playing = !playing;
+  button.textContent = playing ? "Stop the bots" : "Let the bots play";
+
+  while (playing) {
+    let answer;
+
+    try {
+      answer = await post("/api/autoplay", { moves: 8 });
+    } catch (error) {
+      break;
+    }
+
+    if (answer.view) draw(answer.view);
+
+    if (!answer.moved || answer.over) break;
+
+    await new Promise((wait) => setTimeout(wait, 250));
+  }
+
+  playing = false;
+  button.textContent = "Let the bots play";
+}
+
+(async () => {
+  // Ask whether anything here can play. A 404 means the plain server, which
+  // has no bot, and the button stays hidden rather than lying.
+  try {
+    const answer = await fetch("/api/autoplay", { method: "HEAD" });
+
+    if (answer.ok) {
+      el("autoplay").hidden = false;
+      el("autoplay").addEventListener("click", botTurn);
+    }
+  } catch (error) {
+    /* no bot here */
+  }
+})();
 
 document.addEventListener("click", async (occasion) => {
   const button = occasion.target.closest("button");

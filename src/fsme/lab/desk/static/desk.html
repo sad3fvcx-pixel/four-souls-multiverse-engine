@@ -142,6 +142,7 @@ pre {
       <h2>Test a card</h2>
       <p>The same seeds with the card and without it.</p>
       <select id="card"><option value="">loading the cards…</option></select>
+      <pre id="card-text" class="hint" style="white-space:pre-wrap;margin:0 0 8px"></pre>
       <label><input id="card-all" type="checkbox" style="width:auto"> show cards the engine has no rules for</label>
       <div class="row">
         <label>games <input id="test-games" type="number" value="60" min="1"></label>
@@ -381,12 +382,31 @@ async function cards() {
     known = read.cards || [];
 
     drawCards();
+    showCard();
   } catch (error) {
     $("card").innerHTML = "<option value=''>could not load the cards</option>";
   }
 }
 
 $("card-all").addEventListener("change", drawCards);
+
+// What the card says, before anybody spends two minutes measuring it.
+function showCard() {
+  const chosen = known.find((one) => one.id === $("card").value);
+
+  $("card-text").textContent = !chosen
+    ? ""
+    : [
+        chosen.name,
+        chosen.set.replace(/_/g, " "),
+        chosen.implemented ? "" : "the engine has no rules for this card yet",
+        chosen.text || "(no printed text in the content)",
+      ]
+        .filter(Boolean)
+        .join("\n");
+}
+
+$("card").addEventListener("change", showCard);
 
 $("save").addEventListener("click", () => {
   if (watching === null) return;

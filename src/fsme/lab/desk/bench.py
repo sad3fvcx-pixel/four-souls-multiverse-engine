@@ -163,6 +163,7 @@ class Workbench:
                     "implemented": bool(
                         definition.abilities or definition.statics
                     ),
+                    "text": str(definition.metadata.get("text", "")),
                 }
                 for definition in self._library.definitions()
             ),

@@ -390,3 +390,62 @@ def test_a_port_already_taken_says_what_to_do() -> None:
 
     assert "cannot listen on 127.0.0.1:8000" in said
     assert "--port 8001" in said
+
+
+def test_a_card_seen_in_a_report_can_be_looked_up() -> None:
+    """
+    Reports name cards and cannot carry their text.
+
+    A study naming forty cards with their rules under each would be unreadable,
+    so the names stay bare — and this is where a name seen in one gets
+    explained, rather than in a card database somebody has to go and find.
+    """
+    import io
+    from contextlib import redirect_stdout
+
+    caught = io.StringIO()
+
+    with redirect_stdout(caught):
+        outcome = entry_point(["cards", "The Bone"])
+
+    told = caught.getvalue()
+
+    assert outcome == 0
+    assert "The Bone" in told
+    assert "starting_items-base_game-the_bone" in told
+    assert "counter" in told.lower(), "the printed text was not shown"
+
+
+def test_a_card_the_engine_cannot_play_says_so_when_looked_up() -> None:
+    import io
+    from contextlib import redirect_stdout
+
+    from fsme.api import load_content
+
+    library = load_content(ROOT / "content")
+
+    inert = next(
+        definition
+        for definition in library.definitions()
+        if not (definition.abilities or definition.statics)
+    )
+
+    caught = io.StringIO()
+
+    with redirect_stdout(caught):
+        entry_point(["cards", inert.id])
+
+    assert "no rules for this card yet" in caught.getvalue()
+
+
+def test_a_card_nobody_has_says_so() -> None:
+    import io
+    from contextlib import redirect_stdout
+
+    caught = io.StringIO()
+
+    with redirect_stdout(caught):
+        outcome = entry_point(["cards", "a card that does not exist"])
+
+    assert outcome == 2
+    assert "no card matching" in caught.getvalue()

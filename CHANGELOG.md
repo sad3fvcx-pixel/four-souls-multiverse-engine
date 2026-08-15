@@ -6,6 +6,34 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## 0.1.2 — what a watcher could not see
+
+A second pass over the same ground: the engine was working and the person
+watching could not tell what was happening.
+
+- **The game is read out in sentences.** `src/fsme/narration.py` turns events
+  into English — "Ann attacks Polycephalus." / "Ann rolls a 5 — a hit, 4 was
+  needed." / "Polycephalus is defeated — worth 1 soul." / "Ann gains a soul."
+  The watch page leads with that account and keeps every event behind *Every
+  event*. Most events get no sentence on purpose: a push onto the stack is
+  true and is not news, and narrating it would bury the four lines that say
+  what the turn was about. A live game and a saved journal share the
+  vocabulary, so two accounts of one game cannot drift.
+- **Cards say what they do.** 1014 of 1045 cards carry their printed text and
+  the API was already sending it; nothing displayed it. Now a card on the
+  table opens its text on a click, the card test shows what it is about to
+  measure, and `fsme cards "The Bone"` explains a name seen in a report —
+  reports name cards and cannot carry their rules, so that is where a name
+  gets explained.
+- **A seed nobody has to invent.** *Random seed* and *Copy* beside the seed
+  box. Reproducibility is the point of a seed and it was being asked for like
+  a password.
+- **The bots can play the game you are watching.** *Let the bots play* runs
+  the table a few moves at a time so it redraws as it goes. The button asks
+  the server whether it exists first: the core game server has never heard of
+  the bot, and only the desk answers. This is the watch-mode counterpart of
+  the headless bot-vs-bot added in 0.1.1.
+
 ## 0.1.1 — what the first user found
 
 Four things, all reported by somebody using 0.1.0 for the first time. No new

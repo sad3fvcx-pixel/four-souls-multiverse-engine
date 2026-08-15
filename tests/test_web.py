@@ -171,3 +171,58 @@ def test_the_journal_of_the_browser_game_can_be_fetched(address: str) -> None:
     assert journal["seed"] == 7
     assert len(journal["entries"]) == 1
     assert journal["entries"][0]["label"] == move["label"]
+
+
+def test_the_watch_page_reads_the_game_out(address: str) -> None:
+    """
+    What a person sees first has to be sentences, not event names.
+
+    The page used to show only the technical log, so somebody watching could
+    tell the engine was working and not what was happening in the game.
+    """
+    post(address, "/api/command", {"type": "start_game", "player": 0})
+
+    events = get(address, "/api/view?since=0")["events"]
+
+    assert events
+
+    told = [one["said"] for one in events if one.get("said")]
+
+    assert told, "nothing was said about a game that started"
+    assert any("turn begins" in line for line in told)
+
+    # And the technical log is still all of it, kept as the wider view.
+    assert len(told) < len(events)
+
+
+def test_the_page_leads_with_the_account_and_keeps_the_log(address: str) -> None:
+    with urllib.request.urlopen(f"{address}/", timeout=10) as answer:
+        home = answer.read().decode("utf-8")
+
+    assert "What is happening" in home
+    assert "Every event" in home
+
+    # A seed nobody has to invent, and one they can keep.
+    assert 'id="roll-seed"' in home
+    assert 'id="copy-seed"' in home
+
+    # A card shows what it says.
+    assert "data-text=" in home
+
+
+def test_the_plain_server_does_not_offer_a_bot_it_does_not_have(
+    address: str,
+) -> None:
+    """
+    The core game server has never heard of the laboratory.
+
+    The button asks before showing itself, so a build without a bot says so
+    with a 404 rather than offering something that cannot happen.
+    """
+    request = urllib.request.Request(f"{address}/api/autoplay", method="HEAD")
+
+    try:
+        with urllib.request.urlopen(request, timeout=10) as answer:
+            assert answer.status != 200
+    except urllib.error.HTTPError as refused:
+        assert refused.code in (404, 501)

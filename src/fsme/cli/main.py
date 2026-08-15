@@ -26,7 +26,7 @@ from fsme.journal import JournalFormatError
 
 DEFAULT_NAMES = ("Ann", "Bo", "Cy", "Di")
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 
 def seats_of(given: str) -> tuple[int, ...]:
@@ -646,8 +646,15 @@ def _one_card_test(
 def cards(args: argparse.Namespace) -> int:
     """
     Say what is in the content directory, and how much of it the engine knows.
+
+    With a name or an identifier, say what one card is instead. Reports name
+    cards and cannot carry their text — a study naming forty of them would be
+    unreadable — so this is where a name seen in a report gets explained.
     """
     loaded = library(args)
+
+    if args.card:
+        return _one_card(loaded, str(args.card), as_json=bool(args.json))
 
     counted: dict[str, dict[str, int]] = {}
 
@@ -891,6 +898,76 @@ def _epilogue() -> str:
     return "\n".join(lines)
 
 
+def _one_card(loaded: ContentLibrary, wanted: str, *, as_json: bool) -> int:
+    """
+    Print one card: what it is, what it says, and whether the engine knows it.
+    """
+    found = [
+        definition
+        for definition in loaded.definitions()
+        if definition.id == wanted
+        or wanted.lower() in definition.name.lower()
+    ]
+
+    if not found:
+        print(f"no card matching {wanted!r} — `fsme cards` lists the sets")
+
+        return 2
+
+    if as_json:
+        print(
+            json.dumps(
+                [
+                    {
+                        "id": definition.id,
+                        "name": definition.name,
+                        "type": str(definition.type),
+                        "set": definition.expansion,
+                        "implemented": bool(
+                            definition.abilities or definition.statics
+                        ),
+                        "text": str(definition.metadata.get("text", "")),
+                    }
+                    for definition in found
+                ],
+                indent=2,
+            )
+        )
+
+        return 0
+
+    # Several cards share a name — twelve are called "Pills!" — so a search
+    # prints all of them rather than picking one and hoping.
+    for definition in found[: args_cards_shown(len(found))]:
+        print("=" * 78)
+        print(f"{definition.name}   [{definition.type}]   {definition.expansion}")
+        print(f"{definition.id}")
+        print("=" * 78)
+
+        text = str(definition.metadata.get("text", "")).strip()
+
+        print(text or "  (no printed text in the content)")
+
+        if not (definition.abilities or definition.statics):
+            print("")
+            print("  The engine has no rules for this card yet: it is dealt and")
+            print("  does nothing. docs/LIMITATIONS.md says how many are like it.")
+
+        print("")
+
+    if len(found) > args_cards_shown(len(found)):
+        print(f"… and {len(found) - args_cards_shown(len(found))} more matching {wanted!r}")
+
+    return 0
+
+
+def args_cards_shown(total: int) -> int:
+    """
+    How many matches to print before saying there are more.
+    """
+    return min(total, 8)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="fsme",
@@ -1054,6 +1131,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     listing = commands.add_parser("cards")
     shared(listing)
+    listing.add_argument(
+        "card",
+        nargs="?",
+        help="a card name or identifier: print what it is and what it says",
+    )
     listing.add_argument("--json", action="store_true")
     listing.set_defaults(run=cards)
 

@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import Any
 
 from fsme.game import Game
+from fsme.narration import told
 from fsme.state import GameState
 
 
@@ -227,24 +228,33 @@ def events(game: Game, since: int = 0) -> list[dict[str, Any]]:
     """
     written: list[dict[str, Any]] = []
 
+    names = {
+        player.player_id: player.name for player in game.state.players
+    }
+
     for index, event in enumerate(game.history[since:], start=since):
-        written.append(
-            {
-                "index": index,
-                "type": str(event.type),
-                "source": getattr(event.source, "name", None),
-                "controller": event.controller,
-                "targets": [
-                    getattr(target, "name", getattr(target, "player_id", None))
-                    for target in event.targets
-                ],
-                "payload": {
-                    key: _plain(value)
-                    for key, value in event.payload.items()
-                    if key not in ("stack_id",)
-                },
-            }
-        )
+        line = {
+            "index": index,
+            "type": str(event.type),
+            "source": getattr(event.source, "name", None),
+            "controller": event.controller,
+            "targets": [
+                getattr(target, "name", getattr(target, "player_id", None))
+                for target in event.targets
+            ],
+            "payload": {
+                key: _plain(value)
+                for key, value in event.payload.items()
+                if key not in ("stack_id",)
+            },
+        }
+
+        # The sentence is made here rather than in the page, so that a live
+        # game and a saved journal are told in the same words — and so that no
+        # client has to guess what an event means.
+        line["said"] = told(line, names=names)
+
+        written.append(line)
 
     return written
 

@@ -382,3 +382,52 @@ def test_a_study_has_no_one_game_to_save(address: str) -> None:
         get(address, f"/api/report/{job['id']}")
 
     assert raised.value.code == 404
+
+
+def test_the_bots_can_play_the_game_being_watched(address: str) -> None:
+    """
+    The detailed log lives in the game somebody watches, not in a report.
+
+    Before this the only way to fill it was to play every move by hand, so
+    "show me what FSME does" meant "play a game of Four Souls first".
+    """
+    request = urllib.request.Request(f"{address}/api/autoplay", method="HEAD")
+
+    with urllib.request.urlopen(request, timeout=10) as answer:
+        assert answer.status == 200, "the desk should offer to play"
+
+    post(address, "/api/command", {"type": "start_game", "player": 0})
+
+    moved = 0
+    over = False
+
+    for _ in range(60):
+        answer = post(address, "/api/autoplay", {"moves": 16})
+
+        moved += answer["moved"]
+        over = answer["over"]
+
+        if not answer["moved"] or over:
+            break
+
+    assert moved > 20, "the bots barely moved"
+
+    told = [one["said"] for one in answer["view"]["events"] if one["said"]]
+
+    assert told, "a game was played and nothing was said about it"
+
+
+def test_a_card_says_what_it_does_before_it_is_measured(address: str) -> None:
+    cards = get(address, "/api/cards")["cards"]
+
+    named = {card["id"]: card for card in cards}
+
+    bone = named["starting_items-base_game-the_bone"]
+
+    assert bone["name"] == "The Bone"
+    assert bone["text"], "the printed text never reached the page"
+    assert "counter" in bone["text"].lower()
+
+    home = page(address, "/")
+
+    assert 'id="card-text"' in home

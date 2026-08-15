@@ -127,8 +127,35 @@ class DeskHandler(GameHandler):
 
         super().do_GET()
 
+    def do_HEAD(self) -> None:  # noqa: N802 - the base class names it
+        """
+        Answer whether a path exists without doing it.
+
+        The watch page asks about ``/api/autoplay`` to decide whether to show
+        the button at all: the plain game server has no bot in it, and a button
+        that produced a 404 would be a lie about what this build can do.
+        """
+        path = self.path.split("?", 1)[0]
+
+        self.send_response(200 if path == "/api/autoplay" else 404)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def do_POST(self) -> None:  # noqa: N802 - the base class names it
         path = self.path.split("?", 1)[0]
+
+        if path == "/api/autoplay":
+            try:
+                body = self._body()
+            except ValueError as error:
+                self._json({"error": str(error)}, status=400)
+
+                return
+
+            with self.lock:
+                self._json(self._autoplay(_within(body.get("moves"), 8, low=1, high=64)))
+
+            return
 
         if path == "/api/load":
             try:
@@ -169,6 +196,68 @@ class DeskHandler(GameHandler):
             return
 
         self._json(job.to_dict())
+
+    def _autoplay(self, moves: int) -> dict[str, Any]:
+        """
+        Let the bot take a few moves in the game the page is watching.
+
+        A few rather than all of them: the page redraws between batches, so a
+        game plays out visibly instead of finishing in one request and looking
+        like nothing happened.
+
+        The bot lives in the laboratory and the game server is core, which is
+        why this is here rather than in ``fsme.web`` — the core has never heard
+        of the bot and this keeps it that way.
+        """
+        from fsme.commands import Command, CommandType
+        from fsme.lab.bot import HeuristicBot
+        from fsme.lab.simulation import ScriptedAgent
+
+        session = self.session
+        game = session.game
+
+        bot = HeuristicBot(seed=len(game.history))
+        agent = ScriptedAgent(seed=len(game.history))
+
+        moved = 0
+
+        for _ in range(moves):
+            if game.is_over:
+                break
+
+            decision = game.runtime.awaiting_decision
+
+            if decision is not None:
+                # The bot has no opinion about most questions and says so; the
+                # scripted agent answers them the same way a simulation does.
+                chosen = agent.choose(game)
+
+                if chosen is None:
+                    break
+
+                command, _ = chosen
+            else:
+                seat = _whose_move(game)
+                thought = bot.choose(game, seats=(seat,))
+
+                if thought is None:
+                    break
+
+                command = thought[0]
+
+            if not game.submit(
+                Command(type=CommandType(str(command.type)), player=command.player,
+                        payload=dict(command.payload))
+            ).accepted:
+                break
+
+            moved += 1
+
+        return {
+            "moved": moved,
+            "over": bool(game.is_over),
+            "view": session.view(0),
+        }
 
     def _run(self, body: dict[str, Any]) -> Any:
         """
@@ -229,6 +318,15 @@ class DeskServer(GameServer):
         self.RequestHandlerClass = DeskHandler
 
         self.bench = bench
+
+
+def _whose_move(game: Any) -> int:
+    """
+    Whose turn it is to say something.
+    """
+    from fsme.lab.simulation.runner import _whose_move as asked
+
+    return int(asked(game))
 
 
 def _within(given: Any, fallback: int, *, low: int, high: int) -> int:
