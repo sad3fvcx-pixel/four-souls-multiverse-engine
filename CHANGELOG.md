@@ -6,6 +6,23 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## Unreleased
+
+- **A tagged build no longer needs finishing by hand.** Pushing a tag creates a
+  *tag*; it does not create a *release*, and `gh release upload` against a tag
+  with none fails with `release not found`. Every tagged build did — v0.1.2 and
+  v0.1.3 both built on all three platforms, passed every smoke test, and failed
+  on the last step, and both were completed by creating the release by hand and
+  re-running the failed jobs. The workflow now creates the release when there is
+  none and uses the existing one when there is, leaving its title and notes
+  alone. Publishing moved out of the build matrix into a single job that runs
+  after every platform has built, because three runners racing to create the
+  same release is the next version of the same bug. A last step asks the release
+  what it actually has, since a release page with no assets looks exactly like
+  one whose build has not finished. `tests/test_release_workflow.py` reads the
+  real workflow and fails if an upload step ever again sits in a job that does
+  not make sure of the release first.
+
 ## 0.1.3 — the bot reads the card, and the watcher reads the game
 
 ### Every step

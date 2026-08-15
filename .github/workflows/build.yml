@@ -75,10 +75,6 @@ jobs:
     needs: test
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
 
-    # Only to attach the binaries to the release; nothing else here writes.
-    permissions:
-      contents: write
-
     strategy:
       fail-fast: false
       matrix:
@@ -123,20 +119,125 @@ jobs:
         shell: bash
         timeout-minutes: 10
 
+      # Named for the platform it was built on before it leaves the runner, so
+      # that the job which publishes never has to know how each platform names
+      # its own binary. Three files called `fsme` would collide anyway.
+      - name: Name it for the platform it was built on
+        run: cp "dist/${{ matrix.binary }}" "${{ runner.temp }}/${{ matrix.asset }}"
+        shell: bash
+
       - uses: actions/upload-artifact@v4
         with:
-          name: fsme-${{ matrix.os }}
-          path: dist/fsme*
+          name: ${{ matrix.asset }}
+          path: ${{ runner.temp }}/${{ matrix.asset }}
+          if-no-files-found: error
 
-      # Actions artifacts expire and need a GitHub login to download, so they
-      # are no use to somebody who came to a release page for a file to run.
-      # A tagged build puts the binary on the release itself, named for the
-      # platform it was built on.
-      - name: Put it on the release
-        if: startsWith(github.ref, 'refs/tags/')
+  # Actions artifacts expire and need a GitHub login to download, so they are no
+  # use to somebody who came to a release page for a file to run. A tagged build
+  # puts the binaries on the release itself.
+  #
+  # This is one job rather than a step in the matrix, and that is the point of
+  # it. Pushing a tag creates a *tag*; it does not create a *release*, and
+  # `gh release upload` against a tag with no release fails with "release not
+  # found". Every tagged build did, twice, and was finished by hand.
+  #
+  # Making each matrix leg create the release instead would replace that with a
+  # worse bug: three runners finish within seconds of each other, all three find
+  # no release, and two of them fail creating one that now exists. So creating
+  # and uploading happen once, here, after every platform has built something.
+  release:
+    needs: executable
+    if: startsWith(github.ref, 'refs/tags/')
+
+    runs-on: ubuntu-latest
+
+    # The only job that writes anything.
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The binaries come back through an artifact rather than straight off the
+      # build runner. That loses the executable bit, and it does not matter: a
+      # release asset never carried one anyway, however it was uploaded.
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Every platform built something
+        run: |
+          ls -l assets
+          for asset in fsme-linux fsme-windows.exe fsme-macos; do
+            test -f "assets/${asset}" || { echo "no ${asset} was built"; exit 1; }
+          done
+        shell: bash
+
+      # Create it when it is missing, use it when it is not. An existing
+      # release is left exactly as it is: its title and its notes belong to
+      # whoever wrote them, and a workflow that rewrote them on every re-run
+      # would be a different way of losing a release page.
+      - name: Make sure the tag has a release to put them on
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp "dist/${{ matrix.binary }}" "${{ matrix.asset }}"
-          gh release upload "${GITHUB_REF_NAME}" "${{ matrix.asset }}" --clobber
+          tag="${GITHUB_REF_NAME}"
+
+          if gh release view "${tag}" >/dev/null 2>&1; then
+            echo "release ${tag} already exists — using it, and leaving its notes alone"
+            exit 0
+          fi
+
+          notes="docs/RELEASE_NOTES_${tag#v}.md"
+          written=(--generate-notes)
+
+          if [ -f "${notes}" ]; then
+            written=(--notes-file "${notes}")
+          fi
+
+          # --verify-tag so a typo makes a release for a tag that does not
+          # exist impossible, rather than making an empty one nobody notices.
+          if ! gh release create "${tag}" --title "${tag}" --verify-tag "${written[@]}"; then
+            # Creating can fail because somebody published by hand between the
+            # check above and this line. That is a fine outcome. Every other
+            # reason it can fail is not, so the difference is asked for rather
+            # than assumed — the alternative is a workflow that reports success
+            # for a release it never made.
+            if ! gh release view "${tag}" >/dev/null 2>&1; then
+              echo "could not create a release for ${tag}, and there is none"
+              exit 1
+            fi
+
+            echo "release ${tag} appeared while this step ran — using it"
+          fi
+        shell: bash
+
+      - name: Put the binaries on it
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" \
+            assets/fsme-linux \
+            assets/fsme-windows.exe \
+            assets/fsme-macos \
+            --clobber
+        shell: bash
+
+      # A release page with no assets looks exactly like one whose build has
+      # not finished, which is how a release shipped with nothing on it once
+      # before. Asking the release what it has is the only way to know.
+      - name: The release has all three of them
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          on_it=$(gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name')
+
+          echo "on the release:"
+          echo "${on_it}"
+
+          for asset in fsme-linux fsme-windows.exe fsme-macos; do
+            echo "${on_it}" | grep -qx "${asset}" \
+              || { echo "${asset} never reached the release"; exit 1; }
+          done
         shell: bash
