@@ -82,8 +82,9 @@ type — every one of these worked perfectly on the machine it was written on.
   keeping plain `fork` for the ordinary single-threaded case, which a REPL and
   a notebook need.
 - **`freeze_support()`** in the entry point, so a frozen build on Windows does
-  not launch a copy of itself per worker. Reasoned about and exercised by CI;
-  not run by hand on Windows.
+  not launch a copy of itself per worker. Verified: the Windows executable is
+  built by CI and made to run `fsme study --jobs 2` from a directory with no
+  card data in it.
 - **A set directory outside four known names was silently ignored.** A
   directory with a manifest is now a set wherever it sits.
 - **Content errors arrived as tracebacks.** They now arrive as the validator's

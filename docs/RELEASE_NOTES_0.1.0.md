@@ -102,6 +102,23 @@ cloning into a clean directory, and reading CI.
 
 The full list is in [the changelog](../CHANGELOG.md).
 
+## Verified on
+
+Linux, Windows and macOS, by CI, on the commit this release is cut from:
+
+| | installed with pip | as a single executable |
+|---|---|---|
+| Linux | ✅ | ✅ |
+| Windows | ✅ | ✅ |
+| macOS | ✅ | ✅ |
+
+Each check runs from a directory with no card data in it — a build that
+shipped no cards passes any test run beside the repository — and each ends by
+running a study across two processes, which is the check that catches a frozen
+Windows build restarting itself once per worker.
+
+The author has run the Linux build by hand. Windows and macOS are CI's word.
+
 ## Known limits worth knowing before you start
 
 - Two thirds of the card content has no behaviour yet.

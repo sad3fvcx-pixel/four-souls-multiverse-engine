@@ -134,8 +134,12 @@ the desk, the game page and a multi-core `study` all work from the single file.
 An executable cannot be cross-compiled: a Windows `.exe` has to be built on
 Windows. `.github/workflows/build.yml` does that for Windows, macOS and Linux
 and uploads all three, so a tag is enough to get an `.exe` without owning a
-Windows machine. The Windows and macOS builds are produced by that workflow
-and have not been run by hand here.
+Windows machine.
+
+Each build is smoke-tested on its own platform, from a directory with no card
+data in it: it must find its own cards, play a game, and run a study across two
+processes. That last check is the one that matters on Windows, where a worker
+process is made by starting the program again.
 
 ### Simulation
 

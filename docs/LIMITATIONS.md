@@ -106,7 +106,7 @@ can measure them.
 | Python | 3.12 or newer |
 | Journal size | roughly 120 KB a game, or 1.7 MB with `--offers` |
 | A game | about 0.2 seconds |
-| Windows executable | built by CI; not run by hand by the author |
+| Windows executable | built and smoke-tested by CI on every tag; not run by hand by the author |
 | Rooms (Requiem) | the slot is implemented; the 68 room cards are not |
 
 ## Not official
