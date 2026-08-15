@@ -24,7 +24,6 @@ from fsme.cards import CardDefinition, validate_cards
 from .constants import (
     CARD_FILE_EXTENSION,
     CONTENT_SCHEMA_VERSION,
-    CONTENT_SECTIONS,
     DEFAULT_ENCODING,
     MANIFEST_NAME,
 )
@@ -140,25 +139,38 @@ class ContentLoader:
     def _expansion_directories(self, root: Path) -> list[Path]:
         """
         Find every directory holding a manifest.
+
+        The rule is the one somebody would guess: **a directory with a manifest
+        in it is a set**, whether it sits at the top of the content root or one
+        level inside it. ``CONTENT_SECTIONS`` names the four places the project
+        keeps its own sets, and that is a filing convention rather than a
+        restriction.
+
+        It used to be a restriction, and that made a trap. Somebody assembling
+        their own content directory — a copy of ``base_game`` beside a set of
+        their own — got their set silently ignored, because the directory was
+        not called one of four names. Nothing was reported: the cards simply
+        were not there. A rule that quietly drops content is worse than a rule
+        that is stricter, because the author has nothing to read.
         """
         directories: list[Path] = []
 
         if (root / MANIFEST_NAME).is_file():
             directories.append(root)
 
-        for section in CONTENT_SECTIONS:
-            section_path = root / section
-
-            if not section_path.is_dir():
+        for section in sorted(root.iterdir()):
+            if not section.is_dir():
                 continue
 
-            # A section may be a set in its own right — the base game is one
+            # A directory may be a set in its own right — the base game is one
             # directory, not a directory of directories — or it may hold one
             # directory per set. Both shapes are ordinary, so both are read.
-            if (section_path / MANIFEST_NAME).is_file():
-                directories.append(section_path)
+            if (section / MANIFEST_NAME).is_file():
+                directories.append(section)
 
-            for child in sorted(section_path.iterdir()):
+                continue
+
+            for child in sorted(section.iterdir()):
                 if child.is_dir() and (child / MANIFEST_NAME).is_file():
                     directories.append(child)
 

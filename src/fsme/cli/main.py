@@ -21,6 +21,7 @@ from typing import Any
 
 from fsme.api import Session, load_content
 from fsme.content import ContentLibrary
+from fsme.content.errors import InvalidContentError
 
 DEFAULT_NAMES = ("Ann", "Bo", "Cy", "Di")
 
@@ -43,17 +44,32 @@ def content_root(given: str | None) -> Path:
     """
     Find the cards.
 
-    A checkout keeps them beside the source; a bundled build carries them
-    inside itself, and PyInstaller unpacks them next to the package. Both are
-    tried before giving up, because a build that cannot find its own content is
-    not a build anybody can run.
+    Four places, in the order that puts the copy somebody is *working on* ahead
+    of the copy they installed: the checkout they are standing in, the working
+    directory, the cards inside the installed package, and the cards a frozen
+    build unpacked beside itself. A card edited in a checkout must take effect
+    without anybody remembering to pass a flag, or the authoring path has a
+    trap in it.
     """
     if given:
-        return Path(given).expanduser().resolve()
+        where = Path(given).expanduser().resolve()
+
+        if not where.is_dir():
+            raise SystemExit(
+                f"no card content at {where}\n"
+                f"  --content wants the directory holding the card sets — the"
+                f" one with base_game/ in it."
+            )
+
+        return where
 
     here = Path(__file__).resolve()
 
-    candidates = [here.parents[3] / "content", Path.cwd() / "content"]
+    candidates = [
+        here.parents[3] / "content",
+        Path.cwd() / "content",
+        here.parents[1] / "carddata",
+    ]
 
     bundled = getattr(sys, "_MEIPASS", "")
 
@@ -67,7 +83,17 @@ def content_root(given: str | None) -> Path:
             return candidate.resolve()
 
     raise SystemExit(
-        "cannot find the card content; pass --content with the path to it"
+        "cannot find the cards.\n"
+        "\n"
+        "  fsme needs a directory of card sets to deal from, and this build\n"
+        "  did not come with one. That usually means it was installed from a\n"
+        "  source tree without the content/ directory.\n"
+        "\n"
+        "  Point it at one:\n"
+        "      fsme cards --content /path/to/content\n"
+        "\n"
+        "  The directory wanted is the one holding base_game/ — `content/` in\n"
+        "  a checkout of the project."
     )
 
 
@@ -628,21 +654,193 @@ def cards(args: argparse.Namespace) -> int:
     return 0
 
 
+DEMO_SEED = 7
+DEMO_PLAYERS = 3
+
+DEMO_CARD = "loot_deck-cards_miscellaneous-four_souls-gold_key"
+DEMO_GAMES = 40
+
+
+def demo(args: argparse.Namespace) -> int:
+    """
+    Show somebody what this is, in about a minute, without any flags.
+
+    The problem this solves is not that FSME lacks features. It is that all of
+    them are behind a command with options, so a person who has just installed
+    it has no way to find out whether it is worth their afternoon. This walks
+    the path once — play a game, prove the record of it holds, read the report,
+    then measure a card — narrating each step as it goes so the wait is legible.
+
+    Every step is a command they can run themselves, and the command is printed
+    above its output. Nothing here is a special mode: this is the ordinary
+    engine and the ordinary reports.
+    """
+    from fsme.journal import replay_journal
+    from fsme.journal import summarise as summarise_replay
+    from fsme.lab.analysis import review, reviewed
+    from fsme.lab.simulation import play_one
+
+    root = content_root(args.content)
+    loaded = load_content(root)
+
+    def step(number: int, what: str, command: str) -> None:
+        print(f"\n{'─' * 78}\n{number}. {what}\n   $ {command}\n", flush=True)
+
+    print("FSME — a rules simulator for The Binding of Isaac: Four Souls.")
+    print("This is what it does. Every step below is a command you can run.")
+
+    step(1, "Play a game.", f"fsme play --seed {DEMO_SEED} --players {DEMO_PLAYERS}")
+
+    journal, game = play_one(
+        loaded, DEMO_SEED, DEMO_PLAYERS, thinking_seats=(0,)
+    )
+
+    state = game.state
+    winner = state.players[state.winner].name if state.winner is not None else None
+
+    print(
+        f"   {winner or 'Nobody'} won on turn {state.turn.turn_number}"
+        f" after {len(journal)} moves."
+    )
+    print("   The whole game was written down as it was played.")
+
+    step(2, "Check the record still holds.", "fsme replay party.json")
+
+    told = summarise_replay(replay_journal(journal, loaded), journal)
+
+    print(
+        f"   {told['replayed']} commands replayed, and the game came out the"
+        f" same every step."
+    )
+    print("   That is what makes everything below evidence rather than a claim.")
+
+    step(3, "Ask what happened, and where it was decided.", "fsme report party.json")
+
+    print(reviewed(review(journal, loaded)))
+
+    if args.quick:
+        print("\n   (skipping the card test: --quick)")
+    else:
+        step(
+            4,
+            f"Measure a card: {DEMO_GAMES} games with it, {DEMO_GAMES} without.",
+            f"fsme test-card {DEMO_CARD} --games {DEMO_GAMES}",
+        )
+        print("   This takes about half a minute…", flush=True)
+
+        told_about_card, _ = _one_card_test(
+            argparse.Namespace(
+                content=args.content,
+                games=DEMO_GAMES,
+                players=2,
+                jobs=max(1, args.jobs),
+                seed=0,
+            ),
+            DEMO_CARD,
+            loaded.registry().get(DEMO_CARD).name,
+        )
+
+        from fsme.lab.analysis import read_out
+
+        print(read_out(told_about_card))
+
+        print(
+            "   Removing a card reshuffles every game, so the report says what"
+            " it\n   can and refuses to say what it cannot."
+        )
+
+    print(f"\n{'─' * 78}")
+    print("Where to go from here:")
+    print("  fsme desk --open     all of this on one page in a browser")
+    print("  fsme study --games 200 --jobs 4      what a run says about the game")
+    print("  fsme cards           what card content is loaded")
+    print("  docs/DEMONSTRATION.md    the same tour, with commentary")
+
+    return 0
+
+
+COMMAND_GROUPS: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
+    (
+        "Start here",
+        (
+            ("demo", "the whole thing in a minute, no flags needed"),
+            ("desk", "all of it on one page in a browser"),
+            ("cards", "what card content is loaded"),
+        ),
+    ),
+    (
+        "Play",
+        (
+            ("play", "play a game through with nobody watching"),
+            ("serve", "play one in a browser, move by move"),
+        ),
+    ),
+    (
+        "Read one game",
+        (
+            ("report", "everything the lab can say about one game"),
+            ("explain", "why it went the way it did"),
+            ("show", "the journal, read out loud"),
+            ("replay", "play a journal back and check it still holds"),
+        ),
+    ),
+    (
+        "Measure many",
+        (
+            ("study", "play a run and ask what it says"),
+            ("test-card", "the same seeds with a card and without it"),
+            ("simulate", "play a run and count what happened"),
+        ),
+    ),
+)
+"""
+The commands, in the order somebody meeting them should read them.
+
+argparse lists subcommands in the order they were added and gives no way to
+group them, which turns eleven commands into a wall with no way in. This is the
+same list arranged by what a person is trying to do, and it is checked against
+the parser by a test so it cannot drift.
+"""
+
+
+def _epilogue() -> str:
+    lines = ["", "commands:"]
+
+    for title, rows in COMMAND_GROUPS:
+        lines.append(f"\n  {title}")
+
+        for name, what in rows:
+            lines.append(f"    {name:<12} {what}")
+
+    lines += [
+        "",
+        "Every command takes --content to point at a different card directory.",
+        "Run `fsme <command> --help` for what one of them accepts.",
+    ]
+
+    return "\n".join(lines)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="fsme",
-        description="Four Souls Multiverse Engine",
+        description=(
+            "Four Souls Multiverse Engine — a deterministic rules simulator.\n"
+            "New here? Run `fsme demo`."
+        ),
+        epilog=_epilogue(),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version", version=f"fsme {VERSION}")
 
-    commands = parser.add_subparsers(dest="command")
+    commands = parser.add_subparsers(dest="command", metavar="<command>")
 
     def shared(sub: argparse.ArgumentParser) -> None:
         sub.add_argument("--content", help="where the card content lives")
         sub.add_argument("--seed", type=int, default=0, help="deal this game")
         sub.add_argument("--players", type=int, default=2, help="how many seats")
 
-    web = commands.add_parser("serve", help="open a game in a browser")
+    web = commands.add_parser("serve")
     shared(web)
     web.add_argument("--host", default="127.0.0.1")
     web.add_argument("--port", type=int, default=8000)
@@ -654,7 +852,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     web.set_defaults(run=serve)
 
-    quick = commands.add_parser("play", help="play a game through with nobody watching")
+    quick = commands.add_parser("play")
     shared(quick)
     quick.add_argument("--steps", type=int, default=5000)
     quick.add_argument("--journal", help="write the whole game down to this file")
@@ -670,20 +868,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     quick.set_defaults(run=play)
 
-    reading = commands.add_parser("show", help="read a journal out loud")
+    reading = commands.add_parser("show")
     reading.add_argument("file", help="the journal to read")
     reading.add_argument(
         "--full", action="store_true", help="keep the engine's housekeeping too"
     )
     reading.set_defaults(run=show)
 
-    again = commands.add_parser("replay", help="play a journal back through the engine")
+    again = commands.add_parser("replay")
     shared(again)
     again.add_argument("file", help="the journal to replay")
     again.add_argument("--json", action="store_true")
     again.set_defaults(run=replay)
 
-    many = commands.add_parser("simulate", help="play a run of games and count")
+    many = commands.add_parser("simulate")
     shared(many)
     many.add_argument("--games", type=int, default=100, help="how many to play")
     many.add_argument("--top", type=int, default=15, help="rows per table")
@@ -704,9 +902,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     many.set_defaults(run=simulate)
 
-    trial = commands.add_parser(
-        "test-card", help="play the game with a card and without it"
-    )
+    trial = commands.add_parser("test-card")
     shared(trial)
     trial.add_argument(
         "card", nargs="?", help="the identifier of the card under test"
@@ -723,9 +919,7 @@ def build_parser() -> argparse.ArgumentParser:
     trial.add_argument("--json", action="store_true")
     trial.set_defaults(run=test_card)
 
-    asking = commands.add_parser(
-        "study", help="play a run and ask what it says about the game"
-    )
+    asking = commands.add_parser("study")
     shared(asking)
     asking.add_argument("--games", type=int, default=100)
     asking.add_argument("--top", type=int, default=10)
@@ -734,9 +928,7 @@ def build_parser() -> argparse.ArgumentParser:
     asking.add_argument("--json", action="store_true")
     asking.set_defaults(run=study)
 
-    telling = commands.add_parser(
-        "report", help="one game, read every way the lab knows how"
-    )
+    telling = commands.add_parser("report")
     shared(telling)
     telling.add_argument(
         "file", nargs="?", help="a journal; without one, play a game"
@@ -752,7 +944,7 @@ def build_parser() -> argparse.ArgumentParser:
     telling.add_argument("--json", action="store_true")
     telling.set_defaults(run=report)
 
-    why = commands.add_parser("explain", help="why one game went the way it did")
+    why = commands.add_parser("explain")
     shared(why)
     why.add_argument("file", nargs="?", help="a journal; without one, play a game")
     why.add_argument("--bot-seats", default="")
@@ -773,9 +965,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     why.set_defaults(run=explain)
 
-    door = commands.add_parser(
-        "desk", help="everything FSME does, on one page in a browser"
-    )
+    door = commands.add_parser("desk")
     shared(door)
     door.add_argument("--host", default="127.0.0.1")
     door.add_argument("--port", type=int, default=8000)
@@ -792,10 +982,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     door.set_defaults(run=front)
 
-    listing = commands.add_parser("cards", help="what the content holds")
+    listing = commands.add_parser("cards")
     shared(listing)
     listing.add_argument("--json", action="store_true")
     listing.set_defaults(run=cards)
+
+    tour = commands.add_parser("demo")
+    shared(tour)
+    tour.add_argument("--jobs", type=int, default=4)
+    tour.add_argument(
+        "--quick", action="store_true", help="skip the card test at the end"
+    )
+    tour.set_defaults(run=demo)
 
     return parser
 
@@ -813,7 +1011,25 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     run: Any = args.run
 
-    return int(run(args))
+    try:
+        return int(run(args))
+    except InvalidContentError as complaint:
+        # A person writing a card is the likeliest reader of this, and a
+        # traceback tells them about the loader when they wanted to be told
+        # about their card. The report already names the file, the card and
+        # the ability; printing it alone is the whole fix.
+        print(f"\n{complaint}\n", file=sys.stderr)
+        print(
+            "Nothing was loaded. Fix the cards above and run it again;"
+            " `fsme cards`\nis the quickest way to check.",
+            file=sys.stderr,
+        )
+
+        return 2
+    except KeyboardInterrupt:
+        print("", flush=True)
+
+        return 130
 
 
 if __name__ == "__main__":

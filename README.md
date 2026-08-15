@@ -1,11 +1,52 @@
-# Four Souls Multiverse Engine
+# FSME — Four Souls Multiverse Engine
 
-Deterministic engine for The Binding of Isaac: Four Souls with support for the custom expansion Syndrome of the Multiverse.
+A rules simulator for *The Binding of Isaac: Four Souls* that plays the game
+thousands of times and then explains what happened.
 
-FSME is not an engine for a single expansion. It is a universal rules simulator that runs
-official cards and user-created content through the same data pipeline and ability DSL.
+Not a way to play Four Souls with your friends. It is a tool for the people who
+**make** Four Souls content: it deals real games from real card data, writes
+down everything that happened, and answers questions about it — where a game
+was decided, which cards did the work, and whether a card you wrote actually
+changes anything.
 
-Current version: 0.1.0-alpha
+```bash
+pip install .
+fsme demo
+```
+
+`fsme demo` takes about a minute and needs no arguments. It plays a game,
+proves the record of it is reproducible, reports on it, and measures a card —
+printing the command for each step so you can run them yourself.
+
+## What it is for
+
+| If you are… | FSME gives you |
+|---|---|
+| writing custom cards | a place to put them, validation that names your mistake, and a way to find out whether the card is balanced |
+| curious how a game went | a full report of one game: turning points, decisions, what did the work |
+| studying the game itself | thousands of games, and statistics that say what they can and refuse to say what they cannot |
+| building something else | a deterministic engine with a stable core and no dependencies |
+
+## What it is not
+
+Worth knowing before you spend an afternoon on it.
+
+- **Not a way to play with friends.** There is a browser page, but it is one
+  local game for one person looking at it. No accounts, no network play, no
+  matchmaking.
+- **Not complete.** 352 of 1045 known cards have working rules
+  (`fsme cards` shows the current count). The rest are card data with no
+  behaviour, and a game may deal them and do nothing with them.
+- **Not a strong player.** The bot looks one move ahead and does not know what
+  most cards say. It exists to be readable, not good, so "the bot would have
+  played X" is an opinion you can argue with rather than a verdict.
+- **Not a balance oracle.** Removing a card reshuffles every game it would have
+  been in, so a card test compares two populations rather than two versions of
+  one game. The reports say this in their own wording; believe the wording.
+- **Not official.** No affiliation with Studio71 or Edmund McMillen. Card text
+  is transcribed from published cards for use with a game you own.
+
+Current version: 0.1.0-alpha. Python 3.12 or newer, no dependencies.
 
 ## Running it
 
@@ -77,10 +118,16 @@ The build carries the cards and the page inside itself and needs nothing
 installed to run. Started with no arguments — double-clicked, as an `.exe`
 usually is — it serves the game and opens a browser at it.
 
+The build carries the cards, both pages and the laboratory inside itself.
+Started with no arguments — double-clicked, as an `.exe` usually is — it opens
+the front door in a browser. Verified on Linux at 9.3 MB: `--version`, `cards`,
+the desk, the game page and a multi-core `study` all work from the single file.
+
 An executable cannot be cross-compiled: a Windows `.exe` has to be built on
 Windows. `.github/workflows/build.yml` does that for Windows, macOS and Linux
 and uploads all three, so a tag is enough to get an `.exe` without owning a
-Windows machine.
+Windows machine. The Windows and macOS builds are produced by that workflow
+and have not been run by hand here.
 
 ### Simulation
 
@@ -161,6 +208,79 @@ compared with losers, so what separates them is as much symptom as cause; and
 with hundreds of cards, the top of any pairs table is striking by arithmetic
 alone, so every pair is offered as a hypothesis for `test-card` rather than as
 a synergy.
+
+## Writing a card
+
+Cards are data. Nothing here is code, and the engine never runs anything from
+a content directory — it interprets it.
+
+Make a set under `content/user/`:
+
+```
+content/user/my_set/
+├── manifest.json
+└── cards.json
+```
+
+```json
+{ "id": "my_set", "name": "My Set", "version": "1.0.0", "schema_version": "1" }
+```
+
+```json
+[
+  {
+    "id": "my_set-lucky_penny",
+    "name": "Lucky Penny",
+    "type": "loot",
+    "expansion": "my_set",
+    "text": "Gain 3 cents.",
+    "abilities": [
+      { "trigger": "on_play", "effects": [{ "effect": "gain_coins", "amount": 3 }] }
+    ]
+  }
+]
+```
+
+Then check it:
+
+```bash
+fsme cards          # loads and validates everything; your set appears in the list
+```
+
+Validation names the file, the card and the ability, and offers the nearest
+name it does know:
+
+```
+invalid content in .../content:
+  [semantic] .../content/user/my_set/cards.json: my_set-lucky_penny: ability 0:
+      unknown effect 'gain_coinz' — did you mean 'gain_coins'?
+```
+
+Invalid content stops everything rather than loading half of it, so a typo in
+your set will refuse the whole library until it is fixed. That is deliberate: a
+game dealt from half-valid content is worse than no game.
+
+**Seeing your card actually play.** A single custom card among a thousand will
+rarely be dealt. Point `--content` at a smaller directory to make it common —
+any directory whose subdirectories contain a `manifest.json` is a content root:
+
+```bash
+mkdir -p /tmp/small && cp -r content/base_game content/user/my_set /tmp/small/
+fsme play --content /tmp/small --seed 3 --journal party.json
+fsme report --content /tmp/small party.json
+fsme test-card --content /tmp/small my_set-lucky_penny --games 200 --jobs 4
+```
+
+What the engine understands — every trigger, effect, condition and target — is
+in [docs/EFFECT_REGISTRY.md](docs/EFFECT_REGISTRY.md),
+[docs/TRIGGER_REGISTRY.md](docs/TRIGGER_REGISTRY.md),
+[docs/CONDITION_REGISTRY.md](docs/CONDITION_REGISTRY.md) and
+[docs/TARGET_REGISTRY.md](docs/TARGET_REGISTRY.md). The shape of a card is in
+[docs/CARD_SCHEMA.md](docs/CARD_SCHEMA.md).
+
+A card the engine has no vocabulary for is not a failure of your card — the
+engine implements 352 of 1045 known cards, and the gaps are written down in
+`docs/PROJECT_PLAN.md` §11.5 rather than worked around.
 
 ## Documentation
 

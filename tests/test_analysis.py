@@ -20,6 +20,7 @@ from fsme.content import ContentLibrary
 from fsme.lab.analysis import (
     GameSummary,
     SeatFacts,
+    Tally,
     explain,
     study,
     summarise,
@@ -453,3 +454,76 @@ def test_a_verdict_says_what_a_card_test_found() -> None:
 
     assert "too scarce to say" in scarce.verdict
     assert scarce.told_us == ()
+
+
+# ----------------------------------------------------------------------
+# How wide an error bar has to be
+# ----------------------------------------------------------------------
+
+
+def _run(turns: list[int]) -> Tally:
+    """
+    A tally of games with the given lengths and nothing else in them.
+    """
+    tally = Tally(games=len(turns), finished=len(turns))
+
+    tally.turns = sum(turns)
+    tally.turns_squared = sum(turn * turn for turn in turns)
+
+    return tally
+
+
+def test_the_interval_is_measured_rather_than_assumed() -> None:
+    """
+    The bug this exists to keep fixed.
+
+    The earlier version took a per-game count's variance to equal its mean, as
+    a Poisson count's does. Game lengths do not oblige, so the intervals came
+    out several times too narrow and a forty-game card test announced an effect
+    that a two-hundred-game test then reversed.
+    """
+    from fsme.lab.analysis import compare
+
+    # Two runs with the same average and a spread far wider than that average
+    # would imply: identical means, so the honest answer is "no difference".
+    steady = _run([120] * 20)
+    wild = _run([40, 200] * 10)
+
+    assert steady.average_turns() == wild.average_turns() == 120
+
+    told = compare("x (x)", steady, wild, appeared=20)
+
+    turns = told.differences[0]
+
+    assert turns.change == 0
+    assert turns.error is not None
+
+    # The spread of the wild run alone is about 80 turns, over 20 games that is
+    # an error near 18 — not the 3.5 a Poisson assumption would have given.
+    assert turns.error > 10
+
+
+def test_a_spread_needs_more_than_one_game() -> None:
+    assert Tally().spread_of(0, 0) is None
+    assert _run([100]).spread_of(100, 10_000) is None
+
+    spread = _run([100, 120]).spread_of(220, 100 * 100 + 120 * 120)
+
+    assert spread is not None
+    assert round(spread, 3) == round((2 * 10**2) ** 0.5, 3)
+
+
+def test_the_squares_survive_being_added_up_across_processes() -> None:
+    """
+    A run is split across cores and added back; the spread must not care.
+    """
+    whole = _run([40, 200, 90, 130])
+
+    halves = _run([40, 200])
+    halves.merge(_run([90, 130]))
+
+    assert halves.turns == whole.turns
+    assert halves.turns_squared == whole.turns_squared
+    assert halves.spread_of(halves.turns, halves.turns_squared) == whole.spread_of(
+        whole.turns, whole.turns_squared
+    )

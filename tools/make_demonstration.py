@@ -287,6 +287,12 @@ This is the only tool here that can tell an effect from a correlation, and it
 does it the only way available: play the same seeds with the card in the
 content and again without it, and compare the two populations.
 
+The interval beside each number is measured from the games that were played,
+not assumed from their average. That distinction is not academic: an earlier
+version assumed the spread, got intervals about seven times too narrow, and
+duly announced effects that a larger run reversed. A wide interval that says
+nothing is worth more than a narrow one that says the wrong thing.
+
 Its limits are printed with its answer rather than left for the reader to
 discover. Taking a card out of the deck reshuffles every game that deck deals,
 so the two runs differ everywhere and not only where the card is — which is why

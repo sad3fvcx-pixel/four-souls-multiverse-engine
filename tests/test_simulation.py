@@ -285,14 +285,35 @@ def test_a_game_that_falls_over_is_counted_rather_than_fatal(
 # ----------------------------------------------------------------------
 
 
-def make_tally(games: int, turns_each: int, deaths_each: int = 1) -> Tally:
+def make_tally(
+    games: int, turns_each: int, deaths_each: int = 1, spread: int = 20
+) -> Tally:
+    """
+    A run of games of about the given length, varying by ``spread``.
+
+    The variation matters. A tally whose games were all exactly the same length
+    has no spread, and a comparison built on it would claim certainty no real
+    run can have — so the helper alternates either side of the average, which
+    is the crudest thing that is still a distribution.
+    """
     tally = Tally()
+
+    lengths = [
+        turns_each + (spread if index % 2 else -spread) for index in range(games)
+    ]
+    deaths = [deaths_each] * games
 
     tally.games = games
     tally.finished = games
-    tally.turns = turns_each * games
-    tally.commands = turns_each * games * 4
-    tally.deaths = deaths_each * games
+
+    tally.turns = sum(lengths)
+    tally.turns_squared = sum(turns * turns for turns in lengths)
+
+    tally.commands = sum(turns * 4 for turns in lengths)
+    tally.commands_squared = sum((turns * 4) ** 2 for turns in lengths)
+
+    tally.deaths = sum(deaths)
+    tally.deaths_squared = sum(died * died for died in deaths)
 
     return tally
 

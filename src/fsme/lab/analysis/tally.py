@@ -19,6 +19,7 @@ the card, and that is a different tool built on this one.
 
 from __future__ import annotations
 
+import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from typing import Any
@@ -105,6 +106,24 @@ class Tally:
     wins_by_seat: Counter[int] = field(default_factory=Counter)
     deaths: int = 0
 
+    turns_squared: int = 0
+    commands_squared: int = 0
+    deaths_squared: int = 0
+    """
+    The same three totals, squared per game, so their spread can be measured.
+
+    Without these an average is a number with no idea how steady it is, and the
+    only way to put an error bar on it is to assume one. The assumption that
+    was here — that a count behaves like a Poisson count, with its variance
+    equal to its mean — is badly wrong for these: games run 40 to 250 turns
+    around an average of 120, so the real spread is several times what the
+    average alone suggests, and error bars built on it claim effects that a
+    larger run then contradicts.
+
+    Two sums per game is the whole cost, and it makes the interval a
+    measurement rather than a guess.
+    """
+
     attack_rolls: int = 0
     attack_hits: int = 0
 
@@ -128,12 +147,21 @@ class Tally:
             self.wins_by_seat[winner] += 1
 
         turns = int(journal.outcome.get("turns") or _last_turn(journal))
+        commands = len(journal)
 
         self.turns += turns
-        self.commands += len(journal)
+        self.commands += commands
+
+        self.turns_squared += turns * turns
+        self.commands_squared += commands * commands
 
         self._count_characters(journal, winner, turns)
+
+        before = self.deaths
         self._count_the_play(journal, winner)
+
+        died = self.deaths - before
+        self.deaths_squared += died * died
 
     def _count_characters(
         self, journal: Journal, winner: int | None, turns: int
@@ -247,6 +275,10 @@ class Tally:
         self.turns += other.turns
         self.commands += other.commands
         self.deaths += other.deaths
+
+        self.turns_squared += other.turns_squared
+        self.commands_squared += other.commands_squared
+        self.deaths_squared += other.deaths_squared
         self.attack_rolls += other.attack_rolls
         self.attack_hits += other.attack_hits
 
@@ -273,6 +305,22 @@ class Tally:
     def average_commands(self) -> float | None:
         return self.commands / self.games if self.games else None
 
+    def spread_of(self, total: int, squared: int) -> float | None:
+        """
+        The standard deviation of a per-game count, from its two sums.
+
+        The ordinary sample variance, written so that it can be taken from
+        totals that were added up across processes. Returns ``None`` when a
+        single game cannot have a spread.
+        """
+        if self.games < 2:
+            return None
+
+        mean = total / self.games
+        variance = (squared - self.games * mean * mean) / (self.games - 1)
+
+        return math.sqrt(max(0.0, variance))
+
     def hit_rate(self) -> float | None:
         return self.attack_hits / self.attack_rolls if self.attack_rolls else None
 
@@ -282,6 +330,7 @@ class Tally:
             "finished": self.finished,
             "average_turns": self.average_turns(),
             "average_commands": self.average_commands(),
+            "spread_of_turns": self.spread_of(self.turns, self.turns_squared),
             "deaths": self.deaths,
             "attack_rolls": self.attack_rolls,
             "hit_rate": self.hit_rate(),

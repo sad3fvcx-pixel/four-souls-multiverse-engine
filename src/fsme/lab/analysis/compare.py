@@ -35,6 +35,7 @@ reader to notice.
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -230,24 +231,21 @@ def compare(
         differences=(
             _mean(
                 "turns a game",
-                with_it.turns,
-                with_it.games,
-                without_it.turns,
-                without_it.games,
+                with_it,
+                without_it,
+                lambda tally: (tally.turns, tally.turns_squared),
             ),
             _mean(
                 "commands a game",
-                with_it.commands,
-                with_it.games,
-                without_it.commands,
-                without_it.games,
+                with_it,
+                without_it,
+                lambda tally: (tally.commands, tally.commands_squared),
             ),
             _mean(
                 "deaths a game",
-                with_it.deaths,
-                with_it.games,
-                without_it.deaths,
-                without_it.games,
+                with_it,
+                without_it,
+                lambda tally: (tally.deaths, tally.deaths_squared),
             ),
             _share(
                 "attacks that hit",
@@ -268,24 +266,47 @@ def compare(
 
 
 def _mean(
-    name: str, total: int, games: int, other_total: int, other_games: int
+    name: str,
+    with_it: Tally,
+    without_it: Tally,
+    reading: Callable[[Tally], tuple[int, int]],
 ) -> Difference:
     """
-    Compare two averages of counts per game.
+    Compare two averages of counts per game, with the spread they actually had.
 
-    The spread is estimated from the average itself, as a count over a fixed
-    number of games is: it is the roughest of estimates and it is honest about
-    the order of magnitude, which is all that is being asked of it here.
+    The spread is measured rather than assumed, and the difference between
+    those two is the difference between a report that can be believed and one
+    that cannot. The earlier version took a count's variance to equal its mean,
+    as a Poisson count's does. Games do not oblige: they run from forty turns
+    to two hundred and fifty around an average near a hundred and twenty, so
+    the real spread is several times what that assumption gives, the intervals
+    came out several times too narrow, and a forty-game run duly announced an
+    effect that a two-hundred-game run reversed.
+
+    Now the interval comes from the games that were played. It gets wider,
+    which is the point: an honest interval that says nothing beats a narrow one
+    that says the wrong thing.
     """
+    total, squared = reading(with_it)
+    other_total, other_squared = reading(without_it)
+
+    games = with_it.games
+    other_games = without_it.games
+
     here = total / games if games else None
     there = other_total / other_games if other_games else None
 
     if here is None or there is None:
         return Difference(name, here, there)
 
-    error = math.sqrt(
-        (here / games if games else 0.0) + (there / other_games if other_games else 0.0)
-    )
+    spread = with_it.spread_of(total, squared)
+    other_spread = without_it.spread_of(other_total, other_squared)
+
+    if spread is None or other_spread is None:
+        return Difference(name, here, there)
+
+    # The standard error of a difference of two independent means.
+    error = math.sqrt(spread**2 / games + other_spread**2 / other_games)
 
     return Difference(name, here, there, error or None)
 
@@ -354,7 +375,7 @@ def read_out(comparison: Comparison, *, width: int = 78) -> str:
             "  the two runs differ everywhere, not only where the card is.",
         ]
 
-    lines += ["", "-" * width, f"  {'':<22}{'with':>12}{'without':>12}{'change':>14}", "-" * width]
+    lines += ["", "-" * width, f"  {'':<22}{'with':>12}{'without':>12}{'change':>20}", "-" * width]
 
     for difference in comparison.differences:
         change = difference.change
@@ -377,7 +398,7 @@ def read_out(comparison: Comparison, *, width: int = 78) -> str:
             f"  {difference.name:<22}"
             f"{_number(difference.with_it):>12}"
             f"{_number(difference.without_it):>12}"
-            f"{told:>14}{mark}"
+            f"{told:>20}{mark}"
         )
 
     lines += ["-" * width, ""]

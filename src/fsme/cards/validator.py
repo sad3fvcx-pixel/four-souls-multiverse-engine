@@ -11,6 +11,7 @@ letting a half-valid card into a game.
 from __future__ import annotations
 
 from collections.abc import Collection, Mapping
+from difflib import get_close_matches
 from typing import Any
 
 from .types import CardType
@@ -116,7 +117,10 @@ def _validate_ability(
     if not trigger:
         errors.append(f"{location}: missing 'trigger'")
     elif known_triggers is not None and trigger not in known_triggers:
-        errors.append(f"{location}: unknown trigger '{trigger}'")
+        errors.append(
+            f"{location}: unknown trigger '{trigger}'"
+            f"{did_you_mean(str(trigger), known_triggers)}"
+        )
 
     for key in ("conditions", "targets", "effects"):
         value = ability.get(key, ())
@@ -133,14 +137,20 @@ def _validate_ability(
         if known_effects is not None:
             for name in _effect_names(effects):
                 if name not in known_effects and name not in _CONTROL_NAMES:
-                    errors.append(f"{location}: unknown effect '{name}'")
+                    errors.append(
+                        f"{location}: unknown effect '{name}'"
+                        f"{did_you_mean(name, known_effects)}"
+                    )
 
     conditions = ability.get("conditions", ())
 
     if known_conditions is not None and isinstance(conditions, (list, tuple)):
         for name in _node_names(conditions, _BOOLEAN_NAMES):
             if name not in known_conditions and name not in _BOOLEAN_NAMES:
-                errors.append(f"{location}: unknown condition '{name}'")
+                errors.append(
+                    f"{location}: unknown condition '{name}'"
+                    f"{did_you_mean(name, known_conditions)}"
+                )
 
     if known_targets is not None:
         declared = _declared_target_names(ability) | _effect_aliases(
@@ -149,9 +159,42 @@ def _validate_ability(
 
         for name in _target_names(ability):
             if name not in known_targets and name not in declared:
-                errors.append(f"{location}: unknown target '{name}'")
+                errors.append(
+                    f"{location}: unknown target '{name}'"
+                    f"{did_you_mean(name, known_targets)}"
+                )
 
     return errors
+
+
+SUGGESTIONS = 3
+"""How many near misses are worth offering."""
+
+CLOSE_ENOUGH = 0.7
+"""
+How alike two names must be before one is offered for the other.
+
+High on purpose. "Did you mean X?" is worth a great deal when it is right and
+worse than silence when it is wrong, because a wrong suggestion sends somebody
+to read about an effect that was never going to help them.
+"""
+
+
+def did_you_mean(name: str, known: Collection[str]) -> str:
+    """
+    Offer the nearest names the engine does know, when any are near.
+
+    The most common content mistake is not a misunderstanding, it is a typo or
+    a plural — ``gain_coinz`` for ``gain_coins``, ``draw_loots`` for
+    ``draw_loot`` — and the engine holds the whole vocabulary already. Making
+    somebody grep the source for the right spelling is a self-inflicted wound.
+    """
+    close = get_close_matches(name, sorted(known), n=SUGGESTIONS, cutoff=CLOSE_ENOUGH)
+
+    if not close:
+        return ""
+
+    return " — did you mean " + " or ".join(f"'{one}'" for one in close) + "?"
 
 
 _BOOLEAN_NAMES = frozenset({"and", "or", "not"})

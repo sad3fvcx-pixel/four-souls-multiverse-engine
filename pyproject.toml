@@ -51,7 +51,13 @@ build = [
 package-dir = { "" = "src" }
 
 [tool.setuptools.package-data]
-fsme = ["py.typed", "web/static/*.html"]
+fsme = [
+    "py.typed",
+    "web/static/*.html",
+    "lab/desk/static/*.html",
+    "carddata/**/*.json",
+    "carddata/**/*.md",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
