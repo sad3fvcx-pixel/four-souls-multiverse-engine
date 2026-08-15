@@ -1,4 +1,4 @@
-# src/fsme/analysis/__init__.py
+# src/fsme/lab/analysis/__init__.py
 
 """
 Turning games into numbers, and numbers into something a person can act on.
@@ -14,7 +14,8 @@ from __future__ import annotations
 
 from .compare import Comparison, Difference, compare, read_out
 from .explain import explain
-from .moments import Ledger, Moment, Turning, turning_points
+from .moments import Contribution, Ledger, Moment, Turning, turning_points
+from .party import Review, review, reviewed
 from .report import report
 from .risk import Risks, Risky, risks
 from .studied import written
@@ -24,12 +25,14 @@ from .tally import Seen, Tally
 
 __all__ = [
     "Comparison",
+    "Contribution",
     "Difference",
     "GameSummary",
     "Ledger",
     "Moment",
     "Oddity",
     "Pair",
+    "Review",
     "Risks",
     "Risky",
     "SeatFacts",
@@ -44,6 +47,8 @@ __all__ = [
     "explain",
     "read_out",
     "report",
+    "review",
+    "reviewed",
     "risks",
     "study",
     "summarise",

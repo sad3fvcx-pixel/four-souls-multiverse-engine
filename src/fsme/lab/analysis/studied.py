@@ -1,4 +1,4 @@
-# src/fsme/analysis/studied.py
+# src/fsme/lab/analysis/studied.py
 
 """
 A study, written out for a person.

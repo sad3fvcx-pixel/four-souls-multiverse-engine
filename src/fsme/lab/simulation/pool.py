@@ -1,4 +1,4 @@
-# src/fsme/simulation/pool.py
+# src/fsme/lab/simulation/pool.py
 
 """
 Running games on more than one core.
@@ -21,7 +21,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 
-from fsme.analysis import GameSummary, Tally
+from fsme.lab.analysis import GameSummary, Tally
 
 from .runner import DEFAULT_STEPS, play_one
 
@@ -116,7 +116,7 @@ def _one(work: tuple[int, int, int, str | None, bool, tuple[int, ...]]) -> Finis
     if journals_into:
         journal.save(Path(journals_into) / f"game-{seed:06d}.json")
 
-    from fsme.analysis import summarise
+    from fsme.lab.analysis import summarise
 
     tally = Tally()
     tally.add(journal)

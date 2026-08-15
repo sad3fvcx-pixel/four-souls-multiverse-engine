@@ -168,3 +168,26 @@ def test_a_journal_on_disk_can_be_explained(
 
     assert main(["explain", str(journal)]) == 0
     assert "Game 5" in capsys.readouterr().out
+
+
+def test_a_report_is_one_command_and_the_whole_picture(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(["report", "--seed", "5", "--players", "2"]) == 0
+
+    told = capsys.readouterr().out
+
+    assert "FSME GAME REPORT" in told
+    assert "Key moments" in told
+    assert "What did the work" in told
+
+
+def test_a_report_can_skip_the_replay(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(["report", "--seed", "5", "--players", "2", "--quick"]) == 0
+
+    told = capsys.readouterr().out
+
+    assert "FSME GAME REPORT" in told
+    assert "The decisions" not in told

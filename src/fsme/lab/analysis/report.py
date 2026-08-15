@@ -1,4 +1,4 @@
-# src/fsme/analysis/report.py
+# src/fsme/lab/analysis/report.py
 
 """
 A tally, written out for a person.

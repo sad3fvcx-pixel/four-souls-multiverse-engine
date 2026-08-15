@@ -14,12 +14,12 @@ from pathlib import Path
 
 import pytest
 
-from fsme.analysis import Tally, report
 from fsme.api import load_content
 from fsme.content import ContentLibrary
 from fsme.journal import Journal
+from fsme.lab.analysis import Tally, report
+from fsme.lab.simulation import ScriptedAgent, play_one, run
 from fsme.replay import state_digest
-from fsme.simulation import ScriptedAgent, play_one, run
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
@@ -242,7 +242,7 @@ def test_the_same_run_split_across_cores_gives_the_same_numbers(
     """
     The property the whole idea of a parallel run rests on.
     """
-    from fsme.simulation import run_on_many_cores
+    from fsme.lab.simulation import run_on_many_cores
 
     alone = Tally()
 
@@ -263,7 +263,7 @@ def test_a_game_that_falls_over_is_counted_rather_than_fatal(
     """
     A run of a thousand games must not be lost to one of them.
     """
-    from fsme.simulation import pool
+    from fsme.lab.simulation import pool
 
     monkeypatch.setattr(pool, "_library", object())
 
@@ -298,7 +298,7 @@ def make_tally(games: int, turns_each: int, deaths_each: int = 1) -> Tally:
 
 
 def test_a_difference_within_the_noise_is_not_offered_as_a_finding() -> None:
-    from fsme.analysis import compare
+    from fsme.lab.analysis import compare
 
     told = compare(
         "a card",
@@ -314,7 +314,7 @@ def test_a_difference_within_the_noise_is_not_offered_as_a_finding() -> None:
 
 
 def test_a_difference_well_beyond_the_noise_is() -> None:
-    from fsme.analysis import compare
+    from fsme.lab.analysis import compare
 
     told = compare(
         "a card",
@@ -333,7 +333,7 @@ def test_a_card_that_never_reached_the_table_explains_nothing() -> None:
     """
     Removing a card reshuffles every game, so two runs differ everywhere.
     """
-    from fsme.analysis import compare, read_out
+    from fsme.lab.analysis import compare, read_out
 
     told = compare(
         "a card",
@@ -352,7 +352,7 @@ def test_a_card_that_never_reached_the_table_explains_nothing() -> None:
 
 
 def test_a_comparison_is_plain_data() -> None:
-    from fsme.analysis import compare
+    from fsme.lab.analysis import compare
 
     told = compare("a card", make_tally(10, 50), make_tally(10, 60), appeared=8)
 

@@ -1,4 +1,4 @@
-# src/fsme/simulation/__init__.py
+# src/fsme/lab/simulation/__init__.py
 
 """
 Playing many games instead of one.

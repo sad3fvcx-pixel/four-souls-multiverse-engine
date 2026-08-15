@@ -1,4 +1,4 @@
-# src/fsme/analysis/explain.py
+# src/fsme/lab/analysis/explain.py
 
 """
 Why this game went the way it did.

@@ -20,12 +20,12 @@ import pytest
 from conftest import make_game, make_instance, monster_definition
 
 from fsme.api import load_content
-from fsme.bot import Decision, HeuristicBot
 from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary
 from fsme.journal import Journal, JournalKeeper, render
+from fsme.lab.bot import Decision, HeuristicBot
+from fsme.lab.simulation import play_one
 from fsme.rules.slots import place
-from fsme.simulation import play_one
 from fsme.state import GamePhase
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
@@ -269,7 +269,7 @@ def test_the_bot_beats_players_who_do_not_think() -> None:
     that: a player choosing at random wins about a quarter of four-handed
     games, and this asks for a third.
     """
-    from fsme.simulation import run_on_many_cores
+    from fsme.lab.simulation import run_on_many_cores
 
     games = 16
     wins = 0

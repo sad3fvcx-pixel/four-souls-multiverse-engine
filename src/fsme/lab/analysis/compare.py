@@ -1,4 +1,4 @@
-# src/fsme/analysis/compare.py
+# src/fsme/lab/analysis/compare.py
 
 """
 Two runs, side by side.

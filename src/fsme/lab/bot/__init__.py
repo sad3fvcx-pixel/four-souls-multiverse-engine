@@ -1,4 +1,4 @@
-# src/fsme/bot/__init__.py
+# src/fsme/lab/bot/__init__.py
 
 """
 Players that are not people.

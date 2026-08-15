@@ -1,4 +1,4 @@
-# src/fsme/simulation/runner.py
+# src/fsme/lab/simulation/runner.py
 
 """
 Playing a great many games.
@@ -21,10 +21,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from fsme.bot import HeuristicBot
 from fsme.content import ContentLibrary
 from fsme.game import Game
 from fsme.journal import Journal, JournalKeeper
+from fsme.lab.bot import HeuristicBot
 
 from .agent import ScriptedAgent
 

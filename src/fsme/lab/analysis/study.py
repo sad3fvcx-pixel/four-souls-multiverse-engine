@@ -1,4 +1,4 @@
-# src/fsme/analysis/study.py
+# src/fsme/lab/analysis/study.py
 
 """
 What a pile of games has to say.

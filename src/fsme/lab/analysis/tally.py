@@ -1,4 +1,4 @@
-# src/fsme/analysis/tally.py
+# src/fsme/lab/analysis/tally.py
 
 """
 Counting what happened, across as many games as you like.

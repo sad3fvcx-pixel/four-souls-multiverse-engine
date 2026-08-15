@@ -1,4 +1,4 @@
-# src/fsme/bot/heuristic.py
+# src/fsme/lab/bot/heuristic.py
 
 """
 A bot that thinks one move ahead, and shows its working.

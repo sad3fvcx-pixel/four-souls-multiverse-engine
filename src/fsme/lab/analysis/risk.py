@@ -1,4 +1,4 @@
-# src/fsme/analysis/risk.py
+# src/fsme/lab/analysis/risk.py
 
 """
 The decisions a game was lost on, measured against a yardstick that says so.
@@ -11,7 +11,7 @@ asked to weigh everything on offer. The gap between what was played and what
 the bot would have played is the number reported.
 
 That number is a disagreement, not a mistake. The yardstick is
-``fsme.bot.heuristic`` — a bot that looks one move ahead, knows four things
+``fsme.lab.bot.heuristic`` — a bot that looks one move ahead, knows four things
 about the game, and has no idea what most cards say. Calling its preference a
 mistake would be dressing up an opinion as a finding, and the wording never
 does. What makes the opinion usable anyway is that it is legible: every gap
@@ -37,12 +37,12 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any
 
-from fsme.bot import HeuristicBot
-from fsme.bot.evaluation import Evaluation, Reason
 from fsme.commands import Command
 from fsme.content import ContentLibrary
 from fsme.game import Game
 from fsme.journal import Journal
+from fsme.lab.bot import HeuristicBot
+from fsme.lab.bot.evaluation import Evaluation, Reason
 
 WORTH_MENTIONING = 1.0
 """
@@ -82,6 +82,15 @@ class Risky:
     instead: str = ""
     """The move the bot would have made."""
 
+    runner_up: float = 0.0
+    """
+    What the bot scored the second-best move on offer.
+
+    The number that makes "a good decision" mean anything. Taking the best move
+    when everything on offer scored the same is not a decision at all; taking
+    it when the next best was well behind is one, whoever or whatever made it.
+    """
+
     considered: int = 0
     """How many moves the seat had to choose between."""
 
@@ -108,6 +117,16 @@ class Risky:
         return self.best - self.taken
 
     @property
+    def margin(self) -> float:
+        """
+        How far the move taken was ahead of the next best, when it was ahead.
+
+        Zero when it was not the best on offer: a move that lost ground cannot
+        also have gained any.
+        """
+        return max(0.0, self.taken - self.runner_up)
+
+    @property
     def was_a_choice(self) -> bool:
         """
         Whether the seat had anything else to do.
@@ -128,7 +147,9 @@ class Risky:
             "taken": self.taken,
             "best": self.best,
             "instead": self.instead,
+            "runner_up": self.runner_up,
             "regret": self.regret,
+            "margin": self.margin,
             "considered": self.considered,
             "times": self.times,
             "was_a_choice": self.was_a_choice,
@@ -167,6 +188,15 @@ class Risks:
     worst: list[Risky] = field(default_factory=list)
     """Moves the bot most disagreed with."""
 
+    best: list[Risky] = field(default_factory=list)
+    """
+    Moves that took the option the bot rated highest, with the next well behind.
+
+    Read this as a statement about the position as much as about the player: a
+    move can only be a good one if there was a worse one available, and the
+    seats the bot itself played take the best option every time by definition.
+    """
+
     faithful: bool = True
     """
     Whether the replay reproduced the journal.
@@ -186,6 +216,7 @@ class Risks:
             "faithful": self.faithful,
             "riskiest": [risk.to_dict() for risk in self.riskiest],
             "worst": [risk.to_dict() for risk in self.worst],
+            "best": [risk.to_dict() for risk in self.best],
         }
 
 
@@ -250,6 +281,19 @@ def risks(
         sorted(
             (risk for risk in weighed if risk.dangers),
             key=lambda risk: sum(danger.worth for danger in risk.dangers),
+        ),
+        weighed,
+        top=top,
+    )
+
+    told.best = _the_distinct_ones(
+        sorted(
+            (
+                risk
+                for risk in weighed
+                if not risk.regret and risk.margin >= WORTH_MENTIONING
+            ),
+            key=lambda risk: -risk.margin,
         ),
         weighed,
         top=top,
@@ -326,7 +370,10 @@ def _judge(
     if taken is None:
         return None
 
-    best = max(opinions, key=lambda opinion: opinion[1].score)
+    ranked = sorted(opinions, key=lambda opinion: -opinion[1].score)
+
+    best = ranked[0]
+    second = ranked[1][1].score if len(ranked) > 1 else best[1].score
 
     return Risky(
         index=entry.index,
@@ -342,6 +389,7 @@ def _judge(
         taken=taken.score,
         best=best[1].score,
         instead=str(best[0]["label"]),
+        runner_up=second,
         considered=len(opinions),
         dangers=tuple(
             reason for reason in taken.reasons if reason.worth <= A_DANGER

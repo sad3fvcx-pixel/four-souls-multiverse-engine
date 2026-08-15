@@ -1,4 +1,4 @@
-# src/fsme/simulation/agent.py
+# src/fsme/lab/simulation/agent.py
 
 """
 A player that is not clever, only thorough.

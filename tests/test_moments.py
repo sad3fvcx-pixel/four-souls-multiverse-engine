@@ -13,12 +13,12 @@ from pathlib import Path
 
 import pytest
 
-from fsme.analysis import turning_points
-from fsme.analysis.moments import A_SOUL, Ledger, Turning
 from fsme.api import load_content
 from fsme.content import ContentLibrary
 from fsme.journal import Journal
-from fsme.simulation import play_one
+from fsme.lab.analysis import turning_points
+from fsme.lab.analysis.moments import A_SOUL, Ledger, Turning
+from fsme.lab.simulation import play_one
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
@@ -132,7 +132,7 @@ def test_a_turning_is_plain_data(turning: Turning) -> None:
 def test_the_account_says_no_other_line_of_play_was_tried(
     a_journal: Journal, turning: Turning
 ) -> None:
-    from fsme.analysis import explain, summarise
+    from fsme.lab.analysis import explain, summarise
 
     told = explain(summarise(a_journal), turning=turning)
 

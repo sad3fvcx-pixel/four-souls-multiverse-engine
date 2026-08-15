@@ -15,7 +15,9 @@ from pathlib import Path
 
 import pytest
 
-from fsme.analysis import (
+from fsme.api import load_content
+from fsme.content import ContentLibrary
+from fsme.lab.analysis import (
     GameSummary,
     SeatFacts,
     explain,
@@ -23,10 +25,8 @@ from fsme.analysis import (
     summarise,
     written,
 )
-from fsme.analysis.study import SEEN_AT_LEAST, TOGETHER_AT_LEAST
-from fsme.api import load_content
-from fsme.content import ContentLibrary
-from fsme.simulation import play_one
+from fsme.lab.analysis.study import SEEN_AT_LEAST, TOGETHER_AT_LEAST
+from fsme.lab.simulation import play_one
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
@@ -432,7 +432,7 @@ def test_the_section_says_its_own_rows_are_not_findings(
 
 
 def test_a_verdict_says_what_a_card_test_found() -> None:
-    from fsme.analysis import Tally, compare
+    from fsme.lab.analysis import Tally, compare
 
     told = compare(
         "Nothing (nothing)",

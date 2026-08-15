@@ -118,7 +118,7 @@ def play(args: argparse.Namespace) -> int:
     offered, what was chosen, why — if a bot was choosing — and everything that
     followed.
     """
-    from fsme.simulation import play_one
+    from fsme.lab.simulation import play_one
 
     thinking = seats_of(args.bot_seats)
 
@@ -195,13 +195,54 @@ def replay(args: argparse.Namespace) -> int:
     return 1
 
 
+def report(args: argparse.Namespace) -> int:
+    """
+    Read one game every way the lab knows how, and write it out once.
+
+    The command the others were building towards: a journal in, a report out,
+    no flags needed to get the whole picture.
+    """
+    from fsme.journal import Journal
+    from fsme.lab.analysis import review, reviewed
+
+    loaded = library(args)
+
+    if args.file:
+        journal = Journal.load(args.file)
+    else:
+        from fsme.lab.simulation import play_one
+
+        journal, _ = play_one(
+            loaded,
+            args.seed,
+            args.players,
+            thinking_seats=seats_of(args.bot_seats),
+        )
+
+    told = review(
+        journal,
+        loaded,
+        moments=args.moments,
+        decisions=0 if args.quick else args.decisions,
+    )
+
+    if args.json:
+        print(json.dumps(told.to_dict(), indent=2))
+
+        return 0
+
+    print(reviewed(told))
+
+    return 0
+
+
 def study(args: argparse.Namespace) -> int:
     """
     Play a run and ask it the questions a pile of games can answer.
     """
-    from fsme.analysis import study as ask
-    from fsme.analysis import written
-    from fsme.simulation import run_on_many_cores
+    from fsme.lab.analysis import study as ask
+    from fsme.lab.analysis import written
+    from fsme.lab.simulation import run_on_many_cores
 
     loaded = library(args)
     names = {
@@ -253,17 +294,17 @@ def explain(args: argparse.Namespace) -> int:
     """
     Say why one game went the way it did, and where it was decided.
     """
-    from fsme.analysis import explain as tell
-    from fsme.analysis import risks as weigh
-    from fsme.analysis import summarise, turning_points
     from fsme.journal import Journal
+    from fsme.lab.analysis import explain as tell
+    from fsme.lab.analysis import risks as weigh
+    from fsme.lab.analysis import summarise, turning_points
 
     loaded = library(args)
 
     if args.file:
         journal = Journal.load(args.file)
     else:
-        from fsme.simulation import play_one
+        from fsme.lab.simulation import play_one
 
         journal, _ = play_one(
             loaded,
@@ -297,8 +338,8 @@ def simulate(args: argparse.Namespace) -> int:
     """
     Play a run of games and say what happened across all of them.
     """
-    from fsme.analysis import Tally, report
-    from fsme.simulation import run as play_them
+    from fsme.lab.analysis import Tally, report
+    from fsme.lab.simulation import run as play_them
 
     into = Path(args.journals).expanduser() if args.journals else None
 
@@ -318,7 +359,7 @@ def simulate(args: argparse.Namespace) -> int:
     thinking = seats_of(args.bot_seats)
 
     if args.jobs > 1:
-        from fsme.simulation import run_on_many_cores
+        from fsme.lab.simulation import run_on_many_cores
 
         for done in run_on_many_cores(
             content_root(args.content),
@@ -387,7 +428,7 @@ def test_card(args: argparse.Namespace) -> int:
     worth testing, which closes the loop the two commands were written for: a
     run says a card looks odd, and the test says whether it is.
     """
-    from fsme.analysis import read_out
+    from fsme.lab.analysis import read_out
 
     loaded = library(args)
 
@@ -467,8 +508,8 @@ def _one_card_test(
     """
     Play both runs for one card and compare them.
     """
-    from fsme.analysis import Tally, compare
-    from fsme.simulation import run_on_many_cores
+    from fsme.lab.analysis import Tally, compare
+    from fsme.lab.simulation import run_on_many_cores
 
     root = content_root(args.content)
 
@@ -650,6 +691,24 @@ def build_parser() -> argparse.ArgumentParser:
     asking.add_argument("--bot-seats", default="")
     asking.add_argument("--json", action="store_true")
     asking.set_defaults(run=study)
+
+    telling = commands.add_parser(
+        "report", help="one game, read every way the lab knows how"
+    )
+    shared(telling)
+    telling.add_argument(
+        "file", nargs="?", help="a journal; without one, play a game"
+    )
+    telling.add_argument("--bot-seats", default="")
+    telling.add_argument("--moments", type=int, default=3)
+    telling.add_argument("--decisions", type=int, default=3)
+    telling.add_argument(
+        "--quick",
+        action="store_true",
+        help="skip the replay, and with it the decisions",
+    )
+    telling.add_argument("--json", action="store_true")
+    telling.set_defaults(run=report)
 
     why = commands.add_parser("explain", help="why one game went the way it did")
     shared(why)

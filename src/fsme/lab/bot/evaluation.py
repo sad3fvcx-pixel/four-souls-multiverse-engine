@@ -1,4 +1,4 @@
-# src/fsme/bot/evaluation.py
+# src/fsme/lab/bot/evaluation.py
 
 """
 Why a bot chose what it chose.

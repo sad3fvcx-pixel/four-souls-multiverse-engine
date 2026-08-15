@@ -1,4 +1,4 @@
-# src/fsme/analysis/summary.py
+# src/fsme/lab/analysis/summary.py
 
 """
 One game, reduced to what a question can be asked of.

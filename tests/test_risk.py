@@ -15,12 +15,12 @@ from pathlib import Path
 
 import pytest
 
-from fsme.analysis import Risks, risks
-from fsme.analysis.risk import WORTH_MENTIONING
 from fsme.api import load_content
 from fsme.content import ContentLibrary
 from fsme.journal import Journal
-from fsme.simulation import play_one
+from fsme.lab.analysis import Risks, risks
+from fsme.lab.analysis.risk import WORTH_MENTIONING
+from fsme.lab.simulation import play_one
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
@@ -124,7 +124,7 @@ def test_a_game_nobody_played_weighs_nothing(
 def test_the_report_calls_it_a_disagreement_and_not_a_mistake(
     a_journal: Journal, weighed: Risks
 ) -> None:
-    from fsme.analysis import explain, summarise
+    from fsme.lab.analysis import explain, summarise
 
     told = explain(summarise(a_journal), dangers=weighed)
 

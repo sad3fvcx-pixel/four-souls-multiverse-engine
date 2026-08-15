@@ -1,4 +1,4 @@
-# src/fsme/analysis/moments.py
+# src/fsme/lab/analysis/moments.py
 
 """
 The moments a game turned on.
@@ -111,6 +111,39 @@ class Ledger:
 
 
 @dataclass(slots=True)
+class Contribution:
+    """
+    One card, and everything its effects did to the scoreboard.
+
+    Read off the source the engine named on each event, so a soul paid for
+    killing a monster is credited to the monster and a soul handed over by a
+    card is credited to the card. What this is not is a measure of how good a
+    card is: a card that turns up often will out-total a card that turns up
+    once and decides a game, and a card played by whoever was already winning
+    collects credit for it. It is a record of what did the work in *this* game.
+    """
+
+    card: str
+    name: str = ""
+
+    swing: float = 0.0
+    """Signed towards the seat the game is measured towards."""
+
+    souls: int = 0
+    times: int = 0
+    """How many events it was the source of."""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "card": self.card,
+            "name": self.name,
+            "swing": self.swing,
+            "souls": self.souls,
+            "times": self.times,
+        }
+
+
+@dataclass(slots=True)
 class Moment:
     """
     One move, and what it did to the game's direction.
@@ -197,6 +230,11 @@ class Turning:
 
     moments: list[Moment] = field(default_factory=list)
 
+    cards: list[Contribution] = field(default_factory=list)
+    """
+    What each card's effects did to the scoreboard, largest first.
+    """
+
     weighed: int = 0
     """How many moves moved anything at all, out of the whole game."""
 
@@ -211,6 +249,7 @@ class Turning:
             "moves": self.moves,
             "weighed": self.weighed,
             "moments": [moment.to_dict() for moment in self.moments],
+            "cards": [card.to_dict() for card in self.cards],
         }
 
 
@@ -241,15 +280,17 @@ def turning_points(journal: Journal, *, top: int = 3) -> Turning:
     told.towards_name = journal.players[told.towards]
 
     weighed: list[Moment] = []
+    credited: dict[str, Contribution] = {}
 
     for entry in journal.entries:
-        moment = _weigh(journal, entry, told.towards, seats)
+        moment = _weigh(journal, entry, told.towards, seats, credited)
 
         if moment is not None:
             weighed.append(moment)
 
     told.weighed = len(weighed)
     told.moments = sorted(weighed, key=lambda moment: -abs(moment.swing))[:top]
+    told.cards = sorted(credited.values(), key=lambda card: -abs(card.swing))
 
     return told
 
@@ -277,7 +318,11 @@ def _who_got_closest(journal: Journal, seats: int) -> int | None:
 
 
 def _weigh(
-    journal: Journal, entry: Entry, towards: int, seats: int
+    journal: Journal,
+    entry: Entry,
+    towards: int,
+    seats: int,
+    credited: dict[str, Contribution],
 ) -> Moment | None:
     """
     Read one entry's events into a ledger per seat, and take the difference.
@@ -285,6 +330,9 @@ def _weigh(
     ``None`` when nothing countable happened, which is most moves: passing
     priority, ending a phase, drawing into a hand. A game of six hundred moves
     turns on the twenty or so that moved something.
+
+    Each event is also credited to whatever the engine said it came from, so
+    that the same pass answers "what did the work" without a second one.
     """
     ledgers: dict[int, Ledger] = {}
     said: list[str] = []
@@ -313,30 +361,41 @@ def _weigh(
         if not ours or seat is None:
             continue
 
+        moved = Ledger()
+
         if event.type == SOUL_GAINED:
-            ledger(seat).souls += 1
+            moved.souls = 1
             said.append(f"{journal.players[seat]} gained a soul")
         elif event.type == SOUL_LOST:
-            ledger(seat).souls -= 1
+            moved.souls = -1
             said.append(f"{journal.players[seat]} lost a soul")
         elif event.type == COINS_GAINED:
-            amount = int(event.payload.get("amount") or 0)
-            ledger(seat).coins += amount
+            moved.coins = int(event.payload.get("amount") or 0)
         elif event.type == COINS_LOST:
-            amount = int(event.payload.get("amount") or 0)
-            ledger(seat).coins -= amount
+            moved.coins = -int(event.payload.get("amount") or 0)
         elif event.type == DAMAGE_DEALT:
             if str(event.payload.get("target_kind") or "") != A_PLAYER:
                 continue
 
-            ledger(seat).hp -= int(event.payload.get("amount") or 0)
+            moved.hp = -int(event.payload.get("amount") or 0)
         elif event.type == HEALED:
-            ledger(seat).hp += int(event.payload.get("amount") or 0)
+            moved.hp = int(event.payload.get("amount") or 0)
         elif event.type == PLAYER_DIED:
-            ledger(seat).deaths += 1
+            moved.deaths = 1
             said.append(f"{journal.players[seat]} died")
         elif event.type == MONSTER_KILLED:
             said.append(f"{journal.players[seat]} killed {event.source or 'it'}")
+
+        if moved.empty:
+            continue
+
+        into = ledger(seat)
+        into.souls += moved.souls
+        into.coins += moved.coins
+        into.hp += moved.hp
+        into.deaths += moved.deaths
+
+        _credit(credited, event, moved, towards, seats, seat)
 
     if all(kept.empty for kept in ledgers.values()):
         return None
@@ -371,6 +430,48 @@ def _weigh(
         chance=chance,
         said=tuple(dict.fromkeys(said)),
     )
+
+
+def _credit(
+    credited: dict[str, Contribution],
+    event: Any,
+    moved: Ledger,
+    towards: int,
+    seats: int,
+    seat: int,
+) -> None:
+    """
+    Put one event's worth of scoreboard against the card the engine named.
+
+    Signed the same way a moment is: towards the seat the game is measured
+    towards. A card that healed the eventual winner and a card that healed
+    their opponent did opposite work, and a total that added them together
+    would say nothing about either.
+
+    Events the engine attributed to nothing are dropped rather than pooled
+    under a heading — "unattributed" at the top of a table of cards would be
+    read as a card.
+    """
+    source = getattr(event, "source_id", None)
+
+    if not source:
+        return
+
+    standing = moved.standing
+
+    towards_them = (
+        standing if seat == towards else -standing / max(1, seats - 1)
+    )
+
+    contribution = credited.setdefault(
+        str(source), Contribution(card=str(source), name=str(event.source or ""))
+    )
+
+    contribution.swing += towards_them
+    contribution.times += 1
+
+    if moved.souls:
+        contribution.souls += moved.souls if seat == towards else 0
 
 
 def _chance_of(payload: Any) -> float | None:
