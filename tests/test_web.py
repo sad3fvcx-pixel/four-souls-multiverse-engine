@@ -169,8 +169,55 @@ def test_the_journal_of_the_browser_game_can_be_fetched(address: str) -> None:
 
     assert journal["format"]
     assert journal["seed"] == 7
-    assert len(journal["entries"]) == 1
-    assert journal["entries"][0]["label"] == move["label"]
+    assert journal["entries"][-1]["label"] == move["label"]
+
+
+def test_the_journal_begins_at_the_deal(address: str) -> None:
+    """
+    The opening hands, the starting cents and the first loot are moves too.
+
+    They used to be missing. The journal was started after the game was dealt,
+    so a record of the game began at the second thing that happened in it — and
+    a reader looking for where three cents came from would find nothing.
+    """
+    journal = get(address, "/api/journal")
+
+    assert journal["entries"], "the journal was empty before anybody had moved"
+
+    opening = journal["entries"][0]
+
+    assert opening["command"] == "start_game"
+    assert opening["index"] == 0
+    assert opening["events"], "the deal happened and nothing was written down"
+
+
+def test_the_journal_can_be_asked_for_only_what_is_new(address: str) -> None:
+    """
+    A page showing a long game asks for the moves it is missing.
+
+    Without this the watch page would re-fetch the whole game after every
+    click, which is the kind of cost that only shows up in the games worth
+    watching.
+    """
+    whole = get(address, "/api/journal")
+    already = len(whole["entries"])
+
+    view = get(address, "/api/view?since=0")
+    move = next(move for move in view["moves"] if move["type"] == "pass_priority")
+
+    post(address, "/api/command?since=0", move)
+
+    rest = get(address, f"/api/journal?since={already}")
+
+    assert len(rest["entries"]) == 1
+    assert rest["entries"][0]["index"] == already
+    assert rest["total"] == already + 1, "and it says how far behind the caller is"
+
+    # The slice is a window onto the journal, not a different document: what it
+    # says about the game is what the whole journal says.
+    assert rest["seed"] == whole["seed"]
+    assert rest["format"] == whole["format"]
+    assert rest["players"] == whole["players"]
 
 
 def test_the_watch_page_reads_the_game_out(address: str) -> None:
@@ -200,7 +247,11 @@ def test_the_page_leads_with_the_account_and_keeps_the_log(address: str) -> None
         home = answer.read().decode("utf-8")
 
     assert "What is happening" in home
-    assert "Every event" in home
+
+    # The account leads; the step-by-step record is behind a fold.
+    assert "Every step" in home
+    assert 'id="log-block"' in home
+    assert "<details" in home[: home.index("Every step")]
 
     # A seed nobody has to invent, and one they can keep.
     assert 'id="roll-seed"' in home
@@ -208,6 +259,27 @@ def test_the_page_leads_with_the_account_and_keeps_the_log(address: str) -> None
 
     # A card shows what it says.
     assert "data-text=" in home
+
+
+def test_the_step_log_reads_the_journal_and_does_not_keep_its_own(
+    address: str,
+) -> None:
+    """
+    One record, two readings.
+
+    The account and the step log have to be two readings of the same journal.
+    If the page assembled the technical log itself, a game where the two
+    disagreed would leave nobody able to say which of them was right — so the
+    page is only allowed to ask for journal entries it has not drawn.
+    """
+    with urllib.request.urlopen(f"{address}/", timeout=10) as answer:
+        home = answer.read().decode("utf-8")
+
+    assert "/api/journal?since=" in home, "the log is not fed from the journal"
+
+    # Folding and scrolling, both asked of it because games get long.
+    assert 'id="log-fold"' in home
+    assert "overflow-y: auto" in home
 
 
 def test_the_plain_server_does_not_offer_a_bot_it_does_not_have(

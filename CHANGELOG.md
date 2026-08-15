@@ -6,7 +6,41 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
-## 0.1.3 — the bot reads the card
+## 0.1.3 — the bot reads the card, and the watcher reads the game
+
+### Every step
+
+The watch page had an account of the game and a flat list of events. The
+account leaves most events out on purpose, and the list said what happened
+without saying who did it or when — so neither of them was a record.
+
+- **The full log is now the game's journal**, move by move: every accepted
+  command in order, grouped under the turn it was taken in, with the player,
+  the phase, the move in the words it was offered in, and every event it
+  caused — bookkeeping included. It reads `/api/journal`, which is the same
+  file `fsme replay` reads; the page keeps no event list of its own, so the
+  account and the log cannot drift into two versions of one game.
+- **The account still leads.** The step log is folded away behind *Every step*,
+  each turn folds independently, the whole thing scrolls, and *Fold every turn*
+  turns a three-hundred-move game into sixteen lines.
+- **The journal now begins at the deal.** It was started *after* the game was
+  dealt, so the opening hands, the starting cents and the first loot happened
+  before anything was writing: a reader looking for where three cents came from
+  found nothing. Sixteen events, missing from every browser game FSME has
+  played.
+- **The bots' moves are in the journal at all.** *Let the bots play* submitted
+  straight into the game rather than through the session, so it played past the
+  recorder — the mode most likely to be watched was the one mode that left no
+  record of itself, and the bot's own words for each move were thrown away.
+- **The account of a bot game no longer repeats itself.** Autoplay answered
+  every batch with the whole history, so a watcher saw each sentence again for
+  every batch that followed it: a game of 281 moves read as 2167 lines instead
+  of 126. Found by counting the account against the step log, which is what a
+  second reading of one record is for.
+- `/api/journal` takes `?since=`, so a long game costs one page one request per
+  click rather than the whole game after every click.
+
+### The bot reads the card
 
 `heuristic-1` never bought anything. Not rarely: never, in any game FSME had
 ever played. 748 positions across sixty four-handed games where a purchase was

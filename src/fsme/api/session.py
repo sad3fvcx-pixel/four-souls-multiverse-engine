@@ -71,12 +71,21 @@ class Session:
             interactive_priority=self._interactive,
         )
 
-        game.start()
-
-        # The journal is kept from the deal onwards, without the alternatives:
-        # a client already knows what it offered, and asking the engine again
-        # before every click would double the work of playing.
+        # The keeper is built before the deal rather than after it, so that the
+        # deal is in the journal like everything else. It was not: the opening
+        # hands, the starting cents and the first loot all happened before
+        # anything was writing, and a journal that began at the second move was
+        # not a record of the game.
+        #
+        # The alternatives are left out. A client already knows what it offered,
+        # and asking the engine again before every click would double the work
+        # of playing.
         self._keeper = JournalKeeper(game)
+
+        self._keeper.submit(
+            Command(type=CommandType.START_GAME, player=0),
+            label="The game is dealt",
+        )
 
         return game
 

@@ -94,8 +94,10 @@ class GameHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/journal":
+            since = self._since()
+
             with self.lock:
-                self._json(self.session.journal.to_dict())
+                self._json(self._journal(since))
 
             return
 
@@ -143,6 +145,27 @@ class GameHandler(BaseHTTPRequestHandler):
             return
 
         self._json({"error": "no such endpoint"}, status=404)
+
+    def _journal(self, since: int) -> dict[str, Any]:
+        """
+        The journal, or the part of it the caller has not seen.
+
+        ``since`` is an entry index, so a page showing a long game asks for the
+        moves it is missing rather than the whole game after every click. The
+        answer is otherwise exactly what the journal writes to a file — the same
+        dictionary, the same keys — because the journal is the record and this
+        endpoint is a window onto it, not a second version of it.
+
+        ``total`` is how many entries the journal holds regardless of the slice,
+        which is what a caller polls to know whether it is behind.
+        """
+        journal = self.session.journal
+
+        written = journal.to_dict()
+        written["entries"] = written["entries"][max(0, since):]
+        written["total"] = len(journal)
+
+        return written
 
     def _since(self) -> int:
         _, _, query = self.path.partition("?")

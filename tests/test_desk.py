@@ -417,6 +417,77 @@ def test_the_bots_can_play_the_game_being_watched(address: str) -> None:
     assert told, "a game was played and nothing was said about it"
 
 
+def test_the_account_of_a_bot_game_does_not_repeat_itself(address: str) -> None:
+    """
+    Autoplay answered every batch with the whole history of the game.
+
+    So a watcher saw each sentence again for every batch that followed it: a
+    game of three hundred moves read as two thousand lines, and the account —
+    which is the thing a person is meant to read — became the least readable
+    part of the page. Found by counting it against the step log, which is the
+    kind of thing a second reading of one record is for.
+    """
+    post(address, "/api/command", {"type": "start_game", "player": 0})
+
+    seen = get(address, "/api/view?since=0")["history_length"]
+    said = 0
+
+    for _ in range(12):
+        answer = post(address, f"/api/autoplay?since={seen}", {"moves": 16})
+
+        said += sum(1 for one in answer["view"]["events"] if one.get("said"))
+        seen = answer["view"]["history_length"]
+
+        if not answer["moved"] or answer["over"]:
+            break
+
+    whole = get(address, "/api/view?since=0")["events"]
+    narratable = sum(1 for one in whole if one.get("said"))
+
+    assert said, "the bots played and nothing was said about it"
+    assert said <= narratable, (
+        f"the account said {said} things about a game with {narratable} in it"
+    )
+
+
+def test_what_the_bots_played_is_in_the_journal(address: str) -> None:
+    """
+    The mode most likely to be watched used to leave no record of itself.
+
+    Autoplay submitted straight into the game rather than through the session,
+    so it played past the recorder: the bots would run a whole game and the
+    journal — the thing the step-by-step log reads, and the thing a replay
+    reads — stayed at whatever a person had clicked by hand.
+    """
+    post(address, "/api/command", {"type": "start_game", "player": 0})
+
+    before = get(address, "/api/journal")["total"]
+
+    moved = 0
+
+    for _ in range(20):
+        answer = post(address, "/api/autoplay", {"moves": 16})
+        moved += answer["moved"]
+
+        if not answer["moved"] or answer["over"]:
+            break
+
+    assert moved > 20, "the bots barely moved"
+
+    journal = get(address, "/api/journal")
+
+    assert journal["total"] >= before + moved, (
+        "the bots played and the journal did not hear about it"
+    )
+
+    played = journal["entries"][before:]
+
+    assert any(entry["label"] for entry in played), (
+        "the bot said what it was doing and the journal kept none of it"
+    )
+    assert all("turn" in entry["before"] for entry in played)
+
+
 def test_a_card_says_what_it_does_before_it_is_measured(address: str) -> None:
     cards = get(address, "/api/cards")["cards"]
 

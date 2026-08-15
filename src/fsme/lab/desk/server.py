@@ -153,7 +153,12 @@ class DeskHandler(GameHandler):
                 return
 
             with self.lock:
-                self._json(self._autoplay(_within(body.get("moves"), 8, low=1, high=64)))
+                self._json(
+                    self._autoplay(
+                        _within(body.get("moves"), 8, low=1, high=64),
+                        since=self._since(),
+                    )
+                )
 
             return
 
@@ -197,7 +202,7 @@ class DeskHandler(GameHandler):
 
         self._json(job.to_dict())
 
-    def _autoplay(self, moves: int) -> dict[str, Any]:
+    def _autoplay(self, moves: int, *, since: int = 0) -> dict[str, Any]:
         """
         Let the bot take a few moves in the game the page is watching.
 
@@ -205,11 +210,21 @@ class DeskHandler(GameHandler):
         game plays out visibly instead of finishing in one request and looking
         like nothing happened.
 
+        ``since`` is where the page has read up to, and it is answered the same
+        way ``/api/command`` answers it. Sending the whole history back after
+        every batch made the account of the game repeat itself: a watcher saw
+        each sentence again for every batch that followed it, so a game of
+        three hundred moves read as two thousand lines.
+
         The bot lives in the laboratory and the game server is core, which is
         why this is here rather than in ``fsme.web`` — the core has never heard
         of the bot and this keeps it that way.
+
+        Every move goes in through ``Session.submit`` rather than straight into
+        the game. That is what puts it in the journal: the bot used to play past
+        the recorder, so the mode most likely to be watched was the one mode
+        that left no record of itself.
         """
-        from fsme.commands import Command, CommandType
         from fsme.lab.bot import HeuristicBot
         from fsme.lab.simulation import ScriptedAgent
 
@@ -235,7 +250,7 @@ class DeskHandler(GameHandler):
                 if chosen is None:
                     break
 
-                command, _ = chosen
+                command, label = chosen
             else:
                 seat = _whose_move(game)
                 thought = bot.choose(game, seats=(seat,))
@@ -243,12 +258,18 @@ class DeskHandler(GameHandler):
                 if thought is None:
                     break
 
-                command = thought[0]
+                command, label = thought[0], thought[1]
 
-            if not game.submit(
-                Command(type=CommandType(str(command.type)), player=command.player,
-                        payload=dict(command.payload))
-            ).accepted:
+            outcome = session.submit(
+                {
+                    "type": str(command.type),
+                    "player": command.player,
+                    "payload": dict(command.payload),
+                    "label": label,
+                }
+            )
+
+            if not outcome["accepted"]:
                 break
 
             moved += 1
@@ -256,7 +277,7 @@ class DeskHandler(GameHandler):
         return {
             "moved": moved,
             "over": bool(game.is_over),
-            "view": session.view(0),
+            "view": session.view(since),
         }
 
     def _run(self, body: dict[str, Any]) -> Any:

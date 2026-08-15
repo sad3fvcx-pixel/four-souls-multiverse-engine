@@ -398,11 +398,17 @@ def test_the_session_keeps_a_journal_of_the_browser_game(
 
     session = Session(everything, players=2, seed=5)
 
+    journal: Any = session.journal
+
+    # The deal is the first entry, not something that happened before anybody
+    # was writing. A journal that began at the second move could not say where
+    # an opening hand or three starting cents came from.
+    assert len(journal) == 1
+    assert journal.entries[0].command == "start_game"
+
     moves = legal_moves(session.game)
 
     assert session.submit(moves[0])["accepted"]
 
-    journal: Any = session.journal
-
-    assert len(journal) == 1
-    assert journal.entries[0].label == moves[0]["label"]
+    assert len(journal) == 2
+    assert journal.entries[-1].label == moves[0]["label"]

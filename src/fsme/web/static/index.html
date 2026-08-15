@@ -128,15 +128,43 @@ button.wide { display: block; width: 100%; margin-bottom: 6px; }
 .hint { opacity: .65; font-size: 12px; }
 
 #log {
-  flex: 1;
   overflow-y: auto;
   max-height: 46vh;
   border: 1px solid var(--line);
-  padding: 8px;
+  padding: 0 8px 8px;
   font-size: 12px;
 }
-#log div { padding: 1px 0; color: var(--dim); }
-#log div b { color: var(--ink); font-weight: 600; }
+#log .turn-mark {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  color: var(--gold);
+  padding: 6px 0 3px;
+  border-bottom: 1px solid var(--line);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-size: 11px;
+  z-index: 1;
+  cursor: pointer;
+  list-style: none;
+}
+#log .turn-mark::-webkit-details-marker { display: none; }
+#log .turn-mark::before { content: "▾ "; }
+#log details:not([open]) > .turn-mark::before { content: "▸ "; }
+#log .turn-mark .moves { color: var(--dim); }
+#log .step { padding: 5px 0; border-bottom: 1px solid var(--line); }
+#log .step:last-child { border-bottom: 0; }
+#log .step-head { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+#log .step-index { color: var(--dim); min-width: 2.5em; }
+#log .step-who { color: var(--gold); }
+#log .step-move { color: var(--ink); font-weight: 600; }
+#log .step-where { color: var(--dim); }
+#log .happened { padding: 1px 0 1px 3.4em; color: var(--dim); }
+#log .happened b { color: var(--ink); font-weight: 600; }
+#log .quiet { padding-left: 3.4em; color: var(--dim); opacity: .6; }
+.log-tools { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin: 6px 0 8px; }
+.log-tools .count { color: var(--dim); font-size: 12px; }
+.log-tools button { padding: 2px 8px; font-size: 12px; }
 #waiting { border: 1px solid var(--line); padding: 10px 12px; }
 #waiting.decision { border-color: var(--hot); }
 .pill {
@@ -215,10 +243,17 @@ input {
       <h2>Moves</h2>
       <div id="moves"></div>
     </div>
-    <details>
-      <summary><h2 style="display:inline">Every event</h2></summary>
-      <p class="hint">Everything the engine did, including the bookkeeping. The
-        account above is the same events, read out.</p>
+    <details id="log-block">
+      <summary><h2 style="display:inline">Every step</h2></summary>
+      <p class="hint">The game's journal, move by move: every command in the
+        order it was accepted, under the turn it was taken in, with every event
+        it caused — including the bookkeeping the account above leaves out. This
+        is the same file <code>fsme replay</code> reads.</p>
+      <div class="log-tools">
+        <span class="count" id="log-count"></span>
+        <button id="log-fold">Fold every turn</button>
+        <button id="log-bottom">Jump to the end</button>
+      </div>
       <div id="log"></div>
     </details>
   </aside>
@@ -401,20 +436,165 @@ function drawStory(events) {
   if (events.length) story.scrollTop = story.scrollHeight;
 }
 
-function drawLog(events) {
-  const log = el("log");
-  for (const event of events) {
-    const line = document.createElement("div");
-    const bits = [];
-    for (const [key, value] of Object.entries(event.payload || {})) {
-      if (value !== null && value !== undefined && value !== "") bits.push(`${key} ${value}`);
-    }
-    line.innerHTML = `<b>${escape(event.type)}</b> `
-      + escape([event.source, (event.targets || []).join(", "), bits.join(" ")]
-        .filter(Boolean).join(" · "));
-    log.appendChild(line);
+// ----------------------------------------------------------------------
+// Every step
+// ----------------------------------------------------------------------
+//
+// The full log is the game's own journal, fetched from /api/journal and not
+// assembled here. That matters more than it looks: the narration above and the
+// account below have to be two readings of one record, or a game where they
+// disagreed would leave nobody able to say which was right. The page therefore
+// keeps no event list of its own — it asks for the entries it has not seen and
+// appends them.
+//
+// One entry is one accepted command, which is why this can say what the
+// narration cannot: who acted, on which turn, in which phase, and what the
+// engine did about it, bookkeeping included.
+
+let stepped = 0;      // journal entries already on the page
+let lastTurn = null;  // the turn heading currently open
+
+function payloadOf(carried) {
+  const bits = [];
+
+  for (const [key, value] of Object.entries(carried || {})) {
+    if (value === null || value === undefined || value === "") continue;
+    bits.push(`${key} ${Array.isArray(value) ? value.join("/") : value}`);
   }
-  if (events.length) log.scrollTop = log.scrollHeight;
+
+  return bits.join(" ");
+}
+
+function turnGroup(entry, names) {
+  // A turn is a <details>, so a long game folds down to a few lines.
+  const group = document.createElement("details");
+  const heading = document.createElement("summary");
+
+  group.open = true;
+  group.className = "turn-group";
+  group.dataset.turn = entry.before.turn;
+
+  heading.className = "turn-mark";
+  heading.innerHTML = `turn ${entry.before.turn}`
+    + ` · ${escape(names[entry.before.active_player] || "")}`
+    + ` <span class="moves"></span>`;
+
+  group.appendChild(heading);
+  el("log").appendChild(group);
+
+  return group;
+}
+
+function drawSteps(entries, names) {
+  const log = el("log");
+  const wasAtBottom = log.scrollTop + log.clientHeight >= log.scrollHeight - 24;
+
+  let group = log.lastElementChild;
+
+  for (const entry of entries) {
+    if (entry.before.turn !== lastTurn || !group) {
+      group = turnGroup(entry, names);
+      lastTurn = entry.before.turn;
+    }
+
+    const step = document.createElement("div");
+    step.className = "step";
+
+    // The label is the move in the words whoever played it used. Where there
+    // was none — a command posted by something with no words for it — the
+    // command and its payload stand in, rather than a blank.
+    const said = entry.label || [entry.command, payloadOf(entry.payload)]
+      .filter(Boolean).join(" ");
+
+    step.innerHTML = `<div class="step-head">
+        <span class="step-index">${entry.index}</span>
+        <span class="step-who">${escape(names[entry.player] ?? entry.player)}</span>
+        <span class="step-move">${escape(said)}</span>
+        <span class="step-where">${escape(entry.before.phase)}</span>
+      </div>`;
+
+    // Every event, in the order the engine produced them. Not the narrated
+    // ones: all of them, which is the whole point of this block existing
+    // beside the account rather than instead of it.
+    for (const event of entry.events || []) {
+      const line = document.createElement("div");
+
+      line.className = "happened";
+      line.innerHTML = `<b>${escape(event.type)}</b> `
+        + escape([
+            event.source,
+            (event.targets || []).join(", "),
+            payloadOf(event.payload),
+          ].filter(Boolean).join(" · "));
+
+      step.appendChild(line);
+    }
+
+    if (!(entry.events || []).length) {
+      const quiet = document.createElement("div");
+
+      quiet.className = "quiet";
+      quiet.textContent = "no events";
+
+      step.appendChild(quiet);
+    }
+
+    group.appendChild(step);
+
+    const counted = group.querySelectorAll(".step").length;
+    group.querySelector(".moves").textContent =
+      `· ${counted} ${counted === 1 ? "move" : "moves"}`;
+  }
+
+  stepped += entries.length;
+  el("log-count").textContent =
+    `${stepped} ${stepped === 1 ? "move" : "moves"} recorded`;
+
+  // Follow the game only if the reader was already at the end. Scrolling back
+  // to look at something and being yanked forward is worse than not following.
+  if (entries.length && wasAtBottom) log.scrollTop = log.scrollHeight;
+}
+
+let catchingUp = false;
+let dealing = 0;
+
+async function catchUpSteps() {
+  // Only the entries this page has not drawn. A game four hundred moves long
+  // costs the same per click as a game four moves long.
+  //
+  // Two guards, both for things that actually happen here. Overlapping fetches
+  // would append the same entries twice, because both would ask from the same
+  // point — so one runs at a time and keeps asking until it is level. And a
+  // deal that lands mid-fetch invalidates the answer in flight, which is what
+  // the counter is for: those entries belong to a game that no longer exists.
+  if (catchingUp) return;
+
+  catchingUp = true;
+
+  const mine = dealing;
+
+  try {
+    for (;;) {
+      const journal = await get(`/api/journal?since=${stepped}`);
+
+      if (dealing !== mine) return;
+      if (!journal || !journal.entries || !journal.entries.length) return;
+
+      drawSteps(journal.entries, journal.players || []);
+
+      if ((journal.total ?? stepped) <= stepped) return;
+    }
+  } finally {
+    catchingUp = false;
+  }
+}
+
+function forgetSteps() {
+  el("log").innerHTML = "";
+  el("log-count").textContent = "";
+  stepped = 0;
+  lastTurn = null;
+  dealing += 1;
 }
 
 let current = { moves: [], state: null };
@@ -425,8 +605,12 @@ function draw(view) {
   drawWaiting(view.state);
   drawMoves(view.moves, view.state);
   drawStory(view.events);
-  drawLog(view.events);
   seen = view.history_length;
+
+  // Kept current whether or not the block is open, because catching up is
+  // proportional to what changed and folding the log away should not silently
+  // stop it recording what it will show when unfolded.
+  catchUpSteps();
 }
 
 // A card shows what it says. The text is the printed text the engine loaded,
@@ -483,7 +667,7 @@ async function botTurn() {
     let answer;
 
     try {
-      answer = await post("/api/autoplay", { moves: 8 });
+      answer = await post(`/api/autoplay?since=${seen}`, { moves: 8 });
     } catch (error) {
       break;
     }
@@ -518,8 +702,25 @@ document.addEventListener("click", async (occasion) => {
   const button = occasion.target.closest("button");
   if (!button) return;
 
+  if (button.id === "log-fold" || button.id === "log-bottom") {
+    const groups = el("log").querySelectorAll("details.turn-group");
+
+    if (button.id === "log-fold") {
+      const folding = button.textContent.startsWith("Fold");
+
+      for (const group of groups) group.open = !folding;
+
+      button.textContent = folding ? "Unfold every turn" : "Fold every turn";
+      return;
+    }
+
+    el("log").scrollTop = el("log").scrollHeight;
+    return;
+  }
+
   if (button.id === "restart") {
-    el("log").innerHTML = "";
+    forgetSteps();
+    el("story").innerHTML = "";
     seen = 0;
     const answer = await post("/api/restart", {
       seed: Number(el("seed").value),
