@@ -22,6 +22,7 @@ from typing import Any
 from fsme.api import Session, load_content
 from fsme.content import ContentLibrary
 from fsme.content.errors import InvalidContentError
+from fsme.journal import JournalFormatError
 
 DEFAULT_NAMES = ("Ann", "Bo", "Cy", "Di")
 
@@ -114,7 +115,7 @@ def serve(args: argparse.Namespace) -> int:
         interactive_priority=not args.no_priority,
     )
 
-    server = build(session, host=args.host, port=args.port)
+    server = _bound(lambda: build(session, host=args.host, port=args.port), args)
     where = f"http://{args.host}:{args.port}/"
 
     print(f"FSME is at {where} — Ctrl-C to stop", flush=True)
@@ -156,7 +157,9 @@ def front(args: argparse.Namespace) -> int:
         interactive_priority=not args.no_priority,
     )
 
-    server = build(session, bench, host=args.host, port=args.port)
+    server = _bound(
+        lambda: build(session, bench, host=args.host, port=args.port), args
+    )
     where = f"http://{args.host}:{args.port}/"
 
     print(f"FSME is at {where} — Ctrl-C to stop", flush=True)
@@ -172,6 +175,26 @@ def front(args: argparse.Namespace) -> int:
         server.server_close()
 
     return 0
+
+
+def _bound(build: Any, args: argparse.Namespace) -> Any:
+    """
+    Open the socket, or say plainly why it could not be opened.
+
+    Almost always: the port is taken, usually by an FSME left running in
+    another window. That is an ordinary thing to do and does not deserve a
+    stack trace ending in ``socketserver``.
+    """
+    try:
+        return build()
+    except OSError as refused:
+        raise SystemExit(
+            f"cannot listen on {args.host}:{args.port} — {refused.strerror or refused}\n"
+            f"\n"
+            f"  Something is already using that port; most likely another copy\n"
+            f"  of fsme is still running. Either stop it, or pick another port:\n"
+            f"      fsme {args.command} --port {args.port + 1}"
+        ) from None
 
 
 def play(args: argparse.Namespace) -> int:
@@ -1045,6 +1068,47 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _a_near_miss(parser: argparse.ArgumentParser, given: list[str]) -> None:
+    """
+    Catch a mistyped command before argparse lists all twelve of them.
+
+    ``fsme repot`` is a typo, not a person browsing, and answering it with the
+    whole vocabulary makes them find the answer themselves. Anything that is
+    not close to a command falls through to argparse, whose listing is the
+    right answer for somebody guessing.
+    """
+    from difflib import get_close_matches
+
+    wanted = next((word for word in given if not word.startswith("-")), "")
+
+    if not wanted:
+        return
+
+    known = _every_command(parser)
+
+    if not known or wanted in known:
+        return
+
+    close = get_close_matches(wanted, sorted(known), n=1, cutoff=0.6)
+
+    if not close:
+        return
+
+    raise SystemExit(
+        f"fsme has no command {wanted!r} — did you mean `fsme {close[0]}`?\n"
+        f"\n"
+        f"  `fsme --help` lists them all, grouped by what they are for."
+    )
+
+
+def _every_command(parser: argparse.ArgumentParser) -> set[str]:
+    for action in parser._subparsers._group_actions if parser._subparsers else ():  # noqa: SLF001
+        if action.choices:
+            return set(action.choices)
+
+    return set()
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     given = list(sys.argv[1:] if argv is None else argv)
 
@@ -1054,12 +1118,35 @@ def main(argv: Sequence[str] | None = None) -> int:
         given = ["desk", "--open"]
 
     parser = build_parser()
+
+    _a_near_miss(parser, given)
+
     args = parser.parse_args(given)
 
     run: Any = args.run
 
     try:
         return int(run(args))
+    except FileNotFoundError as missing:
+        print(f"\nno such file: {missing.filename}\n", file=sys.stderr)
+        print(
+            "  A journal is written by `fsme play --journal <file>`, or by the\n"
+            "  desk into its work directory. `fsme demo` makes one without\n"
+            "  being asked.",
+            file=sys.stderr,
+        )
+
+        return 2
+    except JournalFormatError as complaint:
+        print(f"\n{complaint}\n", file=sys.stderr)
+        print(
+            "  That file is not a journal this engine can read. Journals come\n"
+            "  from `fsme play --journal <file>`; a save file or a bare JSON\n"
+            "  document is not one.",
+            file=sys.stderr,
+        )
+
+        return 2
     except InvalidContentError as complaint:
         # A person writing a card is the likeliest reader of this, and a
         # traceback tells them about the loader when they wanted to be told

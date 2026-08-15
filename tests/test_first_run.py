@@ -311,3 +311,82 @@ def test_the_tour_shows_all_five_things_it_promises() -> None:
 
     assert DEMO_STUDY > 1, "the tour plays more than one game"
     assert DEMO_GAMES > 1, "the tour tests a card over more than one game"
+
+
+# ----------------------------------------------------------------------
+# Errors a stranger will actually see
+# ----------------------------------------------------------------------
+
+
+def test_a_mistyped_command_is_corrected_rather_than_listed() -> None:
+    """
+    `fsme repot` is a typo, not somebody browsing.
+
+    Answering it with all twelve commands makes them find the answer
+    themselves, which they could have done without asking.
+    """
+    with pytest.raises(SystemExit) as raised:
+        entry_point(["repot"])
+
+    assert "did you mean `fsme report`" in str(raised.value)
+
+
+def test_a_command_nothing_resembles_still_gets_the_listing() -> None:
+    # Somebody guessing at a vocabulary wants the vocabulary. argparse's own
+    # message is the right answer there, so nothing intercepts it.
+    with pytest.raises(SystemExit) as raised:
+        entry_point(["xyzzy"])
+
+    assert "did you mean" not in str(raised.value)
+
+
+def test_a_journal_that_is_not_there_says_where_they_come_from(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    outcome = entry_point(["report", str(tmp_path / "nowhere.json")])
+
+    assert outcome == 2
+
+    complaint = capsys.readouterr().err
+
+    assert "Traceback" not in complaint
+    assert "no such file" in complaint
+    assert "fsme play --journal" in complaint
+
+
+def test_a_file_that_is_not_a_journal_says_so(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    where = tmp_path / "not-a-journal.json"
+    where.write_text('{"hello": 1}', encoding="utf-8")
+
+    outcome = entry_point(["report", str(where)])
+
+    assert outcome == 2
+
+    complaint = capsys.readouterr().err
+
+    assert "Traceback" not in complaint
+    assert "not a journal" in complaint
+
+
+def test_a_port_already_taken_says_what_to_do() -> None:
+    """
+    Leaving a desk running in another window is an ordinary thing to do.
+
+    It does not deserve a stack trace ending in ``socketserver``.
+    """
+    import argparse as parsing
+
+    from fsme.cli.main import _bound
+
+    def refuse() -> None:
+        raise OSError(98, "Address already in use")
+
+    with pytest.raises(SystemExit) as raised:
+        _bound(refuse, parsing.Namespace(host="127.0.0.1", port=8000, command="desk"))
+
+    said = str(raised.value)
+
+    assert "cannot listen on 127.0.0.1:8000" in said
+    assert "--port 8001" in said
