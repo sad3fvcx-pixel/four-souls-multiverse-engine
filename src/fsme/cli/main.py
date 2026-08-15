@@ -1109,7 +1109,42 @@ def _every_command(parser: argparse.ArgumentParser) -> set[str]:
     return set()
 
 
+def _speak_utf8() -> None:
+    """
+    Make sure the console can carry the characters the reports are written in.
+
+    Windows gives a Python process a cp1252 console by default, and cp1252
+    cannot encode a box-drawing rule. So ``fsme demo`` — the first thing anybody
+    is told to run — died on its first line with a ``UnicodeEncodeError`` from
+    inside ``print``, on Windows only. Nothing on this side of the machine
+    could have noticed; CI did.
+
+    Reconfiguring the stream is the whole fix: the bytes written become UTF-8,
+    which every modern Windows terminal reads. Whether a particular font has a
+    glyph for ``─`` is the terminal's business and not a crash. The fallbacks
+    matter more than the happy path — a report that cannot be printed is worth
+    less than a report printed with question marks in it.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+
+        if reconfigure is None:
+            # Not a real stream: something has replaced it, and replacing it
+            # back would be ruder than leaving it alone.
+            continue
+
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError, AttributeError):
+            try:
+                reconfigure(errors="replace")
+            except (ValueError, OSError, AttributeError):
+                pass
+
+
 def main(argv: Sequence[str] | None = None) -> int:
+    _speak_utf8()
+
     given = list(sys.argv[1:] if argv is None else argv)
 
     if not given:

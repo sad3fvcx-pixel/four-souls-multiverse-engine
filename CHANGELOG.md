@@ -90,6 +90,13 @@ type — every one of these worked perfectly on the machine it was written on.
   own report, with a suggestion.
 - Missing files, malformed journals and a port already in use are explained
   instead of raised.
+- **`fsme demo` crashed on Windows on its own first line.** Windows gives a
+  Python process a cp1252 console and cp1252 cannot encode a box-drawing rule,
+  so the first thing a newcomer is told to run died with a
+  `UnicodeEncodeError` from inside `print`. The console is now put into UTF-8,
+  with fallbacks, and a test reproduces the failure anywhere by wrapping stdout
+  in a cp1252 writer. Found by CI, which had been failing on every push while
+  the local suite was green — the more useful lesson of the two.
 
 ### Known limitations
 
