@@ -33,6 +33,7 @@ from fsme.cards import CardInstance
 from fsme.commands import CommandType
 from fsme.content import ContentLibrary, ContentLoader
 from fsme.game import Game
+from fsme.rules import STARTING_COINS
 from fsme.runtime.vocabulary import engine_vocabulary
 from fsme.state import GamePhase
 
@@ -247,7 +248,7 @@ def test_the_devil_deal_may_simply_pay(alt_art: ContentLibrary) -> None:
 
     answer(game, "Gain 6¢. Take 1 damage.")
 
-    assert player.pennies == 6
+    assert player.pennies == STARTING_COINS + 6
     assert player.hp == hp - 1
 
 

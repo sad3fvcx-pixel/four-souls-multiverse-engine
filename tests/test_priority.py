@@ -10,6 +10,7 @@ from __future__ import annotations
 from conftest import make_game, make_instance, treasure_definition
 
 from fsme.commands import Command, CommandType
+from fsme.rules import STARTING_COINS
 from fsme.state import GamePhase
 
 
@@ -59,7 +60,7 @@ def test_no_window_opens_when_priority_is_not_interactive() -> None:
     )
 
     assert runtime.awaiting_priority is False
-    assert state.player(0).pennies == 3
+    assert state.player(0).pennies == STARTING_COINS + 3
     assert runtime.is_stable()
 
 
@@ -74,14 +75,14 @@ def test_an_ability_waits_for_everyone_to_pass() -> None:
 
     assert runtime.awaiting_priority is True
     assert not state.stack.is_empty()
-    assert state.player(0).pennies == 0
+    assert state.player(0).pennies == STARTING_COINS
 
     assert pass_priority(runtime, 0).accepted
     assert runtime.awaiting_priority is True
 
     assert pass_priority(runtime, 1).accepted
 
-    assert state.player(0).pennies == 3
+    assert state.player(0).pennies == STARTING_COINS + 3
     assert state.stack.is_empty()
     assert runtime.awaiting_priority is False
 
@@ -149,14 +150,14 @@ def test_a_response_reopens_the_window() -> None:
     pass_priority(runtime, 1)
 
     # The response resolved first, the original ability is still waiting.
-    assert state.player(1).pennies == 5
-    assert state.player(0).pennies == 0
+    assert state.player(1).pennies == STARTING_COINS + 5
+    assert state.player(0).pennies == STARTING_COINS
     assert len(state.stack) == 1
 
     pass_priority(runtime, 0)
     pass_priority(runtime, 1)
 
-    assert state.player(0).pennies == 1
+    assert state.player(0).pennies == STARTING_COINS + 1
     assert state.stack.is_empty()
     assert first.tapped is True
 

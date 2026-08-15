@@ -16,6 +16,7 @@ from conftest import make_definition, make_game, make_instance
 
 from fsme.cards import Ability, CardType
 from fsme.commands import Command, CommandType
+from fsme.rules import STARTING_COINS
 
 
 def room_definition(card_id="test.room", *, effects=({"gain_coins": 3},)):
@@ -52,7 +53,7 @@ def test_a_rooms_ability_can_be_activated() -> None:
     room = open_room(state, room_definition())
 
     assert activate_room(runtime).accepted
-    assert state.player(0).pennies == 3
+    assert state.player(0).pennies == STARTING_COINS + 3
     assert room.tapped is True
 
 
@@ -113,7 +114,7 @@ def test_only_the_active_player_may_use_the_room() -> None:
     assert "active player" in refused.reason
 
     assert activate_room(runtime, player=0).accepted
-    assert state.player(0).pennies == 3
+    assert state.player(0).pennies == STARTING_COINS + 3
 
 
 # ----------------------------------------------------------------------

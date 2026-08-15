@@ -44,6 +44,7 @@ from .constants import (
     MONSTER_SLOTS,
     SHOP_SLOTS,
     SOULS_TO_WIN,
+    STARTING_COINS,
     STARTING_HAND_SIZE,
     TREASURE_COST,
 )
@@ -192,6 +193,7 @@ __all__ = [
     "MONSTER_SLOTS",
     "SHOP_SLOTS",
     "SOULS_TO_WIN",
+    "STARTING_COINS",
     "STARTING_HAND_SIZE",
     "TREASURE_COST",
 ]

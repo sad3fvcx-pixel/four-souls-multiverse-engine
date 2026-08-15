@@ -29,6 +29,23 @@ from typing import Any
 from fsme.content import ContentLibrary
 from fsme.journal import Journal
 
+
+def _version() -> str:
+    from fsme.cli.main import VERSION
+
+    return VERSION
+
+REPORT_FORMAT = 1
+"""
+The version of the file `Save report` writes.
+
+Bumped when the shape changes in a way an older FSME could not read. What makes
+this worth versioning at all is that the file is not a report — it is the
+*game*, with the report alongside for reading. The analysers are re-run when it
+is loaded, so a file saved today gets today's turning points and tomorrow's
+improvements to them.
+"""
+
 WAITING = "waiting"
 RUNNING = "running"
 DONE = "done"
@@ -126,16 +143,30 @@ class Workbench:
             {"name": path.name, "size": path.stat().st_size} for path in found
         ]
 
-    def cards(self) -> list[dict[str, str]]:
+    def cards(self) -> list[dict[str, Any]]:
         """
-        Every card the content holds, for a box that completes as you type.
+        Every card the content holds, for choosing one to test.
+
+        Three fields rather than one, because a name alone cannot identify a
+        card: twelve cards are called "Pills!" and six are called "Eden". The
+        set says which, and whether the engine has rules for it says whether
+        testing it can tell you anything — a card with no behaviour will always
+        come back "no effect", and finding that out after a two-minute run is a
+        waste nobody should have to discover twice.
         """
         return sorted(
             (
-                {"id": definition.id, "name": definition.name}
+                {
+                    "id": definition.id,
+                    "name": definition.name,
+                    "set": definition.expansion,
+                    "implemented": bool(
+                        definition.abilities or definition.statics
+                    ),
+                }
                 for definition in self._library.definitions()
             ),
-            key=lambda card: card["name"],
+            key=lambda card: (str(card["name"]).lower(), str(card["set"])),
         )
 
     # ------------------------------------------------------------------
@@ -172,6 +203,72 @@ class Workbench:
             "test-card",
             f"a card test — {card}, {games} games each way",
             lambda job: self._test_card(job, card, games, players, jobs),
+        )
+
+    def bundle(self, number: int) -> dict[str, Any] | None:
+        """
+        A finished job, packed into a file somebody can keep or send on.
+
+        The journal is the point of it. Saving only the text would make a
+        souvenir: nobody could ask a different question of it later, and every
+        analyser in the project reads games rather than prose. So the game
+        travels, and the report travels beside it as what it looked like at the
+        time.
+        """
+        job = self.job(number)
+
+        if job is None or job.state != DONE or not job.saved:
+            return None
+
+        where = self._safe(job.saved)
+
+        if not where.is_file():
+            return None
+
+        import json
+
+        return {
+            "fsme_report": REPORT_FORMAT,
+            "fsme_version": _version(),
+            "kind": job.kind,
+            "title": job.title,
+            "text": job.text,
+            "journal": json.loads(where.read_text("utf-8")),
+        }
+
+    def take_bundle(self, given: Any) -> Job:
+        """
+        Read a saved report back, and report on the game inside it again.
+
+        What is checked, in the order somebody would want to hear it: that the
+        file is one of ours, that this FSME is new enough to read it, and that
+        the game inside is a journal this engine understands. Each of those
+        gets its own sentence rather than one "invalid file".
+        """
+        if not isinstance(given, dict) or "fsme_report" not in given:
+            raise ValueError(
+                "that is not an FSME report — a report is the file the"
+                " Save report button writes"
+            )
+
+        format_version = given.get("fsme_report")
+
+        if not isinstance(format_version, int) or format_version > REPORT_FORMAT:
+            raise ValueError(
+                f"that report is written in format {format_version}, and this"
+                f" FSME reads format {REPORT_FORMAT}. It was saved by a newer"
+                f" version."
+            )
+
+        if not isinstance(given.get("journal"), dict):
+            raise ValueError(
+                "that report has no game in it, so there is nothing to analyse"
+            )
+
+        return self._start(
+            "report",
+            f"a saved report — {given.get('title') or 'a game'}",
+            lambda job: self._loaded(job, given),
         )
 
     def open_report(self, name: str) -> Job:
@@ -306,6 +403,30 @@ class Workbench:
                 appeared=appeared,
             )
         )
+
+    def _loaded(self, job: Job, given: dict[str, Any]) -> None:
+        """
+        Put the game from a saved report back on disk, and read it again.
+
+        Re-run rather than replayed from the stored text: the file carries the
+        game, so a report loaded into a later FSME is that FSME's report.
+        """
+        import json
+
+        from fsme.lab.analysis import review, reviewed
+
+        job.total = 1
+
+        self._work.mkdir(parents=True, exist_ok=True)
+
+        journal = Journal.from_dict(given["journal"])
+
+        where = self._work / f"loaded-{journal.seed}-{len(journal.players)}p.json"
+        where.write_text(json.dumps(given["journal"]), encoding="utf-8")
+
+        job.saved = where.name
+        job.done = 1
+        job.text = reviewed(review(journal, self._library))
 
     def _report(self, job: Job, name: str) -> None:
         from fsme.lab.analysis import review, reviewed

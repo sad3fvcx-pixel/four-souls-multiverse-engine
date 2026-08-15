@@ -9,6 +9,7 @@ from conftest import make_definition, make_game, make_instance, treasure_definit
 from fsme.cards import CardInstance, CardType
 from fsme.commands import Command, CommandType
 from fsme.events import EventType
+from fsme.rules import STARTING_COINS
 from fsme.rules.slots import place
 
 
@@ -85,7 +86,7 @@ def test_printed_cent_and_loot_rewards_are_paid() -> None:
         ({"effect": "kill", "target": "current_monster"},),
     )
 
-    assert state.player(0).pennies == 7
+    assert state.player(0).pennies == STARTING_COINS + 7
     assert state.player(0).hand_size == before + 2
 
 
@@ -123,7 +124,7 @@ def test_unknown_reward_keys_are_ignored() -> None:
         ({"effect": "kill", "target": "current_monster"},),
     )
 
-    assert state.player(0).pennies == 1
+    assert state.player(0).pennies == STARTING_COINS + 1
 
 
 def test_a_monster_nobody_damaged_pays_nobody() -> None:
@@ -133,7 +134,7 @@ def test_a_monster_nobody_damaged_pays_nobody() -> None:
     runtime.run()
 
     assert monster.alive is False
-    assert state.player(0).pennies == 0
+    assert state.player(0).pennies == STARTING_COINS
 
 
 def test_the_last_player_to_damage_a_monster_is_remembered() -> None:

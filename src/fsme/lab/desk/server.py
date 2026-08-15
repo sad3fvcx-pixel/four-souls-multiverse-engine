@@ -93,6 +93,33 @@ class DeskHandler(GameHandler):
 
             return
 
+        if path.startswith("/api/report/"):
+            wanted = path.rsplit("/", 1)[-1]
+
+            bundle = (
+                self.bench.bundle(int(wanted)) if wanted.isdigit() else None
+            )
+
+            if bundle is None:
+                self._json({"error": "no saved report for that job"}, status=404)
+
+                return
+
+            body = json.dumps(bundle).encode("utf-8")
+            name = f"fsme-report-{wanted}.json"
+
+            self.send_response(200)
+            self.send_header("Content-Type", JSON)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header(
+                "Content-Disposition", f'attachment; filename="{name}"'
+            )
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+
+            return
+
         if path == "/api/journals":
             self._json({"journals": self.bench.journals()})
 
@@ -102,6 +129,25 @@ class DeskHandler(GameHandler):
 
     def do_POST(self) -> None:  # noqa: N802 - the base class names it
         path = self.path.split("?", 1)[0]
+
+        if path == "/api/load":
+            try:
+                body = self._body()
+            except ValueError as error:
+                self._json({"error": str(error)}, status=400)
+
+                return
+
+            try:
+                job = self.bench.take_bundle(body)
+            except ValueError as error:
+                self._json({"error": str(error)}, status=400)
+
+                return
+
+            self._json(job.to_dict())
+
+            return
 
         if path != "/api/run":
             super().do_POST()

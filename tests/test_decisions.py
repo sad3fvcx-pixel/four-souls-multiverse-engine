@@ -10,6 +10,7 @@ from __future__ import annotations
 from conftest import make_game, make_instance, treasure_definition
 
 from fsme.commands import Command, CommandType
+from fsme.rules import STARTING_COINS
 from fsme.state import DecisionKind
 
 
@@ -185,11 +186,11 @@ def test_effects_before_the_question_have_already_happened() -> None:
 
     activate(runtime)
 
-    assert state.player(0).pennies == 4
+    assert state.player(0).pennies == STARTING_COINS + 4
 
     choose(runtime, 0, 0)
 
-    assert state.player(0).pennies == 5
+    assert state.player(0).pennies == STARTING_COINS + 5
 
 
 def test_a_monster_may_be_chosen() -> None:

@@ -25,6 +25,7 @@ from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary, ContentLoader
 from fsme.events import EventType
 from fsme.game import Game
+from fsme.rules import STARTING_COINS
 from fsme.rules.slots import sync
 from fsme.runtime.vocabulary import engine_vocabulary
 from fsme.state import DecisionKind, GamePhase, MonsterSlot
@@ -1798,7 +1799,7 @@ def test_the_jawbone_takes_three_cents_from_the_player_it_names(
     assert choose(game, 0, list(decision.options).index(victim)).accepted
 
     assert victim.pennies == 2
-    assert game.state.player(0).pennies == 3
+    assert game.state.player(0).pennies == STARTING_COINS + 3
 
 
 def test_shiny_rock_pays_for_activating_anything(base_game: ContentLibrary) -> None:
@@ -2777,9 +2778,13 @@ def test_the_soul_of_greed_goes_to_the_first_player_who_earns_it(
         if card.id == "bonus_souls-base_game-soul_of_greed"
     )
 
-    game.runtime.context.apply("gain_coins", [game.state.player(1)], amount=24)
+    # One short of the 25¢ the card asks for, counting the cents setup dealt.
+    game.runtime.context.apply(
+        "gain_coins", [game.state.player(1)], amount=24 - STARTING_COINS
+    )
     game.runtime.run()
 
+    assert game.state.player(1).pennies == 24
     assert soul in game.state.bonus_souls.cards
 
     game.runtime.context.apply("gain_coins", [game.state.player(1)], amount=1)
@@ -2831,7 +2836,10 @@ def test_bum_bo_levels_up_on_the_coins_it_swallows(base_game: ContentLibrary) ->
     game.runtime.context.apply("gain_coins", [game.state.player(0)], amount=12)
     game.runtime.run()
 
-    assert game.state.player(0).pennies == 0, "the coins became levels"
+    assert game.state.player(0).pennies == STARTING_COINS, (
+        "the twelve became levels; the cents dealt at setup were gained before"
+        " Bum Bo arrived and are not its business"
+    )
     assert bum.counters["charge"] == 12
     assert attack_bonus(game, 0) == 1
 
@@ -3057,12 +3065,16 @@ def test_a_roll_waits_for_the_table_before_it_counts(
 
     assert waiting is not None
     assert waiting.value == 3
-    assert game.state.player(0).pennies == 0, "the roll has not counted yet"
+    assert game.state.player(0).pennies == STARTING_COINS, (
+        "the roll has not counted yet"
+    )
 
     pass_until_settled(game)
 
     assert game.state.pending_roll is None
-    assert game.state.player(0).pennies == 7, "3-4 on Pills! pays 7¢"
+    assert game.state.player(0).pennies == STARTING_COINS + 7, (
+        "3-4 on Pills! pays 7¢"
+    )
 
 
 def test_spoon_bender_bends_the_roll_that_is_waiting(
@@ -3131,7 +3143,9 @@ def test_the_magician_names_the_result(base_game: ContentLibrary) -> None:
 
     pass_until_settled(game)
 
-    assert game.state.player(0).pennies == 7, "a three on Pills! pays 7¢"
+    assert game.state.player(0).pennies == STARTING_COINS + 7, (
+        "a three on Pills! pays 7¢"
+    )
 
 
 def test_an_attack_roll_may_be_answered_too(base_game: ContentLibrary) -> None:
@@ -3172,7 +3186,7 @@ def test_rolls_do_not_wait_when_nobody_can_answer(base_game: ContentLibrary) -> 
     assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
 
     assert game.state.pending_roll is None
-    assert game.state.player(0).pennies == 7
+    assert game.state.player(0).pennies == STARTING_COINS + 7
 
 
 # ----------------------------------------------------------------------

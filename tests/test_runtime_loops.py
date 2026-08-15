@@ -29,7 +29,16 @@ from fsme.runtime.runtime import _name_of, _what_was_looping
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
-LOOPING_SEEDS = (8, 58)
+LOOPING_SEEDS = (8,)
+"""
+A deal that reaches the loop.
+
+There were two. Dealing each player the three cents the rules call for changed
+every shuffle in the project, and seed 58 now settles — which is worth saying
+plainly: these seeds are examples of a real defect, not a definition of it. If
+this one ever settles too, the loop has not been fixed; the deal has moved, and
+the search that found this one will find another.
+"""
 
 GUPPYS_PAW = "treasure_deck-active_items-base_game-guppy_s_paw"
 

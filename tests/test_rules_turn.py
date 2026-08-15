@@ -8,7 +8,7 @@ from conftest import make_game, make_instance, treasure_definition
 
 from fsme.commands import Command, CommandType
 from fsme.events import EventType
-from fsme.rules import HAND_LIMIT, STARTING_HAND_SIZE
+from fsme.rules import HAND_LIMIT, STARTING_COINS, STARTING_HAND_SIZE
 from fsme.state import GamePhase
 
 
@@ -33,6 +33,38 @@ def test_starting_deals_hands_and_opens_the_first_turn() -> None:
     ]
     assert state.turn.turn_number == 1
     assert state.turn.active_player == 0
+
+
+def test_starting_deals_three_cents_to_everybody() -> None:
+    """
+    COMPREHENSIVE_RULES.md §2: "Each player is dealt 3 loot cards and 3¢."
+
+    The loot was dealt from the first version of setup and the coins were not,
+    so every game FSME played began three cents short. It is a small number
+    and it is not a small change: the first purchase moves later in every
+    game, and every statistic measured from those games moves with it.
+    """
+    runtime, state = make_game()
+
+    assert [player.pennies for player in state.players] == [0, 0]
+
+    start(runtime)
+
+    assert [player.pennies for player in state.players] == [
+        STARTING_COINS,
+        STARTING_COINS,
+    ]
+
+
+def test_the_cents_are_dealt_at_every_table_size() -> None:
+    for players in (1, 2, 3, 4):
+        runtime, state = make_game(players=players)
+
+        start(runtime)
+
+        assert all(
+            player.pennies >= STARTING_COINS for player in state.players
+        ), f"a table of {players} did not all get their cents"
     assert state.turn.phase is GamePhase.LOOT
 
     types = [event.type for event in runtime.history]
@@ -164,13 +196,17 @@ def test_played_loot_resolves_then_reaches_the_discard_pile() -> None:
     player = state.player(0)
     card = player.hand.cards[0]
 
+    # What the card pays, not what the player holds: they were dealt three
+    # cents at setup, and this test is about the card.
+    before = player.pennies
+
     runtime.submit(
         Command(type=CommandType.PLAY_LOOT, player=0, payload={"index": 0})
     )
 
     assert card not in player.hand.cards
     assert card in state.loot_discard.cards
-    assert player.pennies == 1
+    assert player.pennies == before + 1
 
     types = [event.type for event in runtime.history]
 

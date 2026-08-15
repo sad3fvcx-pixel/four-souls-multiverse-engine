@@ -2,4 +2,4 @@ The game played back through the engine, position by position.
 
 $ fsme replay demo/party.json
 
-433 commands replayed, and the game came out the same every step of the way
+374 commands replayed, and the game came out the same every step of the way

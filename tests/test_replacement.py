@@ -15,6 +15,7 @@ from fsme.cards import Ability, CardType
 from fsme.commands import Command, CommandType
 from fsme.effects import EffectExecutionError, builtin_registry
 from fsme.events import EventType
+from fsme.rules import STARTING_COINS
 from fsme.runtime import StabilityError
 
 
@@ -199,7 +200,7 @@ def test_an_ordinary_trigger_still_sees_the_event() -> None:
     activate(runtime)
 
     assert state.player(1).hp == 0
-    assert state.player(1).pennies == 1
+    assert state.player(1).pennies == STARTING_COINS + 1
 
 
 def test_healing_can_be_replaced() -> None:

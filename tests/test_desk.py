@@ -245,3 +245,140 @@ def test_a_run_asking_for_too_much_is_brought_back_in_range() -> None:
 
     assert _within(None, 2, low=1, high=4) == 2
     assert _within("nonsense", 7, low=1, high=99) == 7
+
+
+# ----------------------------------------------------------------------
+# What the first user found
+# ----------------------------------------------------------------------
+
+
+def test_a_card_can_be_told_apart_from_the_others_that_share_its_name(
+    address: str, everything: ContentLibrary
+) -> None:
+    """
+    The path a name takes: card data → the workbench → the page.
+
+    The picker used to be a datalist whose option *value* was the identifier,
+    and a datalist shows the value. So the user testing a card saw
+    `loot_deck-cards_miscellaneous-four_souls-gold_key` where they expected
+    "Gold Key". The name was never broken; it was never shown.
+
+    A name alone would not have been enough either: twelve cards are called
+    "Pills!". So the set travels with it, and the names here are asserted
+    against the content itself rather than against a copy.
+    """
+    served = get(address, "/api/cards")["cards"]
+
+    truth = {
+        definition.id: definition.name
+        for definition in everything.definitions()
+    }
+
+    assert len(served) == len(truth)
+
+    for card in served:
+        assert card["name"] == truth[card["id"]], card["id"]
+
+        assert card["set"], f"{card['id']} has no set to tell it apart"
+        assert isinstance(card["implemented"], bool)
+
+    # And the ambiguity that made the set necessary is real.
+    names = [card["name"] for card in served]
+
+    assert names.count("Pills!") > 1
+
+
+def test_the_page_shows_the_name_and_submits_the_identifier(
+    address: str,
+) -> None:
+    home = page(address, "/")
+
+    # A select, not a datalist: a datalist displays what it submits.
+    assert "<datalist" not in home
+    assert 'option.textContent = one.implemented' in home
+    assert "option.value = one.id" in home
+
+
+def test_every_seat_can_be_played_by_the_bot(address: str) -> None:
+    """
+    The detailed log only exists for a game somebody plays through.
+
+    Before this the page could put one seat under the bot; the rest played at
+    random, so the readable log was three quarters noise.
+    """
+    started = post(
+        address,
+        "/api/run",
+        {"kind": "play", "seed": 7, "players": 3, "bot_seats": [0, 1, 2]},
+    )
+
+    job = finished(address, started["id"])
+
+    assert job["state"] == "done", job["error"]
+    assert "Seats 0, 1, 2 were played by that bot" in job["text"]
+
+    home = page(address, "/")
+
+    assert "every seat by the bot" in home
+
+
+def test_a_report_can_be_saved_and_opened_again(address: str) -> None:
+    """
+    The file carries the game, not the prose.
+
+    Saving only the text would make a souvenir: every analyser in the project
+    reads games, so a report nobody can re-ask a question of is a dead end.
+    """
+    job = finished(
+        address,
+        post(address, "/api/run", {"kind": "play", "seed": 5, "players": 2})["id"],
+    )
+
+    with urllib.request.urlopen(f"{address}/api/report/{job['id']}") as answer:
+        assert "attachment" in answer.headers.get("Content-Disposition", "")
+
+        bundle = json.loads(answer.read())
+
+    assert bundle["fsme_report"] == 1
+    assert bundle["journal"]["entries"], "the game did not travel with the report"
+    assert bundle["text"] == job["text"]
+
+    # Loading re-runs the analysers rather than replaying the stored text, so a
+    # report opened in a later FSME is that FSME's report.
+    again = finished(address, post(address, "/api/load", bundle)["id"])
+
+    assert again["state"] == "done", again["error"]
+    assert again["text"] == job["text"]
+
+
+def test_a_file_that_is_not_a_report_is_refused_by_name(address: str) -> None:
+    for body, expected in (
+        ({"hello": 1}, "not an FSME report"),
+        ({"fsme_report": 99, "journal": {}}, "saved by a newer version"),
+        ({"fsme_report": 1}, "no game in it"),
+    ):
+        with pytest.raises(urllib.error.HTTPError) as raised:
+            post(address, "/api/load", body)
+
+        assert raised.value.code == 400
+        assert expected in json.loads(raised.value.read())["error"]
+
+
+def test_a_study_has_no_one_game_to_save(address: str) -> None:
+    # A study is about four hundred games; there is no single game to send with
+    # it, and the page disables the button rather than writing a broken file.
+    job = finished(
+        address,
+        post(
+            address,
+            "/api/run",
+            {"kind": "study", "games": 4, "players": 2, "jobs": 2},
+        )["id"],
+    )
+
+    assert not job["saved"]
+
+    with pytest.raises(urllib.error.HTTPError) as raised:
+        get(address, f"/api/report/{job['id']}")
+
+    assert raised.value.code == 404

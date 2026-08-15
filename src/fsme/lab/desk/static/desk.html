@@ -113,7 +113,13 @@ pre {
         <label>players <input id="play-players" type="number" value="3" min="1" max="4"></label>
       </div>
       <div class="row">
-        <label><input id="play-bot" type="checkbox" checked style="width:auto"> seat 0 plays by the bot</label>
+        <label style="width:100%">who plays
+          <select id="play-who">
+            <option value="all">every seat by the bot — the readable log</option>
+            <option value="first" selected>seat 0 by the bot, the rest at random</option>
+            <option value="none">every seat at random</option>
+          </select>
+        </label>
       </div>
       <div class="row">
         <button data-kind="play">Play</button>
@@ -135,8 +141,8 @@ pre {
     <div class="card">
       <h2>Test a card</h2>
       <p>The same seeds with the card and without it.</p>
-      <input class="wide" id="card" list="cards" placeholder="card identifier">
-      <datalist id="cards"></datalist>
+      <select id="card"><option value="">loading the cards…</option></select>
+      <label><input id="card-all" type="checkbox" style="width:auto"> show cards the engine has no rules for</label>
       <div class="row">
         <label>games <input id="test-games" type="number" value="60" min="1"></label>
         <label>players <input id="test-players" type="number" value="2" min="1" max="4"></label>
@@ -154,6 +160,12 @@ pre {
   </section>
 
   <section id="output">
+    <div class="row">
+      <button class="quiet" id="save" disabled>Save report</button>
+      <button class="quiet" id="load">Load report</button>
+      <input id="loader" type="file" accept="application/json,.json" style="display:none">
+    </div>
+
     <ul id="jobs"></ul>
     <p class="hint" id="hint">Nothing has been run yet. Everything above prints exactly what the matching <code>fsme</code> command prints.</p>
     <pre id="text"></pre>
@@ -184,12 +196,17 @@ async function post(path, body) {
 
 function gather(kind) {
   if (kind === "play") {
-    return {
-      kind,
-      seed: +$("play-seed").value,
-      players: +$("play-players").value,
-      bot_seats: $("play-bot").checked ? [0] : [],
-    };
+    const players = +$("play-players").value;
+    const who = $("play-who").value;
+
+    const seats =
+      who === "all"
+        ? Array.from({ length: players }, (_, seat) => seat)
+        : who === "first"
+        ? [0]
+        : [];
+
+    return { kind, seed: +$("play-seed").value, players, bot_seats: seats };
   }
 
   if (kind === "study") {
@@ -273,6 +290,10 @@ function show() {
   if (!job) return;
 
   $("text").textContent = job.error || job.text || "";
+
+  // Only a finished job that kept a game can be saved: a study is a report
+  // about four hundred games and there is no one game to send with it.
+  $("save").disabled = !(job.state === "done" && job.saved);
 }
 
 async function refresh() {
@@ -311,23 +332,91 @@ async function refresh() {
   }
 }
 
-async function cards() {
-  try {
-    const read = await (await fetch("/api/cards")).json();
-    const list = $("cards");
+let known = [];
 
-    for (const one of read.cards || []) {
+function drawCards() {
+  const chooser = $("card");
+  const had = chooser.value;
+  const all = $("card-all").checked;
+
+  chooser.innerHTML = "";
+
+  const showing = known.filter((one) => all || one.implemented);
+
+  if (!showing.length) {
+    chooser.innerHTML = "<option value=''>no cards loaded</option>";
+    return;
+  }
+
+  // Grouped by set, because a name does not identify a card: twelve of them
+  // are called "Pills!" and six are called "Eden".
+  const sets = {};
+
+  for (const one of showing) (sets[one.set] ||= []).push(one);
+
+  for (const set of Object.keys(sets).sort()) {
+    const group = document.createElement("optgroup");
+
+    group.label = set.replace(/_/g, " ");
+
+    for (const one of sets[set]) {
       const option = document.createElement("option");
 
       option.value = one.id;
-      option.textContent = one.name;
+      option.textContent = one.implemented ? one.name : `${one.name} (no rules)`;
 
-      list.appendChild(option);
+      group.appendChild(option);
     }
+
+    chooser.appendChild(group);
+  }
+
+  if (had) chooser.value = had;
+}
+
+async function cards() {
+  try {
+    const read = await (await fetch("/api/cards")).json();
+
+    known = read.cards || [];
+
+    drawCards();
   } catch (error) {
-    /* the card list is a convenience; typing the identifier still works */
+    $("card").innerHTML = "<option value=''>could not load the cards</option>";
   }
 }
+
+$("card-all").addEventListener("change", drawCards);
+
+$("save").addEventListener("click", () => {
+  if (watching === null) return;
+
+  // The server sends it as an attachment, so the browser saves it rather than
+  // showing it. The file holds the game, not only the text.
+  window.location.href = `/api/report/${watching}`;
+});
+
+$("load").addEventListener("click", () => $("loader").click());
+
+$("loader").addEventListener("change", async (event) => {
+  const file = event.target.files && event.target.files[0];
+
+  if (!file) return;
+
+  try {
+    const job = await post("/api/load", JSON.parse(await file.text()));
+
+    watching = job.id;
+
+    $("hint").textContent = "";
+
+    await refresh();
+  } catch (error) {
+    $("text").textContent = String(error.message || error);
+  } finally {
+    event.target.value = "";
+  }
+});
 
 refresh();
 cards();

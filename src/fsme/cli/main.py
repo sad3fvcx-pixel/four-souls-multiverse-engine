@@ -26,7 +26,7 @@ from fsme.journal import JournalFormatError
 
 DEFAULT_NAMES = ("Ann", "Bo", "Cy", "Di")
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 
 def seats_of(given: str) -> tuple[int, ...]:

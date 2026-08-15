@@ -12,7 +12,7 @@ from fsme.cards import Ability, CardInstance, CardType, Static
 from fsme.commands import Command, CommandType
 from fsme.effects import EffectExecutionError
 from fsme.events import EventType
-from fsme.rules import ATTACK
+from fsme.rules import ATTACK, STARTING_COINS
 from fsme.rules.statics import bonus
 from fsme.state import DecisionKind
 
@@ -92,7 +92,7 @@ def test_a_roll_can_be_modified_before_it_counts() -> None:
 
     activate(runtime)
 
-    assert state.player(0).pennies == 10
+    assert state.player(0).pennies == STARTING_COINS + 10
 
     rolls = [
         event
@@ -178,8 +178,8 @@ def test_an_ability_can_be_used_from_another_card() -> None:
     runtime.context.apply("copy_ability", [borrowed])
     runtime.run()
 
-    assert state.player(0).pennies == 4
-    assert state.player(1).pennies == 0
+    assert state.player(0).pennies == STARTING_COINS + 4
+    assert state.player(1).pennies == STARTING_COINS
 
 
 def test_the_top_of_the_stack_can_be_copied() -> None:
@@ -202,7 +202,7 @@ def test_the_top_of_the_stack_can_be_copied() -> None:
         )
     )
 
-    assert state.player(0).pennies == 2
+    assert state.player(0).pennies == STARTING_COINS + 2
 
 
 def test_copying_the_stack_needs_something_on_it() -> None:

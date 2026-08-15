@@ -43,6 +43,17 @@ DICE_SIDES = 6
 STARTING_HAND_SIZE = 3
 """Loot cards dealt to each player at the start of the game."""
 
+STARTING_COINS = 3
+"""
+Cents dealt to each player at the start of the game.
+
+``COMPREHENSIVE_RULES.md`` §2: "Each player is dealt 3 loot cards and 3¢." The
+loot was dealt from the first version of setup and the coins were not, so every
+game FSME has ever played began three cents short — which shifts the first
+purchase later in every one of them, and therefore shifts every number measured
+from them.
+"""
+
 MONSTER_SLOTS = 2
 """Monsters face-up in the monster area."""
 

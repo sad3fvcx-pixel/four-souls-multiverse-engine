@@ -6,6 +6,37 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## 0.1.1 — what the first user found
+
+Four things, all reported by somebody using 0.1.0 for the first time. No new
+analysis; the point of this release is that the path works.
+
+- **Players started with no money.** `COMPREHENSIVE_RULES.md` §2 says each
+  player is dealt 3 loot cards and 3¢. The loot was dealt from the first
+  version of setup and the cents were not, so every game FSME had ever played
+  began three cents short. It is a small number and not a small change: the
+  first purchase moves later in every game, and every statistic measured from
+  those games moves with it. Every example and the demonstration are
+  regenerated, and one of the two deals that used to reach the card-copying
+  loop now settles — the seeds were examples of that defect, never a
+  definition of it.
+- **The card picker showed identifiers instead of names.** It was a
+  `<datalist>`, and a datalist displays the value it submits, which was the
+  identifier. The name was never broken; it was never shown. It is now a
+  select, grouped by set — a name alone cannot identify a card, since twelve
+  of them are called "Pills!" — and cards the engine has no rules for are
+  marked, because testing one can only ever come back "no effect".
+- **A report could not be saved.** `Save report` and `Load report` now write
+  and read a file that carries **the game**, not the text. Every analyser in
+  the project reads games, so a report nobody can re-ask a question of is a
+  dead end; loading re-runs the analysers, which means a file saved today
+  gets tomorrow's improvements to them. The format is versioned and a file
+  from a newer FSME says so.
+- **Only one seat could be given to the bot.** `Play a game` now offers every
+  seat by the bot, seat 0 only, or none. The detailed decision log exists for
+  seats a bot played, so a table of one bot and three coin-flippers made a log
+  that was three quarters noise.
+
 ## 0.1.0 — first release candidate
 
 The first version meant to be handed to somebody else. Everything below already

@@ -54,6 +54,11 @@ Taking any card out reshuffles every game, and this seed with this card
 removed lands on Placebo and Rainbow Tapeworm copying one another. It is kept
 as an example on purpose: a tool that only ships its successes is not showing
 you what it does when something is wrong.
+
+It is an example of the defect, not a definition of it. Dealing the three cents
+the rules call for changed every shuffle in the project and one of the two
+seeds that used to loop now settles. If this one settles too, the loop has not
+been fixed — the deal has moved, and a short search finds another.
 """
 
 

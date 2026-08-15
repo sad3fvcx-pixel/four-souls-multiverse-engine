@@ -9,16 +9,16 @@ Card test — Gold Key (loot_deck-cards_miscellaneous-four_souls-gold_key)
   Verdict: no effect this run could see, over 200 games in each
 
   200 games with it, 200 without, on the same seeds
-  it turned up in 104 of them
+  it turned up in 100 of them
 
 ------------------------------------------------------------------------------
                                 with     without              change
 ------------------------------------------------------------------------------
-  turns a game                116.39      119.34        -2.95 ± 7.87
-  commands a game             398.21      407.18       -8.97 ± 27.31
-  deaths a game                29.37       29.86        -0.49 ± 2.36
-  attacks that hit              0.54        0.54        +0.00 ± 0.01
-  games that finished           0.99        1.00        -0.01 ± 0.00
+  turns a game                118.61      115.09        +3.52 ± 7.37
+  commands a game             407.04      393.15      +13.89 ± 25.78
+  deaths a game                29.58       28.66        +0.92 ± 2.16
+  attacks that hit              0.54        0.54        -0.01 ± 0.01
+  games that finished           1.00        1.00               +0.00
 ------------------------------------------------------------------------------
 
   * bigger than twice its own uncertainty, and the card was in

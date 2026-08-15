@@ -12,7 +12,7 @@ from conftest import make_game, make_instance, treasure_definition
 
 from fsme.commands import Command, CommandType
 from fsme.events import EventType
-from fsme.rules import TREASURE_COST
+from fsme.rules import STARTING_COINS, TREASURE_COST
 from fsme.state import GamePhase
 
 
@@ -124,7 +124,7 @@ def test_an_item_may_be_activated_once_per_turn_and_recharges_next_turn() -> Non
 
     assert submit(runtime, CommandType.ACTIVATE_TREASURE, index=0).accepted
     assert card.tapped is True
-    assert state.player(0).pennies == 2
+    assert state.player(0).pennies == STARTING_COINS + 2
 
     again = submit(runtime, CommandType.ACTIVATE_TREASURE, index=0)
 

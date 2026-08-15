@@ -33,6 +33,7 @@ from .constants import (
     LOOT_PLAYS_PER_TURN,
     LOOT_STEP_CARDS,
     PURCHASES_PER_TURN,
+    STARTING_COINS,
     STARTING_HAND_SIZE,
 )
 from .death import restore_everyone
@@ -76,6 +77,7 @@ class StartGameHandler:
 
         for player in state.players:
             context.apply("draw_loot", [player], count=STARTING_HAND_SIZE)
+            context.apply("gain_coins", [player], amount=STARTING_COINS)
 
         _begin_turn(context, active_player=first)
 
