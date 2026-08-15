@@ -99,6 +99,95 @@ def test_the_whole_of_a_kill_reads_as_a_sequence() -> None:
     ]
 
 
+def test_damage_says_what_dealt_it_when_the_engine_said() -> None:
+    """
+    A missed attack roll means the monster hits back, and the account did not
+    say so.
+
+    "Bo rolls a 3 — a miss, 4 was needed." then "Bo takes 1 damage, 1 left."
+    left the reader to infer the monster from the line above. The engine had
+    carried it the whole time, as the event's source.
+    """
+    said = told(
+        event(
+            "damage_dealt",
+            source="Pin",
+            controller=1,
+            targets=["Bo"],
+            target_kind="player",
+            amount=1,
+            remaining_hp=1,
+            combat=True,
+        ),
+        names=NAMES,
+    )
+
+    assert said == "Bo takes 1 damage from Pin, 1 left."
+
+
+def test_damage_with_nobody_behind_it_invents_nobody() -> None:
+    """
+    A player's own attack roll damages a monster with no source on the event,
+    because the rules do not name one. "from Ann" would be the sentence saying
+    more than the engine knows.
+    """
+    said = told(
+        event(
+            "damage_dealt",
+            controller=0,
+            targets=["Pin"],
+            target_kind="monster",
+            amount=1,
+            remaining_hp=1,
+            combat=True,
+        ),
+        names=NAMES,
+    )
+
+    assert said == "Pin takes 1 damage, 1 left."
+    assert "from" not in said
+
+
+def test_a_killing_blow_still_names_what_struck_it() -> None:
+    with_source = told(
+        event("damage_dealt", source="Pin", targets=["Bo"], amount=2, lethal=True),
+        names=NAMES,
+    )
+    without = told(
+        event("damage_dealt", targets=["Pin"], amount=2, lethal=True), names=NAMES
+    )
+
+    assert with_source == "Bo takes 2 damage from Pin — enough to finish it."
+    assert without == "Pin takes 2 damage — enough to finish it."
+
+
+def test_a_whole_missed_attack_reads_as_one_thing(
+    everything: ContentLibrary,
+) -> None:
+    """
+    The sequence the audit was about, end to end.
+
+    Bo attacks, misses, and is hurt by the monster he attacked — and every line
+    of it names Bo and names Pin, so nothing has to be inferred from position.
+    """
+    lines = [
+        told(one, names=NAMES)
+        for one in (
+            event("attack_start", source="Pin", controller=1, targets=["Pin"]),
+            event("after_attack_roll", source="Pin", controller=1, value=3,
+                  required=4, hit=False),
+            event("damage_dealt", source="Pin", controller=1, targets=["Bo"],
+                  target_kind="player", amount=1, remaining_hp=1, combat=True),
+        )
+    ]
+
+    assert lines == [
+        "Bo attacks Pin.",
+        "Bo rolls a 3 — a miss, 4 was needed.",
+        "Bo takes 1 damage from Pin, 1 left.",
+    ]
+
+
 def test_bookkeeping_gets_no_sentence() -> None:
     """
     Most events are true and are not news.

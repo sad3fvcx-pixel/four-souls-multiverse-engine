@@ -261,6 +261,31 @@ def test_the_page_leads_with_the_account_and_keeps_the_log(address: str) -> None
     assert "data-text=" in home
 
 
+def test_the_step_log_names_the_player_an_event_is_about(address: str) -> None:
+    """
+    A step is filed under whoever submitted it, which is often not who it is
+    about.
+
+    A priority window closes when everybody has passed, so somebody else's pass
+    is the command that lets an attack resolve — and at a table of two that is
+    always the other player. Every roll of Bo's attack therefore appears under
+    Ann, and the log read as though the attacker had changed hands. The
+    attacker was in the event the whole time, in ``controller``, and the line
+    was not showing it.
+    """
+    with urllib.request.urlopen(f"{address}/", timeout=10) as answer:
+        home = answer.read().decode("utf-8")
+
+    assert "event.controller" in home, (
+        "the step log ignores the one field that says who an event is about"
+    )
+    assert 'class="about"' in home
+
+    # Left off where the event already names that player, or `damage_dealt`
+    # prints the player it hurt twice and buries the case this exists for.
+    assert "event.targets || []).includes(name)" in home
+
+
 def test_the_step_log_reads_the_journal_and_does_not_keep_its_own(
     address: str,
 ) -> None:

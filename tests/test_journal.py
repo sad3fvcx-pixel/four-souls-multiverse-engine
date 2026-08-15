@@ -412,3 +412,91 @@ def test_the_session_keeps_a_journal_of_the_browser_game(
 
     assert len(journal) == 2
     assert journal.entries[-1].label == moves[0]["label"]
+
+
+def test_an_event_says_which_player_it_is_about(
+    everything: ContentLibrary,
+) -> None:
+    """
+    The disambiguator the step log needs, checked where it comes from.
+
+    A journal entry is filed under whoever *submitted* the command, and that is
+    routinely not the player the events are about. A priority window closes
+    only when everybody has passed, so the last pass — somebody else's — is the
+    command that lets an attack resolve. At a table of two it is always the
+    other player, which made every roll of Bo's attack appear under Ann and
+    read as though the attacker had changed hands halfway through.
+
+    A previous audit established that the attacker never changes: 1577 combat
+    blows across forty games, every one of them landing on the player who
+    declared the attack. What was missing was any way to *see* that in the
+    record. This asserts the record has it — ``controller`` on the attack's
+    events names the declaring player — because a page can only show what the
+    journal carries.
+    """
+    from fsme.api import Session
+    from fsme.lab.bot import HeuristicBot
+    from fsme.lab.simulation import ScriptedAgent
+    from fsme.lab.simulation.runner import _whose_move
+
+    session = Session(everything, players=2, seed=23)
+    game = session.game
+
+    bot = HeuristicBot(23)
+    agent = ScriptedAgent(23)
+
+    for _ in range(600):
+        if game.is_over:
+            break
+
+        if game.runtime.awaiting_decision is not None:
+            answered = agent.choose(game)
+
+            if answered is None:
+                break
+
+            command, label = answered
+        else:
+            thought = bot.choose(game, seats=(_whose_move(game),))
+
+            if thought is None:
+                break
+
+            command, label = thought[0], thought[1]
+
+        if not session.submit(
+            {
+                "type": str(command.type),
+                "player": command.player,
+                "payload": dict(command.payload),
+                "label": label,
+            }
+        )["accepted"]:
+            break
+
+    declared: int | None = None
+    elsewhere = 0
+
+    for entry in session.journal.entries:
+        if (entry.label or "").startswith("Attack "):
+            declared = entry.player
+
+        for happening in entry.events:
+            if happening.type != "attack_start":
+                continue
+
+            assert happening.controller is not None, (
+                "an attack began and the event does not say whose"
+            )
+            assert happening.controller == declared, (
+                f"attack_start says seat {happening.controller} and the "
+                f"declaration was made by seat {declared}"
+            )
+
+            if entry.player != happening.controller:
+                elsewhere += 1
+
+    assert elsewhere, (
+        "this game never resolved an attack on somebody else's command, so it "
+        "does not test what it is here to test"
+    )

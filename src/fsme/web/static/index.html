@@ -161,6 +161,9 @@ button.wide { display: block; width: 100%; margin-bottom: 6px; }
 #log .step-where { color: var(--dim); }
 #log .happened { padding: 1px 0 1px 3.4em; color: var(--dim); }
 #log .happened b { color: var(--ink); font-weight: 600; }
+/* The player an event is about, in the same gold the step's player uses, so a
+   name is a name wherever it appears in this log. */
+#log .about { color: var(--gold); }
 #log .quiet { padding-left: 3.4em; color: var(--dim); opacity: .6; }
 .log-tools { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin: 6px 0 8px; }
 .log-tools .count { color: var(--dim); font-size: 12px; }
@@ -249,6 +252,11 @@ input {
         order it was accepted, under the turn it was taken in, with every event
         it caused — including the bookkeeping the account above leaves out. This
         is the same file <code>fsme replay</code> reads.</p>
+      <p class="hint">A step is filed under whoever <em>submitted</em> it. That
+        is often not the player it is about: a priority window closes when
+        everybody has passed, so somebody else's pass is what lets your attack
+        resolve. The name in gold beside an event is the player that event
+        concerns — the attacker, through every roll of their attack.</p>
       <div class="log-tools">
         <span class="count" id="log-count"></span>
         <button id="log-fold">Fold every turn</button>
@@ -454,6 +462,28 @@ function drawStory(events) {
 let stepped = 0;      // journal entries already on the page
 let lastTurn = null;  // the turn heading currently open
 
+// Which player an event is about, when the line does not already say.
+//
+// A step is filed under whoever submitted the command, and that is very often
+// not the player the events are about: a priority window closes when everybody
+// has passed, so the last pass — somebody else's — is the command that lets an
+// attack resolve. At a table of two that is always the other player, so every
+// roll of Bo's attack appears under Ann, and the log read as though the
+// attacker had changed hands. It never did; the attacker was in the event all
+// along, in `controller`, and this line was not showing it.
+//
+// It is left off when the event already names that player among its targets.
+// `damage_dealt` carries the player it hurt as both target and controller, and
+// printing the name twice would make the useful case harder to see rather than
+// easier.
+function whose(event, names) {
+  if (event.controller === null || event.controller === undefined) return "";
+
+  const name = names[event.controller] ?? `seat ${event.controller}`;
+
+  return (event.targets || []).includes(name) ? "" : name;
+}
+
 function payloadOf(carried) {
   const bits = [];
 
@@ -518,9 +548,11 @@ function drawSteps(entries, names) {
     // beside the account rather than instead of it.
     for (const event of entry.events || []) {
       const line = document.createElement("div");
+      const about = whose(event, names);
 
       line.className = "happened";
       line.innerHTML = `<b>${escape(event.type)}</b> `
+        + (about ? `<span class="about">${escape(about)}</span> ` : "")
         + escape([
             event.source,
             (event.targets || []).join(", "),

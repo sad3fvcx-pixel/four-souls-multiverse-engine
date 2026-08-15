@@ -142,6 +142,20 @@ def _roll(event: _Event) -> str:
 
 
 def _damage(event: _Event) -> str:
+    """
+    Somebody was hurt, and by what when the engine said by what.
+
+    The blow that follows a missed attack roll is the monster hitting back, and
+    the account used to render it as "Bo takes 1 damage" with nothing to say
+    where it came from — so a reader watching an attack saw the attacker take
+    damage and had to infer the monster from the line above. The engine already
+    carries who dealt it, in the event's source.
+
+    Where it does not, nothing is put there. A player's own attack roll deals
+    damage to a monster with no source on the event, because the rules do not
+    name one, and a sentence that helpfully invented "from Bo" would be saying
+    more than the engine knows.
+    """
     amount = event.amount()
 
     if not amount:
@@ -151,6 +165,9 @@ def _damage(event: _Event) -> str:
     left = event.payload("remaining_hp")
 
     hit = f"{hurt} takes {amount} {_plural(amount, 'damage', 'damage')}"
+
+    if event.source:
+        hit = f"{hit} from {event.source}"
 
     if event.payload("lethal"):
         return f"{hit} — enough to finish it."
