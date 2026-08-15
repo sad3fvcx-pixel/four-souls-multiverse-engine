@@ -60,19 +60,48 @@ this. It is the one item in [NEXT.md](NEXT.md) that needs no external signal.
 ## Every number comes from a table of bots
 
 There are two players in FSME: one that chooses uniformly among legal moves,
-and `heuristic-1`, which looks one move ahead and knows four things — souls
-win, dying is expensive, a die has six faces, ten cents buys an item.
+and `heuristic-1`, which looks one move ahead and knows souls win, dying is
+expensive, a die has six faces, and — since 0.1.3 — what the card in front of
+it says it does.
 
 Consequences worth holding on to:
 
 - **statistics are conditional on the player.** "Coins gained went with
-  winning" may be a fact about Four Souls or a fact about a bot that prices a
-  cent at 0.6 points;
+  winning" may be a fact about Four Souls or a fact about how this bot prices a
+  cent;
 - **the bot is weak on purpose.** It is built to be readable, so its mistakes
   can be found. When a report says "the bot would have played X", that is a
   disagreement with a stated opinion, not a verdict;
 - **nothing here has met a human decision.** No game analysed by FSME was ever
   played by a person.
+
+## The bot can read less than half of what it can buy
+
+`heuristic-1` prices a treasure by reading the effect data on its definition.
+That reading is bounded twice over, and both bounds are worth knowing before
+believing anything it says about shopping.
+
+**Most treasures have no rules to read.** 166 of the 287 treasures in the
+loaded content carry no abilities and no statics, so 58% of the shop is inert
+in this engine — buying one costs ten cents and changes nothing. The appraiser
+scores those at what an average treasure is worth rather than at zero, which
+is deliberate: pricing them at nothing would make the bot prefer the cards FSME
+happens to have implemented, which is a preference about FSME and not about
+Four Souls. The cost of that choice is that the bot pays a fair price for cards
+that do nothing here, and it is why buying does not yet show up as a win-rate
+improvement. Scoring them at zero is a one-line change in
+`src/fsme/lab/bot/appraisal.py`; it would make the bot stronger at FSME-as-built
+and less honest about the game.
+
+**Of the treasures that do have rules, most do something unpriceable.** The
+appraiser puts a number only on effects whose worth follows from an anchor it
+already has — cents, cards in hand, hit points, souls, items. A reroll, a card
+moved to the top of a deck, a monster discarded, an extra attack per turn: it
+records those as unread and scores them at nothing, rather than inventing a
+number that would be indistinguishable from a measured one. The median readable
+treasure therefore appraises at exactly 0. What it did not understand is
+carried on every appraisal, so a purchase that went badly can be checked for
+whether the bot was wrong or merely blind.
 
 ## Correlation is reported as correlation
 

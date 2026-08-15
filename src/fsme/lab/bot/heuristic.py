@@ -4,10 +4,10 @@
 A bot that thinks one move ahead, and shows its working.
 
 It is not strong and is not trying to be. It knows four things — that souls
-win, that dying is expensive, that a die has six faces, and that ten cents buys
-an item — and it applies them to the moves the engine says it may make. Every
-number it uses comes from the position or from the rules; nothing is estimated
-from games it has not played.
+win, that dying is expensive, that a die has six faces, and what the cards in
+front of it say they do — and it applies them to the moves the engine says it
+may make. Every number it uses comes from the position, from the rules, or from
+the printed text of a card; nothing is estimated from games it has not played.
 
 Its purpose is to be *legible*. A bot whose reasoning can be read is one whose
 mistakes can be found, and finding them is the whole point of writing the
@@ -16,10 +16,10 @@ beside it, so that a reader disagreeing with a choice can see exactly which
 number to argue with.
 
 What it does not do is worth stating too. It does not look ahead past the move
-in front of it, it does not model what other players will do, and it does not
-know what most cards say — a loot card it has no opinion about is worth a small
-constant, because playing something is usually better than passing and the
-engine will not let it play anything illegal.
+in front of it, and it does not model what other players will do. It reads
+cards only where it is deciding about a particular card — which today means
+buying, and does not yet mean playing a loot card, where anything it has no
+opinion about is still worth a small constant.
 """
 
 from __future__ import annotations
@@ -28,49 +28,40 @@ import random
 from typing import Any
 
 from fsme.api.moves import legal_moves
+from fsme.cards import CardRegistry
 from fsme.commands import Command, CommandType
 from fsme.game import Game
-from fsme.rules.constants import DICE_SIDES, TREASURE_COST
+from fsme.rules.constants import DICE_SIDES
+from fsme.rules.shop import DECK as BUY_DECK
+from fsme.rules.shop import shop_price
 from fsme.rules.statics import DIFFICULTY, monster_value
 
+# The currency lives next door because the appraiser is denominated in it and
+# cannot import from here without a cycle. One definition, two readers.
+from .appraisal import (
+    DAMAGE_COSTS,
+    DYING_COSTS,
+    LOOT_IS_WORTH,
+    SOUL_IS_WORTH,
+    TURNS_AHEAD,
+    Appraisal,
+    Scale,
+    appraise,
+    horizon,
+    scale_of,
+)
 from .evaluation import Decision, Evaluation, Reason
 
 NAME = "heuristic-1"
 
-SOUL_IS_WORTH = 12.0
-"""
-Points for a soul, against everything else being measured in the same currency.
-
-Four of them win the game, so nothing else the bot can see in one move should
-outweigh one. That is the whole justification, and it is why this number is
-large rather than tuned.
-"""
-
-DYING_COSTS = 9.0
-"""
-Points for dying: a loot card, a cent, an item, a turn ended, everything
-deactivated. Slightly less than a soul, because a death is recoverable and a
-soul is permanent.
-"""
-
-DAMAGE_COSTS = 1.5
-"""Points per hit point, when the hit point is not the last one."""
-
-COIN_IS_WORTH = 0.6
-"""
-Points for a cent — a tenth of an item, plus a little for flexibility.
-"""
-
-ITEM_IS_WORTH = 5.0
-"""Points for an item, which is what ten cents is for."""
-
-LOOT_IS_WORTH = 1.2
-"""
-Points for a card in hand, and for playing one the bot has no opinion about.
-
-Deliberately small and deliberately positive: doing something is usually better
-than passing, and the engine has already refused anything illegal.
-"""
+__all__ = [
+    "DAMAGE_COSTS",
+    "DYING_COSTS",
+    "LOOT_IS_WORTH",
+    "NAME",
+    "SOUL_IS_WORTH",
+    "HeuristicBot",
+]
 
 
 class HeuristicBot:
@@ -81,6 +72,13 @@ class HeuristicBot:
     def __init__(self, seed: int = 0, *, name: str = NAME) -> None:
         self._rng = random.Random(seed)
         self._name = name
+
+        # What a cent is worth depends on what this game's treasures do, so it
+        # is worked out once from the card pool and kept beside the registry it
+        # was worked out from. A bot handed a different set of content asks
+        # again rather than carrying the old answer into it.
+        self._scale: Scale | None = None
+        self._scaled_from: CardRegistry | None = None
 
     @property
     def name(self) -> str:
@@ -178,7 +176,7 @@ class HeuristicBot:
             return self._weigh_attack(game, move, label, seat)
 
         if kind == str(CommandType.BUY_TREASURE):
-            return self._weigh_purchase(game, label, seat)
+            return self._weigh_purchase(game, move, label, seat)
 
         if kind == str(CommandType.PLAY_LOOT):
             return Evaluation(
@@ -257,23 +255,119 @@ class HeuristicBot:
 
         return Evaluation(label, score, tuple(reasons))
 
-    def _weigh_purchase(self, game: Game, label: str, seat: int) -> Evaluation:
+    def _weigh_purchase(
+        self, game: Game, move: dict[str, Any], label: str, seat: int
+    ) -> Evaluation:
         """
-        Score a purchase: an item for ten cents, if the cents are spare.
-        """
-        player = game.state.player(seat)
+        Score a purchase by reading the card and pricing what it says.
 
-        spent = -TREASURE_COST * COIN_IS_WORTH
+        Four separate quantities, kept separate on purpose, because conflating
+        any two of them is what made this decision wrong before:
+
+        * **the price** — what the shop charges right now, which is a rules
+          question and is asked of the rules rather than assumed to be ten;
+        * **what the cents are worth** — a tenth of a treasure, because that is
+          the only exchange the rules print;
+        * **what the card does** — read off the card, in the same currency;
+        * **what it is worth here** — the same reading, shortened when the game
+          is nearly over and dearer when the buyer is nearly dead.
+
+        The last three are what the appraiser answers. This method's own job is
+        only to subtract the first from the third.
+        """
+        state = game.state
+        player = state.player(seat)
+
+        scale = self._scale_for(game)
+        price = shop_price(state, seat)
+        spent = -price * scale.coin
+
+        turns = horizon(max(other.soul_count for other in state.players))
+        hurt = player.hp <= 1
+
+        card = self._on_offer(game, move)
+
+        if card is None:
+            # The top of the treasure deck, bought unseen. Nothing to read, so
+            # it is worth what a treasure is worth — which at the printed price
+            # makes this an even trade, and the bot is genuinely indifferent.
+            return Evaluation(
+                label,
+                scale.item + spent,
+                (
+                    Reason("a treasure, bought unseen", 1, scale.item),
+                    Reason("what it costs", price, spent),
+                ),
+            )
+
+        read = appraise(card.face, scale, hurt=hurt, turns=turns)
 
         return Evaluation(
             label,
-            ITEM_IS_WORTH + spent,
+            read.points + spent,
             (
-                Reason("an item", 1, ITEM_IS_WORTH),
-                Reason("what it costs", TREASURE_COST, spent),
-                Reason("cents in hand", player.pennies, 0.0),
+                *read.reasons,
+                Reason("what it costs", price, spent),
+                *self._caveats(read, player.pennies, turns),
             ),
         )
+
+    def _caveats(
+        self, read: Appraisal, pennies: int, turns: float
+    ) -> tuple[Reason, ...]:
+        """
+        What the bot wants on the record beside a purchase, worth nothing itself.
+
+        A card the appraiser understood a third of is a different card from one
+        it understood all of, and the score alone cannot tell them apart. These
+        carry no points; they are here so that a reader looking at a purchase
+        that went badly can see whether the bot was wrong or merely blind.
+        """
+        said: list[Reason] = [Reason("cents in hand", pennies, 0.0)]
+
+        if read.unread:
+            said.append(
+                Reason(
+                    "of the card it could not read: " + ", ".join(read.unread[:4]),
+                    len(read.unread),
+                    0.0,
+                )
+            )
+
+        if turns < TURNS_AHEAD:
+            said.append(Reason("turns it expects the item to serve", turns, 0.0))
+
+        return tuple(said)
+
+    def _on_offer(self, game: Game, move: dict[str, Any]) -> Any | None:
+        """
+        The card a purchase would take, when the purchase names one.
+        """
+        payload = move["payload"]
+
+        if payload.get("source") == BUY_DECK:
+            return None
+
+        index = int(payload.get("index", 0))
+        shop = game.state.treasure_shop.cards
+
+        return shop[index] if 0 <= index < len(shop) else None
+
+    def _scale_for(self, game: Game) -> Scale:
+        """
+        What a cent buys in this game, worked out once from the card pool.
+
+        The pool is the printed card list, which is public: reading it is not
+        the same as looking at the deck. What the bot never sees is the order
+        the deck is in, and nothing here asks.
+        """
+        registry = game.runtime.cards
+
+        if self._scale is None or self._scaled_from is not registry:
+            self._scale = scale_of(registry)
+            self._scaled_from = registry
+
+        return self._scale
 
     def _monster(self, game: Game, move: dict[str, Any]) -> Any | None:
         """

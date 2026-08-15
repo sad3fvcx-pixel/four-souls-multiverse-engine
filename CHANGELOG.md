@@ -6,6 +6,57 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## 0.1.3 — the bot reads the card
+
+`heuristic-1` never bought anything. Not rarely: never, in any game FSME had
+ever played. 748 positions across sixty four-handed games where a purchase was
+legal, and not one taken.
+
+- **The arithmetic was self-defeating.** A purchase scored
+  `ITEM_IS_WORTH + (-TREASURE_COST × COIN_IS_WORTH)` = `5.0 - 10 × 0.6` =
+  **-1.0**, which is below ending the turn (0.0) and below passing (-0.1). The
+  cause is visible in the constant's own docstring: a cent was "a tenth of an
+  item, plus a little for flexibility", and ten cents at a tenth-plus-a-little
+  are worth more than the item they buy. The markup was applied to the price
+  and not to what the price bought, so every purchase was a loss by
+  construction.
+- **A card is now read rather than assumed.**
+  `src/fsme/lab/bot/appraisal.py` walks the effect data the engine already
+  keeps on a definition — `Ability.effects`, `Ability.cost`, `Static` — and
+  prices what it recognises in the currency the bot already scores moves in. It
+  executes nothing, resolves no targets and evaluates no conditions: it is an
+  appraiser, not a second interpreter, and the rules stay in one place.
+- **The constant that caused this is gone rather than corrected.** There is no
+  `ITEM_IS_WORTH` any more. What a treasure is worth is the average of what
+  this game's treasures do, and what a cent is worth is a tenth of that,
+  because ten cents buying a treasure is the only exchange the rules print. Both
+  fall out of the card pool: change the content and they change with it. The
+  point is that nobody can make the bot buy more by nudging a number, because
+  the number that would do it is an answer and not an input.
+- **Four things are kept apart that used to be one.** The price is asked of the
+  rules (`shop_price`, so a card that makes shopping cheaper is noticed, which
+  it never was before); the worth of the cents spent is the printed exchange;
+  the worth of the card is read off the card; and the worth of the card *here*
+  shortens as somebody approaches four souls and rises when the buyer is one
+  hit from dying.
+- **Three readings that would have been badly wrong.** An ability whose price
+  the appraiser cannot read is not valued at all, or a card costing nine
+  counters comes out as the best in the game. An ability that destroys its own
+  card is worth one use. Damage is capped by the largest health printed in the
+  pool, because 999 damage is not 999 damage — read literally it made one board
+  wipe worth 8991 points against a soul's 12.
+- **Measured, not asserted.** On sixty four-handed games, the same seeds
+  before and after: 0 purchases → 92, and the score a purchase gets went from a
+  flat -1.0 to a range of -4.31 to +32.88. Of the 58 shop purchases, the 24
+  where the card had rules appraised at a mean of 8.66 against a par of 3.12 —
+  it buys above average when it can read. **The win rate did not move**
+  (0.710 → 0.705 over 200 games, one thinking seat against three random), and
+  that is reported rather than buried: 58% of the treasure pool has no rules,
+  so most of what there is to buy does nothing in this engine. See
+  [LIMITATIONS.md](docs/LIMITATIONS.md).
+- Everything else about the bot is unchanged. It still scores a loot card at a
+  small constant, because reading loot was not what was broken.
+
 ## 0.1.2 — what a watcher could not see
 
 A second pass over the same ground: the engine was working and the person
