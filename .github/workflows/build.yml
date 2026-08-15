@@ -24,6 +24,49 @@ jobs:
       - run: mypy --strict src/fsme
       - run: pytest -q
 
+  # What a stranger does: pip install, then run it somewhere else entirely.
+  # Every step below runs outside the checkout on purpose — a build that
+  # shipped no cards passes any test run from a directory that has content/
+  # sitting in it, which is how the missing card data survived until somebody
+  # installed the wheel into an empty environment by hand.
+  installed:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: source
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install it the way a stranger would
+        run: pip install ./source
+        shell: bash
+
+      - name: It carries its own cards
+        working-directory: ${{ runner.temp }}
+        run: fsme cards
+        shell: bash
+
+      - name: The tour a newcomer is told to run
+        working-directory: ${{ runner.temp }}
+        run: fsme demo --quick
+        shell: bash
+        timeout-minutes: 5
+
+      # The one that catches a Windows fork bomb. Without freeze_support in the
+      # entry point, a spawned worker restarts the whole program, and the check
+      # that finds it has to actually ask for more than one process.
+      - name: It can use more than one core
+        working-directory: ${{ runner.temp }}
+        run: fsme study --games 8 --players 2 --jobs 2
+        shell: bash
+        timeout-minutes: 5
+
   executable:
     needs: test
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
@@ -32,11 +75,11 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            binary: dist/fsme
+            binary: fsme
           - os: windows-latest
-            binary: dist/fsme.exe
+            binary: fsme.exe
           - os: macos-latest
-            binary: dist/fsme
+            binary: fsme
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -45,12 +88,29 @@ jobs:
           python-version: "3.12"
       - run: pip install -e ".[build]"
       - run: pyinstaller packaging/fsme.spec
+
+      # Copied out of the checkout before anything is asked of it, for the same
+      # reason as above: beside content/ every build looks like it works.
+      - name: Take it somewhere with no cards in it
+        run: cp dist/${{ matrix.binary }} "${{ runner.temp }}/${{ matrix.binary }}"
+        shell: bash
+
       - name: The build can find its own cards
-        run: ${{ matrix.binary }} cards
+        working-directory: ${{ runner.temp }}
+        run: ./${{ matrix.binary }} cards
         shell: bash
+
       - name: The build can play a game
-        run: ${{ matrix.binary }} play --seed 3
+        working-directory: ${{ runner.temp }}
+        run: ./${{ matrix.binary }} play --seed 3
         shell: bash
+
+      - name: The build can use more than one core
+        working-directory: ${{ runner.temp }}
+        run: ./${{ matrix.binary }} study --games 8 --players 2 --jobs 2
+        shell: bash
+        timeout-minutes: 10
+
       - uses: actions/upload-artifact@v4
         with:
           name: fsme-${{ matrix.os }}

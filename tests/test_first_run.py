@@ -240,3 +240,74 @@ def test_the_demo_walks_the_whole_path(
         "fsme desk",
     ):
         assert expected in told, expected
+
+
+# ----------------------------------------------------------------------
+# What a stranger finds in the repository
+# ----------------------------------------------------------------------
+
+
+def test_the_build_recipe_is_actually_in_the_repository() -> None:
+    """
+    ``.gitignore`` had ``*.spec`` in it, and PyInstaller specs end in ``.spec``.
+
+    So the one file that says how to build the executable was never committed:
+    a clone could not build it, and the workflow step that does would have
+    failed on a fresh checkout. Nothing else would have noticed, because the
+    file was present on the machine it was written on.
+    """
+    import subprocess
+
+    spec = ROOT / "packaging" / "fsme.spec"
+
+    assert spec.is_file()
+
+    tracked = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", str(spec.relative_to(ROOT))],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert tracked.returncode == 0, "packaging/fsme.spec is not tracked by git"
+
+
+def test_the_examples_are_there_to_be_read_without_installing() -> None:
+    examples = ROOT / "examples"
+
+    expected = {
+        "README.md",
+        "one-game-report.txt",
+        "a-study.txt",
+        "a-card-test.txt",
+        "the-record-holds.txt",
+        "a-problem-found.txt",
+    }
+
+    assert expected <= {path.name for path in examples.iterdir()}
+
+    # Each one says what command made it, so a reader can check any figure.
+    for name in expected - {"README.md"}:
+        assert "$ fsme" in (examples / name).read_text("utf-8"), name
+
+
+def test_the_tour_shows_all_five_things_it_promises() -> None:
+    """
+    Play, result, why, the moments, and analysis over many games.
+
+    Checked on the pieces rather than by running the whole tour, which takes
+    twenty seconds and half a dozen processes.
+    """
+    from fsme.cli.main import DEMO_GAMES, DEMO_STUDY
+
+    report = (ROOT / "examples" / "one-game-report.txt").read_text("utf-8")
+
+    for expected in ("Winner", "Key moments", "Why", "The decisions"):
+        assert expected in report, expected
+
+    study = (ROOT / "examples" / "a-study.txt").read_text("utf-8")
+
+    assert "What went with winning" in study
+
+    assert DEMO_STUDY > 1, "the tour plays more than one game"
+    assert DEMO_GAMES > 1, "the tour tests a card over more than one game"

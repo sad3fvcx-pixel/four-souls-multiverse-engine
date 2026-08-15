@@ -1,0 +1,26 @@
+The same seeds with one card in the deck and without it.
+
+$ fsme test-card loot_deck-cards_miscellaneous-four_souls-gold_key --games 200
+
+==============================================================================
+Card test — Gold Key (loot_deck-cards_miscellaneous-four_souls-gold_key)
+==============================================================================
+
+  Verdict: no effect this run could see, over 200 games in each
+
+  200 games with it, 200 without, on the same seeds
+  it turned up in 104 of them
+
+------------------------------------------------------------------------------
+                                with     without              change
+------------------------------------------------------------------------------
+  turns a game                116.39      119.34        -2.95 ± 7.87
+  commands a game             398.21      407.18       -8.97 ± 27.31
+  deaths a game                29.37       29.86        -0.49 ± 2.36
+  attacks that hit              0.54        0.54        +0.00 ± 0.01
+  games that finished           0.99        1.00        -0.01 ± 0.00
+------------------------------------------------------------------------------
+
+  * bigger than twice its own uncertainty, and the card was in
+    enough games for that to be worth saying. Everything unmarked
+    is within the noise of this many games and says nothing.

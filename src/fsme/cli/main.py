@@ -659,6 +659,9 @@ DEMO_PLAYERS = 3
 
 DEMO_CARD = "loot_deck-cards_miscellaneous-four_souls-gold_key"
 DEMO_GAMES = 40
+DEMO_STUDY = 60
+
+DEMO_JOBS = 4
 
 
 def demo(args: argparse.Namespace) -> int:
@@ -685,6 +688,8 @@ def demo(args: argparse.Namespace) -> int:
 
     def step(number: int, what: str, command: str) -> None:
         print(f"\n{'─' * 78}\n{number}. {what}\n   $ {command}\n", flush=True)
+
+    started = time.perf_counter()
 
     print("FSME — a rules simulator for The Binding of Isaac: Four Souls.")
     print("This is what it does. Every step below is a command you can run.")
@@ -719,10 +724,19 @@ def demo(args: argparse.Namespace) -> int:
     print(reviewed(review(journal, loaded)))
 
     if args.quick:
-        print("\n   (skipping the card test: --quick)")
+        print("\n   (skipping the runs: --quick)")
     else:
         step(
             4,
+            f"Play {DEMO_STUDY} more games and ask what they say.",
+            f"fsme study --games {DEMO_STUDY} --players {DEMO_PLAYERS}",
+        )
+        print("   A few seconds…", flush=True)
+
+        print(_a_study(root, loaded, args))
+
+        step(
+            5,
             f"Measure a card: {DEMO_GAMES} games with it, {DEMO_GAMES} without.",
             f"fsme test-card {DEMO_CARD} --games {DEMO_GAMES}",
         )
@@ -750,6 +764,8 @@ def demo(args: argparse.Namespace) -> int:
         )
 
     print(f"\n{'─' * 78}")
+    print(f"That took {time.perf_counter() - started:.0f} seconds.")
+    print("")
     print("Where to go from here:")
     print("  fsme desk --open     all of this on one page in a browser")
     print("  fsme study --games 200 --jobs 4      what a run says about the game")
@@ -757,6 +773,37 @@ def demo(args: argparse.Namespace) -> int:
     print("  docs/DEMONSTRATION.md    the same tour, with commentary")
 
     return 0
+
+
+def _a_study(root: Path, loaded: ContentLibrary, args: argparse.Namespace) -> str:
+    """
+    A small run, reported the way ``fsme study`` reports one.
+
+    The same functions the command calls, so the tour cannot show something the
+    command would not.
+    """
+    from fsme.lab.analysis import study as ask
+    from fsme.lab.analysis import written
+    from fsme.lab.simulation import run_on_many_cores
+
+    names = {
+        definition.id: definition.name for definition in loaded.definitions()
+    }
+
+    summaries = [
+        done.summary
+        for done in run_on_many_cores(
+            root,
+            DEMO_STUDY,
+            DEMO_PLAYERS,
+            jobs=max(1, args.jobs),
+            offers=True,
+            thinking_seats=(0,),
+        )
+        if done.summary is not None and not done.broke
+    ]
+
+    return written(ask(summaries, names=names), top=4)
 
 
 COMMAND_GROUPS: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
