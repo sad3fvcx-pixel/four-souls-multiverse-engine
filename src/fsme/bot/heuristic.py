@@ -103,19 +103,13 @@ class HeuristicBot:
         if decision is not None:
             return self._answer(game, decision)
 
-        moves = legal_moves(game)
+        opinions = self.opinions(game, seats=seats)
 
-        if seats:
-            mine = [move for move in moves if int(move["player"]) in seats]
-
-            # Falling back is not politeness: if this bot has nothing to do and
-            # the game is waiting on it, somebody has to move or the run stops.
-            moves = mine or moves
-
-        if not moves:
+        if not opinions:
             return None
 
-        weighed = [self._weigh(game, move) for move in moves]
+        moves = [move for move, _ in opinions]
+        weighed = [evaluation for _, evaluation in opinions]
 
         best = max(weighed, key=lambda evaluation: evaluation.score)
 
@@ -149,6 +143,28 @@ class HeuristicBot:
                 ),
             ),
         )
+
+    def opinions(
+        self, game: Game, seats: tuple[int, ...] = ()
+    ) -> tuple[tuple[dict[str, Any], Evaluation], ...]:
+        """
+        Weigh every move on offer, without taking any of them.
+
+        The same arithmetic ``choose`` runs, exposed so that a move somebody
+        else made can be held against it. That is the only way this bot's
+        opinion is worth anything about a game it did not play: it says what it
+        would have done, in the currency it says everything in.
+        """
+        moves = legal_moves(game)
+
+        if seats:
+            mine = [move for move in moves if int(move["player"]) in seats]
+
+            # Falling back is not politeness: if this bot has nothing to do and
+            # the game is waiting on it, somebody has to move or the run stops.
+            moves = mine or moves
+
+        return tuple((move, self._weigh(game, move)) for move in moves)
 
     def _weigh(self, game: Game, move: dict[str, Any]) -> Evaluation:
         """

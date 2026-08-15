@@ -251,11 +251,14 @@ def study(args: argparse.Namespace) -> int:
 
 def explain(args: argparse.Namespace) -> int:
     """
-    Say why one game went the way it did.
+    Say why one game went the way it did, and where it was decided.
     """
     from fsme.analysis import explain as tell
-    from fsme.analysis import summarise
+    from fsme.analysis import risks as weigh
+    from fsme.analysis import summarise, turning_points
     from fsme.journal import Journal
+
+    loaded = library(args)
 
     if args.file:
         journal = Journal.load(args.file)
@@ -263,13 +266,29 @@ def explain(args: argparse.Namespace) -> int:
         from fsme.simulation import play_one
 
         journal, _ = play_one(
-            library(args),
+            loaded,
             args.seed,
             args.players,
             thinking_seats=seats_of(args.bot_seats),
         )
 
-    print(tell(summarise(journal)))
+    turning = (
+        None if args.moments <= 0 else turning_points(journal, top=args.moments)
+    )
+
+    # The replay costs a whole game, so it is asked for rather than assumed.
+    dangers = (
+        weigh(
+            journal,
+            loaded,
+            top=args.decisions,
+            seat=None if args.seat is None else int(args.seat),
+        )
+        if args.decisions > 0
+        else None
+    )
+
+    print(tell(summarise(journal), turning=turning, dangers=dangers))
 
     return 0
 
@@ -363,25 +382,101 @@ def simulate(args: argparse.Namespace) -> int:
 def test_card(args: argparse.Namespace) -> int:
     """
     Play the same seeds with a card in the game and without it, and compare.
+
+    With ``--from-study`` the subjects come from a study's own list of cards
+    worth testing, which closes the loop the two commands were written for: a
+    run says a card looks odd, and the test says whether it is.
     """
-    from fsme.analysis import Tally, compare, read_out
+    from fsme.analysis import read_out
+
+    loaded = library(args)
+
+    subjects = list(_subjects(args))
+
+    if not subjects:
+        print("nothing to test — name a card, or pass --from-study a study")
+
+        return 2
+
+    tested: list[Any] = []
+
+    for card in subjects:
+        try:
+            named = loaded.registry().get(card)
+        except Exception:
+            print(f"no card called {card!r} — try `fsme cards` to see the sets")
+
+            return 2
+
+        told, broken = _one_card_test(args, card, named.name)
+
+        tested.append(told)
+
+        if args.json:
+            continue
+
+        print(read_out(told))
+
+        for label, failures in broken.items():
+            for failure in failures[:5]:
+                print(f"  fell over {label} it — {failure}")
+
+    if args.json:
+        written = [told.to_dict() for told in tested]
+
+        print(json.dumps(written if len(written) > 1 else written[0], indent=2))
+
+        return 0
+
+    if len(tested) > 1:
+        # The point of a queue of tests is the list at the end of it.
+        print("=" * 78)
+        print("Verdicts")
+        print("=" * 78)
+        print("")
+
+        for told in tested:
+            print(f"  {told.subject}")
+            print(f"    {told.verdict}")
+
+        print("")
+
+    return 0
+
+
+def _subjects(args: argparse.Namespace) -> Sequence[str]:
+    """
+    The cards to put under test: the one named, or a study's suspects.
+    """
+    if args.card:
+        return [str(args.card)]
+
+    if not args.from_study:
+        return []
+
+    read = json.loads(Path(args.from_study).expanduser().read_text("utf-8"))
+
+    suspects = read.get("suspects") or []
+
+    return [str(suspect["card"]) for suspect in suspects[: max(1, args.top)]]
+
+
+def _one_card_test(
+    args: argparse.Namespace, card: str, name: str
+) -> tuple[Any, dict[str, list[str]]]:
+    """
+    Play both runs for one card and compare them.
+    """
+    from fsme.analysis import Tally, compare
     from fsme.simulation import run_on_many_cores
 
     root = content_root(args.content)
-    loaded = library(args)
-
-    try:
-        card = loaded.registry().get(args.card)
-    except Exception:
-        print(f"no card called {args.card!r} — try `fsme cards` to see the sets")
-
-        return 2
 
     runs: dict[str, Tally] = {}
     broken: dict[str, list[str]] = {"with": [], "without": []}
     appeared = 0
 
-    for label, drop in (("with", ()), ("without", (args.card,))):
+    for label, drop in (("with", ()), ("without", (card,))):
         tally = Tally()
 
         for done in run_on_many_cores(
@@ -400,30 +495,20 @@ def test_card(args: argparse.Namespace) -> int:
         runs[label] = tally
 
         if label == "with":
-            seen = tally.cards.get(args.card)
+            seen = tally.cards.get(card)
             appeared = seen.games if seen else 0
 
-    told = compare(
-        f"{card.name} ({args.card})",
-        runs["with"],
-        runs["without"],
-        appeared=appeared,
-        errors_with=len(broken["with"]),
-        errors_without=len(broken["without"]),
+    return (
+        compare(
+            f"{name} ({card})",
+            runs["with"],
+            runs["without"],
+            appeared=appeared,
+            errors_with=len(broken["with"]),
+            errors_without=len(broken["without"]),
+        ),
+        broken,
     )
-
-    if args.json:
-        print(json.dumps(told.to_dict(), indent=2))
-
-        return 0
-
-    print(read_out(told))
-
-    for label, failures in broken.items():
-        for failure in failures[:5]:
-            print(f"  fell over {label} it — {failure}")
-
-    return 0
 
 
 def cards(args: argparse.Namespace) -> int:
@@ -540,7 +625,16 @@ def build_parser() -> argparse.ArgumentParser:
         "test-card", help="play the game with a card and without it"
     )
     shared(trial)
-    trial.add_argument("card", help="the identifier of the card under test")
+    trial.add_argument(
+        "card", nargs="?", help="the identifier of the card under test"
+    )
+    trial.add_argument(
+        "--from-study",
+        help="a `study --json` file; test the cards it says are worth testing",
+    )
+    trial.add_argument(
+        "--top", type=int, default=3, help="how many of them to test"
+    )
     trial.add_argument("--games", type=int, default=100, help="games in each run")
     trial.add_argument("--jobs", type=int, default=1)
     trial.add_argument("--json", action="store_true")
@@ -561,6 +655,21 @@ def build_parser() -> argparse.ArgumentParser:
     shared(why)
     why.add_argument("file", nargs="?", help="a journal; without one, play a game")
     why.add_argument("--bot-seats", default="")
+    why.add_argument(
+        "--moments",
+        type=int,
+        default=3,
+        help="how many turning points to name; 0 for none",
+    )
+    why.add_argument(
+        "--decisions",
+        type=int,
+        default=3,
+        help="how many decisions to weigh against the bot; 0 to skip the replay",
+    )
+    why.add_argument(
+        "--seat", type=int, help="weigh only this seat's decisions"
+    )
     why.set_defaults(run=explain)
 
     listing = commands.add_parser("cards", help="what the content holds")

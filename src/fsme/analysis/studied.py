@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from .study import TOGETHER_AT_LEAST, Study
+from .study import SEEN_AT_LEAST, TOGETHER_AT_LEAST, Study
 
 WIDTH = 78
 
@@ -40,6 +40,7 @@ def _lines(study: Study, *, top: int, width: int) -> Iterator[str]:
     yield from _pairs(study, top=top, width=width)
     yield from _thinking(study)
     yield from _oddities(study, top=top, width=width)
+    yield from _suspects(study, top=top, width=width)
 
 
 def _souls(study: Study) -> Iterator[str]:
@@ -168,6 +169,44 @@ def _thinking(study: Study) -> Iterator[str]:
         )
 
     yield ""
+
+
+def _suspects(study: Study, *, top: int, width: int) -> Iterator[str]:
+    """
+    What to measure next, and the command that measures it.
+
+    The point of the section: everything above it is a correlation inside one
+    run, and a card test is the only thing in this package that can turn one
+    into a difference. Printing the command is not a convenience — it is the
+    section saying that its own numbers are not the answer.
+    """
+    yield "-" * width
+    yield "Worth testing next"
+    yield "-" * width
+    yield (
+        f"(cards a named rule picked out, each used by at least"
+        f" {SEEN_AT_LEAST} seats."
+    )
+    yield " Nothing here is a finding. A card test plays the game with the card"
+    yield " and without it, and that is what decides whether there is an"
+    yield " effect.)"
+    yield ""
+
+    if not study.suspects:
+        yield "  no card stood out far enough from the rest to be worth the run"
+        yield ""
+
+        return
+
+    for suspect in study.suspects[:top]:
+        yield f"  {suspect.name} ({suspect.card}) — {suspect.rule}"
+        yield f"    {suspect.saying}"
+        yield f"    $ {suspect.command}"
+        yield ""
+
+    if len(study.suspects) > top:
+        yield f"  … and {len(study.suspects) - top} more"
+        yield ""
 
 
 def _oddities(study: Study, *, top: int, width: int) -> Iterator[str]:

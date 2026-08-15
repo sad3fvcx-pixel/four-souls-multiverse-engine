@@ -134,12 +134,70 @@ class Comparison:
         """
         return bool(self.games) and self.appeared >= self.games * ENOUGH
 
+    @property
+    def told_us(self) -> tuple[Difference, ...]:
+        """
+        The measurements that came out bigger than their own uncertainty.
+
+        Empty when the card was too scarce for any of them to be about it: a
+        difference the deck could have produced is not a difference the card
+        did, and offering it as one would undo the point of the test.
+        """
+        if not self.can_be_about_the_card:
+            return ()
+
+        return tuple(
+            difference
+            for difference in self.differences
+            if difference.tells_us_anything
+        )
+
+    @property
+    def verdict(self) -> str:
+        """
+        The one line a card test exists to produce.
+
+        Three answers and no fourth. The card changed something this many games
+        could see; it did not, and here is what a difference would have had to
+        be to show; or the run cannot say, because the card was hardly in it.
+        Nothing here is stronger than the numbers above it — the wording is
+        chosen so that "no effect found" cannot be read as "no effect".
+        """
+        if not self.games:
+            return "nothing was played"
+
+        if not self.appeared:
+            return f"the card never reached the table in {self.games} games"
+
+        if not self.can_be_about_the_card:
+            return (
+                f"too scarce to say — it reached the table in {self.appeared}"
+                f" of {self.games} games, and the rest of the difference is the"
+                f" deck"
+            )
+
+        told = self.told_us
+
+        if not told:
+            return (
+                f"no effect this run could see, over {self.games} games in each"
+            )
+
+        named = ", ".join(
+            f"{difference.name} {difference.change:+.2f}"
+            for difference in told
+            if difference.change is not None
+        )
+
+        return f"an effect, in {len(told)} of {len(self.differences)} measures: {named}"
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "subject": self.subject,
             "games": self.games,
             "appeared": self.appeared,
             "can_be_about_the_card": self.can_be_about_the_card,
+            "verdict": self.verdict,
             "differences": [difference.to_dict() for difference in self.differences],
             "errors_with": self.errors_with,
             "errors_without": self.errors_without,
@@ -260,6 +318,8 @@ def read_out(comparison: Comparison, *, width: int = 78) -> str:
         "=" * width,
         f"Card test — {comparison.subject}",
         "=" * width,
+        "",
+        f"  Verdict: {comparison.verdict}",
         "",
         f"  {comparison.games} games with it, {comparison.games} without,"
         f" on the same seeds",

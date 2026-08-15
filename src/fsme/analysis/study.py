@@ -48,6 +48,56 @@ Not a significance test. Two cards seen together twice will happily show a
 winrate of 100%, and printing that invites a reader to believe it.
 """
 
+SEEN_AT_LEAST = 10
+"""
+Seats a card must have been used by before its winrate is worth doubting.
+
+A card used three times and winning twice looks like the best card in the game
+and is a coin landing the same way twice.
+"""
+
+IN_NEARLY_EVERY_HAND = 0.9
+"""
+How often a card must turn up before its ubiquity is itself the finding.
+"""
+
+PAIRS_WORTH_CHASING = 3
+"""
+How far down the pair table a card is still worth putting under test.
+"""
+
+GAMES_FOR_A_TEST = 200
+"""
+Games each side of a card test is offered, in the commands this suggests.
+
+Enough for the difference of means to have an interval worth reading, and few
+enough to finish while somebody is waiting. Both runs are played, so the
+suggested command is twice this many games of work.
+"""
+
+BUSYNESS_BANDS = 5
+"""
+How many bands seats are sorted into by how many cards they got through.
+
+The correction that stops this section being nonsense. A player who is winning
+takes more turns, and a player who takes more turns uses more cards, so *every*
+card is used disproportionately by winners and a flat comparison marks the
+whole deck as overpowered. Comparing a card's users against seats that were
+equally busy takes that back out.
+
+Five is a compromise between bands narrow enough to match like with like and
+bands wide enough to have some seats in them.
+"""
+
+A_FALSE_ROW_IN = 0.05
+"""
+How often this section is willing to print a card that is only luck.
+
+Spread across every card examined, not per card: a run looks at hundreds of
+cards, and a threshold applied to each of them separately would mark ten of
+them in a deck where nothing is wrong at all.
+"""
+
 
 @dataclass(slots=True)
 class Split:
@@ -146,6 +196,71 @@ class Oddity:
 
 
 @dataclass(slots=True)
+class Suspect:
+    """
+    A card a run thinks is worth putting under test, and why.
+
+    The end of what a study can do and the start of what it cannot. Everything
+    a study measures is a correlation inside one run — a card that turns up in
+    winning hands may be winning games or may simply be a card winners draw. A
+    suspect is that correlation written down with the command that would settle
+    it, so the reader's next step is a measurement rather than a belief.
+    """
+
+    card: str
+    name: str = ""
+
+    rule: str = ""
+    """The named reason this card was picked out, so it can be disagreed with."""
+
+    saying: str = ""
+
+    seats: int = 0
+    won: int = 0
+
+    rate: float | None = None
+
+    base: float = 0.0
+    """
+    How often its users would have won anyway, from how busy their games were.
+
+    Not the winrate of the table. A card is compared against seats that got
+    through about as many cards as its users did, because otherwise it is
+    being compared against seats that were losing and idle — and every card in
+    the game beats those.
+    """
+
+    sigmas: float = 0.0
+    """
+    How far from that expectation it landed, in standard errors.
+
+    Kept in the row so the reader can see how much of a stretch the rule made,
+    rather than only that it fired.
+    """
+
+    @property
+    def command(self) -> str:
+        """
+        The command that would turn this suspicion into a measurement.
+        """
+        return f"fsme test-card {self.card} --games {GAMES_FOR_A_TEST}"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "card": self.card,
+            "name": self.name,
+            "rule": self.rule,
+            "saying": self.saying,
+            "seats": self.seats,
+            "won": self.won,
+            "rate": self.rate,
+            "base": self.base,
+            "sigmas": self.sigmas,
+            "command": self.command,
+        }
+
+
+@dataclass(slots=True)
 class Thinking:
     """
     What a bot did, over as many decisions as it made.
@@ -179,6 +294,7 @@ class Study:
     splits: list[Split] = field(default_factory=list)
     pairs: list[Pair] = field(default_factory=list)
     oddities: list[Oddity] = field(default_factory=list)
+    suspects: list[Suspect] = field(default_factory=list)
 
     souls_from: Counter[str] = field(default_factory=Counter)
     winning_souls_from: Counter[str] = field(default_factory=Counter)
@@ -192,6 +308,7 @@ class Study:
             "splits": [split.to_dict() for split in self.splits],
             "pairs": [pair.to_dict() for pair in self.pairs],
             "oddities": [oddity.to_dict() for oddity in self.oddities],
+            "suspects": [suspect.to_dict() for suspect in self.suspects],
             "souls_from": dict(sorted(self.souls_from.items())),
             "winning_souls_from": dict(sorted(self.winning_souls_from.items())),
             "thinking": self.thinking.to_dict(),
@@ -247,6 +364,7 @@ def study(summaries: list[GameSummary], *, names: dict[str, str] | None = None) 
     told.splits = _what_separated_them(winners, losers)
     told.pairs = _what_travelled_together(summaries, names or {})
     told.oddities = _what_looks_odd(summaries)
+    told.suspects = _what_is_worth_testing(summaries, names or {}, told.pairs)
 
     return told
 
@@ -355,6 +473,196 @@ def _what_travelled_together(
         pairs,
         key=lambda pair: (-(pair.lift or 0.0), -pair.together, pair.one),
     )
+
+
+def _what_is_worth_testing(
+    summaries: list[GameSummary], names: dict[str, str], pairs: list[Pair]
+) -> list[Suspect]:
+    """
+    Pick the cards whose numbers are worth spending a card test on.
+
+    Three rules, each named in the row it produces. A card whose users won far
+    more or far less often than a seat picked at random. A card that turned up
+    in nearly every hand, where the finding is the ubiquity rather than the
+    winrate. And a card at the top of the pair table, where the pair is the
+    thing under suspicion and the card is the way to test it.
+
+    None of these is evidence. Each is a reason to run the measurement that
+    would be, which is why every suspect carries the command that runs it.
+    """
+    everyone = [seat for summary in summaries for seat in summary.seats]
+
+    if not everyone:
+        return []
+
+    chances = _how_busy_they_were(everyone)
+
+    seats = len(everyone)
+    used: Counter[str] = Counter()
+    won: Counter[str] = Counter()
+    expected: dict[str, float] = {}
+    spread: dict[str, float] = {}
+
+    for seat, chance in zip(everyone, chances, strict=True):
+        for card in seat.cards_used:
+            used[card] += 1
+            won[card] += 1 if seat.won else 0
+
+            expected[card] = expected.get(card, 0.0) + chance
+            spread[card] = spread.get(card, 0.0) + chance * (1 - chance)
+
+    examined = sum(1 for card, seen in used.items() if seen >= SEEN_AT_LEAST)
+    stretch = _how_far_is_too_far(examined)
+
+    suspects: dict[str, Suspect] = {}
+
+    def suspect(
+        card: str, rule: str, saying: str, sigmas: float = 0.0
+    ) -> None:
+        # First rule to name a card keeps it: two rows for one card would be
+        # two entries in a queue of tests that runs the same test twice.
+        if card in suspects:
+            return
+
+        seen = used[card]
+
+        suspects[card] = Suspect(
+            card=card,
+            name=names.get(card, card),
+            rule=rule,
+            saying=saying,
+            seats=seen,
+            won=won[card],
+            rate=won[card] / seen if seen else None,
+            base=expected.get(card, 0.0) / seen if seen else 0.0,
+            sigmas=sigmas,
+        )
+
+    for card, seen in used.most_common():
+        if seen < SEEN_AT_LEAST:
+            continue
+
+        if seen >= seats * IN_NEARLY_EVERY_HAND:
+            suspect(
+                card,
+                "in nearly every hand",
+                f"used by {seen} of {seats} seats — a staple, and a staple is"
+                f" worth knowing the price of",
+            )
+
+            continue
+
+        noise = math.sqrt(spread.get(card, 0.0))
+
+        if not noise:
+            continue
+
+        sigmas = (won[card] - expected[card]) / noise
+
+        if abs(sigmas) < stretch:
+            continue
+
+        suspect(
+            card,
+            "won more than its share" if sigmas > 0 else "won less than it",
+            f"{won[card]} of {seen} seats using it won, against"
+            f" {expected[card]:.1f} expected of seats as busy as theirs"
+            f" ({sigmas:+.1f} σ)",
+            sigmas,
+        )
+
+    for pair in pairs[:PAIRS_WORTH_CHASING]:
+        for card, other in ((pair.one, pair.other), (pair.other, pair.one)):
+            if used[card] < SEEN_AT_LEAST:
+                continue
+
+            suspect(
+                card,
+                "top of the pair table",
+                f"met {names.get(other, other)} {pair.together} times,"
+                f" {pair.lift or 0:.1f}× what chance would have",
+            )
+
+    return sorted(suspects.values(), key=lambda found: -abs(found.sigmas))
+
+
+def _how_busy_they_were(everyone: list[SeatFacts]) -> list[float]:
+    """
+    Give each seat the winrate of seats that got through as many cards as it.
+
+    The confound this exists to remove is not subtle: a seat that is winning
+    takes more turns, uses more cards, and would show up in the users of every
+    card in the deck. Grouping seats by how many cards they used and taking
+    each group's own winrate gives every seat the chance it had before any
+    particular card is credited with anything.
+
+    Seats that used the same number of cards are never split between two bands,
+    however the arithmetic falls. Splitting them would put identical seats on
+    opposite sides of a line and hand them different expectations, which is the
+    confound coming back in through the correction.
+    """
+    together: dict[int, list[int]] = {}
+
+    for index, seat in enumerate(everyone):
+        together.setdefault(len(seat.cards_used), []).append(index)
+
+    least = max(1, len(everyone) // max(1, BUSYNESS_BANDS))
+
+    bands: list[list[int]] = []
+    building: list[int] = []
+
+    for busyness in sorted(together):
+        building.extend(together[busyness])
+
+        if len(building) >= least:
+            bands.append(building)
+            building = []
+
+    if building:
+        # A remainder too small to speak for itself joins the band below it.
+        if bands:
+            bands[-1].extend(building)
+        else:
+            bands.append(building)
+
+    chances = [0.0] * len(everyone)
+
+    for band in bands:
+        rate = sum(1 for index in band if everyone[index].won) / len(band)
+
+        for index in band:
+            chances[index] = rate
+
+    return chances
+
+
+def _how_far_is_too_far(examined: int) -> float:
+    """
+    How many standard errors a card must be out before it is worth printing.
+
+    Two would be the usual line for one card looked at once. This section looks
+    at every card in the content, so the line is moved out until a run of a
+    perfectly balanced deck would produce a false row only ``A_FALSE_ROW_IN``
+    of the time — which is the only way a list of "suspicious cards" is not
+    simply a list of the most-used cards.
+    """
+    if examined < 1:
+        return 2.0
+
+    wanted = A_FALSE_ROW_IN / examined
+
+    low, high = 0.0, 12.0
+
+    for _ in range(64):
+        middle = (low + high) / 2
+
+        # The two-sided chance of landing this far out by luck alone.
+        if math.erfc(middle / math.sqrt(2)) > wanted:
+            low = middle
+        else:
+            high = middle
+
+    return max(2.0, (low + high) / 2)
 
 
 def _what_looks_odd(summaries: list[GameSummary]) -> list[Oddity]:

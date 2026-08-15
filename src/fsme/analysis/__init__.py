@@ -14,9 +14,11 @@ from __future__ import annotations
 
 from .compare import Comparison, Difference, compare, read_out
 from .explain import explain
+from .moments import Ledger, Moment, Turning, turning_points
 from .report import report
+from .risk import Risks, Risky, risks
 from .studied import written
-from .study import Oddity, Pair, Split, Study, Thinking, study
+from .study import Oddity, Pair, Split, Study, Suspect, Thinking, study
 from .summary import GameSummary, SeatFacts, summarise
 from .tally import Seen, Tally
 
@@ -24,19 +26,27 @@ __all__ = [
     "Comparison",
     "Difference",
     "GameSummary",
+    "Ledger",
+    "Moment",
     "Oddity",
     "Pair",
+    "Risks",
+    "Risky",
     "SeatFacts",
     "Seen",
     "Split",
     "Study",
+    "Suspect",
     "Tally",
     "Thinking",
+    "Turning",
     "compare",
     "explain",
     "read_out",
     "report",
+    "risks",
     "study",
     "summarise",
+    "turning_points",
     "written",
 ]

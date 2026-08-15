@@ -20,6 +20,8 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
+from .moments import Turning
+from .risk import Risks, Risky
 from .study import MEASURES
 from .summary import GameSummary, SeatFacts
 
@@ -32,14 +34,34 @@ SOUL_WORDS = {
 }
 
 
-def explain(summary: GameSummary, *, width: int = WIDTH) -> str:
+def explain(
+    summary: GameSummary,
+    *,
+    width: int = WIDTH,
+    turning: Turning | None = None,
+    dangers: Risks | None = None,
+) -> str:
     """
     Write one game out as an account of it.
+
+    ``turning`` adds where the game was decided, and ``dangers`` what a bot
+    made of the decisions along the way. Both are optional because both cost
+    something the plain account does not — the first a pass over the events,
+    the second a whole replay — and a reader who only wants the result should
+    not pay for either.
     """
-    return "\n".join(_lines(summary, width=width))
+    return "\n".join(
+        _lines(summary, width=width, turning=turning, dangers=dangers)
+    )
 
 
-def _lines(summary: GameSummary, *, width: int) -> Iterator[str]:
+def _lines(
+    summary: GameSummary,
+    *,
+    width: int,
+    turning: Turning | None,
+    dangers: Risks | None,
+) -> Iterator[str]:
     yield "=" * width
     yield f"Game {summary.seed} — {summary.players} players, {summary.turns} turns"
     yield "=" * width
@@ -52,6 +74,8 @@ def _lines(summary: GameSummary, *, width: int) -> Iterator[str]:
         yield ""
 
         yield from _table(summary, width=width)
+        yield from _turning(turning, width=width)
+        yield from _dangers(dangers, width=width)
 
         return
 
@@ -68,6 +92,8 @@ def _lines(summary: GameSummary, *, width: int) -> Iterator[str]:
 
     yield from _what_they_did_differently(summary, winner)
     yield from _table(summary, width=width)
+    yield from _turning(turning, width=width)
+    yield from _dangers(dangers, width=width)
 
 
 def _what_they_did_differently(
@@ -116,6 +142,163 @@ def _what_they_did_differently(
     yield ""
     yield "  (in one game, what went with winning may simply have gone with it)"
     yield ""
+
+
+def _turning(turning: Turning | None, *, width: int) -> Iterator[str]:
+    """
+    Where the game turned: the few moves that moved the scoreboard furthest.
+    """
+    if turning is None:
+        return
+
+    yield "-" * width
+    yield "Where it turned"
+    yield "-" * width
+
+    if turning.towards is None or not turning.moments:
+        yield "  Nothing in this game moved the scoreboard."
+        yield ""
+
+        return
+
+    if turning.won:
+        yield (
+            f"  The {len(turning.moments)} moves that moved"
+            f" {turning.towards_name}'s lead furthest, out of"
+            f" {turning.weighed} that moved anything at all"
+            f" ({turning.moves} moves in the game)."
+        )
+    else:
+        yield (
+            f"  Nobody won, so this is measured towards"
+            f" {turning.towards_name}, who came closest."
+        )
+
+    yield ""
+
+    for place, moment in enumerate(turning.moments, start=1):
+        yield (
+            f"  {place}. turn {moment.turn}, {moment.phase or 'no phase'}"
+            f" — {moment.who}: {moment.label}"
+        )
+        yield f"     swing {moment.swing:+.2f}"
+
+        for word in moment.said:
+            yield f"     {word}"
+
+        for seat, ledger in sorted(moment.ledgers.items()):
+            if ledger.empty:
+                continue
+
+            counted = ", ".join(
+                part
+                for part in (
+                    f"{ledger.souls:+d} souls" if ledger.souls else "",
+                    f"{ledger.coins:+d}¢" if ledger.coins else "",
+                    f"{ledger.hp:+d} hp" if ledger.hp else "",
+                    f"died {ledger.deaths}×" if ledger.deaths else "",
+                )
+                if part
+            )
+
+            yield f"     seat {seat}: {counted}"
+
+        if moment.chance is not None:
+            yield (
+                f"     the first roll had a {moment.chance * 100:.0f}% chance"
+                f" of landing"
+            )
+
+        if moment.decided_by_dice:
+            faces = ", ".join(str(face) for face in moment.dice)
+
+            yield f"     the dice decided this one ({faces})"
+
+        yield ""
+
+    yield "  (this is where the game went, not proof it had to go there:"
+    yield "   no other line of play was tried.)"
+    yield ""
+
+
+def _dangers(dangers: Risks | None, *, width: int) -> Iterator[str]:
+    """
+    What a bot made of the decisions, with the bot named.
+    """
+    if dangers is None:
+        return
+
+    yield "-" * width
+    yield "The decisions"
+    yield "-" * width
+    yield (
+        f"  Judged by {dangers.by}, a bot that looks one move ahead. A gap"
+        f" below is"
+    )
+    yield "  a disagreement with a readable opinion, not a proven mistake."
+    yield ""
+
+    if not dangers.faithful:
+        yield "  The replay diverged from the journal: the engine has changed"
+        yield "  under this game, and nothing below is about it."
+        yield ""
+
+        return
+
+    yield (
+        f"  {dangers.weighed} moves weighed, {dangers.forced} of them forced,"
+        f" {dangers.skipped} skipped"
+    )
+
+    if dangers.bot_seats:
+        seats = ", ".join(str(seat) for seat in dangers.bot_seats)
+
+        yield (
+            f"  seats {seats} were played by a bot, so their gaps are zero by"
+            f" construction"
+        )
+
+    yield ""
+
+    yield "  Riskiest — the moves carrying the most against them:"
+    yield ""
+
+    yield from _risky(dangers.riskiest, nothing="nothing was risky")
+
+    yield "  Most disagreed with — what the bot would have done instead:"
+    yield ""
+
+    yield from _risky(dangers.worst, nothing="it would have played the same")
+
+
+def _risky(risks: list[Risky], *, nothing: str) -> Iterator[str]:
+    if not risks:
+        yield f"    {nothing}"
+        yield ""
+
+        return
+
+    for risk in risks:
+        again = (
+            ""
+            if risk.times < 2
+            else ", and once more"
+            if risk.times == 2
+            else f", and {risk.times - 1} more times"
+        )
+
+        yield f"    turn {risk.turn} — {risk.who}: {risk.label}{again}"
+
+        for danger in risk.dangers:
+            yield f"      {danger.what} ({danger.value:g}) {danger.worth:+.1f}"
+
+        if risk.regret > 0:
+            yield (
+                f"      {risk.regret:+.1f} against playing"
+                f" {risk.instead!r}, of {risk.considered} on offer"
+            )
+
+        yield ""
 
 
 def _table(summary: GameSummary, *, width: int) -> Iterator[str]:

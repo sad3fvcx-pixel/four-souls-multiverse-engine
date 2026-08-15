@@ -23,7 +23,7 @@ from fsme.analysis import (
     summarise,
     written,
 )
-from fsme.analysis.study import TOGETHER_AT_LEAST
+from fsme.analysis.study import SEEN_AT_LEAST, TOGETHER_AT_LEAST
 from fsme.api import load_content
 from fsme.content import ContentLibrary
 from fsme.simulation import play_one
@@ -317,3 +317,139 @@ def test_a_player_only_ever_plays_their_own_moves(
     assert all(entry.player == 0 for entry in thought), (
         "the bot decided a move belonging to another seat"
     )
+
+
+# ----------------------------------------------------------------------
+# What to measure next
+# ----------------------------------------------------------------------
+
+
+def _seat(seat: int, *, won: bool, cards: set[str]) -> SeatFacts:
+    return SeatFacts(seat=seat, name=f"P{seat}", won=won, cards_used=cards)
+
+
+def _table(rows: list[tuple[bool, set[str]]], seed: int = 0) -> GameSummary:
+    return GameSummary(
+        seed=seed,
+        players=len(rows),
+        finished=any(won for won, _ in rows),
+        winner=next(
+            (seat for seat, (won, _) in enumerate(rows) if won), None
+        ),
+        seats=[
+            _seat(seat, won=won, cards=cards)
+            for seat, (won, cards) in enumerate(rows)
+        ],
+    )
+
+
+def test_a_card_that_really_does_win_is_picked_out() -> None:
+    """
+    The rule has to fire on something, or the correction has eaten the signal
+    along with the confound.
+    """
+    games = [
+        _table(
+            [
+                (True, {"good", f"filler{seed}a", "common"}),
+                (False, {"dull", f"filler{seed}b", "common"}),
+                (False, {"dull", f"filler{seed}c", "common"}),
+            ],
+            seed=seed,
+        )
+        for seed in range(40)
+    ]
+
+    told = study(games)
+
+    named = {suspect.card for suspect in told.suspects}
+
+    assert "good" in named
+    assert all(suspect.seats >= SEEN_AT_LEAST for suspect in told.suspects)
+
+
+def test_a_card_only_the_busy_seats_used_is_not_called_a_winner() -> None:
+    """
+    The confound this section exists to survive.
+
+    Nothing about ``late`` wins a game: it is used by whoever took the most
+    turns, and whoever takes the most turns is whoever is winning. Compared
+    against the whole table it looks like the best card in the deck; compared
+    against seats that were equally busy it is nothing at all.
+    """
+    games = [
+        _table(
+            [
+                (True, {f"a{seed}", f"b{seed}", f"c{seed}", "late"}),
+                (False, {f"d{seed}"}),
+                (False, {f"e{seed}"}),
+            ],
+            seed=seed,
+        )
+        for seed in range(40)
+    ]
+
+    told = study(games)
+
+    assert "late" not in {suspect.card for suspect in told.suspects}
+
+
+def test_a_card_hardly_anybody_used_is_never_suspected() -> None:
+    games = [
+        _table(
+            [
+                (True, {"rare"} if seed < 3 else {f"x{seed}"}),
+                (False, {f"y{seed}"}),
+            ],
+            seed=seed,
+        )
+        for seed in range(30)
+    ]
+
+    told = study(games)
+
+    assert "rare" not in {suspect.card for suspect in told.suspects}
+
+
+def test_every_suspect_carries_the_command_that_would_settle_it(
+    some_games: list[GameSummary],
+) -> None:
+    told = study(some_games)
+
+    for suspect in told.suspects:
+        assert suspect.command.startswith(f"fsme test-card {suspect.card}")
+        assert suspect.rule
+        assert suspect.saying
+
+
+def test_the_section_says_its_own_rows_are_not_findings(
+    some_games: list[GameSummary],
+) -> None:
+    reading = written(study(some_games))
+
+    assert "Worth testing next" in reading
+    assert "Nothing here is a finding" in reading
+
+
+def test_a_verdict_says_what_a_card_test_found() -> None:
+    from fsme.analysis import Tally, compare
+
+    told = compare(
+        "Nothing (nothing)",
+        Tally(games=20, finished=20),
+        Tally(games=20, finished=20),
+        appeared=0,
+    )
+
+    assert "never reached the table" in told.verdict
+    assert told.told_us == ()
+
+    scarce = compare(
+        "Scarce (scarce)",
+        Tally(games=20, finished=20),
+        Tally(games=20, finished=20),
+        appeared=1,
+    )
+
+    assert "too scarce to say" in scarce.verdict
+    assert scarce.told_us == ()
