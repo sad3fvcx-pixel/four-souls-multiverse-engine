@@ -99,6 +99,13 @@ type — every one of these worked perfectly on the machine it was written on.
   in a cp1252 writer. Found by CI, which had been failing on every push while
   the local suite was green — the more useful lesson of the two.
 
+- **A tag would not have built anything.** The workflow listened for `v*` and
+  the release was cut as `0.1.0`, so no build ran and the release was
+  published with no binaries on it — invisible, because a release page with no
+  assets looks the same as one whose build has not finished. Any tag now
+  builds, and the binaries are attached to the release itself rather than left
+  as Actions artifacts, which expire and need a GitHub login to download.
+
 ### Known limitations
 
 Two thirds of the card content has no behaviour yet; some pairs of cards can

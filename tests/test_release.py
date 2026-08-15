@@ -273,3 +273,61 @@ def test_the_card_counts_in_the_documents_are_the_engine_s_counts() -> None:
 
 def test_the_coverage_document_the_issue_template_points_at_exists() -> None:
     assert (ROOT / "docs" / "OFFICIAL_CARD_COVERAGE.md").is_file()
+
+
+# ----------------------------------------------------------------------
+# The workflow that has to fire when a release is cut
+# ----------------------------------------------------------------------
+
+
+def _workflow(*, settings_only: bool = False) -> str:
+    """
+    The build workflow, optionally with its comments stripped.
+
+    The comments explain what went wrong last time, and quote the very setting
+    that was wrong — so a test grepping the whole file finds the trap described
+    in the prose and calls it the trap itself.
+    """
+    told = (ROOT / ".github" / "workflows" / "build.yml").read_text("utf-8")
+
+    if not settings_only:
+        return told
+
+    return "\n".join(
+        line for line in told.splitlines() if not line.lstrip().startswith("#")
+    )
+
+
+def test_a_tag_that_is_not_v_prefixed_still_builds() -> None:
+    """
+    `tags: ["v*"]` looks harmless and is a trap.
+
+    The 0.1.0 release was cut as `0.1.0`. It matched nothing, no build ran,
+    and the release was published with no binaries on it — which is invisible,
+    because a release page with no assets looks exactly like one whose build
+    has not finished yet.
+    """
+    settings = _workflow(settings_only=True)
+
+    assert 'tags: ["v*"]' not in settings, "a tag pattern that excludes 0.1.0"
+    assert 'tags: ["*"]' in settings
+
+    assert "startsWith(github.ref, 'refs/tags/v')" not in settings
+    assert "startsWith(github.ref, 'refs/tags/')" in settings
+
+
+def test_a_tagged_build_puts_the_binaries_where_people_can_reach_them() -> None:
+    """
+    Actions artifacts expire and need a GitHub login to download.
+
+    Somebody who came to a release page wanting a file to run cannot use one.
+    The binaries have to be on the release itself.
+    """
+    settings = _workflow(settings_only=True)
+
+    assert "gh release upload" in settings
+    assert "contents: write" in settings
+
+    # Named for the platform, or three files called `fsme` collide.
+    for asset in ("fsme-linux", "fsme-windows.exe", "fsme-macos"):
+        assert asset in settings, asset

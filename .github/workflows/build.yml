@@ -8,7 +8,11 @@ name: build
 on:
   push:
     branches: ["**"]
-    tags: ["v*"]
+    # Any tag, not just v-prefixed ones. `tags: ["v*"]` looks harmless and is
+    # a trap: the 0.1.0 release was cut as `0.1.0`, matched nothing, and
+    # produced no build at all. A release with no binaries on it fails
+    # silently, because the release page looks finished either way.
+    tags: ["*"]
   workflow_dispatch:
 
 jobs:
@@ -69,17 +73,25 @@ jobs:
 
   executable:
     needs: test
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+
+    # Only to attach the binaries to the release; nothing else here writes.
+    permissions:
+      contents: write
+
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
             binary: fsme
+            asset: fsme-linux
           - os: windows-latest
             binary: fsme.exe
+            asset: fsme-windows.exe
           - os: macos-latest
             binary: fsme
+            asset: fsme-macos
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -115,3 +127,16 @@ jobs:
         with:
           name: fsme-${{ matrix.os }}
           path: dist/fsme*
+
+      # Actions artifacts expire and need a GitHub login to download, so they
+      # are no use to somebody who came to a release page for a file to run.
+      # A tagged build puts the binary on the release itself, named for the
+      # platform it was built on.
+      - name: Put it on the release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp "dist/${{ matrix.binary }}" "${{ matrix.asset }}"
+          gh release upload "${GITHUB_REF_NAME}" "${{ matrix.asset }}" --clobber
+        shell: bash
