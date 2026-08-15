@@ -107,9 +107,10 @@ def play_one(
             break
 
         decision: Mapping[str, Any] | None = None
+        speaking = _whose_move(game)
 
-        if bot is not None and _whose_move(game) in thinking_seats:
-            thought = bot.choose(game)
+        if bot is not None and speaking in thinking_seats:
+            thought = bot.choose(game, seats=(speaking,))
 
             if thought is None:
                 break
@@ -117,7 +118,7 @@ def play_one(
             command, label, working = thought
             decision = working.to_dict()
         else:
-            chosen = agent.choose(game)
+            chosen = agent.choose(game, seats=(speaking,))
 
             if chosen is None:
                 break

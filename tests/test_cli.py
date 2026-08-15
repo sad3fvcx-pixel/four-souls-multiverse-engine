@@ -136,3 +136,35 @@ def test_a_card_nobody_has_heard_of_is_refused(
 ) -> None:
     assert main(["test-card", "not.a.card", "--games", "2"]) == 2
     assert "no card called" in capsys.readouterr().out
+
+
+def test_a_run_can_be_studied(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["study", "--games", "6", "--players", "3", "--jobs", "3"]) == 0
+
+    told = capsys.readouterr().out
+
+    assert "FSME study" in told
+    assert "What went with winning" in told
+    assert "Games worth a look" in told
+
+
+def test_one_game_can_be_explained(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["explain", "--seed", "3", "--players", "3"]) == 0
+
+    told = capsys.readouterr().out
+
+    assert "Game 3" in told
+    assert "souls" in told
+
+
+def test_a_journal_on_disk_can_be_explained(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    journal = tmp_path / "party.json"
+
+    assert main(["play", "--seed", "5", "--journal", str(journal)]) == 0
+
+    capsys.readouterr()
+
+    assert main(["explain", str(journal)]) == 0
+    assert "Game 5" in capsys.readouterr().out

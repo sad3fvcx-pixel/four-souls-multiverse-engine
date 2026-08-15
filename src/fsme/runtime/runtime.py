@@ -1613,7 +1613,9 @@ class Runtime:
         }
 
         if paid["souls"] > 0:
-            self._context.apply("gain_soul", [player], count=paid["souls"])
+            self._context.apply(
+                "gain_soul", [player], count=paid["souls"], earned_from=monster
+            )
 
         if paid["cents"] > 0:
             self._context.apply("gain_coins", [player], amount=paid["cents"])

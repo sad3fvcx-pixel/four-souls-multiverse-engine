@@ -195,6 +195,85 @@ def replay(args: argparse.Namespace) -> int:
     return 1
 
 
+def study(args: argparse.Namespace) -> int:
+    """
+    Play a run and ask it the questions a pile of games can answer.
+    """
+    from fsme.analysis import study as ask
+    from fsme.analysis import written
+    from fsme.simulation import run_on_many_cores
+
+    loaded = library(args)
+    names = {
+        definition.id: definition.name for definition in loaded.definitions()
+    }
+
+    summaries = []
+    broken = []
+
+    started = time.perf_counter()
+
+    for done in run_on_many_cores(
+        content_root(args.content),
+        args.games,
+        args.players,
+        jobs=max(1, args.jobs),
+        first_seed=args.seed,
+        offers=True,
+        thinking_seats=seats_of(args.bot_seats),
+    ):
+        if done.broke:
+            broken.append((done.seed, done.broke))
+
+            continue
+
+        if done.summary is not None:
+            summaries.append(done.summary)
+
+    told = ask(summaries, names=names)
+
+    spent = time.perf_counter() - started
+
+    if args.json:
+        print(json.dumps(told.to_dict(), indent=2))
+
+        return 0
+
+    print(written(told, top=args.top))
+
+    for seed, why in broken[:5]:
+        print(f"  seed {seed} fell over — {why}")
+
+    print(f"{args.games} games in {spent:.1f}s")
+
+    return 0
+
+
+def explain(args: argparse.Namespace) -> int:
+    """
+    Say why one game went the way it did.
+    """
+    from fsme.analysis import explain as tell
+    from fsme.analysis import summarise
+    from fsme.journal import Journal
+
+    if args.file:
+        journal = Journal.load(args.file)
+    else:
+        from fsme.simulation import play_one
+
+        journal, _ = play_one(
+            library(args),
+            args.seed,
+            args.players,
+            thinking_seats=seats_of(args.bot_seats),
+        )
+
+    print(tell(summarise(journal)))
+
+    return 0
+
+
 def simulate(args: argparse.Namespace) -> int:
     """
     Play a run of games and say what happened across all of them.
@@ -466,6 +545,23 @@ def build_parser() -> argparse.ArgumentParser:
     trial.add_argument("--jobs", type=int, default=1)
     trial.add_argument("--json", action="store_true")
     trial.set_defaults(run=test_card)
+
+    asking = commands.add_parser(
+        "study", help="play a run and ask what it says about the game"
+    )
+    shared(asking)
+    asking.add_argument("--games", type=int, default=100)
+    asking.add_argument("--top", type=int, default=10)
+    asking.add_argument("--jobs", type=int, default=1)
+    asking.add_argument("--bot-seats", default="")
+    asking.add_argument("--json", action="store_true")
+    asking.set_defaults(run=study)
+
+    why = commands.add_parser("explain", help="why one game went the way it did")
+    shared(why)
+    why.add_argument("file", nargs="?", help="a journal; without one, play a game")
+    why.add_argument("--bot-seats", default="")
+    why.set_defaults(run=explain)
 
     listing = commands.add_parser("cards", help="what the content holds")
     shared(listing)

@@ -21,7 +21,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 
-from fsme.analysis import Tally
+from fsme.analysis import GameSummary, Tally
 
 from .runner import DEFAULT_STEPS, play_one
 
@@ -43,6 +43,15 @@ class Finished:
     commands: int
 
     tally: Tally
+
+    summary: GameSummary | None = None
+    """
+    The game reduced to the facts a study asks about.
+
+    A kilobyte where the journal is a hundred, which is what makes a run of ten
+    thousand games something a study can be run over: the worker reduces, and
+    the parent never sees the journal at all.
+    """
 
     broke: str = ""
     """
@@ -107,6 +116,8 @@ def _one(work: tuple[int, int, int, str | None, bool, tuple[int, ...]]) -> Finis
     if journals_into:
         journal.save(Path(journals_into) / f"game-{seed:06d}.json")
 
+    from fsme.analysis import summarise
+
     tally = Tally()
     tally.add(journal)
 
@@ -117,6 +128,7 @@ def _one(work: tuple[int, int, int, str | None, bool, tuple[int, ...]]) -> Finis
         turns=game.state.turn.turn_number,
         commands=len(journal),
         tally=tally,
+        summary=summarise(journal),
     )
 
 

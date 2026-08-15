@@ -97,6 +97,26 @@ it merely prefers is a preference with a weight beside it.
 At a four-handed table where only seat 0 thinks, it won 133 of 199 games; at an
 all-random table of the same size the seats split 59/41/47/49.
 
+### Reports
+
+```bash
+fsme explain --seed 11 --players 3     # why one game went the way it did
+fsme study --games 500 --jobs 4        # what a run says about the game
+```
+
+`explain` tells one game as an account: what the winner's souls were made of,
+and what they did that the rest of the table did not. `study` asks a pile of
+games four questions — where souls come from, what goes with winning, which
+cards travel together, and which games are worth looking at by hand.
+
+Each report is built from a per-game summary rather than from the journals, so
+a run of ten thousand games stays flat in memory and every number can be
+followed back to its seed. The wording carries the cautions: winners are
+compared with losers, so what separates them is as much symptom as cause; and
+with hundreds of cards, the top of any pairs table is striking by arithmetic
+alone, so every pair is offered as a hypothesis for `test-card` rather than as
+a synergy.
+
 ## Documentation
 
 - [Project Plan](docs/PROJECT_PLAN.md) — structure, stages, current state

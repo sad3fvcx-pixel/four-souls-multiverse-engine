@@ -86,9 +86,17 @@ class HeuristicBot:
     def name(self) -> str:
         return self._name
 
-    def choose(self, game: Game) -> tuple[Command, str, Decision] | None:
+    def choose(
+        self, game: Game, seats: tuple[int, ...] = ()
+    ) -> tuple[Command, str, Decision] | None:
         """
         Decide the next thing to do, and say why.
+
+        ``seats`` are the seats this bot is playing. The engine offers every
+        legal move at the table, including cards other players may respond
+        with, and a bot that took those would be playing their game as well as
+        its own — which would make any comparison between it and them
+        meaningless. So it chooses from its own moves when it has any.
         """
         decision = game.runtime.awaiting_decision
 
@@ -96,6 +104,13 @@ class HeuristicBot:
             return self._answer(game, decision)
 
         moves = legal_moves(game)
+
+        if seats:
+            mine = [move for move in moves if int(move["player"]) in seats]
+
+            # Falling back is not politeness: if this bot has nothing to do and
+            # the game is waiting on it, somebody has to move or the run stops.
+            moves = mine or moves
 
         if not moves:
             return None

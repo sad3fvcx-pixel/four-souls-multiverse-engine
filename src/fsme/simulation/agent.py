@@ -31,12 +31,19 @@ class ScriptedAgent:
     def __init__(self, seed: int = 0) -> None:
         self._rng = random.Random(seed)
 
-    def choose(self, game: Game) -> tuple[Command, str] | None:
+    def choose(
+        self, game: Game, seats: tuple[int, ...] = ()
+    ) -> tuple[Command, str] | None:
         """
         Decide the next thing to do, or say there is nothing.
 
         A question comes first: while one is open it is the only move there is,
         which is the engine's rule and not this agent's preference.
+
+        ``seats`` narrows the moves to the ones belonging to the seats this
+        agent is playing, for the same reason the bot does it: a table where
+        everybody may play everybody's cards is not a table anyone can be
+        compared at.
         """
         decision = game.runtime.awaiting_decision
 
@@ -44,6 +51,11 @@ class ScriptedAgent:
             return self._answer(decision)
 
         moves = legal_moves(game)
+
+        if seats:
+            moves = [
+                move for move in moves if int(move["player"]) in seats
+            ] or moves
 
         if not moves:
             return None

@@ -241,12 +241,19 @@ def gain_soul(
     targets: Sequence[Any],
     count: int = 1,
     card: Any | None = None,
+    earned_from: Any | None = None,
 ) -> int:
     """
     Give souls to each target player.
 
     When a card is supplied it becomes the soul, which is how a killed monster
     or a bonus soul card is awarded. Otherwise the engine mints soul tokens.
+
+    ``earned_from`` names what the soul was earned by, when something did. It
+    changes nothing about the game and is not read by any rule: it is there so
+    that the record says whether a game was won on monsters or on cards, which
+    is a question the soul count cannot answer and nobody can reconstruct
+    afterwards.
     """
     if count < 0:
         raise EffectExecutionError("gain_soul count must be non-negative")
@@ -264,6 +271,7 @@ def gain_soul(
 
             ctx.emit(
                 EventType.SOUL_GAINED,
+                source=earned_from if earned_from is not None else ctx.source,
                 controller=player.player_id,
                 targets=[player],
                 soul=soul,
