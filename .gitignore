@@ -221,3 +221,6 @@ __marimo__/
 build/
 dist/
 *.spec.bak
+
+# Games played from the desk
+fsme-work/

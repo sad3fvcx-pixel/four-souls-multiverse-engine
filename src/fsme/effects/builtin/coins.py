@@ -129,9 +129,20 @@ def transfer_coins(
 ) -> int:
     """
     Move coins from one player to the targets.
+
+    Nobody to take from is not an error. "Steal 1¢ from another player" in a
+    two-player game whose other player is dead names nobody, and the rules pass
+    over an instruction that cannot be carried out — the same reading
+    ``give_treasure`` takes when the recipient turns out not to exist.
+
+    What that costs is worth stating: an ability whose author simply forgot to
+    name a source now does nothing quietly instead of raising. That check was
+    only ever a runtime one, firing in whichever game happened to reach the
+    card, so it was a poor guard against a mistake in the content and a real
+    obstacle to a card that legitimately finds nobody to rob.
     """
-    if source_player is None:
-        raise EffectExecutionError("transfer_coins requires source_player")
+    if source_player is None or not 0 <= int(source_player) < len(ctx.state.players):
+        return 0
 
     giver = ctx.state.player(source_player)
     receivers = _players(targets, "transfer_coins")

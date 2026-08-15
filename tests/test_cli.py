@@ -49,10 +49,16 @@ def test_the_version_is_printed(capsys: pytest.CaptureFixture[str]) -> None:
     assert "fsme" in capsys.readouterr().out
 
 
-def test_a_double_clicked_build_opens_the_game(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_double_clicked_build_opens_the_front_door(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """
-    Somebody who ran the executable with no arguments wants to play, not to
+    Somebody who ran the executable with no arguments wants to use it, not to
     read a usage message.
+
+    The door rather than the game: a person who double-clicks has not decided
+    yet whether they want to play one game or run a thousand, and the page
+    offers both.
     """
     asked: dict[str, object] = {}
 
@@ -62,10 +68,10 @@ def test_a_double_clicked_build_opens_the_game(monkeypatch: pytest.MonkeyPatch) 
 
         return 0
 
-    monkeypatch.setattr(entry_point, "serve", remember)
+    monkeypatch.setattr(entry_point, "front", remember)
 
     assert main([]) == 0
-    assert asked == {"command": "serve", "open": True}
+    assert asked == {"command": "desk", "open": True}
 
 
 def test_a_named_command_is_still_obeyed(capsys: pytest.CaptureFixture[str]) -> None:

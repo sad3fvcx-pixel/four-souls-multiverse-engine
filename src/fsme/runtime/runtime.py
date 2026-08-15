@@ -42,6 +42,17 @@ if TYPE_CHECKING:
 
 DEFAULT_MAX_ITERATIONS = 512
 
+_WITNESS = 60
+"""
+How many of the last steps are kept when a game refuses to stabilise.
+
+A stability error used to say only that the engine gave up, which tells whoever
+finds it nothing about what to look at. Two cards triggering each other for
+ever look exactly like a slow game from the outside, and the difference is the
+whole of the diagnosis. Long enough to show a cycle repeating several times;
+short enough that recording it costs nothing worth measuring.
+"""
+
 MAX_REPLACEMENT_DEPTH = 8
 """
 How deeply replacements may nest.
@@ -180,6 +191,41 @@ def names_ability(event: Event, card: CardInstance, ability: Ability) -> bool:
     abilities = card.face.abilities_for(str(event.type))
 
     return bool(0 <= int(index) < len(abilities) and abilities[int(index)] is ability)
+
+
+def _name_of(event: Any) -> str:
+    """
+    One event, in the few words a loop is recognisable by.
+    """
+    source = getattr(event, "source", None)
+    named = getattr(source, "name", None) or getattr(
+        getattr(source, "definition", None), "name", None
+    )
+
+    return f"{event.type}({named})" if named else str(event.type)
+
+
+def _what_was_looping(witness: list[str]) -> str:
+    """
+    Say what kept happening, when anything did.
+
+    A guess at the cause and offered as one: these are the events that were
+    still arriving when the engine gave up, which is where a loop shows itself
+    but is not proof of what started it.
+    """
+    if not witness:
+        return ""
+
+    from collections import Counter
+
+    common = Counter(witness).most_common(4)
+
+    if not common or common[0][1] < 3:
+        return ""
+
+    said = ", ".join(f"{what} ×{times}" for what, times in common)
+
+    return f". Still arriving when it gave up: {said}"
 
 
 class Runtime:
@@ -490,7 +536,13 @@ class Runtime:
         """
         Process pending work until the game is stable or waiting on players.
         """
-        for _ in range(self._max_iterations):
+        # Only the tail is recorded. A game that stabilises — every game — pays
+        # nothing for this, and a game that does not is the only one that
+        # needed the evidence.
+        watch_from = self._max_iterations - _WITNESS
+        witness: list[str] = []
+
+        for step in range(self._max_iterations):
             decision = self._state.pending_decision
 
             if decision is not None:
@@ -501,7 +553,12 @@ class Runtime:
                 continue
 
             if not self._state.events.is_empty():
-                self._process_event(self._state.events.pop())
+                event = self._state.events.pop()
+
+                if step >= watch_from:
+                    witness.append(_name_of(event))
+
+                self._process_event(event)
                 continue
 
             if self._state.game_over:
@@ -533,6 +590,7 @@ class Runtime:
 
         raise StabilityError(
             f"game state did not stabilise within {self._max_iterations} steps"
+            f"{_what_was_looping(witness)}"
         )
 
     # ------------------------------------------------------------------

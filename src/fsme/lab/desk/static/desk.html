@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FSME</title>
+<style>
+:root {
+  --ink: #14161a;
+  --paper: #f6f5f2;
+  --edge: #d7d3cb;
+  --quiet: #6d6a63;
+  --mark: #7a3b2e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+}
+header {
+  padding: 28px 24px 18px;
+  border-bottom: 1px solid var(--edge);
+}
+h1 { margin: 0; font-size: 22px; letter-spacing: .14em; font-weight: 600; }
+header p { margin: 6px 0 0; color: var(--quiet); font-size: 13px; }
+main {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 0;
+  align-items: start;
+}
+@media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+#actions { padding: 20px 24px 40px; border-right: 1px solid var(--edge); }
+#output { padding: 20px 24px 40px; min-width: 0; }
+.card {
+  border: 1px solid var(--edge);
+  background: #fff;
+  border-radius: 6px;
+  padding: 14px 14px 12px;
+  margin-bottom: 14px;
+}
+.card h2 { margin: 0 0 2px; font-size: 15px; }
+.card p { margin: 0 0 10px; color: var(--quiet); font-size: 12.5px; }
+label { display: inline-block; font-size: 12px; color: var(--quiet); margin-right: 10px; }
+input, select {
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 6px;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: #fff;
+  color: inherit;
+  width: 70px;
+}
+select, input.wide { width: 100%; margin-bottom: 8px; }
+button {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 4px;
+  cursor: pointer;
+}
+button.quiet { background: transparent; color: var(--ink); border-color: var(--edge); }
+button[disabled] { opacity: .45; cursor: default; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+#jobs { list-style: none; margin: 0 0 16px; padding: 0; }
+#jobs li {
+  border: 1px solid var(--edge);
+  background: #fff;
+  border-radius: 5px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+#jobs li.on { border-color: var(--ink); }
+#jobs .state { color: var(--quiet); font-size: 12px; }
+#jobs .failed { color: var(--mark); }
+.bar { height: 3px; background: var(--edge); border-radius: 2px; margin-top: 6px; }
+.bar span { display: block; height: 100%; background: var(--ink); border-radius: 2px; }
+pre {
+  margin: 0;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  overflow-x: auto;
+  font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+}
+.hint { color: var(--quiet); font-size: 12.5px; margin: 0 0 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>FSME</h1>
+  <p>A rules simulator for Four Souls. The engine plays; everything here asks it questions.</p>
+</header>
+
+<main>
+  <section id="actions">
+    <div class="card">
+      <h2>Play a game</h2>
+      <p>One game to the end, then a full report on it.</p>
+      <div class="row">
+        <label>seed <input id="play-seed" type="number" value="7" min="0"></label>
+        <label>players <input id="play-players" type="number" value="3" min="1" max="4"></label>
+      </div>
+      <div class="row">
+        <label><input id="play-bot" type="checkbox" checked style="width:auto"> seat 0 plays by the bot</label>
+      </div>
+      <div class="row">
+        <button data-kind="play">Play</button>
+        <button class="quiet" id="watch">Watch one instead</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Run a study</h2>
+      <p>Many games, then what they say about the game.</p>
+      <div class="row">
+        <label>games <input id="study-games" type="number" value="60" min="1"></label>
+        <label>players <input id="study-players" type="number" value="3" min="1" max="4"></label>
+        <label>cores <input id="study-jobs" type="number" value="4" min="1" max="16"></label>
+      </div>
+      <div class="row"><button data-kind="study">Study</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Test a card</h2>
+      <p>The same seeds with the card and without it.</p>
+      <input class="wide" id="card" list="cards" placeholder="card identifier">
+      <datalist id="cards"></datalist>
+      <div class="row">
+        <label>games <input id="test-games" type="number" value="60" min="1"></label>
+        <label>players <input id="test-players" type="number" value="2" min="1" max="4"></label>
+        <label>cores <input id="test-jobs" type="number" value="4" min="1" max="16"></label>
+      </div>
+      <div class="row"><button data-kind="test-card">Test</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Open a report</h2>
+      <p>A game played earlier, read again.</p>
+      <select id="journal"><option value="">nothing saved yet</option></select>
+      <div class="row"><button data-kind="report">Open</button></div>
+    </div>
+  </section>
+
+  <section id="output">
+    <ul id="jobs"></ul>
+    <p class="hint" id="hint">Nothing has been run yet. Everything above prints exactly what the matching <code>fsme</code> command prints.</p>
+    <pre id="text"></pre>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+
+let jobs = [];
+let watching = null;
+
+async function post(path, body) {
+  const answer = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const read = await answer.json();
+
+  if (!answer.ok) throw new Error(read.error || "that did not work");
+
+  return read;
+}
+
+function gather(kind) {
+  if (kind === "play") {
+    return {
+      kind,
+      seed: +$("play-seed").value,
+      players: +$("play-players").value,
+      bot_seats: $("play-bot").checked ? [0] : [],
+    };
+  }
+
+  if (kind === "study") {
+    return {
+      kind,
+      games: +$("study-games").value,
+      players: +$("study-players").value,
+      jobs: +$("study-jobs").value,
+      bot_seats: [0],
+    };
+  }
+
+  if (kind === "test-card") {
+    return {
+      kind,
+      card: $("card").value.trim(),
+      games: +$("test-games").value,
+      players: +$("test-players").value,
+      jobs: +$("test-jobs").value,
+    };
+  }
+
+  return { kind: "report", name: $("journal").value };
+}
+
+for (const button of document.querySelectorAll("button[data-kind]")) {
+  button.addEventListener("click", async () => {
+    try {
+      const job = await post("/api/run", gather(button.dataset.kind));
+
+      watching = job.id;
+
+      $("hint").textContent = "";
+
+      await refresh();
+    } catch (error) {
+      $("text").textContent = String(error.message || error);
+    }
+  });
+}
+
+$("watch").addEventListener("click", () => {
+  window.open("/play", "_blank");
+});
+
+function draw() {
+  const list = $("jobs");
+
+  list.innerHTML = "";
+
+  for (const job of jobs) {
+    const item = document.createElement("li");
+
+    if (job.id === watching) item.className = "on";
+
+    const state =
+      job.state === "running"
+        ? `running — ${job.done}${job.total ? " of " + job.total : ""}`
+        : job.state;
+
+    item.innerHTML =
+      `<div>${job.title}</div>` +
+      `<div class="state ${job.state === "failed" ? "failed" : ""}">${state}</div>` +
+      (job.state === "running" && job.total
+        ? `<div class="bar"><span style="width:${Math.round(job.share * 100)}%"></span></div>`
+        : "");
+
+    item.addEventListener("click", () => {
+      watching = job.id;
+      draw();
+      show();
+    });
+
+    list.appendChild(item);
+  }
+}
+
+function show() {
+  const job = jobs.find((one) => one.id === watching);
+
+  if (!job) return;
+
+  $("text").textContent = job.error || job.text || "";
+}
+
+async function refresh() {
+  try {
+    const read = await (await fetch("/api/jobs")).json();
+
+    jobs = read.jobs || [];
+
+    if (watching === null && jobs.length) watching = jobs[0].id;
+
+    draw();
+    show();
+
+    const saved = await (await fetch("/api/journals")).json();
+    const chooser = $("journal");
+    const had = chooser.value;
+
+    chooser.innerHTML = "";
+
+    if (!(saved.journals || []).length) {
+      chooser.innerHTML = "<option value=''>nothing saved yet</option>";
+    } else {
+      for (const one of saved.journals) {
+        const option = document.createElement("option");
+
+        option.value = one.name;
+        option.textContent = `${one.name} (${Math.round(one.size / 1024)} KB)`;
+
+        chooser.appendChild(option);
+      }
+
+      if (had) chooser.value = had;
+    }
+  } catch (error) {
+    /* the server is busy or gone; the next tick will try again */
+  }
+}
+
+async function cards() {
+  try {
+    const read = await (await fetch("/api/cards")).json();
+    const list = $("cards");
+
+    for (const one of read.cards || []) {
+      const option = document.createElement("option");
+
+      option.value = one.id;
+      option.textContent = one.name;
+
+      list.appendChild(option);
+    }
+  } catch (error) {
+    /* the card list is a convenience; typing the identifier still works */
+  }
+}
+
+refresh();
+cards();
+setInterval(refresh, 900);
+</script>
+</body>
+</html>

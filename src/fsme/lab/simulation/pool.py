@@ -16,6 +16,8 @@ addition does not mind the order, which is why the answer does not either.
 
 from __future__ import annotations
 
+import multiprocessing
+import threading
 from collections.abc import Iterator
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
@@ -166,12 +168,45 @@ def run_on_many_cores(
         for offset in range(games)
     ]
 
+    how = _how_to_start()
+
     with ProcessPoolExecutor(
         max_workers=max(1, jobs),
+        mp_context=None if how is None else multiprocessing.get_context(how),
         initializer=_prepare,
         initargs=(str(root), tuple(without)),
     ) as pool:
         yield from pool.map(_one, work, chunksize=_chunk(games, jobs))
+
+
+def _how_to_start() -> str | None:
+    """
+    How to make a worker process, decided by whether this process has threads.
+
+    ``fork`` is the fastest, is what Python picks on Linux, and is unsafe from
+    a thread: forking a multi-threaded process copies locks that the threads it
+    did not copy were holding, and the child can deadlock the first time it
+    touches one. The desk starts every run from a background thread, so this is
+    not a theoretical hazard.
+
+    The obvious fix — always use ``forkserver`` — costs more than it looks.
+    Both of the safe methods re-import ``__main__`` in the child, so a run
+    driven from a REPL, a notebook or a script piped into ``python`` dies with
+    a file-not-found for a ``__main__`` that was never a file. That is a normal
+    way to use a laboratory, and breaking it to fix a hazard that only exists
+    in a threaded process would be a poor trade.
+
+    So the question is asked at the only moment it can be answered — the fork
+    is about to happen, and either there are other threads or there are not.
+    ``None`` means "whatever this platform does", which is the behaviour every
+    caller had before the desk existed.
+    """
+    if threading.active_count() <= 1:
+        return None
+
+    available = multiprocessing.get_all_start_methods()
+
+    return "forkserver" if "forkserver" in available else "spawn"
 
 
 def _chunk(games: int, jobs: int) -> int:

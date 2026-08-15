@@ -106,6 +106,48 @@ def serve(args: argparse.Namespace) -> int:
     return 0
 
 
+def front(args: argparse.Namespace) -> int:
+    """
+    Open the front door: everything the engine and the lab do, on one page.
+
+    The value of this project has been behind commands with flags, which is
+    fine for whoever wrote them and no use to anybody else. This is the same
+    functions with buttons in front of them — the page prints exactly what the
+    matching command prints, so there is one answer and not two.
+    """
+    from fsme.lab.desk import Workbench
+    from fsme.lab.desk import desk as build
+
+    root = content_root(args.content)
+    loaded = load_content(root)
+
+    bench = Workbench(loaded, root, Path(args.work).expanduser().resolve())
+
+    session = Session(
+        loaded,
+        players=args.players,
+        seed=args.seed,
+        interactive_priority=not args.no_priority,
+    )
+
+    server = build(session, bench, host=args.host, port=args.port)
+    where = f"http://{args.host}:{args.port}/"
+
+    print(f"FSME is at {where} — Ctrl-C to stop", flush=True)
+
+    if args.open:
+        webbrowser.open(where)
+
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("", flush=True)
+    finally:
+        server.server_close()
+
+    return 0
+
+
 def play(args: argparse.Namespace) -> int:
     """
     Play a game through with nobody watching, and say how it went.
@@ -731,6 +773,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     why.set_defaults(run=explain)
 
+    door = commands.add_parser(
+        "desk", help="everything FSME does, on one page in a browser"
+    )
+    shared(door)
+    door.add_argument("--host", default="127.0.0.1")
+    door.add_argument("--port", type=int, default=8000)
+    door.add_argument("--open", action="store_true", help="open a browser too")
+    door.add_argument(
+        "--no-priority",
+        action="store_true",
+        help="resolve priority windows without asking",
+    )
+    door.add_argument(
+        "--work",
+        default="fsme-work",
+        help="where games played from the page are kept",
+    )
+    door.set_defaults(run=front)
+
     listing = commands.add_parser("cards", help="what the content holds")
     shared(listing)
     listing.add_argument("--json", action="store_true")
@@ -744,8 +805,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if not given:
         # Somebody double-clicked the executable. They did not come to read a
-        # usage message: open the game and the browser looking at it.
-        given = ["serve", "--open"]
+        # usage message: open the front door and a browser looking at it.
+        given = ["desk", "--open"]
 
     parser = build_parser()
     args = parser.parse_args(given)
