@@ -8,6 +8,23 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+- **A card could delete itself from the game.** O. The Fool says "cancel
+  everything that hasn't resolved", and it did — including the engine's own
+  bookkeeping for putting the played card into the discard. The card had
+  already left the hand, so cancelling only the half that puts it down left it
+  in no zone at all: not in the deck, the discard, any hand or on the table.
+  Found in a thousand-game audit at seed 113, turn 38, as the only
+  `stack_cancel` in twenty thousand commands. A stack object now says whether
+  it may be cancelled, and the one that may not is the tail of an action
+  already taken — not a rule about any card, and everything a player did or a
+  card is doing is still as answerable as it was.
+- **Every journal claimed to come from 0.1.0.** The package carried one version
+  and the packaging carried another; `JournalKeeper` stamps the package's, so
+  the field nobody reads until something is incompatible was the one that was
+  wrong. There is one version now, in `fsme.__version__`, and `pyproject.toml`
+  reads it rather than repeating it. The old consistency test compared the
+  packaging with the command line — both read the same literal, so both agreed
+  while the third copy did not; it checks the derivation now.
 - **A game watched can be kept.** *Save journal* writes the whole journal of
   the game on screen — the deal, the starting cents, every command, every
   event including the bookkeeping, `controller`, `actor`, the rolls, the

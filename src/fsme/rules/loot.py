@@ -75,12 +75,18 @@ class PlayLootHandler:
 
         # Pushed before the card's own ability, so it resolves after it: the
         # loot card reaches the discard pile only once its effect is done.
+        #
+        # Not cancellable, because it is not a thing anybody did — it is the
+        # tail of this very command, waiting its turn. The card has already
+        # left the hand; cancelling only the part that puts it down leaves it
+        # in no zone at all.
         context.push(
             StackItem(
                 kind=StackItemType.LOOT,
                 label=DISCARD_PLAYED_LOOT,
                 source=card,
                 controller=player.player_id,
+                cancellable=False,
             )
         )
 

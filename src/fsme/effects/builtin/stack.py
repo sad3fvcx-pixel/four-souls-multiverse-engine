@@ -25,6 +25,13 @@ from ..registry import EffectRegistry
 def cancel_stack(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     """
     Take stack objects off the stack without resolving them.
+
+    Everything a player did and everything a card is doing can be taken off
+    here — that is what "cancel everything that hasn't resolved" means. What
+    cannot is the engine's own bookkeeping for an action already taken: see
+    ``StackItem.cancellable``. Skipping those is not a special case for any
+    card; it is the difference between undoing a thing and deleting the record
+    of it.
     """
     state = ctx.state
     cancelled = 0
@@ -32,6 +39,9 @@ def cancel_stack(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     for item in targets:
         if not isinstance(item, StackItem):
             raise EffectExecutionError("cancel_stack expects stack objects")
+
+        if not item.cancellable:
+            continue
 
         if not state.stack.remove(item):
             continue

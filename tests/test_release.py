@@ -96,17 +96,21 @@ def test_the_ignore_rules_do_not_hide_a_whole_directory() -> None:
 
 def test_the_version_is_the_same_everywhere() -> None:
     """
-    Three places say what version this is, and they have to agree.
+    Several places say what version this is, and they have to agree.
 
-    A wheel that reports one number and a ``--version`` that reports another is
-    the kind of thing nobody notices until somebody files a bug against a
-    release that does not exist.
+    This test used to compare the packaging with the command line and stop
+    there. Both read the same literal, so both agreed — while
+    ``fsme.__version__``, which nothing here looked at, said 0.1.0 and stamped
+    that into every journal FSME wrote. A consistency check that does not cover
+    every copy is a consistency check that certifies the disagreement.
+
+    There is one copy now, and the rest are derived from it. What is left to
+    check is that they are still derived rather than copied back.
     """
+    import fsme
     from fsme.cli.main import VERSION
 
-    packaged = tomllib.loads((ROOT / "pyproject.toml").read_text("utf-8"))
-
-    assert packaged["project"]["version"] == VERSION
+    assert VERSION == fsme.__version__
 
     changelog = (ROOT / "CHANGELOG.md").read_text("utf-8")
 
@@ -331,3 +335,57 @@ def test_a_tagged_build_puts_the_binaries_where_people_can_reach_them() -> None:
     # Named for the platform, or three files called `fsme` collide.
     for asset in ("fsme-linux", "fsme-windows.exe", "fsme-macos"):
         assert asset in settings, asset
+
+
+# ----------------------------------------------------------------------
+# One version, in one place
+# ----------------------------------------------------------------------
+
+
+def test_the_project_has_exactly_one_version_number() -> None:
+    """
+    It had two, and they disagreed for three releases.
+
+    ``src/fsme/__init__.py`` said 0.1.0 while the packaging said 0.1.3, and the
+    journal stamps whichever the package says — so every journal FSME had ever
+    written claimed to come from a version three releases old. The field nobody
+    reads until something is incompatible was the one that was wrong.
+
+    So the packaging is not allowed to carry a number of its own any more: it
+    reads the attribute, and this checks that it still does.
+    """
+    import fsme
+
+    written = tomllib.loads((ROOT / "pyproject.toml").read_text("utf-8"))
+    project = written["project"]
+
+    assert "version" not in project, (
+        "pyproject.toml carries a version of its own again, so there are two"
+    )
+    assert "version" in project.get("dynamic", ()), (
+        "the packaging no longer derives its version from anywhere"
+    )
+
+    derived = written["tool"]["setuptools"]["dynamic"]["version"]
+
+    assert derived == {"attr": "fsme.__version__"}, derived
+    assert fsme.__version__, "the one version is empty"
+
+
+def test_the_command_line_prints_the_version_the_package_has() -> None:
+    import fsme
+    from fsme.cli.main import VERSION
+
+    assert VERSION == fsme.__version__
+
+
+def test_a_journal_is_stamped_with_the_version_that_wrote_it() -> None:
+    """
+    The field the disagreement actually reached.
+    """
+    import fsme
+    from fsme.api import Session, load_content
+
+    session = Session(load_content(ROOT / "content"), players=2, seed=1)
+
+    assert session.journal.engine_version == fsme.__version__

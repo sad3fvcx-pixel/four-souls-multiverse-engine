@@ -74,6 +74,27 @@ class StackItem:
 
     status: StackItemStatus = StackItemStatus.CREATED
 
+    cancellable: bool = True
+    """
+    Whether a card may take this off the stack without it resolving.
+
+    Almost everything here is cancellable, because almost everything here is a
+    thing somebody chose to do and the game lets other players answer. A few
+    objects are not: they are the second half of an action already taken, split
+    off so that it happens *after* whatever it is waiting for.
+
+    Putting a played loot card into the discard pile is the one today. Playing
+    a card is a single action, and the engine only splits it in two so that the
+    card reaches the discard after its own ability resolves. Cancelling the
+    second half alone does not undo the play — the card has already left the
+    hand — it just leaves the card in no zone at all, which is how O. The Fool
+    ("cancel everything that hasn't resolved") deleted itself from the game.
+
+    This is not a way to make an effect uncancellable. Anything a player did
+    and anything a card is doing stays answerable; only bookkeeping that has no
+    meaning on its own is out of reach.
+    """
+
     def has_targets(self) -> bool:
         return bool(self.targets)
 

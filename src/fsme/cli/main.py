@@ -19,6 +19,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
+from fsme import __version__
 from fsme.api import Session, load_content
 from fsme.content import ContentLibrary
 from fsme.content.errors import InvalidContentError
@@ -26,7 +27,7 @@ from fsme.journal import JournalFormatError
 
 DEFAULT_NAMES = ("Ann", "Bo", "Cy", "Di")
 
-VERSION = "0.1.3"
+VERSION = __version__
 
 
 def seats_of(given: str) -> tuple[int, ...]:
