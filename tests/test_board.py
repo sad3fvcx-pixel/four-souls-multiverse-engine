@@ -7,6 +7,8 @@ modifiers, so a card cannot be live for one and dead for the other.
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 from conftest import make_definition, make_game, make_instance
 
@@ -344,3 +346,101 @@ def test_entering_with_an_empty_deck_does_nothing() -> None:
 
     assert runtime.context.apply("enter_room", []) == 0
     assert state.room_area.cards == []
+
+
+# ----------------------------------------------------------------------
+# Slots refill, however they emptied
+# ----------------------------------------------------------------------
+
+
+def _dealt_game() -> Any:
+    """
+    A real deal, because a stocked treasure deck is the point of these.
+
+    ``make_game`` builds a bare state with no treasure deck behind the shop, so
+    a refill there would have nothing to refill from and the test would pass by
+    proving nothing.
+    """
+    from pathlib import Path
+
+    from fsme.api import load_content
+    from fsme.game import Game
+
+    library = load_content(Path(__file__).resolve().parents[1] / "content")
+    game = Game.from_content(library, ["Ann", "Bo"], seed=1)
+
+    game.start()
+
+    return game
+
+
+def test_a_shop_slot_refills_however_it_was_emptied() -> None:
+    """
+    COMPREHENSIVE_RULES.md §9: "A slot refills as soon as it is empty."
+
+    It used to refill only when a purchase emptied it, because the refill was
+    called from the purchase. A card that took, stole or destroyed a shop item
+    left the hole open for the rest of the game — five games in sixty ended
+    with a short shop and a full treasure deck behind it.
+
+    The refill lives with the state-based actions now, beside the one that
+    fills the monster slots, so every way of emptying a slot is followed by the
+    same refill.
+    """
+    from fsme.rules import SHOP_SLOTS
+
+    game = _dealt_game()
+    state = game.state
+
+    assert len(state.treasure_shop) == SHOP_SLOTS
+    assert state.treasure_deck.cards
+
+    # Taken, not bought: whatever a card does to a shop item, the slot is empty
+    # afterwards and the rules do not care how it got that way.
+    taken = state.treasure_shop.draw()
+
+    assert len(state.treasure_shop) == SHOP_SLOTS - 1
+
+    # Any accepted command lets the engine settle, which is when slots refill.
+    assert game.submit(
+        Command(type=CommandType.END_PHASE, player=0)
+    ).accepted
+
+    assert len(state.treasure_shop) == SHOP_SLOTS, (
+        "the shop was left short after a card removed an item"
+    )
+    assert all(card is not taken for card in state.treasure_shop.cards)
+
+
+def test_an_empty_shop_refills_to_every_slot() -> None:
+    """
+    Both slots, not only the one the engine last noticed.
+    """
+    from fsme.rules import SHOP_SLOTS
+
+    game = _dealt_game()
+    state = game.state
+
+    while state.treasure_shop.cards:
+        state.treasure_shop.draw()
+
+    assert game.submit(Command(type=CommandType.END_PHASE, player=0)).accepted
+
+    assert len(state.treasure_shop) == SHOP_SLOTS
+
+
+def test_a_shop_stays_short_when_the_deck_is_out() -> None:
+    """
+    A slot that cannot be filled is not an error, and nothing is invented to
+    fill it.
+    """
+    game = _dealt_game()
+    state = game.state
+
+    state.treasure_deck.clear()
+    state.treasure_shop.draw()
+
+    assert game.submit(Command(type=CommandType.END_PHASE, player=0)).accepted
+
+    assert len(state.treasure_shop) == 1
+    assert game.runtime.is_stable()

@@ -153,7 +153,14 @@ def test_the_capricious_may_sweep_the_shop_instead(alt_art: ContentLibrary) -> N
     assert choose(game, 0, 0).accepted
 
     assert swept in game.state.treasure_discard.cards
-    assert len(game.state.treasure_shop.cards) == len(for_sale) - 1
+    assert swept not in game.state.treasure_shop.cards
+
+    # The card puts a shop item in the discard; it does not close the slot.
+    # COMPREHENSIVE_RULES.md 9 refills a slot as soon as it is empty, so the
+    # shop is full again with a different card in it. This test used to assert
+    # the shop was left one short, which is what the engine did before the
+    # refill covered every way of emptying a slot rather than only a purchase.
+    assert len(game.state.treasure_shop.cards) == len(for_sale)
 
 
 def test_the_lost_wakes_a_character_at_the_end_of_its_turn(

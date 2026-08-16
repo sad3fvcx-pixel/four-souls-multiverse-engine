@@ -23,7 +23,7 @@ from .entry import (
     JournalFormatError,
     Position,
 )
-from .file import FILE_VERSION, MARKER, suggested_name, unwrap, wrap
+from .file import FILE_VERSION, MARKER, read, suggested_name, unwrap, wrap
 from .keeper import JournalKeeper
 from .render import render
 from .replay import Divergence, Playback, replay_journal, summarise
@@ -40,6 +40,7 @@ __all__ = [
     "JournalKeeper",
     "Playback",
     "Position",
+    "read",
     "render",
     "replay_journal",
     "suggested_name",

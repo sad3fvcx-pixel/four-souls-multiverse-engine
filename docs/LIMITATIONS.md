@@ -23,6 +23,36 @@ Cards are implemented from their printed text, one at a time, with a test each.
 Nothing is guessed: a card whose rules the specifications do not settle is
 recorded as a gap in `PROJECT_PLAN.md` §11.5 rather than invented.
 
+## A game can fail to finish
+
+Six seeds in a thousand run for ever: 113, 137, 167, 251, 300 and 727 at four
+players. Each reaches roughly 7950 turns before a step budget stops it.
+
+The cause is understood and is not the card that triggers it. A deck is rebuilt
+from its discard only when a draw finds it empty, so a card that puts itself on
+the bottom of an empty deck is the only card in it and comes straight back —
+and `XIX. The Sun` also grants an extra turn. The full account, and the three
+things that could be done about it, are in
+[DECK_EXHAUSTION.md](DECK_EXHAUSTION.md).
+
+Nothing has been changed, because the fix is a decision about how one sentence
+of `COMPREHENSIVE_RULES.md` should be read, and whichever way it goes it moves
+every number this project has measured.
+
+Until then: anything that runs many games needs a step budget. `fsme study` has
+one.
+
+## Only one deck is rebuilt when it runs out
+
+`COMPREHENSIVE_RULES.md` §9 says a deck that runs out is rebuilt by shuffling
+its discard pile. The engine does that for the loot deck and for no other: the
+monster, treasure and room decks stay empty once they empty.
+
+Latent rather than reachable. Over sixty measured games the monster deck never
+fell below 228 of ~277 cards, the treasure deck below 259 of ~285, and the room
+deck below 52 of 67 — the loot deck is the only one drawn often enough to run
+dry. Recorded because it is one rule implemented once.
+
 ## Some pairs of cards never finish
 
 Placebo copies an item's ability; Rainbow Tapeworm becomes a copy of an item.

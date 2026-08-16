@@ -8,6 +8,30 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+- **Save journal and `fsme replay` could not be used together.** A file saved
+  from Watch failed twice over: the envelope was not understood — "this journal
+  is written in format fsme-journal, and this engine reads format 1", the
+  envelope's name read as a journal version — and, unwrapped, it was refused at
+  entry 0 because replay deals the game itself and a Watch journal already
+  records the deal. Reading a journal file now takes either shape, and replay
+  deals the game only when the journal does not. It also works out from the
+  journal whether the game was played with interactive priority, because the
+  journal does not say and the answer changes the game; that inference is
+  marked as inference where it is made.
+- **A shop slot refilled only if a purchase emptied it.**
+  `COMPREHENSIVE_RULES.md` §9: "A slot refills as soon as it is empty." A card
+  that took, stole or destroyed a shop item left the hole open for the rest of
+  the game — five games in sixty ended with a short shop and a full treasure
+  deck behind it. The refill moved to the state-based actions, beside the one
+  that fills the monster slots, so every way of emptying a slot is followed by
+  the same refill. Two card tests changed with it: Flush and The Capricious
+  sweep the shop, and both asserted that the shop stayed swept, which recorded
+  the engine rather than the cards.
+- **`docs/CORE_STABLE.md`** says what the engine guarantees, what it does not,
+  and what it is not trying to do — each guarantee a measurement somebody can
+  repeat. **`docs/DECK_EXHAUSTION.md`** is the whole account of the six games
+  in a thousand that never finish: the cause, the sentence of the rules it
+  turns on, and the three things that could be done, with none of them done.
 - **A card could delete itself from the game.** O. The Fool says "cancel
   everything that hasn't resolved", and it did — including the engine's own
   bookkeeping for putting the played card into the discard. The card had

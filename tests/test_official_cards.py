@@ -2547,8 +2547,15 @@ def test_flush_sweeps_the_side_it_is_told_to(base_game: ContentLibrary) -> None:
 
     answer(game, str(decision.options[1]))
 
-    assert list(game.state.treasure_shop.cards) == []
+    # Everything that was for sale went to the bottom of the deck, and the
+    # slots filled again from the top — which is what makes Flush a way of
+    # cycling the shop rather than a way of closing it.
+    # COMPREHENSIVE_RULES.md 9: a slot refills as soon as it is empty. The
+    # assertion here used to be that the shop was left empty, which recorded
+    # the engine refilling only after a purchase.
     assert all(card in game.state.treasure_deck.cards for card in shop)
+    assert all(card not in game.state.treasure_shop.cards for card in shop)
+    assert len(game.state.treasure_shop.cards) == len(shop)
     assert list(game.state.active_monsters.cards) == monsters
 
 

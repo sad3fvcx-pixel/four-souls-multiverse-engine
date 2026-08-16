@@ -487,3 +487,150 @@ def test_the_two_kinds_of_file_do_not_take_each_other(
 
     # And the report loader still takes a report, unchanged by any of this.
     assert bench.take_bundle(a_report) is not None
+
+
+# ----------------------------------------------------------------------
+# And back through the engine
+# ----------------------------------------------------------------------
+
+
+def watch_a_game(library: ContentLibrary, seed: int, steps: int) -> Journal:
+    """
+    A game played the way Watch plays one: a Session, interactive priority.
+    """
+    from fsme.lab.bot import HeuristicBot
+    from fsme.lab.simulation import ScriptedAgent
+    from fsme.lab.simulation.runner import _whose_move
+
+    session = Session(library, players=2, seed=seed)
+    game = session.game
+
+    bot = HeuristicBot(seed)
+    agent = ScriptedAgent(seed)
+
+    for _ in range(steps):
+        if game.is_over:
+            break
+
+        if game.runtime.awaiting_decision is not None:
+            answered = agent.choose(game)
+
+            if answered is None:
+                break
+
+            command, label = answered
+        else:
+            thought = bot.choose(game, seats=(_whose_move(game),))
+
+            if thought is None:
+                break
+
+            command, label = thought[0], thought[1]
+
+        if not session.submit(
+            {
+                "type": str(command.type),
+                "player": command.player,
+                "payload": dict(command.payload),
+                "label": label,
+            }
+        )["accepted"]:
+            break
+
+    return session.journal
+
+
+def test_a_watched_game_saved_and_opened_replays(
+    everything: ContentLibrary, tmp_path: Path
+) -> None:
+    """
+    Save journal and ``fsme replay`` are two shipped features that could not be
+    used together.
+
+    A file saved from Watch failed twice over: the envelope was not understood
+    — "this journal is written in format fsme-journal, and this engine reads
+    format 1", the envelope's name read as a journal version — and, unwrapped,
+    it was refused at entry 0 because ``replay_journal`` deals the game itself
+    and the journal already records the deal.
+
+    The whole path, end to end, is what this asserts: play it, write the file,
+    open the file, play it back through the ordinary engine, and have every
+    position come out the same.
+    """
+    from fsme.journal import read, replay_journal
+
+    journal = watch_a_game(everything, seed=7, steps=400)
+
+    assert journal.entries[0].command == "start_game", (
+        "this is not a Watch journal, so it does not test what it is here for"
+    )
+
+    where = tmp_path / suggested_name(journal)
+    where.write_text(json.dumps(wrap(journal)), encoding="utf-8")
+
+    opened = read(where)
+
+    assert opened.to_dict() == journal.to_dict()
+
+    playback = replay_journal(opened, everything)
+
+    assert playback.faithful, playback.divergence
+    assert playback.replayed == len(journal.entries)
+
+
+def test_a_simulation_journal_still_replays(everything: ContentLibrary) -> None:
+    """
+    The other shape, which worked before and has to keep working.
+    """
+    from fsme.journal import replay_journal
+    from fsme.lab.simulation import play_one
+
+    journal, _ = play_one(
+        everything, seed=7, players=4, steps=6000, thinking_seats=(0, 1, 2, 3)
+    )
+
+    assert journal.entries[0].command != "start_game", (
+        "the simulation journal now records the deal, so this test is stale"
+    )
+
+    playback = replay_journal(journal, everything)
+
+    assert playback.faithful, playback.divergence
+    assert playback.replayed == len(journal.entries)
+
+
+def test_a_journal_holding_only_the_deal_replays(
+    everything: ContentLibrary,
+) -> None:
+    """
+    The edge of the reading: a Watch journal one entry long.
+
+    How a game was played is not written in the journal, so replay works it out
+    from what the journal holds. A game saved before anybody had moved is the
+    case with the least to go on.
+    """
+    from fsme.journal import replay_journal
+
+    session = Session(everything, players=2, seed=11)
+
+    assert len(session.journal.entries) == 1
+
+    playback = replay_journal(session.journal, everything)
+
+    assert playback.faithful, playback.divergence
+
+
+def test_a_plain_journal_file_still_opens(
+    everything: ContentLibrary, tmp_path: Path
+) -> None:
+    """
+    ``Journal.save`` writes the journal bare, and the desk and the simulation
+    both do. Reading has to take that as readily as the envelope.
+    """
+    from fsme.journal import read
+    from fsme.lab.simulation import play_one
+
+    journal, _ = play_one(everything, seed=3, players=2, steps=200)
+    where = journal.save(tmp_path / "bare.json")
+
+    assert read(where).to_dict() == journal.to_dict()

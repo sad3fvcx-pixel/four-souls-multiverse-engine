@@ -249,9 +249,9 @@ def show(args: argparse.Namespace) -> int:
     """
     Read a journal out loud.
     """
-    from fsme.journal import Journal, render
+    from fsme.journal import read, render
 
-    journal = Journal.load(args.file)
+    journal = read(args.file)
 
     print(render(journal, full=args.full))
 
@@ -262,9 +262,9 @@ def replay(args: argparse.Namespace) -> int:
     """
     Play a journal back through the engine and say whether it still holds.
     """
-    from fsme.journal import Journal, replay_journal, summarise
+    from fsme.journal import read, replay_journal, summarise
 
-    journal = Journal.load(args.file)
+    journal = read(args.file)
     playback = replay_journal(journal, library(args))
     told = summarise(playback, journal)
 
@@ -294,13 +294,13 @@ def report(args: argparse.Namespace) -> int:
     The command the others were building towards: a journal in, a report out,
     no flags needed to get the whole picture.
     """
-    from fsme.journal import Journal
+    from fsme.journal import read
     from fsme.lab.analysis import review, reviewed
 
     loaded = library(args)
 
     if args.file:
-        journal = Journal.load(args.file)
+        journal = read(args.file)
     else:
         from fsme.lab.simulation import play_one
 
@@ -386,7 +386,7 @@ def explain(args: argparse.Namespace) -> int:
     """
     Say why one game went the way it did, and where it was decided.
     """
-    from fsme.journal import Journal
+    from fsme.journal import read
     from fsme.lab.analysis import explain as tell
     from fsme.lab.analysis import risks as weigh
     from fsme.lab.analysis import summarise, turning_points
@@ -394,7 +394,7 @@ def explain(args: argparse.Namespace) -> int:
     loaded = library(args)
 
     if args.file:
-        journal = Journal.load(args.file)
+        journal = read(args.file)
     else:
         from fsme.lab.simulation import play_one
 

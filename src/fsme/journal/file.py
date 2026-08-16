@@ -22,7 +22,10 @@ extends, for the same reason.
 
 from __future__ import annotations
 
+import json
 import time
+from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 from .entry import JOURNAL_FORMAT_VERSION, Journal, JournalFormatError
@@ -113,6 +116,38 @@ def unwrap(given: Any) -> Journal:
     return Journal.from_dict(inside)
 
 
+def read(path: Path | str) -> Journal:
+    """
+    Open a journal file, whichever of the two shapes it is.
+
+    A journal reaches disk two ways. ``Journal.save`` writes the journal
+    itself, which is what a simulation and the desk write. Save journal writes
+    the same journal inside an envelope, because a file a person picks out of a
+    directory has to be able to say what it is.
+
+    Both are journals of games and every tool that reads games should take
+    either. It did not: ``fsme replay`` called ``Journal.load`` directly, so a
+    file saved from Watch came back as "this journal is written in format
+    fsme-journal, and this engine reads format 1" — the envelope's name read as
+    a journal version. Two shipped features that could not be used together,
+    and a message that sent the reader looking for a version problem.
+    """
+    where = Path(path)
+
+    try:
+        data = json.loads(where.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise JournalFormatError(f"{where} is not JSON: {error}") from None
+
+    if isinstance(data, Mapping) and data.get("format") == MARKER:
+        return unwrap(data)
+
+    if not isinstance(data, Mapping):
+        raise JournalFormatError(f"{where} does not hold a journal")
+
+    return Journal.from_dict(data)
+
+
 def suggested_name(journal: Journal) -> str:
     """
     What to call the file, so a directory of them can be told apart.
@@ -132,6 +167,7 @@ __all__ = [
     "JOURNAL_FORMAT_VERSION",
     "MARKER",
     "JournalFormatError",
+    "read",
     "suggested_name",
     "unwrap",
     "wrap",

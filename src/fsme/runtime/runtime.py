@@ -1529,7 +1529,12 @@ class Runtime:
         Returns True when something changed, which tells the loop to run
         another pass: a death may award a soul, and that soul may win the game.
         """
-        from fsme.rules import kill_player, refill_monsters, refresh_derived
+        from fsme.rules import (
+            kill_player,
+            refill_monsters,
+            refill_shop,
+            refresh_derived,
+        )
 
         changed = refresh_derived(self._state)
 
@@ -1575,6 +1580,21 @@ class Runtime:
         refill_monsters(self._context)
 
         if len(self._state.active_monsters) != before_refill:
+            changed = True
+
+        # COMPREHENSIVE_RULES.md §9: "A slot refills as soon as it is empty."
+        # A shop slot is a slot. It used to be refilled only by the purchase
+        # that emptied it, so a card that took, stole or destroyed a shop item
+        # left the hole open for the rest of the game — 5 games in 60 ended
+        # with a short shop and a full treasure deck. Refilling here rather
+        # than in whatever removed the card means every way of emptying a slot
+        # is followed by the same refill, which is what "as soon as it is
+        # empty" says and is how the monster slots have always worked.
+        before_shop = len(self._state.treasure_shop)
+
+        refill_shop(self._context)
+
+        if len(self._state.treasure_shop) != before_shop:
             changed = True
 
         if not self._state.game_over:
