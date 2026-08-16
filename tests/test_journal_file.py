@@ -441,7 +441,7 @@ def test_a_bad_file_is_refused_over_http_with_a_reason(
 
 
 def test_the_two_kinds_of_file_do_not_take_each_other(
-    everything: ContentLibrary,
+    everything: ContentLibrary, tmp_path: Path
 ) -> None:
     """
     Save report and Save journal write different things for different reasons,
@@ -474,8 +474,11 @@ def test_the_two_kinds_of_file_do_not_take_each_other(
 
     assert "Load report" in str(refused.value)
 
-    # A journal handed to the report reader.
-    bench = Workbench(everything, CONTENT_ROOT, CONTENT_ROOT)
+    # A journal handed to the report reader. The work directory is a scratch
+    # one: loading a report writes the game it carries to disk, and an
+    # earlier version of this test pointed that at `content/` and committed
+    # a journal into the card data.
+    bench = Workbench(everything, CONTENT_ROOT, tmp_path)
 
     with pytest.raises(ValueError) as declined:
         bench.take_bundle(saved_journal)

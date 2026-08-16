@@ -389,3 +389,25 @@ def test_a_journal_is_stamped_with_the_version_that_wrote_it() -> None:
     session = Session(load_content(ROOT / "content"), players=2, seed=1)
 
     assert session.journal.engine_version == fsme.__version__
+
+
+def test_the_card_data_holds_only_card_data() -> None:
+    """
+    A journal was once committed into ``content/``.
+
+    The desk writes the game a loaded report carries into its work directory,
+    and a test passed ``content/`` as that directory — so a two-command journal
+    was written among the cards and travelled in a release. Nothing caught it:
+    the rule next door checks that nothing under ``content/`` is *ignored*,
+    which a tracked stray file passes.
+    """
+    strays = [
+        path.relative_to(ROOT)
+        for path in (ROOT / "content").rglob("*.json")
+        if path.stem.startswith("loaded-")
+        or path.stem.startswith("fsme-journal")
+        or path.parent.name == "content"
+        and path.name not in ("manifest.json",)
+    ]
+
+    assert not strays, f"these are not card data: {strays}"
