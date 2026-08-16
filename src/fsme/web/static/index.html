@@ -188,13 +188,40 @@ input {
   width: 5em;
 }
 .empty { color: var(--dim); }
+.mode {
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 2px 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+#journal-trouble {
+  border: 1px solid var(--hot);
+  color: var(--ink);
+  padding: 8px 12px;
+  margin-top: 8px;
+  width: 100%;
+  font-size: 13px;
+}
+/* Everything that would suggest the game is still going, gone while a saved
+   one is being read. A button that cannot do anything is worse than no
+   button: it is a claim about what this page is showing. */
+body.viewing #table,
+body.viewing #moves-block,
+body.viewing #waiting-block,
+body.viewing #stack-block,
+body.viewing #live-controls,
+body.viewing #save-journal { display: none; }
+body.viewing main { grid-template-columns: minmax(0, 1fr); }
+body.viewing aside { border-left: 0; }
 </style>
 </head>
 <body>
 <header>
   <h1>Four Souls Multiverse Engine</h1>
   <div class="turn" id="turn"></div>
-  <div class="controls">
+  <div class="controls" id="live-controls">
     <label class="tag">seed <input id="seed" type="number" value="0"></label>
     <button id="roll-seed" title="A seed you did not have to invent. Keep it and the same game deals again.">Random seed</button>
     <button id="copy-seed" title="Copy the seed, so this exact game can be dealt again or reported in an issue.">Copy</button>
@@ -202,6 +229,17 @@ input {
     <button id="restart">Deal again</button>
     <button id="autoplay" hidden title="The bots take every seat and play it out while you watch.">Let the bots play</button>
   </div>
+  <div class="controls" id="journal-controls">
+    <button id="save-journal" title="Write the whole journal of this game to a file — every command and every event, the same record this page reads.">Save journal</button>
+    <button id="load-journal" title="Open a journal saved earlier and read it here.">Load journal</button>
+    <input id="journal-file" type="file" accept="application/json,.json" hidden>
+  </div>
+  <div class="controls" id="viewing-controls" hidden>
+    <span class="mode">Viewing a saved journal</span>
+    <span class="tag" id="viewing-what"></span>
+    <button id="stop-viewing">Back to the live game</button>
+  </div>
+  <div id="journal-trouble" hidden></div>
 </header>
 
 <main>
@@ -234,15 +272,15 @@ input {
       <h2>What is happening</h2>
       <div id="story"></div>
     </div>
-    <div>
+    <div id="waiting-block">
       <h2>Waiting on</h2>
       <div id="waiting"></div>
     </div>
-    <div>
+    <div id="stack-block">
       <h2>Stack</h2>
       <div id="stack"></div>
     </div>
-    <div>
+    <div id="moves-block">
       <h2>Moves</h2>
       <div id="moves"></div>
     </div>
@@ -591,6 +629,11 @@ let catchingUp = false;
 let dealing = 0;
 
 async function catchUpSteps() {
+  // A saved journal is finished. Asking the server for more of it would be
+  // asking about a different game — the one still being watched — and would
+  // append that game's moves to this one's log.
+  if (viewing) return;
+
   // Only the entries this page has not drawn. A game four hundred moves long
   // costs the same per click as a game four moves long.
   //
@@ -629,9 +672,100 @@ function forgetSteps() {
   dealing += 1;
 }
 
+
+// ----------------------------------------------------------------------
+// Two modes, and the difference between them said out loud
+// ----------------------------------------------------------------------
+//
+// Live: a game is being played here, the board is real, the moves do things.
+// Viewing: a journal saved earlier is being read. Nothing on the page can
+// change it, no request is made about it, and the game that was being watched
+// is untouched underneath — going back finds it exactly where it was.
+//
+// The difference is a fact about what the page is showing, so it is shown
+// rather than implied. Leaving a move button on a finished record would be a
+// claim that the record can be continued.
+
+let viewing = null;
+
+function setMode(saved) {
+  viewing = saved;
+
+  document.body.classList.toggle("viewing", Boolean(saved));
+  el("viewing-controls").hidden = !saved;
+
+  // A run of bots started a moment ago must not keep drawing over a record it
+  // has nothing to do with.
+  if (saved) playing = false;
+
+  if (!saved) return;
+
+  const journal = saved.journal;
+  const outcome = journal.outcome || {};
+  const won = outcome.winner_name
+    ? `${outcome.winner_name} won`
+    : "unfinished";
+
+  el("viewing-what").textContent =
+    `seed ${journal.seed} · ${(journal.players || []).join(", ")} · `
+    + `${journal.entries.length} moves · ${outcome.turns || "?"} turns · ${won}`;
+
+  el("turn").innerHTML = `<span class="won">${escape(won)}</span>`;
+}
+
+function complain(trouble) {
+  const box = el("journal-trouble");
+
+  box.hidden = !trouble;
+  box.textContent = trouble || "";
+}
+
+function show(saved) {
+  // The loaded journal becomes the record this page is reading — the same
+  // record, drawn by the same code, so a saved game and a live one look alike
+  // because they are alike.
+  complain("");
+  forgetSteps();
+
+  el("story").innerHTML = "";
+
+  setMode(saved);
+
+  drawSteps(saved.journal.entries, saved.journal.players || []);
+  drawStory((saved.account || []).map((said) => ({ said })));
+
+  el("log-block").open = true;
+}
+
+async function loadJournal(file) {
+  let given;
+
+  try {
+    given = JSON.parse(await file.text());
+  } catch (error) {
+    complain(`${file.name} is not readable JSON: ${error.message}`);
+    return;
+  }
+
+  // Checked by the server, so that what a journal file is has one definition
+  // and the sentence shown here is the one the tests read.
+  const answer = await post("/api/journal/open", { file: given });
+
+  if (answer.error) {
+    complain(answer.error);
+    return;
+  }
+
+  show(answer);
+}
+
 let current = { moves: [], state: null };
 
 function draw(view) {
+  // A reply that arrives after a saved journal has been opened belongs to the
+  // live game, and drawing it here would mix two games into one page.
+  if (viewing) return;
+
   current = view;
   drawTable(view.state);
   drawWaiting(view.state);
@@ -750,6 +884,30 @@ document.addEventListener("click", async (occasion) => {
     return;
   }
 
+  if (button.id === "save-journal") {
+    // The server writes the file, so the thing saved is the journal's own
+    // serialisation rather than whatever this page happened to be holding.
+    window.location.href = "/api/journal/file";
+    return;
+  }
+
+  if (button.id === "load-journal") {
+    complain("");
+    el("journal-file").click();
+    return;
+  }
+
+  if (button.id === "stop-viewing") {
+    // The live game was never touched, so going back is redrawing it.
+    complain("");
+    forgetSteps();
+    el("story").innerHTML = "";
+    setMode(null);
+    seen = 0;
+    draw(await get("/api/view?since=0"));
+    return;
+  }
+
   if (button.id === "restart") {
     forgetSteps();
     el("story").innerHTML = "";
@@ -781,6 +939,15 @@ document.addEventListener("click", async (occasion) => {
     });
     if (answer.view) draw(answer.view);
   }
+});
+
+el("journal-file").addEventListener("change", async (occasion) => {
+  const [file] = occasion.target.files || [];
+
+  // Cleared so that picking the same file twice asks twice.
+  occasion.target.value = "";
+
+  if (file) await loadJournal(file);
 });
 
 get("/api/view?since=0").then(draw);

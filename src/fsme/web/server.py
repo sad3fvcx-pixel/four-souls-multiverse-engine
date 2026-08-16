@@ -17,11 +17,14 @@ from __future__ import annotations
 
 import json
 import threading
+from collections.abc import Mapping
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
 from fsme.api import Session
+from fsme.journal import Journal, JournalFormatError, suggested_name, unwrap, wrap
+from fsme.narration import told
 
 STATIC = Path(__file__).resolve().parent / "static"
 
@@ -101,6 +104,23 @@ class GameHandler(BaseHTTPRequestHandler):
 
             return
 
+        if path == "/api/journal/file":
+            # The whole journal, as a file to keep. Not the paged view: a save
+            # is not a poll, and `total` is a paging aid rather than part of
+            # the game.
+            with self.lock:
+                journal = self.session.journal
+                body = json.dumps(wrap(journal)).encode("utf-8")
+                name = suggested_name(journal)
+
+            self._send(
+                JSON,
+                body,
+                headers={"Content-Disposition": f'attachment; filename="{name}"'},
+            )
+
+            return
+
         self._send(HTML, b"not here", status=404)
 
     def do_POST(self) -> None:  # noqa: N802 - the base class names it
@@ -126,6 +146,32 @@ class GameHandler(BaseHTTPRequestHandler):
                 answer["view"] = self.session.view(self._since())
 
             self._json(answer)
+
+            return
+
+        if path == "/api/journal/open":
+            # Read a saved journal and hand it back with its account, without
+            # touching the game. Nothing here starts, continues or replaces a
+            # session: opening a saved game is reading, and the game being
+            # watched is still where it was.
+            #
+            # The checking happens here rather than in the page so that there
+            # is one implementation of what a journal file is, and so that the
+            # sentences a user reads when a file is wrong are the ones the
+            # tests read too.
+            try:
+                journal = unwrap(body.get("file"))
+            except JournalFormatError as error:
+                self._json({"error": str(error)}, status=400)
+
+                return
+
+            self._json(
+                {
+                    "journal": journal.to_dict(),
+                    "account": _account(journal),
+                }
+            )
 
             return
 
@@ -199,11 +245,21 @@ class GameHandler(BaseHTTPRequestHandler):
     def _json(self, payload: Any, status: int = 200) -> None:
         self._send(JSON, json.dumps(payload).encode("utf-8"), status=status)
 
-    def _send(self, kind: str, body: bytes, status: int = 200) -> None:
+    def _send(
+        self,
+        kind: str,
+        body: bytes,
+        status: int = 200,
+        headers: Mapping[str, str] | None = None,
+    ) -> None:
         self.send_response(status)
         self.send_header("Content-Type", kind)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+
+        for name, value in (headers or {}).items():
+            self.send_header(name, value)
+
         self.end_headers()
         self.wfile.write(body)
 
@@ -232,3 +288,23 @@ def serve(session: Session, host: str = "127.0.0.1", port: int = 8000) -> GameSe
     Build the server. The caller decides when to start serving.
     """
     return GameServer((host, port), session)
+
+
+def _account(journal: Journal) -> list[str]:
+    """
+    A saved game read out, in the words a live one is read out in.
+
+    The same call ``fsme.api.view`` makes for a game in progress. That is not
+    tidiness: ``narration`` exists on the rule that a live game and a saved
+    journal are the same events and so get the same sentences, and two
+    narrators would drift until nobody could say which account of a game was
+    the right one.
+    """
+    names = dict(enumerate(journal.players))
+
+    return [
+        said
+        for entry in journal.entries
+        for said in (told(happening.to_dict(), names=names) for happening in entry.events)
+        if said
+    ]

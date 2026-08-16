@@ -8,6 +8,25 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+- **A game watched can be kept.** *Save journal* writes the whole journal of
+  the game on screen — the deal, the starting cents, every command, every
+  event including the bookkeeping, `controller`, `actor`, the rolls, the
+  damage, the deaths and revivals, the rewards, the purchases,
+  `winner_declared` and `game_end`. *Load journal* opens one and reads it in
+  the same page, with the same step log and the same account, because it is
+  the same record drawn by the same code. There is no second format: the file
+  is `Journal.to_dict()` inside a named envelope (`fsme-journal`, version 1),
+  so what comes back out is what went in — asserted field by field, not by
+  eye. Named for the seed, `fsme-journal-seed-4.json`, since the seed is what
+  deals the game again.
+- **A loaded journal says it is one.** The page has two modes now and shows
+  which: reading a saved game hides the board, the moves, the stack and the
+  deal controls, because a button that cannot do anything is a claim about
+  what is on screen. Nothing is asked of `/api/journal` while a saved game is
+  open, and the live game is untouched underneath — *Back to the live game*
+  finds it where it was. A file that is not a journal is refused by name:
+  unreadable JSON, not ours, a version this build cannot read, no game inside,
+  or a saved *report*, which is a different file for a different job.
 - **A tagged build no longer needs finishing by hand.** Pushing a tag creates a
   *tag*; it does not create a *release*, and `gh release upload` against a tag
   with none fails with `release not found`. Every tagged build did — v0.1.2 and
