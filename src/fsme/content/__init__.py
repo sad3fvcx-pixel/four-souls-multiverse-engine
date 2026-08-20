@@ -29,7 +29,13 @@ from .library import ContentLibrary, Expansion
 from .loader import ContentLoader
 from .manifest import Manifest, validate_manifest
 from .report import IssueCategory, ValidationIssue, ValidationReport
-from .vocabulary import UNCHECKED, EffectShape, ParamShape, Vocabulary
+from .vocabulary import (
+    UNCHECKED,
+    ConditionShape,
+    EffectShape,
+    ParamShape,
+    Vocabulary,
+)
 
 __all__ = [
     "ContentLibrary",
@@ -41,6 +47,7 @@ __all__ = [
     "ValidationReport",
     "Vocabulary",
     "EffectShape",
+    "ConditionShape",
     "ParamShape",
     "UNCHECKED",
     "validate_manifest",

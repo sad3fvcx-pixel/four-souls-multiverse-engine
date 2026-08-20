@@ -29,6 +29,7 @@ def validate_card(
     known_conditions: Collection[str] | None = None,
     known_targets: Collection[str] | None = None,
     shapes: Mapping[str, Any] | None = None,
+    condition_shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Return every problem found in one raw card.
@@ -86,6 +87,15 @@ def validate_card(
         errors.append(f"{card_id}: 'abilities' must be a list")
         return errors
 
+    errors.extend(
+        _validate_conditions(
+            data,
+            known=known_conditions,
+            shapes=condition_shapes,
+            card_id=str(card_id),
+        )
+    )
+
     for index, ability in enumerate(abilities):
         errors.extend(
             _validate_ability(
@@ -94,7 +104,6 @@ def validate_card(
                 index=index,
                 known_effects=known_effects,
                 known_triggers=known_triggers,
-                known_conditions=known_conditions,
                 known_targets=known_targets,
                 shapes=shapes,
             )
@@ -110,7 +119,6 @@ def _validate_ability(
     index: int,
     known_effects: Collection[str] | None,
     known_triggers: Collection[str] | None,
-    known_conditions: Collection[str] | None = None,
     known_targets: Collection[str] | None = None,
     shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
@@ -131,7 +139,7 @@ def _validate_ability(
             f"{did_you_mean(str(trigger), known_triggers)}"
         )
 
-    for key in ("conditions", "targets", "effects"):
+    for key in ("targets", "effects"):
         value = ability.get(key, ())
 
         if not isinstance(value, (list, tuple)):
@@ -150,16 +158,6 @@ def _validate_ability(
                         f"{location}: unknown effect '{name}'"
                         f"{did_you_mean(name, known_effects)}"
                     )
-
-    conditions = ability.get("conditions", ())
-
-    if known_conditions is not None and isinstance(conditions, (list, tuple)):
-        for name in _node_names(conditions, _BOOLEAN_NAMES):
-            if name not in known_conditions and name not in _BOOLEAN_NAMES:
-                errors.append(
-                    f"{location}: unknown condition '{name}'"
-                    f"{did_you_mean(name, known_conditions)}"
-                )
 
     if shapes and isinstance(effects, (list, tuple)):
         errors.extend(
@@ -481,36 +479,236 @@ def did_you_mean(name: str, known: Collection[str]) -> str:
 _BOOLEAN_NAMES = frozenset({"and", "or", "not"})
 
 
-def _node_names(nodes: Any, nested: Collection[str]) -> list[str]:
+CONDITION_KEYS = ("conditions", "if")
+"""
+The two keys that hold a list of conditions.
+
+An ability writes ``conditions``; an effect that only happens sometimes writes
+``if``, and the interpreter reads either. Both are conditions wherever they
+appear, which is what makes it safe to look for them anywhere in a card rather
+than only in the places official cards happen to use.
+"""
+
+_UNCHECKED_KIND = "anything the engine can only judge during a game"
+
+
+def _validate_conditions(
+    card: Mapping[str, Any],
+    *,
+    known: Collection[str] | None,
+    shapes: Mapping[str, Any] | None,
+    card_id: str,
+) -> list[str]:
     """
-    Collect the names used by a list of condition nodes, including nested ones.
+    Check every condition in a card, wherever it is written.
+
+    Conditions are not confined to abilities. A static modifier carries them, a
+    single effect inside an ability carries them, and a branch of a choice
+    carries them again. Looking only where the shipped cards put them would
+    leave a custom card's conditions unchecked exactly where the author was
+    doing something less usual, so this looks everywhere.
     """
-    names: list[str] = []
+    errors: list[str] = []
+
+    for path, nodes in _condition_lists(card):
+        errors.extend(
+            _check_condition_nodes(
+                nodes, known=known, shapes=shapes, location=card_id, path=path
+            )
+        )
+
+    return errors
+
+
+def _condition_lists(node: Any, path: str = "") -> list[tuple[str, Any]]:
+    """
+    Every condition list in a card, with where it was found.
+    """
+    found: list[tuple[str, Any]] = []
+
+    if isinstance(node, Mapping):
+        for key, value in node.items():
+            here = f"{path}.{key}" if path else str(key)
+
+            if key in CONDITION_KEYS:
+                found.append((here, value))
+            else:
+                found.extend(_condition_lists(value, here))
+    elif isinstance(node, (list, tuple)):
+        for index, item in enumerate(node):
+            found.extend(_condition_lists(item, f"{path}[{index}]"))
+
+    return found
+
+
+def _check_condition_nodes(
+    nodes: Any,
+    *,
+    known: Collection[str] | None,
+    shapes: Mapping[str, Any] | None,
+    location: str,
+    path: str,
+) -> list[str]:
+    """
+    Check one list of conditions, and anything nested inside it.
+    """
+    if isinstance(nodes, (str, Mapping)):
+        # A card may write one condition where a list is expected; the
+        # interpreter wraps it, so validation reads it the same way.
+        nodes = [nodes]
 
     if not isinstance(nodes, (list, tuple)):
-        return names
+        return [f"{location}: {path}: conditions must be a list"]
 
-    for node in nodes:
-        if isinstance(node, str):
-            names.append(node)
+    errors: list[str] = []
+
+    for index, node in enumerate(nodes):
+        errors.extend(
+            _check_condition(
+                node,
+                known=known,
+                shapes=shapes,
+                location=location,
+                path=f"{path}[{index}]",
+            )
+        )
+
+    return errors
+
+
+def _check_condition(
+    node: Any,
+    *,
+    known: Collection[str] | None,
+    shapes: Mapping[str, Any] | None,
+    location: str,
+    path: str,
+) -> list[str]:
+    """
+    Check one condition node against the engine's description of it.
+    """
+    name, params = _condition_call(node)
+
+    if name is None:
+        return [f"{location}: {path}: condition must be a name or an object"]
+
+    if name in _BOOLEAN_NAMES:
+        return _check_condition_nodes(
+            params.get("of", ()),
+            known=known,
+            shapes=shapes,
+            location=location,
+            path=f"{path}.{name}",
+        )
+
+    if known is not None and name not in known:
+        return [
+            f"{location}: {path}: unknown condition '{name}'"
+            f"{did_you_mean(name, known)}"
+        ]
+
+    shape = shapes.get(name) if shapes else None
+
+    if shape is None or shape.open_ended:
+        return []
+
+    return _check_condition_params(name, params, shape, location, path)
+
+
+def _condition_call(node: Any) -> tuple[str | None, dict[str, Any]]:
+    """
+    Reduce a condition node to a name and parameters.
+
+    This is ``normalise`` in the evaluator, read from the outside. The two must
+    agree about what a card said, or validation would be checking a condition
+    the game will not run.
+    """
+    if isinstance(node, str):
+        return node, {}
+
+    if not isinstance(node, Mapping):
+        return None, {}
+
+    if "condition" in node:
+        return (
+            str(node["condition"]),
+            {key: value for key, value in node.items() if key != "condition"},
+        )
+
+    if len(node) != 1:
+        return None, {}
+
+    name, value = next(iter(node.items()))
+
+    if name in _BOOLEAN_NAMES:
+        return str(name), {
+            "of": value if isinstance(value, (list, tuple)) else [value]
+        }
+
+    if isinstance(value, Mapping):
+        return str(name), dict(value)
+
+    return str(name), {"value": value}
+
+
+def _check_condition_params(
+    name: str,
+    params: Mapping[str, Any],
+    shape: Any,
+    location: str,
+    path: str,
+) -> list[str]:
+    """
+    Check what a card wrote inside one condition.
+
+    A parameter the condition does not read is refused rather than ignored.
+    ``{"player_hp": {"operatr": "<", "value": 2}}`` is not a card asking about
+    low health with a spare key attached — the misspelling is dropped and the
+    comparison silently becomes "equal to zero", which is a card that plays
+    wrongly and never complains.
+    """
+    errors: list[str] = []
+
+    for key in shape.params:
+        if shape.params[key].required and key not in params:
+            errors.append(f"{location}: {path}: '{name}' needs '{key}'")
+
+    for key, value in params.items():
+        parameter = shape.params.get(key)
+
+        if parameter is None:
+            errors.append(
+                f"{location}: {path}: '{name}' takes no '{key}'"
+                f"{did_you_mean(str(key), shape.params)}"
+            )
             continue
 
-        if not isinstance(node, Mapping):
+        if parameter.kind == _UNCHECKED_KIND:
             continue
 
-        if "condition" in node:
-            names.append(str(node["condition"]))
+        written = _kind_written(value)
+
+        if written != parameter.kind:
+            errors.append(
+                f"{location}: {path}: '{name}' wants {parameter.wants()} "
+                f"for '{key}', card says {value!r}"
+            )
             continue
 
-        for key, value in node.items():
-            names.append(str(key))
+        if parameter.values and value not in parameter.values:
+            errors.append(
+                f"{location}: {path}: '{name}' wants {parameter.wants()} "
+                f"for '{key}', card says {value!r}"
+            )
+            continue
 
-            if key in nested:
-                names.extend(_node_names(value, nested))
+        if parameter.least is not None and int(value) < parameter.least:
+            errors.append(
+                f"{location}: {path}: '{name}' wants {parameter.wants()} "
+                f"for '{key}', card says {value!r}"
+            )
 
-            break
-
-    return names
+    return errors
 
 
 def _effect_aliases(nodes: Any) -> set[str]:
@@ -745,6 +943,7 @@ def validate_cards(
     known_conditions: Collection[str] | None = None,
     known_targets: Collection[str] | None = None,
     shapes: Mapping[str, Any] | None = None,
+    condition_shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Validate a collection of raw cards and report duplicate identifiers.
@@ -764,6 +963,7 @@ def validate_cards(
                 known_conditions=known_conditions,
                 known_targets=known_targets,
                 shapes=shapes,
+                condition_shapes=condition_shapes,
             )
         )
 

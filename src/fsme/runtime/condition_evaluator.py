@@ -16,14 +16,37 @@ merely being asked a question. Probabilistic behaviour belongs to an effect.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
+from types import MappingProxyType
 from typing import Any
 
+from fsme.content.vocabulary import UNCHECKED, ConditionShape, ParamShape
 from fsme.state import GameState, PlayerState
 
 from .ability_context import AbilityContext
 from .errors import UnknownConditionError
 
 ConditionFn = Callable[[GameState, AbilityContext, Mapping[str, Any]], bool]
+
+WHOLE = "a whole number"
+TEXT = "text"
+
+
+def _shape(*parts: Mapping[str, ParamShape]) -> dict[str, ParamShape]:
+    """
+    Join the parameter sets a condition inherits from the helpers it calls.
+
+    Every condition here has the same signature, so what one takes cannot be
+    read off it the way an effect's can. What can be read is which helper it
+    hands its parameters to, and the helper is where the parameters are
+    actually understood — so that is where each set is written, one per
+    helper, beside the code that reads it.
+    """
+    joined: dict[str, ParamShape] = {}
+
+    for part in parts:
+        joined.update(part)
+
+    return joined
 
 _COMPARISONS: dict[str, Callable[[int, int], bool]] = {
     "==": lambda left, right: left == right,
@@ -33,6 +56,19 @@ _COMPARISONS: dict[str, Callable[[int, int], bool]] = {
     "<": lambda left, right: left < right,
     "<=": lambda left, right: left <= right,
 }
+
+
+COMPARISON = {
+    "operator": ParamShape("operator", TEXT, values=tuple(_COMPARISONS)),
+    "value": ParamShape("value", WHOLE),
+}
+"""
+What ``_compare`` reads: how to compare, and what to compare against.
+
+The operators are the keys of the table above rather than a list written out
+again, so a comparison the engine cannot make is refused at load time by the
+same fact that makes it fail at run time.
+"""
 
 
 def _compare(value: int, params: Mapping[str, Any]) -> bool:
@@ -45,6 +81,12 @@ def _compare(value: int, params: Mapping[str, Any]) -> bool:
         raise UnknownConditionError(f"unknown operator '{operator}'") from None
 
     return comparison(value, expected)
+
+
+SUBJECT_PLAYER = {"player": ParamShape("player", WHOLE, least=0)}
+"""
+What ``_subject_player`` reads: which seat, when the card names one.
+"""
 
 
 def _subject_player(
@@ -67,6 +109,12 @@ def _subject_player(
         return None
 
     return state.player(index)
+
+
+SUBJECT_MONSTER = {"monster": ParamShape("monster", WHOLE, least=0)}
+"""
+What ``_subject_monster`` reads: which slot, when the card names one.
+"""
 
 
 def _subject_monster(
@@ -100,19 +148,45 @@ class ConditionEvaluator:
 
     def __init__(self) -> None:
         self._conditions: dict[str, ConditionFn] = {}
+        self._shapes: dict[str, ConditionShape] = {}
         self._register_builtin()
 
-    def register(self, name: str, function: ConditionFn) -> None:
+    def register(
+        self,
+        name: str,
+        function: ConditionFn,
+        takes: Mapping[str, ParamShape] | None = None,
+    ) -> None:
         """
-        Add a condition implementation.
+        Add a condition implementation, and say what it takes.
+
+        ``takes`` is what a card file may write inside this condition. Leaving
+        it out does not mean the condition accepts anything: it means whoever
+        registered it did not say, so nothing outside a game may judge its
+        parameters. Every condition the engine ships says.
         """
         if name in self._conditions:
             raise UnknownConditionError(f"condition '{name}' is already registered")
 
         self._conditions[name] = function
+        self._shapes[name] = ConditionShape(
+            name=name,
+            params=MappingProxyType(dict(takes or {})),
+            open_ended=takes is None,
+        )
 
     def names(self) -> frozenset[str]:
         return frozenset(self._conditions)
+
+    def shapes(self) -> Mapping[str, ConditionShape]:
+        """
+        What each condition takes, as plain data.
+
+        The functions stay here. What leaves is names and kinds, because the
+        content pipeline that asks this question runs before a game exists and
+        must not be handed anything that could start one.
+        """
+        return MappingProxyType(dict(self._shapes))
 
     def evaluate_all(
         self,
@@ -157,52 +231,52 @@ class ConditionEvaluator:
     def _register_builtin(self) -> None:
         register = self.register
 
-        register("player_alive", _player_alive)
-        register("player_dead", _player_dead)
-        register("player_active", _player_active)
-        register("player_not_active", _player_not_active)
-        register("player_has_coins", _player_has_coins)
-        register("player_has_loot", _player_has_loot)
-        register("player_has_treasure", _player_has_treasure)
-        register("player_has_souls", _player_has_souls)
-        register("player_hp", _player_hp)
+        register("player_alive", _player_alive, SUBJECT_PLAYER)
+        register("player_dead", _player_dead, SUBJECT_PLAYER)
+        register("player_active", _player_active, SUBJECT_PLAYER)
+        register("player_not_active", _player_not_active, SUBJECT_PLAYER)
+        register("player_has_coins", _player_has_coins, HAS_SOMETHING)
+        register("player_has_loot", _player_has_loot, HAS_SOMETHING)
+        register("player_has_treasure", _player_has_treasure, HAS_TREASURE)
+        register("player_has_souls", _player_has_souls, HAS_SOMETHING)
+        register("player_hp", _player_hp, ABOUT_A_PLAYER)
 
-        register("monster_alive", _monster_alive)
-        register("monster_dead", _monster_dead)
-        register("monster_boss", _monster_boss)
-        register("monster_hp", _monster_hp)
+        register("monster_alive", _monster_alive, SUBJECT_MONSTER)
+        register("monster_dead", _monster_dead, SUBJECT_MONSTER)
+        register("monster_boss", _monster_boss, SUBJECT_MONSTER)
+        register("monster_hp", _monster_hp, ABOUT_A_MONSTER)
 
-        register("attack_roll", _attack_roll)
-        register("is_attacked", _is_attacked)
-        register("card_counters", _card_counters)
-        register("player_counters", _player_counters)
-        register("card_in_zone", _card_in_zone)
-        register("combat_damage", _combat_damage)
-        register("is_damage_source", _is_event_source)
-        register("is_event_source", _is_event_source)
-        register("event_value", _event_value)
-        register("values_equal", _values_equal)
-        register("is_damage_target", _is_damage_target)
-        register("is_damage_actor", _is_damage_actor)
-        register("dice_equals", _dice_equals)
-        register("dice_not_equals", _dice_not_equals)
-        register("dice_greater", _dice_greater)
-        register("dice_less", _dice_less)
-        register("dice_even", _dice_even)
-        register("dice_odd", _dice_odd)
+        register("attack_roll", _attack_roll, NOTHING)
+        register("is_attacked", _is_attacked, NOTHING)
+        register("card_counters", _card_counters, COUNTERS)
+        register("player_counters", _player_counters, PLAYER_COUNTERS)
+        register("card_in_zone", _card_in_zone, IN_ZONE)
+        register("combat_damage", _combat_damage, NOTHING)
+        register("is_damage_source", _is_event_source, NOTHING)
+        register("is_event_source", _is_event_source, NOTHING)
+        register("event_value", _event_value, EVENT_VALUE)
+        register("values_equal", _values_equal, NAMED_VALUES)
+        register("is_damage_target", _is_damage_target, NOTHING)
+        register("is_damage_actor", _is_damage_actor, NOTHING)
+        register("dice_equals", _dice_equals, DICE)
+        register("dice_not_equals", _dice_not_equals, DICE)
+        register("dice_greater", _dice_greater, DICE)
+        register("dice_less", _dice_less, DICE)
+        register("dice_even", _dice_even, NOTHING)
+        register("dice_odd", _dice_odd, NOTHING)
 
-        register("item_charged", _item_charged)
-        register("item_depleted", _item_depleted)
+        register("item_charged", _item_charged, NOTHING)
+        register("item_depleted", _item_depleted, NOTHING)
 
-        register("stack_empty", _stack_empty)
-        register("stack_not_empty", _stack_not_empty)
-        register("stack_size", _stack_size)
+        register("stack_empty", _stack_empty, NOTHING)
+        register("stack_not_empty", _stack_not_empty, NOTHING)
+        register("stack_size", _stack_size, COMPARISON)
 
-        register("first_turn", _first_turn)
-        register("first_attack_roll", _first_attack_roll)
-        register("nth_time_this_turn", _nth_time_this_turn)
-        register("last_effect_did", _last_effect_did)
-        register("game_finished", _game_finished)
+        register("first_turn", _first_turn, NOTHING)
+        register("first_attack_roll", _first_attack_roll, NOTHING)
+        register("nth_time_this_turn", _nth_time_this_turn, NTH_TIME_SHAPE)
+        register("last_effect_did", _last_effect_did, COMPARISON)
+        register("game_finished", _game_finished, NOTHING)
 
 
 def normalise(node: Any) -> tuple[str, Mapping[str, Any]]:
@@ -276,6 +350,18 @@ def _player_not_active(
     return not _player_active(state, context, params)
 
 
+HOW_MANY = _shape(
+    COMPARISON,
+    {
+        "amount": ParamShape("amount", WHOLE),
+        "count": ParamShape("count", WHOLE),
+    },
+)
+"""
+What ``_has`` reads: a number, however the card chose to spell it.
+"""
+
+
 def _has(
     player: Any,
     amount: int,
@@ -295,6 +381,36 @@ def _has(
         return amount >= int(params.get("amount", params.get("count", params.get("value", 1))))
 
     return _compare(amount, params)
+
+
+NOTHING: dict[str, ParamShape] = {}
+"""
+A condition that reads nothing. A card writing parameters into one is not
+narrowing it — it is being ignored, which is worth saying before a game.
+"""
+
+ABOUT_A_PLAYER = _shape(SUBJECT_PLAYER, COMPARISON)
+HAS_SOMETHING = _shape(SUBJECT_PLAYER, HOW_MANY)
+HAS_TREASURE = _shape(HAS_SOMETHING, {"tag": ParamShape("tag", TEXT)})
+ABOUT_A_MONSTER = _shape(SUBJECT_MONSTER, COMPARISON)
+COUNTERS = _shape(COMPARISON, {"counter": ParamShape("counter", TEXT)})
+PLAYER_COUNTERS = _shape(SUBJECT_PLAYER, COUNTERS)
+IN_ZONE = {"zone": ParamShape("zone", TEXT)}
+NAMED_VALUES = {"of": ParamShape("of", UNCHECKED)}
+EVENT_VALUE = _shape(
+    COMPARISON,
+    {
+        "key": ParamShape("key", TEXT, required=True),
+        "value": ParamShape("value", UNCHECKED),
+    },
+)
+"""
+The one condition whose ``value`` this layer cannot judge.
+
+Events carry numbers, flags and names, and the card is comparing against
+whichever the event holds. A rule that made this a number would refuse
+``{"key": "hit", "value": false}``, which is a card asking a fair question.
+"""
 
 
 def _player_has_coins(
@@ -442,6 +558,14 @@ handed to the condition along with everything else it knows.
 """
 
 
+NTH_TIME_SHAPE = _shape(
+    COMPARISON, {"every": ParamShape("every", WHOLE, least=1)}
+)
+"""
+Every other time is a period, and a period of zero is not a period.
+"""
+
+
 def _nth_time_this_turn(
     state: GameState, context: AbilityContext, params: Mapping[str, Any]
 ) -> bool:
@@ -461,6 +585,15 @@ def _nth_time_this_turn(
         return int(every) > 0 and number % int(every) == 0
 
     return _compare(number, dict(params) or {"operator": "==", "value": 1})
+
+
+DICE = {"value": ParamShape("value", WHOLE)}
+"""
+What the four ``dice_`` comparisons read: the number on the face.
+
+Not ``COMPARISON``: each of them names its own comparison, so an operator
+written on one would be silently ignored rather than obeyed.
+"""
 
 
 def _dice_value(context: AbilityContext) -> int | None:

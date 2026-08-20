@@ -34,15 +34,17 @@ def engine_vocabulary(effects: EffectRegistry | None = None) -> Vocabulary:
     pipeline that receives it never learns there was an engine to ask.
     """
     registry = effects if effects is not None else builtin_registry()
+    conditions = ConditionEvaluator()
 
     return Vocabulary(
         effects=frozenset(registry.names()) | CONTROL_NAMES,
         triggers=frozenset(str(event_type) for event_type in EventType),
-        conditions=frozenset(ConditionEvaluator().names()) | BOOLEAN_CONDITIONS,
+        conditions=frozenset(conditions.names()) | BOOLEAN_CONDITIONS,
         targets=frozenset(TargetResolver().names()),
         shapes=MappingProxyType(
             {name: _shape_of(registry.spec(name)) for name in registry.names()}
         ),
+        condition_shapes=conditions.shapes(),
     )
 
 
