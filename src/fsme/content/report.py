@@ -51,6 +51,15 @@ class ValidationIssue:
     category: IssueCategory
     message: str
 
+    expansion: str = ""
+    """
+    The set this came from.
+
+    Implied by the file until somebody has twenty sets in one tree, at which
+    point "which of my expansions is broken" is the first question and the
+    path is the slow way to answer it.
+    """
+
     file: str = ""
     identifier: str = ""
     location: str = ""
@@ -58,7 +67,7 @@ class ValidationIssue:
     def __str__(self) -> str:
         where = " ".join(
             part
-            for part in (self.file, self.identifier, self.location)
+            for part in (self.expansion, self.file, self.identifier, self.location)
             if part
         )
 
@@ -96,6 +105,7 @@ class ValidationReport:
         category: IssueCategory,
         message: str,
         *,
+        expansion: str = "",
         file: str = "",
         identifier: str = "",
         location: str = "",
@@ -106,6 +116,7 @@ class ValidationReport:
         issue = ValidationIssue(
             category=category,
             message=message,
+            expansion=expansion,
             file=file,
             identifier=identifier,
             location=location,

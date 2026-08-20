@@ -28,6 +28,7 @@ def validate_card(
     known_triggers: Collection[str] | None = None,
     known_conditions: Collection[str] | None = None,
     known_targets: Collection[str] | None = None,
+    shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Return every problem found in one raw card.
@@ -35,6 +36,12 @@ def validate_card(
     An empty list means the card is loadable. Effect and trigger vocabularies
     are passed in as plain names so that content validation stays independent
     of the effect implementations themselves.
+
+    ``shapes`` says what each effect *takes*, in the same spirit and under the
+    same rule: plain data, handed over by whoever owns a live engine, never
+    imported from one. Without it the names are checked and the arguments are
+    not — which is what a caller with no engine gets, and is exactly what
+    happened to every card until this existed.
     """
     errors: list[str] = []
 
@@ -89,6 +96,7 @@ def validate_card(
                 known_triggers=known_triggers,
                 known_conditions=known_conditions,
                 known_targets=known_targets,
+                shapes=shapes,
             )
         )
 
@@ -104,6 +112,7 @@ def _validate_ability(
     known_triggers: Collection[str] | None,
     known_conditions: Collection[str] | None = None,
     known_targets: Collection[str] | None = None,
+    shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     location = f"{card_id}: ability {index}"
 
@@ -152,6 +161,11 @@ def _validate_ability(
                     f"{did_you_mean(name, known_conditions)}"
                 )
 
+    if shapes and isinstance(effects, (list, tuple)):
+        errors.extend(
+            _validate_arguments(effects, shapes=shapes, location=location)
+        )
+
     if known_targets is not None:
         declared = _declared_target_names(ability) | _effect_aliases(
             ability.get("effects", ())
@@ -165,6 +179,273 @@ def _validate_ability(
                 )
 
     return errors
+
+
+DYNAMIC_HEADS = frozenset(
+    {"from", "count", "from_event", "last_result", "player_of"}
+)
+"""
+The five ways a card names a number it cannot know when it is written.
+
+``{"amount": {"from": "dice"}}`` is a card saying "as much as the roll". The
+executor knows these five and hands anything else straight to the effect, so a
+misspelled one — ``{"frmo": "dice"}`` — is not a rejected typo but a dictionary
+arriving where a number was expected. That is the mistake this set exists to
+catch.
+"""
+
+WRITTEN_BY_THE_ENGINE = frozenset({"effect", "target", "targets", "store"})
+"""
+Keys the interpreter takes out of a node before the effect ever sees it.
+
+Exactly these four, and the list has to match `runtime.interpreter.normalise`
+and `_operation`: anything else written beside an effect is handed to it as a
+parameter, so anything else is the card's to get right.
+"""
+
+WHOLE = "a whole number"
+TEXT = "text"
+FLAG = "true or false"
+
+
+def _validate_arguments(
+    nodes: Any,
+    *,
+    shapes: Mapping[str, Any],
+    location: str,
+    path: str = "effects",
+) -> list[str]:
+    """
+    Check what a card gives each effect against what that effect takes.
+
+    Walks the same shape `_effect_names` does, and for the same reason keeps a
+    path while it goes: an author with a mistake three branches deep needs to
+    be told where it is, not merely that it exists.
+    """
+    errors: list[str] = []
+
+    for position, node in enumerate(nodes):
+        here = f"{path}[{position}]"
+
+        if not isinstance(node, Mapping):
+            continue
+
+        name, params = _effect_call(node, shapes)
+
+        if name is not None:
+            errors.extend(
+                _validate_call(name, params, shapes[name], location, here)
+            )
+
+        for branch in _BRANCH_KEYS:
+            inside = node.get(branch)
+
+            if isinstance(inside, (list, tuple)):
+                errors.extend(
+                    _validate_arguments(
+                        inside, shapes=shapes, location=location,
+                        path=f"{here}.{branch}",
+                    )
+                )
+
+        for number, mode in enumerate(_modes(node)):
+            inside = mode.get("effects", ())
+
+            if isinstance(inside, (list, tuple)):
+                errors.extend(
+                    _validate_arguments(
+                        inside, shapes=shapes, location=location,
+                        path=f"{here}.modes[{number}].effects",
+                    )
+                )
+
+    return errors
+
+
+def _effect_call(
+    node: Mapping[str, Any],
+    shapes: Mapping[str, Any],
+) -> tuple[str | None, dict[str, Any]]:
+    """
+    The effect this node calls and the parameters it passes, or nothing.
+
+    Two written forms, both of which the interpreter accepts, so both of which
+    have to be read the same way here::
+
+        {"effect": "gain_coins", "amount": 3}
+        {"gain_coins": 3}
+        {"draw_loot": {"count": 2}}
+
+    A node naming a control word, or an effect this vocabulary has never heard
+    of, is somebody else's complaint — the name check has already made it.
+    """
+    if "effect" in node:
+        name = str(node["effect"])
+
+        if name not in shapes:
+            return None, {}
+
+        return name, {
+            key: value
+            for key, value in node.items()
+            if key not in WRITTEN_BY_THE_ENGINE
+        }
+
+    named = [
+        key
+        for key in node
+        if key not in _MODIFIER_KEYS and key not in _BRANCH_KEYS
+    ]
+
+    if len(named) != 1 or named[0] not in shapes:
+        return None, {}
+
+    name = named[0]
+    value = node[name]
+
+    if isinstance(value, Mapping):
+        return name, {
+            key: item
+            for key, item in value.items()
+            if key not in WRITTEN_BY_THE_ENGINE
+        }
+
+    primary = shapes[name].primary
+
+    return (name, {primary: value}) if primary else (None, {})
+
+
+def _validate_call(
+    name: str,
+    params: Mapping[str, Any],
+    shape: Any,
+    location: str,
+    path: str,
+) -> list[str]:
+    """
+    One effect call, against what that effect takes.
+    """
+    errors: list[str] = []
+
+    for key, value in params.items():
+        if key in shape.literal:
+            # The effect's own structured data. Nothing here may judge it.
+            continue
+
+        parameter = shape.params.get(key)
+
+        if parameter is None:
+            if not shape.open_ended:
+                errors.append(
+                    f"{location}: {path}.{key}: '{name}' takes no parameter "
+                    f"called '{key}'"
+                    f"{did_you_mean(key, list(shape.params))}"
+                )
+
+            continue
+
+        errors.extend(_validate_value(name, parameter, value, location, path))
+
+    for key, parameter in shape.params.items():
+        if parameter.required and key not in params:
+            errors.append(
+                f"{location}: {path}: '{name}' needs '{key}' "
+                f"({parameter.wants()}), and the card does not give it"
+            )
+
+    return errors
+
+
+def _validate_value(
+    name: str,
+    parameter: Any,
+    value: Any,
+    location: str,
+    path: str,
+) -> list[str]:
+    """
+    One value, against the one parameter it was written for.
+    """
+    where = f"{location}: {path}.{parameter.name}"
+
+    if value is None:
+        if parameter.nullable:
+            return []
+
+        return [
+            f"{where}: '{name}' takes {parameter.wants()} here, and the card "
+            f"writes nothing; leave the key out instead"
+        ]
+
+    if isinstance(value, Mapping):
+        head = DYNAMIC_HEADS & set(value)
+
+        if not head:
+            return [
+                f"{where}: this asks for a value the ability works out while "
+                f"it runs, and names it "
+                f"{', '.join(repr(key) for key in sorted(value))}; the ways to "
+                f"do that are {', '.join(sorted(DYNAMIC_HEADS))}"
+            ]
+
+        if not parameter.checkable or parameter.kind == WHOLE:
+            return []
+
+        return [
+            f"{where}: '{name}' takes {parameter.wants()} here, and a value "
+            f"worked out while the ability runs is always a whole number"
+        ]
+
+    if not parameter.checkable:
+        return []
+
+    written = _kind_written(value)
+
+    if written != parameter.kind:
+        return [
+            f"{where}: '{name}' takes {parameter.wants()} here, "
+            f"and the card gives {written} ({value!r})"
+        ]
+
+    if parameter.values and value not in parameter.values:
+        return [
+            f"{where}: '{name}' takes {parameter.wants()} here, "
+            f"and the card gives {value!r}"
+            f"{did_you_mean(str(value), [str(one) for one in parameter.values])}"
+        ]
+
+    if (
+        parameter.least is not None
+        and isinstance(value, int)
+        and value < parameter.least
+    ):
+        return [
+            f"{where}: '{name}' takes {parameter.wants()} here, "
+            f"and the card gives {value!r}"
+        ]
+
+    return []
+
+
+def _kind_written(value: Any) -> str:
+    """
+    What a card actually wrote, in the same words the parameters use.
+    """
+    if isinstance(value, bool):
+        # Before int: in Python True is 1, and a card that writes true where a
+        # count belongs has made a mistake worth naming rather than rounding.
+        return FLAG
+
+    if isinstance(value, int):
+        return WHOLE
+
+    if isinstance(value, str):
+        return TEXT
+
+    if isinstance(value, (list, tuple)):
+        return "a list"
+
+    return type(value).__name__
 
 
 SUGGESTIONS = 3
@@ -463,6 +744,7 @@ def validate_cards(
     known_triggers: Collection[str] | None = None,
     known_conditions: Collection[str] | None = None,
     known_targets: Collection[str] | None = None,
+    shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Validate a collection of raw cards and report duplicate identifiers.
@@ -481,6 +763,7 @@ def validate_cards(
                 known_triggers=known_triggers,
                 known_conditions=known_conditions,
                 known_targets=known_targets,
+                shapes=shapes,
             )
         )
 

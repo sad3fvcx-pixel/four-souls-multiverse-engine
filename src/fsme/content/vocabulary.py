@@ -15,8 +15,93 @@ it, and hands the list over.
 
 from __future__ import annotations
 
-from collections.abc import Collection
-from dataclasses import dataclass
+from collections.abc import Collection, Mapping
+from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Any
+
+UNCHECKED = "anything the engine can only judge during a game"
+"""
+The kind given to a parameter this layer deliberately does not check.
+
+It means the effect takes a card, a player, or a shape that only means
+something once a board exists — **not** that anything is acceptable. The
+runtime guard stays where it is and still raises; what this says is that load
+time is the wrong place to ask, because answering would need a game.
+"""
+
+
+@dataclass(frozen=True, slots=True)
+class ParamShape:
+    """
+    What a card may write for one parameter of one effect.
+
+    Plain data on purpose. The engine describes its effects with live objects
+    that hold the functions implementing them; this is what survives the trip
+    to a pipeline that must never hold one.
+    """
+
+    name: str
+    kind: str
+
+    required: bool = False
+    nullable: bool = False
+
+    values: tuple[Any, ...] = ()
+    least: int | None = None
+
+    @property
+    def checkable(self) -> bool:
+        return self.kind != UNCHECKED
+
+    def wants(self) -> str:
+        """
+        What this parameter takes, in the words an error message needs.
+        """
+        if self.values:
+            return " or ".join(repr(value) for value in self.values)
+
+        if self.least is not None:
+            return f"{self.kind} of at least {self.least}"
+
+        return self.kind
+
+
+@dataclass(frozen=True, slots=True)
+class EffectShape:
+    """
+    What one effect takes, as far as a card file is concerned.
+    """
+
+    name: str
+
+    params: Mapping[str, ParamShape] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+
+    primary: str | None = None
+    """
+    The parameter the shorthand form fills.
+
+    ``{"gain_coins": 3}`` means ``amount=3``; the effect says which, so nothing
+    reading a card has to guess.
+    """
+
+    open_ended: bool = False
+    """
+    Whether the effect accepts keywords it has not named.
+
+    True for the two dozen that work only on their targets. Nothing may be
+    refused for them, because they would accept it.
+    """
+
+    literal: frozenset[str] = frozenset()
+    """
+    Parameters handed to the effect exactly as the card wrote them.
+
+    Their values are the effect's own structured data, so nothing here may
+    judge them.
+    """
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,6 +115,19 @@ class Vocabulary:
     conditions: frozenset[str] = frozenset()
     targets: frozenset[str] = frozenset()
 
+    shapes: Mapping[str, EffectShape] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    """
+    What each effect takes, when whoever built this vocabulary knew.
+
+    Plain data, like everything else here, and for the same reason: the
+    pipeline runs before a game exists and must never touch one. A vocabulary
+    that names the effects but describes none of them still checks spelling,
+    which is why the shapes are not counted by ``is_empty`` — calling such a
+    vocabulary empty would turn off the checks it can still do.
+    """
+
     @classmethod
     def of(
         cls,
@@ -38,6 +136,7 @@ class Vocabulary:
         triggers: Collection[str] = (),
         conditions: Collection[str] = (),
         targets: Collection[str] = (),
+        shapes: Mapping[str, EffectShape] | None = None,
     ) -> Vocabulary:
         """
         Build a vocabulary from any collections of names.
@@ -47,7 +146,14 @@ class Vocabulary:
             triggers=frozenset(triggers),
             conditions=frozenset(conditions),
             targets=frozenset(targets),
+            shapes=MappingProxyType(dict(shapes or {})),
         )
+
+    def shape(self, effect: str) -> EffectShape | None:
+        """
+        What one effect takes, or ``None`` when this vocabulary does not say.
+        """
+        return self.shapes.get(effect)
 
     @property
     def is_empty(self) -> bool:

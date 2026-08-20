@@ -6,14 +6,181 @@ Registry of built-in effects for Four Souls Multiverse Engine.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+import inspect
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, field
+from enum import StrEnum
+from types import MappingProxyType
 from typing import Any
 
 from .context import EffectContext
 from .errors import EffectRegistrationError, UnknownEffectError
 
 EffectHandler = Callable[..., Any]
+
+GIVEN = frozenset({"ctx", "context", "targets"})
+"""
+The parameters the engine fills in, which no card writes.
+
+Every effect is handed a context and its targets. Neither is something a card
+says, so neither is something a card can get wrong.
+"""
+
+
+class ParamKind(StrEnum):
+    """
+    What a card may write for one parameter.
+
+    Four kinds, deliberately coarse. This is not a type system; it is the
+    handful of distinctions somebody writing a card can actually get wrong, and
+    each one has to be sayable in a sentence to a person who has never read any
+    Python.
+    """
+
+    WHOLE = "a whole number"
+    TEXT = "text"
+    FLAG = "true or false"
+
+    OPEN = "anything the engine can only judge during a game"
+    """
+    A parameter this layer deliberately does not check.
+
+    ``Any`` on a handler means the effect takes a card, a player, or a shape
+    that only means something once a board exists. It does **not** mean "accept
+    whatever". The runtime guard stays exactly where it is and still raises;
+    what this says is that load time is the wrong place to ask, because
+    answering the question would need a game.
+    """
+
+
+_KINDS: Mapping[str, ParamKind] = MappingProxyType(
+    {
+        "int": ParamKind.WHOLE,
+        "str": ParamKind.TEXT,
+        "bool": ParamKind.FLAG,
+    }
+)
+
+
+@dataclass(frozen=True, slots=True)
+class ParamSpec:
+    """
+    One parameter of one effect, as a card is allowed to write it.
+    """
+
+    name: str
+    kind: ParamKind
+
+    required: bool = False
+    """
+    Whether a card has to give this one. Nearly none are: `gain_coins` with no
+    amount gains one.
+    """
+
+    nullable: bool = False
+    """
+    Whether the card may write ``null`` for it.
+
+    True only where the effect's own annotation admits ``None``. Everywhere
+    else a written ``null`` is a card that meant to leave the key out.
+    """
+
+    values: tuple[Any, ...] = ()
+    """
+    The values this parameter takes, when there are only a few.
+
+    A type cannot catch ``{"deck": "spaghetti"}`` — text where text was wanted
+    — and what is wrong with it is that there are four decks. Named at
+    registration from the same constant the runtime checks against, so there is
+    never a second list to keep in step.
+    """
+
+    least: int | None = None
+    """
+    The smallest number accepted, where there is a floor.
+    """
+
+    def wants(self) -> str:
+        """
+        What this parameter takes, in the words an error message needs.
+        """
+        if self.values:
+            return " or ".join(repr(value) for value in self.values)
+
+        if self.least is not None:
+            return f"{self.kind} of at least {self.least}"
+
+        return str(self.kind)
+
+
+def parameters_of(handler: EffectHandler) -> dict[str, ParamSpec]:
+    """
+    Read an effect's parameters off the function that implements it.
+
+    Derived, never declared, and that is the whole of why it is safe to
+    maintain: a second table of what each effect takes is a second table that
+    drifts from the effects, and a signature cannot drift from its own
+    function.
+
+    An effect written to take only ``**kwargs`` — two dozen do, because they
+    work on their targets — describes no parameters. That is a true statement
+    about it, and `takes_anything` is what stops it being read as "this effect
+    accepts nothing".
+    """
+    try:
+        signature = inspect.signature(handler)
+    except (TypeError, ValueError):  # pragma: no cover - unreachable today
+        return {}
+
+    described: dict[str, ParamSpec] = {}
+
+    for name, parameter in signature.parameters.items():
+        if name in GIVEN:
+            continue
+
+        if parameter.kind in (parameter.VAR_KEYWORD, parameter.VAR_POSITIONAL):
+            continue
+
+        written = _annotation_of(parameter)
+
+        described[name] = ParamSpec(
+            name=name,
+            kind=_KINDS.get(written.removesuffix(" | None"), ParamKind.OPEN),
+            required=parameter.default is inspect.Parameter.empty,
+            nullable=written.endswith("| None"),
+        )
+
+    return described
+
+
+def _annotation_of(parameter: inspect.Parameter) -> str:
+    """
+    An annotation as the plain string it was written as.
+    """
+    if parameter.annotation is inspect.Parameter.empty:
+        return ""
+
+    return str(
+        getattr(parameter.annotation, "__name__", None) or parameter.annotation
+    )
+
+
+def takes_anything(handler: EffectHandler) -> bool:
+    """
+    Whether this effect accepts keywords it has not named.
+
+    An effect with ``**kwargs`` has not finished saying what it takes, so
+    nothing may be refused on its behalf.
+    """
+    try:
+        signature = inspect.signature(handler)
+    except (TypeError, ValueError):  # pragma: no cover - unreachable today
+        return True
+
+    return any(
+        parameter.kind is parameter.VAR_KEYWORD
+        for parameter in signature.parameters.values()
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,6 +224,19 @@ class EffectSpec:
 
     description: str = ""
 
+    params: Mapping[str, ParamSpec] = field(default_factory=dict)
+    """
+    What a card may write for this effect, read off the handler.
+    """
+
+    open_ended: bool = False
+    """
+    Whether the handler accepts keywords it has not named.
+
+    True for the two dozen effects that take only their targets. Nothing may be
+    refused for them, because they would accept it.
+    """
+
 
 class EffectRegistry:
     """
@@ -88,9 +268,18 @@ class EffectRegistry:
         stores: str | None = None,
         literal: frozenset[str] | tuple[str, ...] = (),
         description: str = "",
+        values: Mapping[str, Sequence[Any]] | None = None,
+        least: Mapping[str, int] | None = None,
     ) -> EffectSpec:
         """
         Register an effect implementation.
+
+        ``values`` and ``least`` name the domains a type cannot express — which
+        decks there are, which positions, the counts that cannot go negative.
+        They belong here, beside ``primary`` and ``literal``, because this is
+        already where the facts about an effect that are not in its signature
+        are written down; and they should be given the same constant the
+        runtime guard checks against, so that there is one list and not two.
         """
         if not name:
             raise EffectRegistrationError("effect name must not be empty")
@@ -99,6 +288,14 @@ class EffectRegistry:
             raise EffectRegistrationError(
                 f"effect '{name}' is already registered"
             )
+
+        described = parameters_of(handler)
+
+        for parameter, allowed in (values or {}).items():
+            described[parameter] = _narrow(described, parameter, name, values=allowed)
+
+        for parameter, floor in (least or {}).items():
+            described[parameter] = _narrow(described, parameter, name, least=floor)
 
         spec = EffectSpec(
             name=name,
@@ -109,6 +306,8 @@ class EffectRegistry:
             stores=stores,
             literal=frozenset(literal),
             description=description,
+            params=MappingProxyType(described),
+            open_ended=takes_anything(handler),
         )
 
         self._specs[name] = spec
@@ -125,6 +324,8 @@ class EffectRegistry:
         stores: str | None = None,
         literal: frozenset[str] | tuple[str, ...] = (),
         description: str = "",
+        values: Mapping[str, Sequence[Any]] | None = None,
+        least: Mapping[str, int] | None = None,
     ) -> Callable[[EffectHandler], EffectHandler]:
         """
         Decorator form of :meth:`register`.
@@ -140,6 +341,8 @@ class EffectRegistry:
                 stores=stores,
                 literal=literal,
                 description=description,
+                values=values,
+                least=least,
             )
             return handler
 
@@ -171,6 +374,48 @@ class EffectRegistry:
         Return every registered effect name.
         """
         return frozenset(self._specs)
+
+
+def _narrow(
+    described: Mapping[str, ParamSpec],
+    parameter: str,
+    effect: str,
+    *,
+    values: Sequence[Any] | None = None,
+    least: int | None = None,
+) -> ParamSpec:
+    """
+    Add a domain or a floor to a parameter the handler already declares.
+
+    Refused for a parameter the effect does not take, because a domain named
+    for a parameter that does not exist is a typo in the engine, and the moment
+    to find one of those is while it is being written.
+    """
+    known = described.get(parameter)
+
+    if known is None:
+        raise EffectRegistrationError(
+            f"effect '{effect}' has no parameter '{parameter}' to constrain"
+        )
+
+    if values is not None:
+        return ParamSpec(
+            name=known.name,
+            kind=known.kind,
+            required=known.required,
+            nullable=known.nullable,
+            values=tuple(values),
+            least=known.least,
+        )
+
+    return ParamSpec(
+        name=known.name,
+        kind=known.kind,
+        required=known.required,
+        nullable=known.nullable,
+        values=known.values,
+        least=least,
+    )
 
 
 def builtin_registry() -> EffectRegistry:

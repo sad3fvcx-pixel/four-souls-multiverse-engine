@@ -8,6 +8,51 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+- **A card that is wrong is refused before anybody plays it.** The pipeline
+  checked that an effect's name existed and never looked at what the card gave
+  it, so `{"effect": "gain_coins", "amount": "lots"}` loaded cleanly and then,
+  hundreds of moves into a game, raised `TypeError: '<' not supported between
+  instances of 'str' and 'int'` — naming no card, no file and no field. For
+  content somebody else wrote, that is the difference between a tool and a
+  trap.
+
+  Now:
+
+  ```
+  [semantic] example_expansion cards/loot.json: example_expansion-loot-dark_coin:
+    ability 0: effects[0].amount: 'gain_coins' takes a whole number of at least
+    0 here, and the card gives text ('lots')
+  ```
+
+  The descriptions are **derived, never declared**: all 63 effects have fully
+  annotated signatures, so what each one takes is read off the function that
+  implements it. A second table of effect parameters is a second table that
+  drifts; a signature cannot drift from its own function. Domains a type cannot
+  express — the four decks, the three positions, the two destinations — are
+  named in the `register(...)` call from the same constants the runtime guards
+  check against, so there is one list and not two.
+
+  **The seam is intact and that mattered more than the feature.** The content
+  pipeline still holds no live effect: what crosses is a plain description of
+  names, kinds and domains, built by the one function that knows both sides.
+  A caller with no engine still gets structure and spelling and no argument
+  checking, exactly as before, and there is a test that says so.
+
+  `Any` on a handler means *the engine cannot judge this without a board* —
+  fourteen parameters take a card, a player or a structure. It does not mean
+  "accept whatever": the guard inside the effect stays where it is and still
+  refuses.
+
+  Also caught now: a parameter the effect does not take, with the nearest one
+  it does offered; `true` where a count belongs, since in Python that is 1; an
+  explicit `null`; a number below its floor; and a misspelled way of naming a
+  value the ability works out while it runs — the executor knows five and hands
+  anything else straight to the effect, so `{"frmo": "dice"}` was a dictionary
+  arriving where a number was expected.
+
+  Nothing about the card format changed. The whole of `content/` — 1045 cards,
+  352 with rules — loads unchanged, and the thousand-game run is identical to
+  the one taken before any of this work: 0 of 1000 games moved.
 - **A seat can open differently from the others, and experiments can be kept
   in a folder.** The two things the Scenario layer was missing.
 

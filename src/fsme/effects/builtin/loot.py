@@ -402,7 +402,8 @@ def register(registry: EffectRegistry) -> None:
         draw_loot,
         needs_target=True,
         primary="count",
-        description="Draw loot cards."
+        description="Draw loot cards.",
+        least={"count": 0},
     )
     registry.register(
         "pass_hands",
@@ -416,6 +417,7 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="count",
         description="Discard loot cards.",
+        least={"count": 0},
     )
     registry.register(
         "discard_cards",
@@ -428,7 +430,8 @@ def register(registry: EffectRegistry) -> None:
         gain_soul,
         needs_target=True,
         primary="count",
-        description="Gain souls."
+        description="Gain souls.",
+        least={"count": 0},
     )
     registry.register(
         "claim_soul",

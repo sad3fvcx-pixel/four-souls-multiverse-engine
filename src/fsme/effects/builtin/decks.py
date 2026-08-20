@@ -22,6 +22,19 @@ from ..context import EffectContext
 from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
 
+POSITIONS = ("top", "bottom", "discard")
+"""
+Where `move_cards` may put a card.
+
+Named so that the guard below and the check a card file gets are the same list.
+Two lists is how they come to disagree.
+"""
+
+DESTINATIONS = ("hand", "treasures")
+"""
+Where `take_card` may put a card it has taken.
+"""
+
 DECKS = ("loot", "treasure", "monster", "room")
 """
 Every deck in the game, and the only four there are.
@@ -256,7 +269,7 @@ def _destination(player: PlayerState, to: str) -> Zone[Any]:
         return player.treasures
 
     raise EffectExecutionError(
-        f"unknown destination '{to}'; use 'hand' or 'treasures'"
+        f"unknown destination '{to}'; use {' or '.join(DESTINATIONS)}"
     )
 
 
@@ -368,9 +381,10 @@ def move_cards(
     this on the bottom of the loot deck" is resolving, which means it is on the
     stack and nowhere else.
     """
-    if position not in ("top", "bottom", "discard"):
+    if position not in POSITIONS:
         raise EffectExecutionError(
-            f"unknown position '{position}'; use 'top', 'bottom' or 'discard'"
+            f"unknown position '{position}'; use "
+            f"{', '.join(POSITIONS[:-1])} or {POSITIONS[-1]}"
         )
 
     state = ctx.state
@@ -431,18 +445,22 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="deck",
         description="Put cards on the top or bottom of a deck.",
+        values={"deck": DECKS, "position": POSITIONS},
     )
     registry.register(
         "shuffle_deck",
         shuffle_deck,
         primary="deck",
         description="Shuffle a deck.",
+        values={"deck": DECKS},
     )
     registry.register(
         "reveal_cards",
         reveal_cards,
         primary="count",
         description="Show the top cards of a deck.",
+        values={"deck": DECKS},
+        least={"count": 0},
     )
     registry.register(
         "reveal_hand",
@@ -456,4 +474,5 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="to",
         description="Take chosen cards into a hand or into play.",
+        values={"to": DESTINATIONS},
     )

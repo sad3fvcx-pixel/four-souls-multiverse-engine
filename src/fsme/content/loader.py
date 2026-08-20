@@ -245,12 +245,14 @@ class ContentLoader:
             known_triggers=self._vocabulary.triggers or None,
             known_conditions=self._vocabulary.conditions or None,
             known_targets=self._vocabulary.targets or None,
+            shapes=self._vocabulary.shapes or None,
         ):
             report.add(
                 IssueCategory.SCHEMA
                 if "missing" in message or "must be" in message
                 else IssueCategory.SEMANTIC,
                 message,
+                expansion=manifest.id,
                 file=str(file_path),
             )
 

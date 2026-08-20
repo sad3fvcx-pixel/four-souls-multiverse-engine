@@ -271,6 +271,34 @@ Invalid cards are rejected before the game starts.
 
 The engine must never load partially valid content.
 
+Validation covers four things, and each is checked against what the engine
+actually implements rather than against a document:
+
+1. **Structure.** Required fields, and fields of the right kind.
+2. **Names.** Every effect, trigger, condition and target the card mentions.
+3. **Arguments.** What the card gives each effect: the kind of value, the
+   values allowed where only a few are, and the floors below which a number
+   means nothing. A parameter the effect does not take is named, with the
+   nearest one it does take offered.
+4. **Values worked out while an ability runs.** `{"amount": {"from": "dice"}}`
+   is legal; there are five such forms — `from`, `count`, `from_event`,
+   `last_result`, `player_of` — and a sixth spelling is a typo rather than a
+   new one.
+
+A parameter the engine can only judge with a board in front of it — a card, a
+player, a structure — is not checked here. That is not permission for anything
+to be written: the guard inside the effect stays exactly where it is and still
+refuses. It means load time is the wrong moment to ask.
+
+Every problem in a batch is reported together, with the expansion, the file,
+the card, the ability and the path inside it:
+
+```
+[semantic] example_expansion cards/loot.json: example_expansion-loot-dark_coin:
+  ability 0: effects[0].amount: 'gain_coins' takes a whole number of at least 0
+  here, and the card gives text ('lots')
+```
+
 ---
 
 # 14. Forward Compatibility

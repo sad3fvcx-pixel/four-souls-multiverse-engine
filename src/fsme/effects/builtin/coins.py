@@ -184,7 +184,8 @@ def register(registry: EffectRegistry) -> None:
         gain_coins,
         needs_target=True,
         primary="amount",
-        description="Add coins to a player."
+        description="Add coins to a player.",
+        least={"amount": 0},
     )
     registry.register(
         "lose_coins",
@@ -192,13 +193,15 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="amount",
         description="Remove coins from a player.",
+        least={"amount": 0},
     )
     registry.register(
         "set_coins",
         set_coins,
         needs_target=True,
         primary="amount",
-        description="Set a player's coins."
+        description="Set a player's coins.",
+        least={"amount": 0},
     )
     registry.register(
         "transfer_coins",
