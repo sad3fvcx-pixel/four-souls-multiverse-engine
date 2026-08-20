@@ -33,8 +33,6 @@ from .constants import (
     LOOT_PLAYS_PER_TURN,
     LOOT_STEP_CARDS,
     PURCHASES_PER_TURN,
-    STARTING_COINS,
-    STARTING_HAND_SIZE,
 )
 from .death import restore_everyone
 from .obligations import refuse_to_stop
@@ -75,9 +73,14 @@ class StartGameHandler:
 
         context.emit(EventType.GAME_START)
 
+        # Read off the game rather than off the constants. The rulebook's
+        # numbers are still the defaults — `GameState` starts with them — but
+        # a game that was set up asking for others is a game that has to be
+        # dealt with them, and a process playing a thousand games must not
+        # carry one game's answer into the next.
         for player in state.players:
-            context.apply("draw_loot", [player], count=STARTING_HAND_SIZE)
-            context.apply("gain_coins", [player], amount=STARTING_COINS)
+            context.apply("draw_loot", [player], count=state.starting_hand)
+            context.apply("gain_coins", [player], amount=state.starting_coins)
 
         _begin_turn(context, active_player=first)
 

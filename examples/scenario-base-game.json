@@ -1,0 +1,17 @@
+{
+  "format": "fsme-scenario",
+  "version": 1,
+  "name": "Base game, no shop",
+  "description": "Does the shop matter? Two players, base game only, nothing to buy.",
+  "seed": 1234,
+  "content": {
+    "expansions": ["base_game"]
+  },
+  "table": {
+    "shop_slots": 0
+  },
+  "players": [
+    { "name": "Ann", "character": "characters-base_game-isaac" },
+    { "name": "Bo" }
+  ]
+}

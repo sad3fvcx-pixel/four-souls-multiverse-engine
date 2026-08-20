@@ -8,6 +8,38 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+- **A game can be set up from a file.** `fsme/scenario/` holds a scenario: the
+  configuration a game starts from, as plain data with no behaviour and no
+  knowledge of the engine. Which sets are in the decks, which cards are left
+  out, who sits where and with what, what the table is worth winning, and the
+  opening each player is dealt.
+
+  It arrives as one optional argument on `Game.from_content`, which is the one
+  door every game in the project comes through — Watch, Study, Replay and the
+  analysers all call it. **With no scenario the engine deals exactly what it
+  dealt before there was one**, and that is asserted rather than assumed: three
+  seeds compared journal against journal, and the thousand-game run repeated
+  and diffed against the run taken before this work — all 1000 games identical
+  in outcome, turns, commands and events.
+
+  Two things were load-bearing in the setup change. The character shuffle still
+  happens, in the same place, whatever a scenario pinned — the pinned cards are
+  lifted out of the shuffled pile afterwards, so the RNG stands where it always
+  stood and everything dealt after it follows. And the opening hand and cents
+  moved from `rules/constants.py` onto `GameState`: a module constant belongs
+  to the *process*, and a study plays a thousand games in one, so a scenario
+  that set the constant would have set it for the other nine hundred and
+  ninety-nine with nothing saying so. There is a test for exactly that.
+
+  A scenario that is wrong is refused with a sentence per problem and never
+  repaired: an unknown key, a version this build cannot read, a card that is
+  not in the content, one character in two chairs, seats that disagree about
+  the opening, and `monster_slots: 0` — which is refused because it does not
+  hold, the first monster revealed making a slot for itself.
+
+  Not yet wired to the command line, and the journal does not record it yet.
+  Both are the next step, and until then a scenario is available to anything
+  calling the engine directly. `examples/scenario-base-game.json` is one.
 - **The Core Stable audit.** No code changed: the engine was measured rather
   than edited, and what it could not do was written down. 2500 games at two,
   three and four players all finished, with no invariant flagged in any journal

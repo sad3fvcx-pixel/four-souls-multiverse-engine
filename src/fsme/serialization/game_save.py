@@ -113,6 +113,8 @@ def save_game(
         "souls_to_win": state.souls_to_win,
         "monster_slots": state.monster_slots,
         "shop_slots": state.shop_slots,
+        "starting_coins": state.starting_coins,
+        "starting_hand": state.starting_hand,
         "skipped_players": list(state.skipped_players),
         "ids": state.ids.counter,
         "turn": _save_turn(state),
@@ -466,6 +468,14 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
     state.souls_to_win = int(data.get("souls_to_win", 4))
     state.monster_slots = int(data.get("monster_slots", 2))
     state.shop_slots = int(data.get("shop_slots", 2))
+
+    # Read with a default rather than required, and the format is not bumped
+    # for them. A save is taken from a game in progress, and these two are read
+    # by `start_game` and by nothing after it — so a save written before they
+    # existed reloads into exactly the game it was.
+    state.starting_coins = int(data.get("starting_coins", 3))
+    state.starting_hand = int(data.get("starting_hand", 3))
+
     state.skipped_players = [int(seat) for seat in data.get("skipped_players", ())]
     state.ids.restore(int(data.get("ids", 0)))
 

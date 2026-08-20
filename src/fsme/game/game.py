@@ -15,7 +15,37 @@ from fsme.content import ContentLibrary
 from fsme.events import Event, EventType
 from fsme.rng.rng import RNG
 from fsme.runtime import Runtime
+from fsme.scenario import Scenario
 from fsme.state import GameState
+
+
+def narrow(
+    library: ContentLibrary,
+    scenario: Scenario | None,
+) -> ContentLibrary:
+    """
+    The content a scenario asks to play with.
+
+    Two steps that already existed and had never been put together: choosing
+    the sets, and leaving cards out of them. Neither loads anything — the
+    library in hand is rearranged — so this is cheap enough to do per game.
+
+    Handed no scenario, or one that asks for nothing, it hands the library
+    straight back. The identity matters: `Game.from_content` calls this
+    unconditionally, and a copy would be a different registry for no reason.
+    """
+    if scenario is None:
+        return library
+
+    chosen = library
+
+    if scenario.content.expansions:
+        chosen = chosen.only(scenario.content.expansions)
+
+    if scenario.content.exclude_cards:
+        chosen = chosen.without(scenario.content.exclude_cards)
+
+    return chosen
 
 
 class Game:
@@ -59,6 +89,7 @@ class Game:
         seed: int = 0,
         interactive_priority: bool = False,
         rng: RNG | None = None,
+        scenario: Scenario | None = None,
     ) -> Game:
         """
         Lay out a game from loaded content and hand back the session.
@@ -70,14 +101,26 @@ class Game:
         game runs on afterwards, which is how a test scripts the dice and how a
         restored game carries on from a saved generator state; leaving it out
         is the ordinary case, where the seed is the whole story.
+
+        ``scenario`` is somebody's experiment: which sets are in the decks, who
+        sits where, what the table is worth winning. It is applied here because
+        this is the one door — Watch, Study, Replay and the analysers all come
+        through this method, and a scenario applied anywhere else would have to
+        be applied four times.
+
+        **With no scenario this deals exactly what it dealt before there were
+        any**, which is what lets every measurement the project has taken stay
+        comparable. An empty scenario is the same as none.
         """
         from fsme.rules import new_game
 
-        state = new_game(library, players, seed=seed)
+        chosen = narrow(library, scenario)
+
+        state = new_game(library=chosen, players=players, seed=seed, scenario=scenario)
 
         return cls(
             state,
-            cards=library.registry(),
+            cards=chosen.registry(),
             interactive_priority=interactive_priority,
             rng=rng,
         )

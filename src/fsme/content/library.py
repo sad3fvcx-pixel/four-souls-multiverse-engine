@@ -128,6 +128,40 @@ class ContentLibrary:
 
         return smaller
 
+    def only(self, expansion_ids: Iterable[str]) -> ContentLibrary:
+        """
+        The same library narrowed to some of its sets.
+
+        What a scenario means by "play with the base game and my own cards".
+        Nothing is loaded again: the expansions already in hand are put into a
+        smaller library, which is then asked whether it still holds together —
+        a set may require another, and selecting one without the other is a
+        game that cannot be dealt.
+
+        A set that is not here is named rather than skipped. Silently playing
+        without an expansion somebody asked for is the worst of the available
+        answers: the game deals, the numbers come out, and they are numbers
+        about a different game.
+        """
+        wanted = list(dict.fromkeys(str(name) for name in expansion_ids))
+
+        missing = [name for name in wanted if name not in self.expansions]
+
+        if missing:
+            raise ContentNotFoundError(
+                f"no expansion called {', '.join(repr(name) for name in missing)}"
+                f"; the content holds {', '.join(sorted(self.expansions))}"
+            )
+
+        chosen = ContentLibrary()
+
+        for name in sorted(wanted):
+            chosen.add(self.expansions[name])
+
+        chosen.check_dependencies()
+
+        return chosen
+
     def check_dependencies(self) -> None:
         """
         Refuse a library where an expansion is missing something it needs.

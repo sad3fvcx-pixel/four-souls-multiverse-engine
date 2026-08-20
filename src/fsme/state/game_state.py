@@ -140,6 +140,23 @@ class GameState:
     has to reload expanded.
     """
 
+    starting_coins: int = 3
+    starting_hand: int = 3
+    """
+    What each player is dealt when the game starts.
+
+    ``COMPREHENSIVE_RULES.md`` §2 prints both, and the rules keep them in
+    `rules.constants` where a reader can check them against the rulebook. They
+    are copied onto the game for the same reason the slot counts are: a module
+    constant belongs to the *process*, and a study plays a thousand games in
+    one. A scenario that set the constant would set it for the other nine
+    hundred and ninety-nine too, and nothing would say so.
+
+    Inert once the game has started, which is why an older save that does not
+    carry them loads perfectly well: they are read by `start_game` and by
+    nothing else afterwards.
+    """
+
     skipped_players: list[int] = field(default_factory=list)
     """
     Players whose next turn is taken away from them.
