@@ -17,6 +17,7 @@ from typing import Any
 from fsme.cards import CardType
 from fsme.commands import Command
 from fsme.effects import EffectContext
+from fsme.effects.builtin.decks import draw_from
 from fsme.effects.builtin.dice import natural_roll
 from fsme.events import EventType
 from fsme.stack import (
@@ -218,7 +219,11 @@ def _reveal_for_attack(context: EffectContext, attacker: int) -> Any | None:
     size once it is dealt with.
     """
     state = context.state
-    card = state.monster_deck.draw()
+    card = draw_from(context, "monster")
+
+    if card is None:
+        return None
+
     kind = getattr(getattr(card, "definition", None), "type", None)
 
     if kind is CardType.EVENT:
@@ -431,13 +436,31 @@ def refill_monsters(context: EffectContext) -> None:
     The monster deck is not only monsters. An event happens at once and goes to
     the discard pile; a curse attaches to the active player and stays. Neither
     fills the slot, so the reveal continues.
+
+    The reveal stops once every card there is has been turned over without a
+    monster among them. That is not a step budget: a deck that runs out is
+    rebuilt from its discard, so an event revealed, discarded and reshuffled
+    would otherwise be revealed again for ever, and a table whose whole monster
+    deck was events would sit there turning the same card over. It is the same
+    reasoning `_first_monster` uses when it lays the game out, said again here
+    because the deck is now refilled behind the reveal rather than running dry.
     """
     state = context.state
 
     open_area(state)
 
-    while empty_slot(state) is not None and state.monster_deck.cards:
-        card = state.monster_deck.draw()
+    # Everything that could still be turned over. A card that leaves the deck
+    # and comes back through the discard is the same card, counted once.
+    left = len(state.monster_deck) + len(state.monster_discard)
+
+    while empty_slot(state) is not None and left > 0:
+        card = draw_from(context, "monster")
+
+        if card is None:
+            break
+
+        left -= 1
+
         kind = getattr(getattr(card, "definition", None), "type", None)
 
         if kind is CardType.EVENT:

@@ -1,19 +1,65 @@
 # When a deck runs out
 
-A known limitation, its cause, and the three things that could be done about
-it. Nothing here has been changed: the reading of the rule that would settle it
-is a decision, not a bug fix, and it moves every number the project has
-measured.
+One rule, four decks, and the timing that makes it work. This started as a
+record of a known limitation; it is now a record of what was decided and what
+changed.
 
-## What happens
+## The rule
 
-Six seeds in a thousand — 113, 137, 167, 251, 300 and 727 — produce a game that
-never ends. Each runs to roughly 7950 turns before a step budget stops it, with
-a journal of 63 MiB and nearly 290 000 events. Nothing crashes and nothing
-loops in the engine's own sense: all 20 000 positions are distinct, so the
-stability guard never fires. The game simply makes no progress.
+`COMPREHENSIVE_RULES.md` §9:
 
-Every one of them is the same shape:
+> A slot refills as soon as it is empty, as though it carried the triggered
+> effect "when this slot is empty, refill it".
+> […]
+> A deck that runs out is rebuilt by shuffling its discard pile. This does not
+> use the queue.
+
+Two sentences, and everything below follows from reading them exactly.
+
+## What "runs out" means
+
+Running out is something a **deck does**: its last card leaves it. It is not a
+state the deck sits in.
+
+That distinction is the whole mechanism, and it is easy to get wrong in either
+direction.
+
+**Too late** is rebuilding when somebody *finds* the deck empty — at the next
+draw. This is what the engine used to do, and it is indistinguishable from the
+right answer in every game where nothing is put into a deck between it emptying
+and the next draw. Where something is, the two part company completely; see
+below.
+
+**Too early** is rebuilding whenever a deck *is* empty and its discard is not.
+That sounds like the same rule and is not: it makes a discard pile into a deck
+the moment anything is put in it. A monster killed while the monster deck is
+out would be shuffled up and turned straight back over into the slot it just
+died from. Nobody at a table does that. This was tried, during the fix, and the
+tests that caught it are still in the suite.
+
+So there are exactly two moments a deck comes back, and both are about cards
+leaving:
+
+1. **the last card leaves** — whatever took it: a draw, a search, a card that
+   moves it somewhere. The deck is rebuilt at once, so the next effect to look
+   at it sees a full deck;
+2. **somebody needs a card and there is none** — the deck ran out earlier when
+   its discard was empty, and the discard has filled since. They shuffle, then
+   draw.
+
+Both live in `fsme/effects/builtin/decks.py`: `restock` does the rebuild,
+`draw_from` is the drawing that both moments run through, and `take_card` and
+`move_cards` restock the deck a card was taken out of.
+
+## What it fixed
+
+Six seeds in a thousand — 113, 137, 167, 251, 300 and 727 — used to produce a
+game that never ended. Each ran to roughly 7950 turns before a step budget
+stopped it, with a journal of 63 MiB and nearly 290 000 events. Nothing
+crashed and nothing looped in the engine's own sense: all 20 000 positions were
+distinct, so the stability guard never fired. The game simply made no progress.
+
+Every one of them was the same shape:
 
 ```
 the loot deck is empty
@@ -30,123 +76,61 @@ the deck is empty again, and the player has The Sun
 repeat
 ```
 
-The loot discard sits at 145 cards throughout and is never shuffled back in.
+The loot discard sat at 145 cards throughout and was never shuffled back in.
 
-## Why
+Not the card's fault. `XIX. The Sun` is implemented completely and correctly:
+both effects are present, and the printed condition "if it's your turn" is
+there as `player_active` and does apply. An earlier audit note of mine said the
+condition was missing; that was wrong, and this document supersedes it.
 
-Not the card. `XIX. The Sun` is implemented completely and correctly: both
-effects are present, and the printed condition "if it's your turn" is there as
-`player_active` and does apply. An earlier audit note of mine said the condition
-was missing; that was wrong, and this document supersedes it.
+Under the rule as it now stands, the draw that empties the deck rebuilds it, so
+The Sun goes to the bottom of a 145-card deck like any other card:
 
-The cause is *when* a deck is rebuilt.
-
-`COMPREHENSIVE_RULES.md` §9 says:
-
-> A deck that runs out is rebuilt by shuffling its discard pile. This does not
-> use the queue.
-
-The engine reads "runs out" as *when somebody tries to draw and cannot*. The
-rebuild lives inside the draw (`fsme/effects/builtin/loot.py`, `_next_loot`):
-if the deck is empty at the moment of a draw, the discard is shuffled in first.
-
-The other reading is *when the deck becomes empty*. Under it, drawing The Sun
-empties the deck, the 145-card discard is shuffled back at once, and The Sun
-goes to the bottom of a full deck instead of an empty one.
-
-The two readings are indistinguishable in every game where nothing is put into
-a deck between it emptying and the next draw. `XIX. The Sun` is the one card
-that does exactly that.
-
-That the timing is the whole cause was checked rather than argued. Patching the
-refill to the eager reading — in a scratch process, nothing committed — made all
-six games finish normally:
-
-| seed | as it is | rebuilt when the deck empties |
+| seed | before | after |
 |---|---|---|
 | 113 | 20 000 commands, turn 7975, unfinished | 634 commands, turn 186, finished |
 | 137 | 20 000, 7953, unfinished | 766, 184, finished |
 | 167 | 20 000, 7946, unfinished | 560, 174, finished |
-| 251 | 20 000, 7927, unfinished | 946, 231, finished |
+| 251 | 20 000, 7927, unfinished | 853, 198, finished |
 | 300 | 20 000, 7913, unfinished | 849, 195, finished |
 | 727 | 20 000, 5631, unfinished | 758, 225, finished |
 
-## Classification
+No turn limit, no loop detection, no special case for The Sun. The deck
+mechanic alone ends them, which is the point: forty-eight cards in the loaded
+content move cards between deck positions, and every one of them used to meet
+the same question.
 
-**RULE GAP.** Not a defect of the card, and not a defect of the deck mechanic
-in the sense of contradicting something written down: the engine implements one
-of two available readings of one sentence. What is missing is a decision about
-which reading is right.
+The same thousand four-player games, re-run afterwards: **1000 of 1000
+finished**, no crashes, no invariant violated in any journal entry, the longest
+game 327 turns and the median 65.
 
-## What else touches this
+## All four decks
 
-Two things widen it beyond one card.
+The loot deck used to be the only one that could be rebuilt — `_refill_loot_deck`
+was the only place in the engine that shuffled a discard back — which made a
+rule about decks into a fact about one deck. The monster, treasure and room
+decks now behave identically, through the same two functions.
 
-**Only one deck is rebuilt at all.** `_refill_loot_deck` is the only place in
-the engine that shuffles a discard back into a deck. The monster, treasure and
-room decks are never rebuilt — when they run out they stay out. This is latent
-rather than reachable: across sixty measured games the monster deck never fell
-below 228 of ~277 cards, the treasure deck below 259 of ~285, and the room deck
-below 52 of 67. The loot deck is the only one under real pressure, because it
-is drawn every turn.
+This was latent rather than reachable before: across sixty measured games the
+monster deck never fell below 228 of ~277 cards, the treasure deck below 259 of
+~285, and the room deck below 52 of 67. The loot deck is the only one under
+real pressure, because it is drawn every turn. It is fixed anyway, because one
+rule implemented once is the thing that went wrong.
 
-**Forty-eight cards move cards between deck positions.** `move_cards` is used 48
-times in the loaded content, including eight to the bottom of the treasure deck,
-eight to the top of the monster deck and five to the bottom of the monster deck.
-Every one of them meets the same question, and today they meet it against decks
-that are never rebuilt.
+## Consequences worth knowing
 
-## Options
+**Small decks behave oddly, and correctly.** With one room card in the game,
+changing the room discards it, finds the deck empty, shuffles the discard, and
+turns the same card back up. That is §9 met at its smallest, not a defect —
+and it is a test.
 
-### A — change the deck mechanic
+**The deal changed.** Rebuilding a deck shuffles it, and a shuffle is the
+engine RNG. Moving when the RNG is asked for a shuffle moves every game dealt
+after that point. Every number measured before this change is measured on a
+different set of games from every number measured after; they are not
+comparable. Determinism is unaffected and is asserted: the same seed still
+names one game, command for command and fingerprint for fingerprint.
 
-Rebuild a deck the moment it runs out, for every deck.
-
-*For:* it is the reading §9 most naturally supports; it removes the six stuck
-games without inventing anything; it settles the monster, treasure and room
-decks by the same stroke; and the forty-eight `move_cards` cards stop depending
-on which of two readings is in force.
-
-*Against:* it changes when the loot deck is shuffled, so it changes the deal of
-every game from that point on. Every measured number in the project — the
-studies, the examples, the demonstration, the numbers quoted in the
-documentation — is recomputed. It should be done once, deliberately, together
-with the decision about the other three decks, and not as a side effect of
-fixing one card.
-
-### B — keep the mechanic, add a rule about repetition
-
-Leave the deck alone and stop the repetition some other way: a cap on
-consecutive extra turns, or a stalled-turn guard like the one that already ends
-a combat in which neither side can hurt the other.
-
-*For:* the six games finish and almost no measured number moves, because the
-guard fires only where the game was already stuck.
-
-*Against:* it is a rule that appears on no card and in no specification, so it
-would have to be marked as a safeguard of the engine rather than a rule of the
-game — the way `STALLED_COMBAT_ROUNDS` is. And it treats the symptom: a card
-sent to the bottom of an empty deck stays anomalous for the other forty-seven
-cards that can do it.
-
-### C — change nothing
-
-Record the limitation, keep a step budget in anything that runs many games, and
-carry on.
-
-*For:* nothing moves. Six games in a thousand is 0.6%, and every one of them is
-recognisable — a turn count in the thousands.
-
-*Against:* a person running `fsme study --games 1000` meets it, and a game that
-never ends is a bad first impression however well documented. It also leaves
-the §9 divergence in place, which is the sort of thing that is much cheaper to
-settle now than after a year of measurements have been taken on top of it.
-
-## Recommendation
-
-**A, but as its own decision.** §9 reads for it, it removes the whole class
-rather than this instance, and it answers the monster/treasure/room question at
-the same time. It is not urgent — the limitation is documented and the failure
-is recognisable — and it should not be smuggled in alongside unrelated work,
-because the day it lands every number measured before it stops being comparable
-with every number measured after.
+**A deck can still be genuinely empty.** A deck and a discard pile that are
+both empty is a legal position. Whoever was drawing does not get a card, and
+the effect says so rather than raising.

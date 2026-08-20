@@ -16,6 +16,7 @@ from fsme.state import GameState, PlayerState
 from ..context import EffectContext
 from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
+from .decks import draw_from
 
 
 def _players(targets: Sequence[Any], effect: str) -> list[PlayerState]:
@@ -25,25 +26,6 @@ def _players(targets: Sequence[Any], effect: str) -> list[PlayerState]:
         raise EffectExecutionError(f"'{effect}' expects player targets")
 
     return players
-
-
-def _refill_loot_deck(ctx: EffectContext, state: GameState) -> bool:
-    """
-    Shuffle the discard pile back into the loot deck.
-
-    Returns False when there is nothing left to reshuffle, which lets the
-    caller stop drawing instead of raising: running out of cards is a legal
-    game situation, not an engine error.
-    """
-    if not state.loot_discard.cards:
-        return False
-
-    state.loot_deck.cards.extend(state.loot_discard.cards)
-    state.loot_discard.clear()
-
-    ctx.rng.shuffle(state.loot_deck.cards)
-
-    return True
 
 
 DECK = "deck"
@@ -67,10 +49,9 @@ def _next_loot(ctx: EffectContext, state: GameState, source: str) -> Any | None:
 
         return state.loot_discard.draw()
 
-    if not state.loot_deck.cards and not _refill_loot_deck(ctx, state):
-        return None
-
-    return state.loot_deck.draw()
+    # Every deck runs out the same way and is rebuilt the same way; see
+    # `decks.draw_from`. The loot deck used to be the only one that knew how.
+    return draw_from(ctx, "loot")
 
 
 def draw_loot(ctx: EffectContext, targets: Sequence[Any], count: int = 1) -> int:

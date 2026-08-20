@@ -67,7 +67,11 @@ def test_a_monster_can_stand_on_top_of_another() -> None:
 
 
 def test_killing_the_top_monster_brings_back_the_one_beneath() -> None:
-    runtime, state = make_game(monsters=0)
+    # One slot, holding the two monsters this test places, and no monster deck
+    # behind it. A second slot would refill from somewhere — the deck, or the
+    # discard the deck is rebuilt from — and this is about what the slot the
+    # monsters are in does.
+    runtime, state = make_game(monsters=0, monster_deck=0, monster_slots=1)
     runtime.submit(Command(type=CommandType.START_GAME, player=0))
 
     under = monster("under")
@@ -121,7 +125,7 @@ def test_a_covered_monster_survives_a_save() -> None:
     """
     from fsme.serialization import load_game, save_game
 
-    runtime, state = make_game(monsters=0)
+    runtime, state = make_game(monsters=0, monster_deck=0, monster_slots=1)
     runtime.submit(Command(type=CommandType.START_GAME, player=0))
 
     under = monster("under")

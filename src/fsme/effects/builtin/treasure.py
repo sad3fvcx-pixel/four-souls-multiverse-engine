@@ -15,6 +15,7 @@ from fsme.state import PlayerState
 from ..context import EffectContext
 from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
+from .decks import draw_from
 
 
 def gain_treasure(ctx: EffectContext, targets: Sequence[Any], count: int = 1) -> int:
@@ -24,7 +25,6 @@ def gain_treasure(ctx: EffectContext, targets: Sequence[Any], count: int = 1) ->
     if count < 0:
         raise EffectExecutionError("gain_treasure count must be non-negative")
 
-    state = ctx.state
     gained = 0
 
     for player in targets:
@@ -32,10 +32,10 @@ def gain_treasure(ctx: EffectContext, targets: Sequence[Any], count: int = 1) ->
             raise EffectExecutionError("gain_treasure expects player targets")
 
         for _ in range(count):
-            if not state.treasure_deck.cards:
-                break
+            card = draw_from(ctx, "treasure")
 
-            card = state.treasure_deck.draw()
+            if card is None:
+                break
 
             card.owner = player.player_id
             card.controller = player.player_id

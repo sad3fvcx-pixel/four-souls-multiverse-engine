@@ -20,6 +20,7 @@ from fsme.state import GameState
 from ..context import EffectContext
 from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
+from .decks import draw_from, restock
 
 
 def _clear_room_area(ctx: EffectContext, state: GameState) -> None:
@@ -49,12 +50,16 @@ def enter_room(ctx: EffectContext, targets: Sequence[Any], count: int = 1) -> in
     entered = 0
 
     for _ in range(count):
-        if not state.room_deck.cards:
+        if not state.room_deck.cards and not restock(ctx, "room"):
             break
 
         _clear_room_area(ctx, state)
 
-        room = state.room_deck.draw()
+        room = draw_from(ctx, "room")
+
+        if room is None:
+            break
+
         state.room_area.add_top(room)
         entered += 1
 

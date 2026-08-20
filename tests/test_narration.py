@@ -262,3 +262,14 @@ def test_every_narrated_kind_produces_something_or_nothing_safely() -> None:
     # the engine sent, and half a game is not a reason to stop drawing.
     for kind in SAID:
         told(event(kind))
+
+
+def test_a_deck_being_rebuilt_is_news() -> None:
+    """
+    The order of a deck is most of what anybody is keeping track of, and this
+    is the moment all of it is void.
+    """
+    said = told(event("deck_rebuilt", deck="loot", cards=145))
+
+    assert "loot deck" in said
+    assert "145 cards" in said

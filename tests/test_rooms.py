@@ -195,7 +195,7 @@ def test_the_active_player_may_change_the_room_after_a_kill() -> None:
 
     answer(runtime, 0)  # yes
 
-    assert standing in state.room_discard.cards
+    assert standing not in state.room_area.cards, "the room that was standing left"
     assert waiting in state.room_area.cards
 
 
@@ -234,9 +234,15 @@ def test_a_table_playing_without_rooms_is_never_asked() -> None:
     assert runtime.awaiting_decision is None
 
 
-def test_an_emptied_slot_stays_empty_when_the_deck_has_run_out() -> None:
+def test_a_room_deck_that_has_run_out_is_rebuilt_from_its_discard() -> None:
     """
-    "The top card of the room deck" is nothing when there is no top card.
+    §9: a deck that runs out is rebuilt by shuffling its discard pile.
+
+    The room deck here is empty and the only room in the game is the one in
+    play. Changing the room puts it in the discard and then asks for the top
+    card of the deck; the deck has nothing, so the discard is shuffled up and
+    the same room comes back. That is what a table does with one room card,
+    and it is not a special case: it is the general rule met at its smallest.
     """
     runtime, state = make_game()
     runtime.submit(Command(type=CommandType.START_GAME, player=0))
@@ -250,7 +256,24 @@ def test_an_emptied_slot_stays_empty_when_the_deck_has_run_out() -> None:
 
     answer(runtime, 0)
 
-    assert standing in state.room_discard.cards
+    assert state.room_area.cards == [standing]
+    assert not state.room_discard.cards
+
+
+def test_an_emptied_slot_stays_empty_when_there_is_nothing_left_anywhere() -> None:
+    """
+    "The top card of the room deck" is nothing when there is no top card and
+    no discard pile to rebuild one from.
+    """
+    runtime, state = make_game()
+    runtime.submit(Command(type=CommandType.START_GAME, player=0))
+
+    assert not state.room_deck.cards
+    assert not state.room_discard.cards
+
+    runtime.context.apply("enter_room", [])
+    runtime.run()
+
     assert not state.room_area.cards
 
 

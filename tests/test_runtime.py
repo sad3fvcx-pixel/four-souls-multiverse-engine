@@ -148,7 +148,24 @@ def test_state_based_actions_declare_death_after_resolution() -> None:
 
 
 def test_dead_monster_leaves_play() -> None:
+    # One slot holding the monster, and a monster deck behind it. The slot the
+    # monster dies out of is empty and refills at once, and with no deck the
+    # only card it could refill from is the corpse: a deck that has run out is
+    # rebuilt from its discard, so the monster would be shuffled up and turned
+    # straight back over. Two cards, not one, so that the refill does not empty
+    # the deck either and sweep the corpse back into it.
     state = make_state()
+    state.monster_slots = 1
+
+    for index in range(2):
+        state.monster_deck.add_top(
+            make_instance(
+                monster(f"test.next{index}"),
+                controller=None,
+                owner=None,
+                instance_id=f"monster:next{index}",
+            )
+        )
 
     gaper = make_instance(monster(), controller=None, owner=None)
     place(state, gaper)

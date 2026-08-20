@@ -146,6 +146,8 @@ def make_game(
     seed: int = 1,
     loot_cards: int = 12,
     monsters: int = 1,
+    monster_deck: int = 4,
+    monster_slots: int | None = None,
     shop_items: int = 2,
     interactive_priority: bool = False,
     rng: RNG | None = None,
@@ -158,11 +160,29 @@ def make_game(
     """
     state = make_state(players, seed=seed)
 
+    if monster_slots is not None:
+        state.monster_slots = monster_slots
+
     for index in range(loot_cards):
         state.loot_deck.add_top(
             CardInstance(
                 definition=loot_definition(f"test.loot{index}"),
                 instance_id=f"loot:{index}",
+            )
+        )
+
+    # A monster deck with cards in it, because a table always has one. A deck
+    # that has run out is rebuilt from its discard, so a fixture with no
+    # monster deck is not a quiet fixture: it is a table at the very end of the
+    # monster deck, where a monster that dies is shuffled up and turned over
+    # again. Tests that want that ask for it.
+    for index in range(monster_deck):
+        state.monster_deck.add_top(
+            CardInstance(
+                definition=monster_definition(f"test.stock{index}"),
+                instance_id=f"monster:stock{index}",
+                controller=None,
+                owner=None,
             )
         )
 

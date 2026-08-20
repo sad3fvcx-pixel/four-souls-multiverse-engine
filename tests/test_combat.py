@@ -180,24 +180,25 @@ def test_only_one_attack_per_turn() -> None:
 
 def test_the_monster_roll_value_decides_a_hit() -> None:
     runtime, state = armed_game([5, 6], monsters=0)
-    runtime.submit(Command(type=CommandType.START_GAME, player=0))
 
-    place(state, 
-        CardInstance(
-            definition=monster_definition("test.tough", health=1, roll=6),
-            instance_id="monster:tough",
-            controller=None,
-            owner=None,
-        )
+    tough = CardInstance(
+        definition=monster_definition("test.tough", health=1, roll=6),
+        instance_id="monster:tough",
+        controller=None,
+        owner=None,
     )
 
+    # Into the first slot, before the game opens, so that the attack below is
+    # aimed at it and not at whatever the deck turns over beside it.
+    place(state, tough)
+
+    runtime.submit(Command(type=CommandType.START_GAME, player=0))
     runtime.submit(Command(type=CommandType.END_PHASE, player=0))
 
     attack(runtime)
 
-    monster = state.monster_discard.cards[-1]
-
-    assert monster.alive is False
+    assert tough.alive is False
+    assert tough in state.monster_discard.cards
     assert state.player(0).hp == 1
 
 
@@ -232,25 +233,19 @@ def test_a_monster_shuffled_back_returns_in_one_piece() -> None:
     What the fight did to it belonged to the monster on the table; the card in
     the deck is only a card. Bringing it up wounded would leave a corpse in a
     slot that nothing can kill and nothing can clear.
+
+    The monster deck starts empty here, which is how the monster gets back into
+    it: the deck has run out, so §9 rebuilds it by shuffling the discard, and
+    the only card in that discard is the monster that has just died.
     """
-    runtime, state = armed_game([6, 6], monsters=1)
+    runtime, state = armed_game([6, 6], monsters=1, monster_deck=0)
     reach_action_phase(runtime, state)
 
     monster = state.active_monsters.cards[0]
 
     attack(runtime)
 
-    assert monster.alive is False
-    assert monster in state.monster_discard.cards
-
-    # However it got there — a card that shuffles the discard back, a card that
-    # puts a monster on top of the deck — the deck is where it is now.
-    state.monster_discard.cards.remove(monster)
-    state.monster_deck.add_top(monster)
-
-    runtime.run()
-
-    assert monster in state.active_monsters.cards
+    assert monster in state.active_monsters.cards, "it was shuffled back and turned over"
     assert monster.alive is True
     assert monster.hp == monster.definition.health
 
@@ -316,7 +311,7 @@ def test_turning_over_something_that_is_not_a_monster_ends_the_attack() -> None:
 
 
 def test_attacking_an_empty_monster_deck_is_refused() -> None:
-    runtime, state = armed_game([6], monsters=1)
+    runtime, state = armed_game([6], monsters=1, monster_deck=0)
     reach_action_phase(runtime, state)
 
     result = runtime.submit(

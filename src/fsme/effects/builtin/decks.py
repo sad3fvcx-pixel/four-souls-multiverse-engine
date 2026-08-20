@@ -23,6 +23,14 @@ from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
 
 DECKS = ("loot", "treasure", "monster", "room")
+"""
+Every deck in the game, and the only four there are.
+
+They behave the same way. That is the point of naming them in one place: a rule
+about decks is a rule about all of them, and the alternative — the loot deck
+knowing how to rebuild itself while the other three did not — is what let a
+game run for ever.
+"""
 
 
 def deck_zone(state: GameState, name: str) -> Zone[Any]:
@@ -37,6 +45,83 @@ def deck_zone(state: GameState, name: str) -> Zone[Any]:
         )
 
     return zone
+
+
+def restock(ctx: EffectContext, name: str) -> bool:
+    """
+    Rebuild a deck that has just run out, from its own discard pile.
+
+    ``COMPREHENSIVE_RULES.md`` §9: "A deck that runs out is rebuilt by
+    shuffling its discard pile. This does not use the queue." All four decks,
+    the same way.
+
+    **Call this where a card leaves a deck, not where a deck is found empty.**
+    Running out is something a deck does — the last card leaves it — and not a
+    state it sits in. The difference is what a discard pile is for: an empty
+    deck beside a growing discard is an ordinary position at a table, and if
+    the discard became the deck the moment anything was put in it, a monster
+    killed with the deck already out would be shuffled up and turned straight
+    back over. Nobody does that. What they do is shuffle when the deck runs
+    out, and again when somebody needs a card and there is none.
+
+    The timing within that is the whole of the fix. Rebuilding lazily —
+    waiting for a draw to find the deck empty — is indistinguishable from this
+    in every game where nothing is put into a deck between it emptying and the
+    next draw. Where something is, the two readings part company completely: a
+    card that puts itself on the bottom of an empty deck is the only card in it
+    and is drawn straight back, for ever, while a full discard pile sits beside
+    it untouched. That happened, to six games in a thousand.
+
+    Returns whether anything was rebuilt, so a caller can tell "the deck was
+    refilled" from "there was nothing to refill it with". A deck and a discard
+    pile that are both empty is a legal position, not an error.
+    """
+    deck = deck_zone(ctx.state, name)
+
+    if deck.cards:
+        return False
+
+    discard = discard_zone(ctx.state, name)
+
+    if not discard.cards:
+        return False
+
+    deck.cards.extend(discard.cards)
+    discard.clear()
+
+    ctx.rng.shuffle(deck.cards)
+
+    ctx.emit(EventType.DECK_REBUILT, deck=name, cards=len(deck.cards))
+
+    return True
+
+
+def draw_from(ctx: EffectContext, name: str) -> Any | None:
+    """
+    Take the top card of a deck, and leave the deck stocked behind it.
+
+    ``None`` when there is nothing left anywhere: a deck that has run dry and a
+    discard pile that is empty mean the same thing to whoever was drawing,
+    which is that they do not get a card.
+
+    Two restocks, for the two ways a deck comes back. The one before the draw
+    is somebody needing a card from a deck that ran out while its discard was
+    empty and has since filled: they shuffle, then draw. The one after is the
+    draw itself having taken the last card, which is the deck running out — §9
+    rebuilds it then, not when somebody next asks. Effects read deck state
+    between actions, and a deck that is briefly empty when the rules say it is
+    full is a deck that lies to them.
+    """
+    deck = deck_zone(ctx.state, name)
+
+    if not deck.cards and not restock(ctx, name):
+        return None
+
+    card = deck.draw()
+
+    restock(ctx, name)
+
+    return card
 
 
 def shuffle_deck(ctx: EffectContext, targets: Sequence[Any], deck: str = "loot") -> int:
@@ -133,6 +218,8 @@ def take_card(
     taken = 0
 
     for card in targets:
+        came_from = _deck_holding(state, card)
+
         if not _remove_from_anywhere(state, card):
             continue
 
@@ -142,6 +229,11 @@ def take_card(
 
         destination.add_top(card)
         taken += 1
+
+        if came_from is not None:
+            # A search that takes the last card of a deck is that deck running
+            # out, the same as a draw would be.
+            restock(ctx, came_from)
 
         ctx.emit(
             EventType.ON_GAIN,
@@ -198,6 +290,24 @@ def _zones_holding_cards(state: GameState) -> list[Zone[Any]]:
     return zones
 
 
+def _deck_holding(state: GameState, card: Any) -> str | None:
+    """
+    Name the deck a card is sitting in, or ``None`` if it is somewhere else.
+
+    Asked before a card is moved, so that whoever moved it can tell whether
+    they have just emptied a deck. A deck runs out when its last card leaves,
+    whichever effect took it — a search, a card put somewhere, a sweep — and
+    not only when somebody draws.
+    """
+    for name in DECKS:
+        deck: Zone[Any] | None = getattr(state, f"{name}_deck", None)
+
+        if deck is not None and card in deck.cards:
+            return name
+
+    return None
+
+
 def _remove_from_anywhere(state: GameState, card: Any) -> bool:
     """
     Take a card out of whichever zone currently holds it.
@@ -243,7 +353,7 @@ def move_cards(
 
     state = ctx.state
     zone = (
-        _discard_pile(state, deck) if position == "discard" else deck_zone(state, deck)
+        discard_zone(state, deck) if position == "discard" else deck_zone(state, deck)
     )
 
     moved = 0
@@ -251,6 +361,8 @@ def move_cards(
     depth = params_depth(depth_from)
 
     for card in targets:
+        came_from = _deck_holding(state, card)
+
         _remove_from_anywhere(state, card)
 
         if position == "bottom":
@@ -264,10 +376,18 @@ def move_cards(
 
         moved += 1
 
+        if came_from is not None:
+            # The move finishes, and then the deck it came out of is asked
+            # whether it has run out. Asking first would get the wrong answer
+            # twice over: a card put back on the same deck never left it as far
+            # as the deck is concerned, and a card put into that deck's discard
+            # belongs in the shuffle that rebuilds it.
+            restock(ctx, came_from)
+
     return moved
 
 
-def _discard_pile(state: GameState, name: str) -> Zone[Any]:
+def discard_zone(state: GameState, name: str) -> Zone[Any]:
     """
     Return the discard pile belonging to a deck.
     """

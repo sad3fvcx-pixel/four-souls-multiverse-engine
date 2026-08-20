@@ -305,7 +305,12 @@ def test_a_new_room_replaces_the_old_one() -> None:
     runtime.run()
 
     assert len(state.room_area) == 1
-    assert rooms[-1] in state.room_discard.cards
+    assert rooms[-1] not in state.room_area.cards, "the first room left"
+    # And it is in the deck rather than the discard, because entering the
+    # second room took the last card of the room deck: the deck ran out and
+    # §9 rebuilt it from the discard, which at that moment held the room that
+    # had just been left.
+    assert rooms[-1] in state.room_deck.cards
     assert EventType.ON_LEAVE in [event.type for event in runtime.history]
 
 

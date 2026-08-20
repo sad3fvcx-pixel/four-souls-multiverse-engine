@@ -66,8 +66,9 @@ inside, or a saved *report* handed to the wrong loader.
 
 ### It does not fall over
 
-A thousand four-player games: no crashes, no exceptions, no recursion limits.
-994 finished; the six that did not are one known defect, described below.
+A thousand four-player games: no crashes, no exceptions, no recursion limits,
+and **all thousand finished**. The longest ran 327 turns; the median ran 65.
+Before the deck-exhaustion fix six of them ran for ever.
 
 Checked in every journal entry of all thousand games, not only at the end:
 
@@ -81,6 +82,27 @@ Checked in every journal entry of all thousand games, not only at the end:
 After `game_end` the engine accepts nothing: no legal moves are offered, and a
 command submitted anyway is refused with "the game is over". Measured over the
 thousand-game run and asserted directly.
+
+### A deck that runs out is rebuilt
+
+`COMPREHENSIVE_RULES.md` §9, for all four decks and by one mechanism: when the
+last card leaves a deck it is rebuilt at once by shuffling its discard pile, so
+an effect that looks at the deck between two actions sees what the rules say is
+there rather than a deck that is briefly empty.
+
+Running out is treated as something a deck *does* — its last card leaves —
+rather than a state it sits in, which is what keeps a discard pile from turning
+into a deck the moment anything is put in it. Asserted on all four decks: the
+rebuild as the last card leaves, the rebuild when a draw finds a deck that ran
+out earlier, a card put on the bottom of a deck it has just emptied, a search
+that takes the last card, a card moved into its own deck's discard, and the
+things that must *not* rebuild — a shuffle, a reveal, a card discarded beside a
+deck that was already empty.
+
+This is what ended the six games in a thousand that used to run for ever. No
+turn limit, no loop detection and no special case for any card was added; the
+six seeds are named in the tests and finish on the mechanic alone. See
+[DECK_EXHAUSTION.md](DECK_EXHAUSTION.md).
 
 ### The economy balances
 
@@ -125,30 +147,6 @@ part of the rules.
 ---
 
 ## Known limitations
-
-### A game can fail to finish
-
-Six games in a thousand run for ever. All six are the same shape, and it is
-understood: see [DECK_EXHAUSTION.md](DECK_EXHAUSTION.md).
-
-Short version: the loot deck is rebuilt from its discard *lazily* — when a draw
-finds the deck empty. A card that puts itself on the bottom of an empty deck is
-therefore always the only card in it, and is drawn again next turn. With
-`XIX. The Sun`, which also grants an extra turn, that repeats without end.
-
-Until this is decided, a run over many games needs a step budget. `fsme study`
-has one; anything else calling the engine in a loop should have one too.
-
-### One deck of four is rebuilt
-
-`COMPREHENSIVE_RULES.md` §9 says a deck that runs out is rebuilt by shuffling
-its discard pile. The engine does this for the loot deck. The monster, treasure
-and room decks are not rebuilt: when they run out, they stay out.
-
-Latent rather than reachable — over sixty measured games the monster deck never
-fell below 228 of ~277, the treasure deck below 259 of ~285, the room deck below
-52 of 67. The loot deck is the only one under real pressure. Recorded because
-the rule is one rule and it is implemented once.
 
 ### Two shapes of journal
 

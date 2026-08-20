@@ -10,6 +10,7 @@ from typing import Any
 
 from fsme.commands import Command
 from fsme.effects import EffectContext
+from fsme.effects.builtin.decks import draw_from
 from fsme.events import EventType
 from fsme.stack import PURCHASE, StackItem, StackItemType
 from fsme.state import GamePhase, GameState, PlayerState
@@ -126,7 +127,7 @@ def purchase(item: StackItem, context: EffectContext) -> None:
     player = state.player(seat)
     price = shop_price(state, seat)
 
-    card = _what_was_bought(state, item)
+    card = _what_was_bought(context, item)
 
     if card is None or player.pennies < price or not player.alive:
         _give_the_purchase_back(player)
@@ -155,15 +156,14 @@ def purchase(item: StackItem, context: EffectContext) -> None:
     context.emit(EventType.AFTER_PURCHASE, source=card, controller=seat)
 
 
-def _what_was_bought(state: GameState, item: StackItem) -> Any | None:
+def _what_was_bought(context: EffectContext, item: StackItem) -> Any | None:
     """
     Take the declared card out of the shop or off the deck, if it is still there.
     """
-    if str(item.payload.get("source", SHOP)) == DECK:
-        if not state.treasure_deck.cards:
-            return None
+    state = context.state
 
-        drawn: Any = state.treasure_deck.draw()
+    if str(item.payload.get("source", SHOP)) == DECK:
+        drawn: Any | None = draw_from(context, "treasure")
 
         return drawn
 
@@ -200,5 +200,10 @@ def refill_shop(context: EffectContext) -> None:
     """
     state = context.state
 
-    while len(state.treasure_shop) < state.shop_slots and state.treasure_deck.cards:
-        state.treasure_shop.add_top(state.treasure_deck.draw())
+    while len(state.treasure_shop) < state.shop_slots:
+        card = draw_from(context, "treasure")
+
+        if card is None:
+            break
+
+        state.treasure_shop.add_top(card)

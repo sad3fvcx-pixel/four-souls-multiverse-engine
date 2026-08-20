@@ -244,6 +244,22 @@ def _won(event: _Event) -> str:
     return f"{event.who} wins the game."
 
 
+def _rebuilt(event: _Event) -> str:
+    """
+    A deck running out and being shuffled up again.
+
+    News, and not bookkeeping: the order of a deck is most of what anybody at
+    the table is keeping track of, and this is the moment all of it is void.
+    """
+    deck = str(event.payload("deck") or "").strip() or "deck"
+    count = event.amount("cards")
+
+    return (
+        f"The {deck} deck has run out and is rebuilt from its discard pile "
+        f"— {count} {_plural(count, 'card')}."
+    )
+
+
 SAID: dict[str, Any] = {
     "turn_start": _turn,
     "attack_start": _attack,
@@ -261,6 +277,7 @@ SAID: dict[str, Any] = {
     "on_activate": _activated,
     "treasure_bought": _bought,
     "loot_drawn": _drew,
+    "deck_rebuilt": _rebuilt,
     "winner_declared": _won,
 }
 """

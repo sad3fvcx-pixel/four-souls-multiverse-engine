@@ -8,6 +8,38 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+- **A deck that ran out was rebuilt too late, and only one deck knew how.**
+  `COMPREHENSIVE_RULES.md` §9: "A deck that runs out is rebuilt by shuffling
+  its discard pile." The engine read *runs out* as *somebody tried to draw and
+  could not*, and implemented it for the loot deck alone. Both halves are
+  fixed, by one mechanism used by all four decks. Running out is now what a
+  deck does — its last card leaves it, whether to a draw, a search or a card
+  that moves it — and the rebuild happens at that moment, so an effect reading
+  the deck between two actions sees what the rules say is there.
+
+  This is what ended the six games in a thousand that never finished. Every one
+  of them was `XIX. The Sun` — "put this on the bottom of the loot deck; if you
+  do, take an extra turn" — played onto a deck that the draw for it had just
+  emptied: rebuilt lazily, the deck held exactly that card, the extra turn drew
+  it again, and 145 loot cards sat in the discard untouched for 7950 turns. All
+  six seeds are named in the tests and now finish in under 900 commands. No
+  turn limit, no loop detection and no special case for any card: the deck
+  mechanic alone ends them. The same thousand four-player games, re-run: 1000
+  of 1000 finished, nothing crashed, and no invariant was violated in any
+  journal entry.
+
+  What did *not* change is as deliberate. A discard pile does not become a deck
+  the moment something is put in it — an empty deck beside a growing discard is
+  an ordinary position, and the alternative shuffles a monster's corpse up and
+  turns it straight back over into the slot it died from. Shuffling an empty
+  deck and revealing the top of one rebuild nothing, because no card left.
+
+  **Every game dealt is different from before.** A rebuild shuffles, a shuffle
+  is the engine RNG, and moving when the RNG is asked moves the deal. Numbers
+  measured before this change are not comparable with numbers measured after.
+  Determinism is unaffected and is asserted seed by seed, command for command
+  and fingerprint for fingerprint. `docs/DECK_EXHAUSTION.md` is the whole
+  account.
 - **Save journal and `fsme replay` could not be used together.** A file saved
   from Watch failed twice over: the envelope was not understood — "this journal
   is written in format fsme-journal, and this engine reads format 1", the
@@ -29,9 +61,7 @@ that cannot be read says so) and the **card schema**.
   the engine rather than the cards.
 - **`docs/CORE_STABLE.md`** says what the engine guarantees, what it does not,
   and what it is not trying to do — each guarantee a measurement somebody can
-  repeat. **`docs/DECK_EXHAUSTION.md`** is the whole account of the six games
-  in a thousand that never finish: the cause, the sentence of the rules it
-  turns on, and the three things that could be done, with none of them done.
+  repeat.
 - **A card could delete itself from the game.** O. The Fool says "cancel
   everything that hasn't resolved", and it did — including the engine's own
   bookkeeping for putting the played card into the discard. The card had

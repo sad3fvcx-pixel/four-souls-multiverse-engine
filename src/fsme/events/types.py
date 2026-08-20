@@ -114,6 +114,15 @@ class EventType(StrEnum):
 
     AFTER_LOOT = "after_loot"
     LOOT_DRAWN = "loot_drawn"
+
+    DECK_REBUILT = "deck_rebuilt"
+    """
+    A deck ran out and was rebuilt from its discard pile.
+
+    Announced because it is a thing that happened to the game rather than
+    bookkeeping: the order of a deck is most of what a player is guessing at,
+    and the moment it is reshuffled is the moment every guess is void.
+    """
     LOOT_DISCARDED = "loot_discarded"
     REVEALED = "revealed"
 
