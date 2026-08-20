@@ -8,6 +8,31 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+- **The Core Stable audit.** No code changed: the engine was measured rather
+  than edited, and what it could not do was written down. 2500 games at two,
+  three and four players all finished, with no invariant flagged in any journal
+  entry. 120 games were checked after every one of their 28 918 commands and no
+  card was ever in two places. Determinism holds on all three paths across
+  seeds and table sizes; 66 journals of both shapes replay to their recorded
+  fingerprints, and replaying them a second time with a keeper attached
+  produced the same events field by field. The fundamental rules — phases,
+  dice, death and revival, healing, the hand limit, victory, the stack — held
+  in every game checked.
+
+  Two things the audit found are limitations rather than defects, and both are
+  now documented in `LIMITATIONS.md` and `PROJECT_PLAN.md` §11.5: a card that
+  became a soul and is then destroyed leaves the game rather than going to a
+  discard pile, because the specifications do not say where it should go; and a
+  turn ended by a card or by the death penalty does not enter the end phase, so
+  the "at the end of your turn" abilities do not fire. The second is 40% of
+  turns and costs about 1.6 abilities a game, almost all of them "recharge
+  this".
+
+  `CORE_STABLE.md` gained what the engine promises about turn order and the
+  stack, an honest account of the two ways a card can leave the game, and a
+  section on what belongs to the next stage. It also records the three ways
+  these measurements were got wrong before they were got right, because
+  somebody repeating them will meet the same traps.
 - **A card could be in two places at once.** The monster area is kept twice:
   `monster_area` is the row of slots and the truth, and `active_monsters` is
   the face-up card of each slot, which is what the rest of the engine reads.

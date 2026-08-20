@@ -19,12 +19,12 @@ the desk — is built on it and is not covered by these promises.
 The same seed, the same players and the same commands produce the same game,
 command for command and die for die.
 
-Measured: ten runs of one seed on each of three paths — the simulation path a
-study uses, the Session path Watch uses, and replay — with whole journals
-compared field by field, not just winners and lengths. Identical every time,
-including the chain of position fingerprints. Repeated across five seeds and
-two to four players, and across one worker against four: dividing the work
-does not change any answer.
+Measured: repeated runs of one seed on each of three paths — the simulation
+path a study uses, the Session path Watch uses, and replay — with whole
+journals compared field by field, not just winners and lengths. Identical every
+time, including the chain of position fingerprints. Repeated across seeds and
+across two, three and four players, and across one worker against four:
+dividing the work does not change any answer.
 
 A seed names one game **per path**. Interactive priority makes rolls
 answerable, so a game watched and a game simulated from the same seed are
@@ -40,6 +40,12 @@ that diverged and says which.
 
 Both shapes of journal replay: one that records the deal (Watch, Save journal)
 and one that begins at the first move (simulation).
+
+Measured on both shapes: 60 simulation games at two and four players and six
+Watch games at four — 33 787 commands — every one faithful to its recorded
+fingerprints. And more than the fingerprints: each journal was replayed a
+second time with a keeper attached and the two journals compared event by
+event, every field of every event, not only the digest.
 
 ### The journal
 
@@ -66,11 +72,12 @@ inside, or a saved *report* handed to the wrong loader.
 
 ### It does not fall over
 
-A thousand four-player games: no crashes, no exceptions, no recursion limits,
-and **all thousand finished**. The longest ran 327 turns; the median ran 66.
-Before the deck-exhaustion fix six of them ran for ever.
+**2500 games finished out of 2500**, at two, three and four players: no
+crashes, no exceptions, no recursion limits, no game abandoned. The longest ran
+327 turns at four players, 249 at three, 163 at two; the medians are 66, 57 and
+42. Before the deck-exhaustion fix, six games in a thousand ran for ever.
 
-Checked in every journal entry of all thousand games, not only at the end:
+Checked in every journal entry of all 2500 games, not only at the end:
 
 - no negative health, coins or souls;
 - exactly one `winner_declared` and one `game_end` per finished game;
@@ -114,21 +121,42 @@ measured. Money does not appear or vanish without an event that says so.
 
 The sequence died → penalty → revived is never out of order, and nobody acts
 while dead. A revival without a death is impossible by construction: the effect
-skips a living player.
+skips a living player. A player dies at most once per turn (§10), and health
+returns at the end of the *next* end phase — so somebody who died in the turn
+the game ended on is still down, correctly, in the final position.
 
-### Cards are conserved
+Measured over 120 games at two to four players: 2898 deaths, 2891 revivals, no
+penalty paid without a death and no revival without one.
 
-A card is in exactly one place: a deck, a discard, a hand, a shop or room slot,
-a monster slot, or somebody's play area. Traced by instance identity after
-every command of whole games, across all four decks and every card type — not
-counted, identified. The only cards that leave are the ones whose own text says
-they leave: Lost Soul becomes a soul and stops being a loot card.
+### A card is in exactly one place
 
-Measured over two hundred four-player games: no card in two places at any point
-of any of them. This claim was false until the Core Stable audit — the earlier
-census followed loot cards only, and monsters were never traced. `Flush!`, which
-sweeps the board into the monster deck, moved them there and left them standing
-in their slots as well, in five games of two hundred.
+A deck, a discard, a hand, a shop slot, the room slot, a monster slot, or
+somebody's play area. Traced by instance identity after every command of whole
+games, across all four decks and every card type — identified, not counted.
+`active_monsters` is not a place: it is the face-up view of the slot row, and
+counting it as one is how a census can be made to agree with anything.
+
+Measured: 120 games at two, three and four players, 28 918 commands, **no card
+in two places at any point of any of them**. Plus two hundred four-player games
+checked for the same thing.
+
+This claim was false until the Core Stable audit. The earlier census followed
+loot cards only, so monsters were never traced, and `Flush!` — which sweeps the
+board into the monster deck — put them there while leaving them standing in
+their slots.
+
+**Cards that leave the game.** Two, both known and both rare, and neither is
+bookkeeping losing a card:
+
+- a card that became a soul and is then *destroyed* — `XX. Judgement` — leaves
+  the game instead of going to the discard pile of its own deck. Where a
+  destroyed soul card should go is not written in the specifications, so
+  nothing was invented; five cases in 120 games;
+- a loot card played in the very command that ends the game never reaches the
+  discard, because the object that would put it there is dropped with the rest
+  when the game is over. One case in 120 games, in the final position only.
+
+Both are in [LIMITATIONS.md](LIMITATIONS.md) and `PROJECT_PLAN.md` §11.5.
 
 ### The stack resolves in causal order
 
@@ -136,8 +164,25 @@ The deepest chain the current content reaches is 159 events in one command, and
 the order holds throughout: a push before its resolution, `before_damage` before
 `damage_dealt` before `after_damage`, a kill before its reward before the soul.
 
+Nothing resolves that was never pushed, and nothing resolves twice: checked on
+69 481 pushes across 120 games. A lethal effect is the one damage that opens no
+window before it — §8 counts it as a death rather than as damage — and it says
+`lethal` in the event, so the two can be told apart.
+
 State-based actions run between steps: deaths settle, monster and shop slots
-refill, and a win is noticed as soon as it is true.
+refill, decks that ran out are rebuilt, and a win is noticed as soon as it is
+true.
+
+### The turn runs in order
+
+Start, loot, action, end, and never backwards; a roll is 1 to 6 and a monster's
+difficulty is 1 to 6 (§5), so no monster can ask for more than a die can give;
+everyone and every monster is at full health when the next turn opens (§3.3);
+the player whose turn ended is holding ten cards or fewer; the winner holds the
+souls the win requires (§11); an allowance never goes negative.
+
+Measured over 120 games at two to four players: 11 574 rolls, 15 178 phase
+changes, and every clause above held in all of them.
 
 ### Content is checked, not trusted
 
@@ -183,6 +228,21 @@ elsewhere. This is the largest single gap between FSME and Four Souls, and it is
 a content gap rather than an engine one — see
 [OFFICIAL_CARD_COVERAGE.md](OFFICIAL_CARD_COVERAGE.md).
 
+### A turn ended by a card does not enter the end phase
+
+§3.3 step 1 says an effect that ends a turn jumps straight into the end phase,
+so the "at the end of your turn" abilities still fire. The engine puts the
+turn-advancing object on the stack instead: healing, revival, the expiry of
+"till end of turn" bonuses and the discard down to ten all happen, and the
+`turn_end` triggers do not.
+
+40% of turns end this way. The cost is much smaller than that: about 1.6
+abilities a game fail to fire at four players, nearly all of them "recharge
+this", and no room change was missed in any measured game.
+
+A gap in how completely the rules are simulated, not a hole in the state:
+nothing is lost or left inconsistent, and such a game replays like any other.
+
 ### Some events are emitted after the game ends
 
 A stack push announced in the same command that declared a winner, immediately
@@ -193,7 +253,41 @@ discarded. Cosmetic: nothing is accepted afterwards.
 `stack_push` and `stack_resolve` carry the source card and the controller, but
 not the object's label, so a push with no card behind it — settling a roll,
 advancing a turn — reads as the player's name and nothing else. The engine knows
-the label; the event does not carry it.
+the label; the event does not carry it. `stack_cancel` is the other way round:
+it names the label and not the id, so a cancelled object cannot be matched to
+the push that put it there.
+
+### A card that becomes a soul and is then destroyed leaves the game
+
+Where a destroyed soul *card* goes is not written in the specifications, so
+nothing was invented. Five cases in 120 games, always `Lost Soul`. See
+[LIMITATIONS.md](LIMITATIONS.md).
+
+---
+
+## The next stage
+
+Not promises, and not scheduled — the shape of what is left, so that "Core
+Stable" is not read as "finished".
+
+**Rules completeness.** The turn ended by an effect should enter the end phase.
+A destroyed soul card should have somewhere to go. Both are written up in
+`PROJECT_PLAN.md` §11.5 with what blocks them; neither is a hole in the state.
+
+**Content.** 352 of 1045 known cards have working rules, and 166 of 287
+treasures carry none the engine can read. This is the largest gap between FSME
+and Four Souls and it is a content gap, not an engine one — see
+[OFFICIAL_CARD_COVERAGE.md](OFFICIAL_CARD_COVERAGE.md).
+
+**One shape of journal.** A Session records the deal and a simulation does not.
+Both are complete records of what they cover and both replay, but they are not
+directly comparable, and unifying them moves every number ever measured.
+
+**Recording how a game was played.** The journal does not say whether
+interactive priority was on; replay infers it. A field would end the inference.
+
+Everything else that has been considered is in [NEXT.md](NEXT.md), which is a
+list of directions rather than a plan.
 
 ---
 
@@ -226,11 +320,20 @@ to its owners; the engine is an independent implementation of published rules.
 
 ## How to check any of this
 
-Everything above is a test or a measurement. `pytest` runs the tests; the
-measurements are in the commit messages and the audit notes, with the seeds
-they were taken from.
+Everything above is a test or a measurement. `pytest` runs the tests — 1015 of
+them; the measurements are in the commit messages and the audit notes, with the
+seeds they were taken from.
 
-The claims that would be worth doubting first are the ones about *many* games,
-because they were measured on a thousand games at four players and one bot.
-A different table, a different content set, or many more games could show
-something these did not.
+The claims that would be worth doubting first are the ones about *many* games.
+They were measured on 2500 games for finishing and on 120 for the checks that
+look at every command, at two to four players, with one bot. A different table,
+a different content set, or many more games could show something these did not.
+
+The measurements themselves have been wrong here before, in ways worth knowing
+about if you repeat them. Events are queued when they are emitted and delivered
+when the queue drains, so reading the state after a command has finished is
+reading it several things later — that produced three false findings in one
+pass of this audit. `active_monsters` looks like a zone and is a view, so
+counting it doubles every standing monster. And `replay_journal` reports a
+divergence as a return value rather than an exception, so catching exceptions
+proves nothing about fingerprints.

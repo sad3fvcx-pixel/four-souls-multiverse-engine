@@ -29,11 +29,39 @@ recorded as a gap in `PROJECT_PLAN.md` §11.5 rather than invented.
 straight into the end phase, so the "at the end of your turn" effects still
 fire. In the engine a turn ended by a card — or by the death penalty, whose
 last clause ends the active player's turn — goes straight to passing the seat.
-Healing, the expiry of "till end of turn" bonuses and the discard down to ten
-all happen; the triggers do not, and neither does the offer to change rooms.
+Healing, the revival of whoever died, the expiry of "till end of turn" bonuses
+and the discard down to ten all happen; the `turn_end` triggers do not, and
+neither does the offer to change rooms.
 
-Not rare: 1615 of 4325 measured turns end this way rather than by the active
-player saying so.
+**How often, and what it costs.** 40% of turns end this way rather than by the
+active player saying so — 1123 of 2800 at four players, 761 of 1842 at two.
+The price is much smaller than that number suggests, because most turns have
+nothing waiting on the trigger: across forty four-player games, 66 abilities
+failed to fire, about 1.6 a game. Fifteen cards in the loaded content answer
+the end of a turn, and the ones that came up are mostly "recharge this" — The
+D6, Yum Heart, Blood Lust, Book of Belial — so the visible effect is an item
+staying tapped one turn longer than it should. No room change was missed in
+any measured game.
+
+This is a gap in how completely the rules are simulated, not a hole in the
+state: nothing is lost, duplicated or left inconsistent, and a game that takes
+the short way out replays and fingerprints like any other.
+
+## A destroyed soul card leaves the game
+
+A card with a soul symbol can become a soul (§11), and `XX. Judgement` says
+"that player destroys a soul they control". Where a destroyed *card* goes is
+not written down anywhere in the specifications, and the engine removes it from
+the game rather than putting it in the discard pile of its own deck.
+
+Reachable but rare: five times in a hundred and twenty measured games, always
+`Lost Soul`. `The Chest` can sit in a souls zone too and would go the same way.
+Nothing was invented to fill the gap — see `PROJECT_PLAN.md` §11.5.
+
+A second, smaller version of the same thing: a loot card played in the command
+that ends the game never reaches the discard, because the object that would put
+it there is dropped along with everything else when the game is over. One case
+in a hundred and twenty games, and only in the final position.
 
 ## Some pairs of cards never finish
 
