@@ -276,17 +276,26 @@ actually implements rather than against a document:
 
 1. **Structure.** Required fields, and fields of the right kind.
 2. **Names.** Every effect, trigger, condition and target the card mentions.
-3. **Arguments.** What the card gives each effect: the kind of value, the
-   values allowed where only a few are, and the floors below which a number
-   means nothing. A parameter the effect does not take is named, with the
-   nearest one it does take offered.
+3. **Arguments.** What the card gives each effect and each condition: the kind
+   of value, the values allowed where only a few are, and the floors below
+   which a number means nothing. A parameter that is not taken is named, with
+   the nearest one that is offered. This matters most for conditions, which
+   ignore a parameter they do not recognise: `{"player_hp": {"operatr": "<",
+   "value": 2}}` is not a card that fails, it is a card that quietly means
+   "equal to zero" and plays a whole game that way. Conditions are checked
+   wherever they are written — on an ability, on a static, and inside `if`
+   within an ability's effects.
 4. **Values worked out while an ability runs.** `{"amount": {"from": "dice"}}`
    is legal; there are five such forms — `from`, `count`, `from_event`,
    `last_result`, `player_of` — and a sixth spelling is a typo rather than a
    new one.
 
+Target parameters are not yet checked; target *names* are. See
+`docs/TARGET_AUDIT.md`.
+
 A parameter the engine can only judge with a board in front of it — a card, a
-player, a structure — is not checked here. That is not permission for anything
+player, a structure, or a value an event happens to be carrying — is not
+checked here. That is not permission for anything
 to be written: the guard inside the effect stays exactly where it is and still
 refuses. It means load time is the wrong moment to ask.
 
