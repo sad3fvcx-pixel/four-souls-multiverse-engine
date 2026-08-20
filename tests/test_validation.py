@@ -131,17 +131,52 @@ def test_a_parameter_the_effect_keeps_as_written_is_not_judged(
     `EffectSpec.literal` names parameters handed over exactly as the card wrote
     them — the effect's own structured data, which nothing here may read.
     """
-    literal = [
-        name for name in vocabulary.effects if (vocabulary.shape(name) or None)
-        and vocabulary.shape(name).literal
-    ]
+    from fsme.cards.validator import CONDITION_KEYS
 
-    assert literal, "some effect keeps a parameter as written"
+    pairs = sorted(
+        (name, key)
+        for name in vocabulary.effects
+        if vocabulary.shape(name) is not None
+        for key in vocabulary.shape(name).literal
+        # `watch_for` keeps its `conditions` as written, and they really are
+        # conditions: the runtime hands them to the same evaluator an ability's
+        # are handed to. So they are checked, and checking them is right —
+        # see the test below. Sampling one here would be sampling the one
+        # literal parameter that has a second meaning.
+        if key not in CONDITION_KEYS
+    )
 
-    name = literal[0]
-    key = sorted(vocabulary.shape(name).literal)[0]
+    assert pairs, "some effect keeps a parameter as written"
 
-    assert complaints(vocabulary, {"effect": name, key: {"anything": ["at", "all"]}}) == []
+    for name, key in pairs:
+        assert complaints(
+            vocabulary, {"effect": name, key: {"anything": ["at", "all"]}}
+        ) == [], f"{name}.{key}"
+
+
+def test_conditions_an_effect_keeps_as_written_are_still_conditions(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    The one literal parameter that is not opaque.
+
+    `watch_for` records an ability to run when an event arrives, and the
+    runtime evaluates its `conditions` with the same evaluator it uses for an
+    ability's own. A condition the engine has never heard of therefore stops
+    the game when the watched event happens — which may be many turns after
+    the card was played, and is exactly the kind of delay validation exists to
+    remove.
+    """
+    watching = {
+        "effect": "watch_for",
+        "event": "damage_dealt",
+        "conditions": [{"player_hpp": 1}],
+        "effects": [{"effect": "gain_coins", "amount": 1}],
+    }
+
+    (message,) = complaints(vocabulary, watching)
+
+    assert "unknown condition 'player_hpp'" in message
 
 
 # ----------------------------------------------------------------------
