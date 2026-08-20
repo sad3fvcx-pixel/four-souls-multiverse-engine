@@ -12,11 +12,14 @@ from conftest import (
     treasure_definition,
 )
 
-from fsme.cards import CardInstance, CardType
+from fsme.cards import CardInstance, CardType, Static
 from fsme.commands import Command, CommandType
 from fsme.events import EventType
 from fsme.rng.rng import RNG
+from fsme.rules.constants import DICE_SIDES
 from fsme.rules.slots import place
+from fsme.rules.statics import ATTACK as ATTACK_STAT
+from fsme.rules.statics import DIFFICULTY, monster_value
 from fsme.state import GamePhase
 
 
@@ -375,3 +378,149 @@ def test_an_attack_that_resolves_begins_the_fight() -> None:
 
     assert state.combat.active is True
     assert state.combat.monster is monster
+
+
+# ----------------------------------------------------------------------
+# What a monster can ask for
+# ----------------------------------------------------------------------
+
+
+def test_a_difficulty_bonus_cannot_ask_for_more_than_a_die_can_roll() -> None:
+    """
+    COMPREHENSIVE_RULES.md §5: "A roll result and a monster's difficulty are
+    never above 6 nor below 1."
+
+    Without the bound, +1 on a monster printed at 6 asks for a 7. One die
+    cannot roll a 7, so the monster cannot be hit by attacking at all — and
+    that is not a hard monster, it is a monster outside the rules. Measured on
+    real content before the bound: three attack rolls needing 7, in two games
+    of two hundred, against The Beast.
+    """
+    runtime, state = make_game(monsters=0, monster_deck=0, monster_slots=1)
+
+    beast = CardInstance(
+        definition=monster_definition("test.beast", health=6, roll=DICE_SIDES),
+        instance_id="monster:beast",
+        controller=None,
+        owner=None,
+    )
+    place(state, beast)
+
+    assert monster_value(state, DIFFICULTY, beast, DICE_SIDES) == DICE_SIDES
+
+    runtime.context.apply("add_modifier", [beast], stat=DIFFICULTY, amount=1)
+
+    assert monster_value(state, DIFFICULTY, beast, DICE_SIDES) == DICE_SIDES
+
+    runtime.context.apply("add_modifier", [beast], stat=DIFFICULTY, amount=5)
+
+    assert monster_value(state, DIFFICULTY, beast, DICE_SIDES) == DICE_SIDES
+
+
+def test_a_difficulty_penalty_cannot_take_it_below_one() -> None:
+    """
+    The other half of §5. A difficulty of 0 is a monster every roll hits, which
+    is what a 1 already means; below that the number stops meaning anything.
+    """
+    runtime, state = make_game(monsters=0, monster_deck=0, monster_slots=1)
+
+    weak = CardInstance(
+        definition=monster_definition("test.weak", health=1, roll=2),
+        instance_id="monster:weak",
+        controller=None,
+        owner=None,
+    )
+    place(state, weak)
+
+    runtime.context.apply("add_modifier", [weak], stat=DIFFICULTY, amount=-9)
+
+    assert monster_value(state, DIFFICULTY, weak, 2) == 1
+
+
+def test_the_bound_is_on_the_difficulty_and_not_on_every_monster_number() -> None:
+    """
+    A monster's attack is not a roll and is not bounded by the die.
+
+    Worth asserting: the bound lives where the stat is worked out, so a bound
+    written one line too wide would quietly cap how hard a monster hits.
+    """
+    runtime, state = make_game(monsters=0, monster_deck=0, monster_slots=1)
+
+    brute = CardInstance(
+        definition=monster_definition("test.brute", health=4, attack=6),
+        instance_id="monster:brute",
+        controller=None,
+        owner=None,
+    )
+    place(state, brute)
+
+    runtime.context.apply("add_modifier", [brute], stat=ATTACK_STAT, amount=3)
+
+    assert monster_value(state, ATTACK_STAT, brute, 6) == 9
+
+
+def test_an_unhittable_monster_is_hittable_again() -> None:
+    """
+    The same thing from the table's side: the fight happens and the roll that
+    matches the printed difficulty is a hit, bonus or no bonus.
+    """
+    runtime, state = armed_game([6, 6], monsters=0, monster_deck=0, monster_slots=1)
+
+    beast = CardInstance(
+        definition=monster_definition("test.beast", health=1, roll=DICE_SIDES),
+        instance_id="monster:beast",
+        controller=None,
+        owner=None,
+    )
+    place(state, beast)
+
+    runtime.submit(Command(type=CommandType.START_GAME, player=0))
+
+    runtime.context.apply("add_modifier", [beast], stat=DIFFICULTY, amount=1)
+    runtime.run()
+
+    runtime.submit(Command(type=CommandType.END_PHASE, player=0))
+
+    attack(runtime)
+
+    rolls = [
+        event
+        for event in runtime.history
+        if event.type is EventType.AFTER_ATTACK_ROLL
+    ]
+
+    assert rolls, "the attack happened"
+    assert all(event.payload["required"] == DICE_SIDES for event in rolls)
+    assert all(event.payload["hit"] for event in rolls), "a six is a hit against a six"
+    assert EventType.MONSTER_KILLED in [event.type for event in runtime.history]
+
+
+def test_a_static_that_reaches_monsters_is_bounded_too() -> None:
+    """
+    "Monsters have +1 DC" printed on a card in play, rather than a modifier
+    sitting on the monster: the same number, arrived at another way.
+    """
+    runtime, state = make_game(monsters=0, monster_deck=0, monster_slots=1)
+
+    beast = CardInstance(
+        definition=monster_definition("test.beast", health=6, roll=DICE_SIDES),
+        instance_id="monster:beast",
+        controller=None,
+        owner=None,
+    )
+    place(state, beast)
+
+    harder = make_instance(
+        make_definition(
+            "test.harder",
+            name="Everything Is Worse",
+            card_type=CardType.TREASURE,
+            statics=(Static(DIFFICULTY, 1, scope="all_monsters"),),
+        ),
+        controller=0,
+        owner=0,
+        instance_id="instance:harder",
+    )
+    state.player(0).treasures.add_top(harder)
+
+    assert monster_value(state, DIFFICULTY, beast, DICE_SIDES) == DICE_SIDES

@@ -15,7 +15,12 @@ from collections.abc import Sequence
 from typing import Any
 
 from fsme.events import EventType
-from fsme.stack import ADVANCE_TURN, StackItem, StackItemType
+from fsme.stack import (
+    ADVANCE_TURN,
+    DISCARD_TO_HAND_LIMIT,
+    StackItem,
+    StackItemType,
+)
 
 from ..context import EffectContext
 from ..errors import EffectExecutionError
@@ -64,19 +69,42 @@ def end_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     End the current turn from inside an ability.
 
     The turn ends the way it always ends — the engine's own turn-advancing
-    object goes on the stack — so everything that happens at the end of a turn
-    still happens. A card ending the turn is not a second way to end one.
+    object goes on the stack, and that object heals everybody, lets the
+    "till end of turn" bonuses lapse and passes the seat.
+
+    The discard down to the hand limit goes on with it, above it, because
+    §3.3 step 3 belongs to every turn and not only to the ones a player chose
+    to end. A turn ended by a card or by the death penalty is still a turn
+    that ended, and a player who walks away from one holding twelve cards is
+    holding two cards the rules do not let them keep.
+
+    What this does *not* do is run step 1: a turn ended this way never fires
+    the "at the end of your turn" triggers, because it never reached the end
+    phase to fire them in. That is a wider gap than this function and is
+    recorded rather than papered over here.
     """
     controller = ctx.actor
 
     if controller is None:
         controller = ctx.state.turn.active_player
 
+    seat = int(controller)
+
+    # Pushed first, so it resolves last: the seat only passes once the hand
+    # has been trimmed.
     ctx.push(
         StackItem(
             kind=StackItemType.ENGINE_EFFECT,
             label=ADVANCE_TURN,
-            controller=int(controller),
+            controller=seat,
+        )
+    )
+
+    ctx.push(
+        StackItem(
+            kind=StackItemType.ENGINE_EFFECT,
+            label=DISCARD_TO_HAND_LIMIT,
+            controller=seat,
         )
     )
 

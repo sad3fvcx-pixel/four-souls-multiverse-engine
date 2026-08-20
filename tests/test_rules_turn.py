@@ -4,8 +4,9 @@ Turn structure: start of game, phases, allowances, end of turn.
 
 from __future__ import annotations
 
-from conftest import make_game, make_instance, treasure_definition
+from conftest import make_definition, make_game, make_instance, treasure_definition
 
+from fsme.cards import Ability, CardType
 from fsme.commands import Command, CommandType
 from fsme.events import EventType
 from fsme.rules import HAND_LIMIT, STARTING_COINS, STARTING_HAND_SIZE
@@ -228,3 +229,113 @@ def test_phases_gate_what_may_be_done() -> None:
 
     assert result.rejected
     assert "loot phase" in result.reason
+
+
+def _fill_hand_to(state, seat: int, size: int) -> None:
+    """
+    Put the player's hand at exactly this many cards.
+    """
+    player = state.player(seat)
+
+    while player.hand_size < size:
+        player.hand.add_top(state.loot_deck.draw())
+
+    while player.hand_size > size:
+        state.loot_discard.add_top(player.hand.draw())
+
+
+def test_cards_drawn_during_the_end_phase_are_still_discarded() -> None:
+    """
+    §3.3 puts "at the end of your turn" effects at step 1 and the discard at
+    step 3, so a card that draws in step 1 is a card that has to be discarded
+    in step 3.
+
+    The hand is at the limit when the end phase opens, so nothing looks like it
+    needs trimming. Then a treasure triggered by the end of the turn draws two,
+    and the answer changes. Deciding how many to discard when the phase opened
+    would leave the player carrying twelve cards into somebody else's turn —
+    which is what happened, in two turns out of 4318 measured.
+    """
+    runtime, state = make_game(loot_cards=40)
+    start(runtime)
+
+    player = state.player(0)
+
+    generous = make_instance(
+        make_definition(
+            "test.parting_gift",
+            name="Parting Gift",
+            card_type=CardType.TREASURE,
+            abilities=(
+                Ability(trigger="turn_end", effects=({"draw_loot": 2},)),
+            ),
+        ),
+        controller=0,
+        owner=0,
+        instance_id="instance:parting",
+    )
+    player.treasures.add_top(generous)
+
+    _fill_hand_to(state, 0, HAND_LIMIT)
+
+    end_turn(runtime, 0)
+
+    decision = runtime.awaiting_decision
+
+    assert decision is not None, "the two cards drawn at the end have to go"
+    assert decision.player == 0
+    assert decision.minimum == 2
+    assert player.hand_size == HAND_LIMIT + 2
+
+    runtime.submit(
+        Command(type=CommandType.CHOOSE_TARGET, player=0, payload={"choices": [0, 1]})
+    )
+
+    assert player.hand_size == HAND_LIMIT
+    assert state.turn.active_player == 1
+
+
+def test_a_turn_ended_by_a_card_still_trims_the_hand() -> None:
+    """
+    A turn ended by an effect is still a turn that ended.
+
+    Nearly two turns in five end this way rather than by the active player
+    saying so — a card that ends the turn, or the death penalty, which ends the
+    active player's turn as its last clause. The hand limit belongs to all of
+    them.
+    """
+    runtime, state = make_game(loot_cards=40)
+    start(runtime)
+
+    player = state.player(0)
+    _fill_hand_to(state, 0, HAND_LIMIT + 2)
+
+    runtime.context.apply("end_turn", [])
+    runtime.run()
+
+    decision = runtime.awaiting_decision
+
+    assert decision is not None
+    assert decision.player == 0
+    assert decision.minimum == 2
+
+    runtime.submit(
+        Command(type=CommandType.CHOOSE_TARGET, player=0, payload={"choices": [0, 1]})
+    )
+
+    assert player.hand_size == HAND_LIMIT
+    assert state.turn.active_player == 1
+
+
+def test_a_hand_within_the_limit_is_not_asked_about_twice() -> None:
+    """
+    The object that asks *how many* pushes nothing when the answer is none.
+    """
+    runtime, state = make_game()
+    start(runtime)
+
+    runtime.context.apply("end_turn", [])
+    runtime.run()
+
+    assert runtime.awaiting_decision is None
+    assert state.turn.active_player == 1

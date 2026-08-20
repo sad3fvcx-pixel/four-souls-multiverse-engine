@@ -8,6 +8,37 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+- **A card could be in two places at once.** The monster area is kept twice:
+  `monster_area` is the row of slots and the truth, and `active_monsters` is
+  the face-up card of each slot, which is what the rest of the engine reads.
+  `rules.slots` is the only code allowed to write both. The effect that moves
+  cards between zones did not know that, found the view, took the monster out
+  of it and left the slot alone — so the card went into a deck *and* stayed on
+  the table, and the next sync put it back into the view too. A buried monster
+  was worse: it is in no zone at all, so it was copied into the deck and left
+  where it was. Found by tracing instance identity through whole games, in
+  five of two hundred, every one of them `Flush!` sweeping the board into the
+  monster deck. Fixed in the zone search rather than in the card: a monster now
+  leaves through the slots, which also bring back whatever it was covering.
+  `Flush!` is unchanged.
+- **A monster could be given a difficulty no die could roll.**
+  `COMPREHENSIVE_RULES.md` §5: "A roll result and a monster's difficulty are
+  never above 6 nor below 1." The roll was bounded and the difficulty was not,
+  so +1 on a monster printed at 6 asked for a 7 and made it unbeatable by
+  attacking. Three attack rolls in two games of two hundred, against The Beast.
+  The bound now lives where the stat is worked out, so everything that asks
+  what a monster needs gets the same answer; a monster's attack, which is not
+  a roll, is not bounded by the die.
+- **The hand limit was counted before the end phase had happened.**
+  §3.3 puts "at the end of your turn" effects at step 1 and the discard at step
+  3. The engine resolved them in that order but decided *how many* cards were
+  over the limit when the phase opened, so a player at ten who was then dealt
+  two by an end-of-turn trigger carried twelve into somebody else's turn. Two
+  turns in 4318. Asking how many is now its own object, resolving after
+  everything ahead of it; the ability that asks *which* is pushed only if the
+  answer is more than none. The same object goes on the stack when a card or
+  the death penalty ends a turn, which is how nearly two turns in five end and
+  where the limit was not applied at all.
 - **A deck that ran out was rebuilt too late, and only one deck knew how.**
   `COMPREHENSIVE_RULES.md` §9: "A deck that runs out is rebuilt by shuffling
   its discard pile." The engine read *runs out* as *somebody tried to draw and

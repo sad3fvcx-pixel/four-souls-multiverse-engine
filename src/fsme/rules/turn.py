@@ -202,18 +202,22 @@ class EndTurnHandler:
             )
         )
 
-        surplus = player.hand_size - HAND_LIMIT
-
-        if surplus > 0:
-            context.push(
-                StackItem(
-                    kind=StackItemType.ENGINE_EFFECT,
-                    label=DISCARD_TO_HAND_LIMIT,
-                    ability=discard_to_hand_limit(surplus),
-                    source=player.character,
-                    controller=player.player_id,
-                )
+        # No count, because there is no count yet. How many cards are over the
+        # limit is a question about the hand at the moment this resolves, and
+        # the end phase exists to let things happen in between: §3.3 puts "at
+        # the end of your turn" effects at step 1 and the discard at step 3, so
+        # a card that draws in step 1 is a card that has to be discarded in
+        # step 3. Deciding the number here would answer it before those effects
+        # had run, and a player who was at ten when the phase opened would
+        # carry away whatever they were dealt afterwards.
+        context.push(
+            StackItem(
+                kind=StackItemType.ENGINE_EFFECT,
+                label=DISCARD_TO_HAND_LIMIT,
+                source=player.character,
+                controller=player.player_id,
             )
+        )
 
         if _rooms_may_change(state):
             # Pushed last, so it resolves first: the change of rooms is offered
@@ -272,6 +276,39 @@ def change_rooms() -> Ability:
             },
         ),
         description="You may change rooms, a monster having died this turn.",
+    )
+
+
+def trim_to_hand_limit(item: StackItem, context: EffectContext) -> None:
+    """
+    Look at the hand, and ask for a discard if it is over the limit.
+
+    COMPREHENSIVE_RULES.md §3.3 step 3. Two objects rather than one because
+    they answer two different questions at two different moments: this one asks
+    *how many*, once everything ahead of it in the end phase has resolved, and
+    the ability it pushes asks the player *which*. A hand at or under the limit
+    pushes nothing and the turn passes.
+    """
+    state = context.state
+    seat = item.controller
+
+    if seat is None or not 0 <= seat < len(state.players):
+        return
+
+    player = state.player(seat)
+    surplus = player.hand_size - HAND_LIMIT
+
+    if surplus <= 0:
+        return
+
+    context.push(
+        StackItem(
+            kind=StackItemType.ENGINE_EFFECT,
+            label=DISCARD_TO_HAND_LIMIT,
+            ability=discard_to_hand_limit(surplus),
+            source=player.character,
+            controller=seat,
+        )
     )
 
 

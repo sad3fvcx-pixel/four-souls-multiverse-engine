@@ -263,6 +263,13 @@ def _destination(player: PlayerState, to: str) -> Zone[Any]:
 def _zones_holding_cards(state: GameState) -> list[Zone[Any]]:
     """
     Every zone a card could be sitting in, deck first.
+
+    The monster area is not here, and that is deliberate. It is a row of slots
+    rather than a zone, and `active_monsters` — which looks like a zone and is
+    one — is only the face-up view of that row, rebuilt from it by
+    `rules.slots.sync`. Taking a card out of the view leaves it in the slot it
+    is really in, and the next sync puts it straight back. Monsters leave
+    through `_remove_from_anywhere`, which knows to go to the slots.
     """
     zones: list[Zone[Any]] = []
 
@@ -278,7 +285,6 @@ def _zones_holding_cards(state: GameState) -> list[Zone[Any]]:
             state.treasure_discard,
             state.treasure_shop,
             state.monster_discard,
-            state.active_monsters,
             state.room_area,
             state.room_discard,
         )
@@ -310,14 +316,30 @@ def _deck_holding(state: GameState, card: Any) -> str | None:
 
 def _remove_from_anywhere(state: GameState, card: Any) -> bool:
     """
-    Take a card out of whichever zone currently holds it.
+    Take a card out of wherever it really is, and say whether it was anywhere.
+
+    Two kinds of place, because the game has two. Most cards sit in a zone and
+    are removed from it. A monster sits in a slot of the monster area, which is
+    a row of piles and not a zone at all, and it leaves through
+    `rules.slots.remove` — the one piece of code allowed to write the row and
+    the face-up view of it together. That also brings back whatever the monster
+    was covering, which is the slot's business and not this function's.
+
+    Removing a monster any other way is how a card ended up in two places at
+    once: put on the bottom of a deck by one effect, and still standing in its
+    slot because the row was never told.
     """
     for zone in _zones_holding_cards(state):
         if card in zone.cards:
             zone.cards.remove(card)
             return True
 
-    return False
+    # Imported here rather than at the top: the rules are built on the effects,
+    # so an effect reaching back into them has to do it at the moment it needs
+    # them. `damage.py` does the same for the same reason.
+    from fsme.rules.slots import remove as leave_slot
+
+    return leave_slot(state, card) is not None
 
 
 def params_depth(depth: int | None) -> int | None:

@@ -84,6 +84,7 @@ from .turn import (
     discard_to_hand_limit,
     first_seat,
     loot_step,
+    trim_to_hand_limit,
 )
 
 
@@ -119,6 +120,7 @@ def default_procedure_registry() -> ProcedureRegistry:
     registry.register(COMBAT_STRIKE, combat_strike)
     registry.register(DISCARD_PLAYED_LOOT, discard_played_loot)
     registry.register(ADVANCE_TURN, advance_turn)
+    registry.register(DISCARD_TO_HAND_LIMIT, trim_to_hand_limit)
     registry.register(LOOT_STEP_LABEL, loot_step)
 
     return registry
@@ -171,6 +173,7 @@ __all__ = [
     "DISCARD_TO_HAND_LIMIT",
     "advance_turn",
     "discard_to_hand_limit",
+    "trim_to_hand_limit",
     "DISCARD_PLAYED_LOOT",
     "combat_round",
     "default_command_registry",

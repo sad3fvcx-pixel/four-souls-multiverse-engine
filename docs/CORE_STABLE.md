@@ -67,7 +67,7 @@ inside, or a saved *report* handed to the wrong loader.
 ### It does not fall over
 
 A thousand four-player games: no crashes, no exceptions, no recursion limits,
-and **all thousand finished**. The longest ran 327 turns; the median ran 65.
+and **all thousand finished**. The longest ran 327 turns; the median ran 66.
 Before the deck-exhaustion fix six of them ran for ever.
 
 Checked in every journal entry of all thousand games, not only at the end:
@@ -118,10 +118,17 @@ skips a living player.
 
 ### Cards are conserved
 
-A card is somewhere: a deck, a discard, a hand, in play, or attached. Traced by
-instance identity through whole games. The only cards that leave are the ones
-whose own text says they leave — Lost Soul becomes a soul, and stops being a
-loot card.
+A card is in exactly one place: a deck, a discard, a hand, a shop or room slot,
+a monster slot, or somebody's play area. Traced by instance identity after
+every command of whole games, across all four decks and every card type — not
+counted, identified. The only cards that leave are the ones whose own text says
+they leave: Lost Soul becomes a soul and stops being a loot card.
+
+Measured over two hundred four-player games: no card in two places at any point
+of any of them. This claim was false until the Core Stable audit — the earlier
+census followed loot cards only, and monsters were never traced. `Flush!`, which
+sweeps the board into the monster deck, moved them there and left them standing
+in their slots as well, in five games of two hundred.
 
 ### The stack resolves in causal order
 

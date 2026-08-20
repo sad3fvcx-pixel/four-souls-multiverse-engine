@@ -23,6 +23,18 @@ Cards are implemented from their printed text, one at a time, with a test each.
 Nothing is guessed: a card whose rules the specifications do not settle is
 recorded as a gap in `PROJECT_PLAN.md` §11.5 rather than invented.
 
+## A turn ended by a card skips its end-of-turn triggers
+
+`COMPREHENSIVE_RULES.md` §3.3 step 1 says an effect that ends a turn jumps
+straight into the end phase, so the "at the end of your turn" effects still
+fire. In the engine a turn ended by a card — or by the death penalty, whose
+last clause ends the active player's turn — goes straight to passing the seat.
+Healing, the expiry of "till end of turn" bonuses and the discard down to ten
+all happen; the triggers do not, and neither does the offer to change rooms.
+
+Not rare: 1615 of 4325 measured turns end this way rather than by the active
+player saying so.
+
 ## Some pairs of cards never finish
 
 Placebo copies an item's ability; Rainbow Tapeworm becomes a copy of an item.

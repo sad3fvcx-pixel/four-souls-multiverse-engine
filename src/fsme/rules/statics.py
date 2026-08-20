@@ -30,6 +30,8 @@ from fsme.state.modifiers import (
     STATS,
 )
 
+from .constants import DICE_SIDES
+
 _CONDITIONS = ConditionEvaluator()
 """
 One evaluator, built once.
@@ -221,6 +223,18 @@ def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
     for modifier in getattr(monster, "modifiers", ()):
         if modifier.stat == stat:
             total += modifier.amount
+
+    if stat == DIFFICULTY:
+        # COMPREHENSIVE_RULES.md §5: "A roll result and a monster's difficulty
+        # are never above 6 nor below 1." The bound belongs here rather than in
+        # combat, because it is a fact about the number and not about the fight
+        # — everything that asks what a monster needs gets the same answer, and
+        # nothing has to remember to clamp it afterwards.
+        #
+        # Without it a +1 on a monster printed at 6 asks for a 7, and one die
+        # cannot roll a 7: the monster becomes unbeatable by attacking, which
+        # is not a difficulty at all.
+        return max(1, min(DICE_SIDES, total))
 
     return max(0, total)
 
