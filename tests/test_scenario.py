@@ -308,7 +308,13 @@ def test_pinning_a_character_does_not_move_the_rest_of_the_deal(
         scenario=Scenario(players=tuple(Seat(character=cid) for cid in dealt)),
     )
 
-    assert played(same, 23).to_dict() == played(ordinary, 23).to_dict()
+    # The commands and the positions, not the whole journal: the two journals
+    # differ in what they say about how the game was set up, which is the
+    # point. What must not differ is the game.
+    pinned = played(same, 23).to_dict()["entries"]
+    dealt_out = played(ordinary, 23).to_dict()["entries"]
+
+    assert pinned == dealt_out
 
 
 # ----------------------------------------------------------------------

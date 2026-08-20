@@ -31,7 +31,25 @@ from typing import Any
 
 from fsme.commands import CommandType
 
-JOURNAL_FORMAT_VERSION = "1"
+JOURNAL_FORMAT_VERSION = "2"
+"""
+The format this build writes.
+
+Two, because a journal now carries the scenario the game was set up from, and
+a build that did not know about scenarios would read one, ignore the field,
+deal an ordinary game and report a divergence it could not explain. Bumping
+turns that silent wrong answer into a refusal by name.
+"""
+
+READABLE_FORMATS = frozenset({"1", "2"})
+"""
+The formats this build can read.
+
+A version-1 journal is a journal from before scenarios existed, which means it
+has no scenario — a true statement about it, not a missing field. So it reads,
+replays and says so, and nothing anybody has already recorded is orphaned by
+the bump.
+"""
 
 
 class JournalFormatError(ValueError):
@@ -254,7 +272,43 @@ class Journal:
     characters: tuple[str, ...] = ()
 
     engine_version: str = ""
+
     content_version: str = ""
+    """
+    What content this game was dealt from: every set and its manifest version.
+
+    Empty in a journal kept before anything filled it in, and in one kept
+    without a library to ask. Its job is to let a replay that diverges say
+    *why* — the digest already proves the game came out differently, and this
+    is the first thing anybody would want to check.
+    """
+
+    scenario: Mapping[str, Any] | None = None
+    """
+    The scenario this game was set up from, written out in full.
+
+    In full, and not by reference: a record that needs a file which may since
+    have been edited is not a record. A journal is the source of truth for the
+    game it describes, so the experiment travels inside it and the original
+    `scenario.json` can be deleted without anything breaking.
+
+    ``None`` means no scenario — an ordinary game, or a journal from format 1.
+    """
+
+    scenario_digest: str = ""
+    """
+    A fingerprint of the scenario above, for telling experiments apart.
+    """
+
+    interactive_priority: bool | None = None
+    """
+    Whether the table was offered priority after every push.
+
+    It changes the game — a seed names one game per path — and until this field
+    existed replay had to work it out from what the journal contained. ``None``
+    means the journal does not say, which is every journal of format 1, and
+    replay falls back to the inference it always used.
+    """
 
     entries: list[Entry] = field(default_factory=list)
 
@@ -275,7 +329,7 @@ class Journal:
         return entry
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        written: dict[str, Any] = {
             "format": JOURNAL_FORMAT_VERSION,
             "engine": self.engine_version,
             "content": self.content_version,
@@ -286,15 +340,32 @@ class Journal:
             "entries": [entry.to_dict() for entry in self.entries],
         }
 
+        # Left out when there is nothing to say, so an ordinary game's journal
+        # does not grow three keys that all mean "no".
+        if self.scenario is not None:
+            written["scenario"] = dict(self.scenario)
+
+        if self.scenario_digest:
+            written["scenario_digest"] = self.scenario_digest
+
+        if self.interactive_priority is not None:
+            written["interactive_priority"] = self.interactive_priority
+
+        return written
+
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> Journal:
         written = str(data.get("format", ""))
 
-        if written != JOURNAL_FORMAT_VERSION:
+        if written not in READABLE_FORMATS:
+            readable = ", ".join(sorted(READABLE_FORMATS))
+
             raise JournalFormatError(
                 f"this journal is written in format {written or '?'}, "
-                f"and this engine reads format {JOURNAL_FORMAT_VERSION}"
+                f"and this engine reads {readable}"
             )
+
+        scenario = data.get("scenario")
 
         return cls(
             seed=int(data.get("seed", 0)),
@@ -302,6 +373,13 @@ class Journal:
             characters=tuple(str(name) for name in data.get("characters", ())),
             engine_version=str(data.get("engine", "")),
             content_version=str(data.get("content", "")),
+            scenario=None if scenario is None else dict(scenario),
+            scenario_digest=str(data.get("scenario_digest", "")),
+            interactive_priority=(
+                None
+                if data.get("interactive_priority") is None
+                else bool(data["interactive_priority"])
+            ),
             entries=[Entry.from_dict(entry) for entry in data.get("entries", ())],
             outcome=dict(data.get("outcome", {})),
         )

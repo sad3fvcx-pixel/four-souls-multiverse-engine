@@ -22,6 +22,7 @@ from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary
 from fsme.game import Game
 from fsme.replay import state_digest
+from fsme.scenario import Scenario, parse
 
 from .entry import Journal
 
@@ -96,26 +97,33 @@ def replay_journal(
     which is what makes a game saved from Watch openable by ``fsme replay`` —
     it was not, and the two shipped features could not be used together.
 
-    ``interactive_priority`` left unset is worked out from the journal. It has
-    to match how the game was played or the positions differ from the first
-    command: an interactive game opens a window after every push and records
-    the passes that close it, and replaying those into a game that never opens
-    one is replaying a different game. The journal does not say which it was —
-    that is the honest gap here, and recording it belongs with the rest of the
-    journal work — so it is read off what the journal contains. Pass an
-    explicit value to override the reading.
+    ``interactive_priority`` has to match how the game was played or the
+    positions differ from the first command: an interactive game opens a window
+    after every push and records the passes that close it, and replaying those
+    into a game that never opens one is replaying a different game. A journal
+    of format 2 says which it was and is believed. An older one does not, and
+    is read the way it always was — from whether it records a deal or holds a
+    pass — which is inference and is marked as inference where it is made.
+
+    **The scenario comes out of the journal, never from a file.** A journal is
+    the record of one game, and a record that needed an external file which may
+    since have been edited would not be one: an experiment saved today has to
+    replay next year with nothing beside it. A journal written before scenarios
+    existed has none, which is a true statement about it rather than a missing
+    field, and it replays as the ordinary game it was.
     """
     if interactive_priority is None:
-        interactive_priority = _was_interactive(journal)
+        interactive_priority = how_it_was_played(journal)
 
     game = Game.from_content(
         library,
         list(journal.players),
         seed=journal.seed,
         interactive_priority=interactive_priority,
+        scenario=scenario_of(journal),
     )
 
-    if not _deals_itself(journal):
+    if not deals_itself(journal):
         game.start()
 
     played = 0
@@ -162,7 +170,7 @@ def replay_journal(
     return Playback(game=game, replayed=played)
 
 
-def _deals_itself(journal: Journal) -> bool:
+def deals_itself(journal: Journal) -> bool:
     """
     Whether this journal records the deal as its own first command.
 
@@ -172,6 +180,33 @@ def _deals_itself(journal: Journal) -> bool:
     return bool(journal.entries) and (
         journal.entries[0].command == str(CommandType.START_GAME)
     )
+
+
+def scenario_of(journal: Journal) -> Scenario | None:
+    """
+    The scenario this journal was played under, read back out of it.
+
+    Parsed rather than trusted. The snapshot in a journal is data somebody may
+    have edited, and a scenario that no longer validates should be refused by
+    name here rather than dealt as something nobody wrote.
+    """
+    if journal.scenario is None:
+        return None
+
+    return parse(journal.scenario, where="the scenario recorded in this journal")
+
+
+def how_it_was_played(journal: Journal) -> bool:
+    """
+    Whether the game offered priority to the table.
+
+    Believed when the journal says so, inferred when it does not. A journal of
+    format 1 predates the field; everything written since carries it.
+    """
+    if journal.interactive_priority is not None:
+        return journal.interactive_priority
+
+    return _was_interactive(journal)
 
 
 def _was_interactive(journal: Journal) -> bool:
@@ -187,7 +222,7 @@ def _was_interactive(journal: Journal) -> bool:
     inference, and it is written down as inference so that the day it is wrong
     somebody knows where to look.
     """
-    if _deals_itself(journal):
+    if deals_itself(journal):
         return True
 
     passing = str(CommandType.PASS_PRIORITY)

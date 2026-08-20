@@ -22,6 +22,7 @@ from fsme.content import ContentLibrary, ContentLoader
 from fsme.game import Game
 from fsme.journal import Journal, JournalKeeper
 from fsme.runtime.vocabulary import engine_vocabulary
+from fsme.scenario import Scenario
 
 from .moves import legal_moves
 from .view import events, snapshot
@@ -49,6 +50,7 @@ class Session:
         seed: int = 0,
         interactive_priority: bool = True,
         names: list[str] | None = None,
+        scenario: Scenario | None = None,
     ) -> None:
         if not 2 <= players <= len(DEFAULT_PLAYERS):
             raise ValueError(
@@ -58,8 +60,12 @@ class Session:
         self._library = library
         self._players = players
         self._seed = seed
+        self._scenario = scenario
         self._interactive = interactive_priority
         self._names = list(names or DEFAULT_PLAYERS[:players])
+
+        if scenario is not None and scenario.interactive_priority is not None:
+            self._interactive = scenario.interactive_priority
 
         self._game = self._new_game()
 
@@ -69,6 +75,7 @@ class Session:
             self._names,
             seed=self._seed,
             interactive_priority=self._interactive,
+            scenario=self._scenario,
         )
 
         # The keeper is built before the deal rather than after it, so that the
@@ -100,9 +107,19 @@ class Session:
         """
         return self._keeper.journal
 
+    @property
+    def scenario(self) -> Scenario | None:
+        """
+        The experiment this session is running, if it is running one.
+        """
+        return self._scenario
+
     def restart(self, *, seed: int | None = None, players: int | None = None) -> None:
         """
         Throw the game away and deal another one.
+
+        The scenario stays: restarting is dealing the same experiment again,
+        not leaving it.
         """
         if seed is not None:
             self._seed = int(seed)

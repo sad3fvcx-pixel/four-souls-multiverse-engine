@@ -67,6 +67,8 @@ class Game:
         seed: int | None = None,
         interactive_priority: bool = False,
         rng: RNG | None = None,
+        scenario: Scenario | None = None,
+        content_version: str = "",
     ) -> None:
         game_state = state if state is not None else GameState()
 
@@ -79,6 +81,14 @@ class Game:
             rng=rng if rng is not None else RNG(game_state.seed),
             interactive_priority=interactive_priority,
         )
+
+        # How this game was set up, kept so that whoever writes it down does
+        # not have to be told twice. It is provenance and not state: nothing
+        # reads it to decide anything, the rules never see it, and it is not
+        # in GameState because it is not part of the position.
+        self._scenario = scenario
+        self._content_version = content_version
+        self._interactive_priority = interactive_priority
 
     @classmethod
     def from_content(
@@ -123,6 +133,8 @@ class Game:
             cards=chosen.registry(),
             interactive_priority=interactive_priority,
             rng=rng,
+            scenario=scenario,
+            content_version=chosen.identity(),
         )
 
     def save(self, *, engine_version: str = "") -> dict[str, Any]:
@@ -173,6 +185,27 @@ class Game:
             interactive_priority=interactive_priority,
             rng=rng,
         )
+
+    @property
+    def scenario(self) -> Scenario | None:
+        """
+        The scenario this game was set up from, if it was set up from one.
+        """
+        return self._scenario
+
+    @property
+    def content_version(self) -> str:
+        """
+        What content this game was dealt from.
+        """
+        return self._content_version
+
+    @property
+    def interactive_priority(self) -> bool:
+        """
+        Whether the table is offered priority after every push.
+        """
+        return self._interactive_priority
 
     @property
     def runtime(self) -> Runtime:

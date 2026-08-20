@@ -24,6 +24,8 @@ from fsme.api import Session, load_content
 from fsme.content import ContentLibrary
 from fsme.content.errors import InvalidContentError
 from fsme.journal import JournalFormatError
+from fsme.scenario import Scenario
+from fsme.scenario import load as read_scenario
 
 DEFAULT_NAMES = ("Ann", "Bo", "Cy", "Di")
 
@@ -103,17 +105,49 @@ def library(args: argparse.Namespace) -> ContentLibrary:
     return load_content(content_root(args.content))
 
 
+def experiment(args: argparse.Namespace) -> Scenario | None:
+    """
+    The scenario a command was pointed at, if it was pointed at one.
+
+    Read once, here, so that every command that can take one refuses a bad file
+    the same way and at the same moment — before anything is loaded or dealt.
+    """
+    named = getattr(args, "scenario", None)
+
+    if not named:
+        return None
+
+    return read_scenario(Path(named).expanduser())
+
+
+def seed_of(args: argparse.Namespace, scenario: Scenario | None) -> int:
+    """
+    Which seed to deal from.
+
+    An explicit ``--seed`` wins, because somebody typing a number means it. A
+    scenario's seed is what it falls back to. The default is 0, and a scenario
+    that names one is the only reason it would not be.
+    """
+    if args.seed or scenario is None or scenario.seed is None:
+        return int(args.seed)
+
+    return int(scenario.seed)
+
+
 def serve(args: argparse.Namespace) -> int:
     """
     Put one game behind a local web page.
     """
     from fsme.web import serve as build
 
+    plan = experiment(args)
+
     session = Session(
         library(args),
         players=args.players,
-        seed=args.seed,
+        seed=seed_of(args, plan),
         interactive_priority=not args.no_priority,
+        scenario=plan,
     )
 
     server = _bound(lambda: build(session, host=args.host, port=args.port), args)
@@ -213,14 +247,16 @@ def play(args: argparse.Namespace) -> int:
     from fsme.lab.simulation import play_one
 
     thinking = seats_of(args.bot_seats)
+    plan = experiment(args)
 
     journal, game = play_one(
         library(args),
-        args.seed,
+        seed_of(args, plan),
         args.players,
         steps=args.steps,
         offers=bool(args.journal and args.offers),
         thinking_seats=thinking,
+        scenario=plan,
     )
 
     state = game.state
@@ -336,6 +372,7 @@ def study(args: argparse.Namespace) -> int:
     from fsme.lab.analysis import written
     from fsme.lab.simulation import run_on_many_cores
 
+    plan = experiment(args)
     loaded = library(args)
     names = {
         definition.id: definition.name for definition in loaded.definitions()
@@ -351,9 +388,10 @@ def study(args: argparse.Namespace) -> int:
         args.games,
         args.players,
         jobs=max(1, args.jobs),
-        first_seed=args.seed,
+        first_seed=seed_of(args, plan),
         offers=True,
         thinking_seats=seats_of(args.bot_seats),
+        scenario=None if plan is None else plan.to_dict(),
     ):
         if done.broke:
             broken.append((done.seed, done.broke))
@@ -449,6 +487,7 @@ def simulate(args: argparse.Namespace) -> int:
         )
 
     thinking = seats_of(args.bot_seats)
+    plan = experiment(args)
 
     if args.jobs > 1:
         from fsme.lab.simulation import run_on_many_cores
@@ -458,10 +497,11 @@ def simulate(args: argparse.Namespace) -> int:
             args.games,
             args.players,
             jobs=args.jobs,
-            first_seed=args.seed,
+            first_seed=seed_of(args, plan),
             offers=args.offers,
             journals_into=into,
             thinking_seats=thinking,
+            scenario=None if plan is None else plan.to_dict(),
         ):
             tally.merge(done.tally)
     else:
@@ -469,10 +509,11 @@ def simulate(args: argparse.Namespace) -> int:
             library(args),
             args.games,
             args.players,
-            first_seed=args.seed,
+            first_seed=seed_of(args, plan),
             offers=args.offers,
             journals_into=into,
             thinking_seats=thinking,
+            scenario=plan,
             watching=tick,
         ):
             tally.add(outcome.journal)
@@ -988,8 +1029,22 @@ def build_parser() -> argparse.ArgumentParser:
         sub.add_argument("--seed", type=int, default=0, help="deal this game")
         sub.add_argument("--players", type=int, default=2, help="how many seats")
 
+    def experimental(sub: argparse.ArgumentParser) -> None:
+        """
+        The flag goes only on the commands that deal a new game.
+
+        `show`, `cards`, `replay` and `report` work from a journal, which
+        already carries the scenario it was played under. A flag they accepted
+        and ignored would be worse than one they do not have.
+        """
+        sub.add_argument(
+            "--scenario",
+            help="a scenario file describing the experiment to set up",
+        )
+
     web = commands.add_parser("serve")
     shared(web)
+    experimental(web)
     web.add_argument("--host", default="127.0.0.1")
     web.add_argument("--port", type=int, default=8000)
     web.add_argument("--open", action="store_true", help="open a browser too")
@@ -1002,6 +1057,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     quick = commands.add_parser("play")
     shared(quick)
+    experimental(quick)
     quick.add_argument("--steps", type=int, default=5000)
     quick.add_argument("--journal", help="write the whole game down to this file")
     quick.add_argument(
@@ -1031,6 +1087,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     many = commands.add_parser("simulate")
     shared(many)
+    experimental(many)
     many.add_argument("--games", type=int, default=100, help="how many to play")
     many.add_argument("--top", type=int, default=15, help="rows per table")
     many.add_argument("--journals", help="write every journal into this directory")
@@ -1069,6 +1126,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     asking = commands.add_parser("study")
     shared(asking)
+    experimental(asking)
     asking.add_argument("--games", type=int, default=100)
     asking.add_argument("--top", type=int, default=10)
     asking.add_argument("--jobs", type=int, default=1)

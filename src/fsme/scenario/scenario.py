@@ -23,6 +23,8 @@ today, which is the property the whole engine's regression suite depends on.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import Any
@@ -255,6 +257,27 @@ class Scenario:
             written["players"] = [seat.to_dict() for seat in self.players]
 
         return written
+
+
+def digest_of(scenario: Scenario | None) -> str:
+    """
+    A short fingerprint of what a scenario asks for.
+
+    Over the written form rather than the object, and with the keys sorted, so
+    two scenarios that ask for the same thing fingerprint the same however they
+    were built or spelled. ``""`` for no scenario, which is the same answer as
+    for a scenario that asks for nothing — because they are the same game.
+
+    What it is for: telling two experiments apart at a glance, and noticing
+    that a journal's inlined scenario has been edited since. It is not a
+    security measure and is not meant as one.
+    """
+    if scenario is None or scenario.is_empty:
+        return ""
+
+    written = json.dumps(scenario.to_dict(), sort_keys=True, separators=(",", ":"))
+
+    return hashlib.sha256(written.encode("utf-8")).hexdigest()[:16]
 
 
 def _seat(data: Mapping[str, Any]) -> Seat:

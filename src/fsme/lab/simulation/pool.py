@@ -18,10 +18,11 @@ from __future__ import annotations
 
 import multiprocessing
 import threading
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from fsme.lab.analysis import GameSummary, Tally
 
@@ -30,6 +31,7 @@ from .runner import DEFAULT_STEPS, play_one
 _library = None
 _root: Path | None = None
 _drop: frozenset[str] = frozenset()
+_scenario: Any = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,19 +69,31 @@ class Finished:
     """
 
 
-def _prepare(root: str, drop: tuple[str, ...]) -> None:
+def _prepare(
+    root: str,
+    drop: tuple[str, ...],
+    scenario: Mapping[str, Any] | None = None,
+) -> None:
     """
     Load the content once per worker.
 
     A worker plays many games and the library never changes, so loading it
     per game would cost more than the games do.
+
+    The scenario crosses as the plain data it was read from, never as an
+    object: what goes through a process boundary is pickled, and a
+    configuration that had to be reconstructible rather than merely readable
+    would be a configuration that could arrive subtly different in each worker.
+    It is parsed here, in the worker, by the same loader that read the file.
     """
-    global _library, _root, _drop
+    global _library, _root, _drop, _scenario
 
     from fsme.api import load_content
+    from fsme.scenario import parse
 
     _root = Path(root)
     _drop = frozenset(drop)
+    _scenario = None if scenario is None else parse(dict(scenario))
 
     loaded = load_content(_root)
 
@@ -103,6 +117,7 @@ def _one(work: tuple[int, int, int, str | None, bool, tuple[int, ...]]) -> Finis
             steps=steps,
             offers=offers,
             thinking_seats=thinking_seats,
+            scenario=_scenario,
         )
     except Exception as error:  # noqa: BLE001 - a game that falls over is data
         return Finished(
@@ -146,6 +161,7 @@ def run_on_many_cores(
     journals_into: Path | None = None,
     without: tuple[str, ...] = (),
     thinking_seats: tuple[int, ...] = (),
+    scenario: Mapping[str, Any] | None = None,
 ) -> Iterator[Finished]:
     """
     Play a run across several processes, yielding each game as it finishes.
@@ -174,7 +190,7 @@ def run_on_many_cores(
         max_workers=max(1, jobs),
         mp_context=None if how is None else multiprocessing.get_context(how),
         initializer=_prepare,
-        initargs=(str(root), tuple(without)),
+        initargs=(str(root), tuple(without), None if scenario is None else dict(scenario)),
     ) as pool:
         yield from pool.map(_one, work, chunksize=_chunk(games, jobs))
 

@@ -8,6 +8,44 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+- **An experiment is reproducible from its journal alone.** A game set up from
+  a scenario now records that scenario inside its journal — in full, not by
+  reference — with a fingerprint of it, which content it was dealt from, and
+  whether the table was offered priority. The file the experiment was written
+  in can be deleted, or edited into something else, and the game still replays:
+  the test overwrites it with a *different* scenario first, because a replay
+  quietly reaching for the file would come back with the wrong answer rather
+  than no answer.
+
+  **`JOURNAL_FORMAT_VERSION` is `"2"`, and format 1 still reads.** A version-1
+  journal is one from before scenarios existed, which means it has none — a
+  true statement about it rather than a missing field — so it loads, replays,
+  and says so. A format this build does not know is refused by number, naming
+  the ones it reads. Nothing anybody has already recorded is orphaned, and no
+  older build can silently misread a newer journal.
+
+  Replay stops guessing. It took the scenario from nowhere and worked out
+  interactive priority from whether the journal recorded a deal; it now reads
+  both, and the inference survives only as the fallback for format 1.
+
+  The scenario reaches Watch (`Session`), Study (`play_one`, and the worker
+  pool as plain data across the process boundary, parsed again on the far
+  side), and the analysers. `--scenario FILE` is on `serve`, `play`, `simulate`
+  and `study` — the four commands that deal a new game. `show`, `cards`,
+  `replay` and `report` do not take it and must not: they work from a journal,
+  which already carries it.
+
+  One thing was fixed along the way rather than on purpose. `risks()` — what
+  `fsme report` uses — dealt the game itself and then met the journal's own
+  `start_game`, so a journal kept by Watch produced nothing at all: `faithful`
+  false, nothing weighed. It reads the journal the way replay does now, and the
+  same game gives 642 weighed decisions of 652 commands.
+
+  An empty scenario records nothing, because an empty scenario is not an
+  experiment: it deals the game FSME deals anyway, so two records of the same
+  game would otherwise differ. Verified again that ordinary games did not move:
+  the thousand-game run repeated and diffed against the run taken before any of
+  this work — 0 of 1000 changed.
 - **A game can be set up from a file.** `fsme/scenario/` holds a scenario: the
   configuration a game starts from, as plain data with no behaviour and no
   knowledge of the engine. Which sets are in the decks, which cards are left

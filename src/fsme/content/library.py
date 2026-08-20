@@ -174,6 +174,27 @@ class ContentLibrary:
                         f"which is not loaded"
                     )
 
+    def identity(self) -> str:
+        """
+        What this library is, in one line, for a record to keep.
+
+        Every set and the version its manifest claims, in a fixed order:
+        ``base_game@1.0.0,requiem@1.2.0``. Not a hash of the cards — a
+        fingerprint over a thousand definitions would be exact and would say
+        nothing a person could act on, and the manifest version is the number
+        whoever ships a set is already responsible for.
+
+        Written into a journal so that a game replayed against different
+        content can be told *why* it diverged rather than only that it did.
+        Two libraries with the same identity are not proven identical; two with
+        different ones are proven different, which is the half that matters
+        when somebody is looking for the reason.
+        """
+        return ",".join(
+            f"{name}@{self.expansions[name].manifest.version}"
+            for name in sorted(self.expansions)
+        )
+
     def registry(self) -> CardRegistry:
         """
         Build the card registry a game plays with.

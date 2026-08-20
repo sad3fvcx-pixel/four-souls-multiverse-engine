@@ -11,7 +11,16 @@ from __future__ import annotations
 
 from .errors import ScenarioError
 from .file import load, parse, save, validate
-from .scenario import FORMAT, VERSION, Content, Scenario, Seat, Table, from_dict
+from .scenario import (
+    FORMAT,
+    VERSION,
+    Content,
+    Scenario,
+    Seat,
+    Table,
+    digest_of,
+    from_dict,
+)
 
 __all__ = [
     "Content",
@@ -21,6 +30,7 @@ __all__ = [
     "Seat",
     "Table",
     "VERSION",
+    "digest_of",
     "from_dict",
     "load",
     "parse",

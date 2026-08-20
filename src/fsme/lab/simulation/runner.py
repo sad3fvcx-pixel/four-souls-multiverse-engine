@@ -25,6 +25,7 @@ from fsme.content import ContentLibrary
 from fsme.game import Game
 from fsme.journal import Journal, JournalKeeper
 from fsme.lab.bot import HeuristicBot
+from fsme.scenario import Scenario
 
 from .agent import ScriptedAgent
 
@@ -85,6 +86,7 @@ def play_one(
     steps: int = DEFAULT_STEPS,
     offers: bool = False,
     thinking_seats: tuple[int, ...] = (),
+    scenario: Scenario | None = None,
 ) -> tuple[Journal, Game]:
     """
     Play one game to its end, keeping a journal of it.
@@ -92,8 +94,15 @@ def play_one(
     ``thinking_seats`` names the seats played by the heuristic bot; the rest
     choose at random. A table of both is how a bot is measured — the same game,
     the same rules, and the only difference at the table being who is thinking.
+
+    ``scenario`` is the experiment. The seed still comes from the caller and
+    not from the scenario: a run over a thousand games is one scenario and a
+    thousand seeds, so a seed folded into the scenario would make the run
+    meaningless.
     """
-    game = Game.from_content(library, list(NAMES[:players]), seed=seed)
+    game = Game.from_content(
+        library, list(NAMES[:players]), seed=seed, scenario=scenario
+    )
 
     game.start()
 
@@ -169,6 +178,7 @@ def run(
     offers: bool = False,
     journals_into: Path | None = None,
     thinking_seats: tuple[int, ...] = (),
+    scenario: Scenario | None = None,
     watching: Callable[[Progress], None] | None = None,
 ) -> Iterator[Outcome]:
     """
@@ -194,6 +204,7 @@ def run(
             steps=steps,
             offers=offers,
             thinking_seats=thinking_seats,
+            scenario=scenario,
         )
 
         finished = bool(game.state.game_over)

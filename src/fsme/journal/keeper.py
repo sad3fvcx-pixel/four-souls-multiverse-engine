@@ -47,12 +47,26 @@ class JournalKeeper:
         game: Game,
         *,
         offers: Offers | None = None,
-        content_version: str = "",
+        content_version: str | None = None,
     ) -> None:
         from fsme import __version__
+        from fsme.scenario import digest_of
 
         self._game = game
         self._offers = offers
+
+        # Read off the game rather than asked for. A keeper is built in three
+        # places and a game already knows how it was set up; making each caller
+        # remember to hand the same two facts over is how they come to differ.
+        #
+        # A scenario that asks for nothing is not recorded, because it is not
+        # an experiment: an empty scenario deals the game FSME deals anyway, so
+        # a journal that noted one would say a game was configured when it was
+        # not, and two records of the same game would differ.
+        scenario = game.scenario
+
+        if scenario is not None and scenario.is_empty:
+            scenario = None
 
         self._journal = Journal(
             seed=game.state.seed,
@@ -61,7 +75,12 @@ class JournalKeeper:
                 str(getattr(player.character, "name", "")) for player in game.state.players
             ),
             engine_version=__version__,
-            content_version=content_version,
+            content_version=(
+                game.content_version if content_version is None else content_version
+            ),
+            scenario=None if scenario is None else scenario.to_dict(),
+            scenario_digest=digest_of(scenario),
+            interactive_priority=game.interactive_priority,
         )
 
     @property

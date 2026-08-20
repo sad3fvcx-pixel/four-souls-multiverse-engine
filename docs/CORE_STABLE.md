@@ -47,6 +47,31 @@ fingerprints. And more than the fingerprints: each journal was replayed a
 second time with a keeper attached and the two journals compared event by
 event, every field of every event, not only the digest.
 
+### An experiment is reproducible from its journal alone
+
+A game set up from a scenario records that scenario **inside** its journal —
+in full, not by reference — along with a fingerprint of it, which content it
+was dealt from, and whether the table was offered priority.
+
+So the file the experiment was written in can be deleted, or edited into
+something else, and the game still replays. Measured that way rather than
+described: the scenario is written to a file, the game is set up from what was
+read back, the journal is saved, the file is overwritten with a *different*
+scenario, and the journal replays faithfully from itself. A replay that
+quietly reached for the file would come back with the wrong answer rather than
+no answer, which is why the test replaces the file instead of deleting it.
+
+Two experiments on one seed are two games and fingerprint differently; one
+experiment on one seed is one game, compared journal against journal.
+
+**Scenario is not Save, and the difference is worth holding on to.** A
+*scenario* is the configuration a game starts from — which sets are in the
+decks, who sits where, what the table is worth winning. A *save* is a position:
+every card in every zone, whose turn it is, what is on the stack, and it exists
+so a game can be continued. A *journal* is the history of one particular game.
+Every request to add "one more thing the game starts with" to a scenario is a
+request to reinvent the save format inside it.
+
 ### The journal
 
 Every accepted command, in order, with the position it was made from, every
@@ -64,6 +89,11 @@ serialised data field by field, not on anything rendered from it: order of
 events, indexes, `controller`, `actor`, `source`, `targets`, payloads, seed,
 players, format. Verified on games from 35 to 978 commands, including ones with
 purchases, deaths, revivals and 11876 events.
+
+Two journal formats are readable: format 2, which carries the scenario a game
+was set up from, and format 1, which predates scenarios and therefore has none
+— a true statement about such a journal rather than a missing field. A format
+this build does not know is refused by number, saying which ones it reads.
 
 Two file shapes are both readable: the journal written bare, and the journal
 inside an `fsme-journal` envelope. A file that is not one of ours is refused by
@@ -212,13 +242,13 @@ This has already misled one audit — a monster that killed a player during the
 deal produced a journal with a revival and no death in it. Unifying the two is
 on the list; it is deferred because it moves every number ever measured.
 
-### The journal does not record how the game was played
+### A journal from before format 2 does not say how it was played
 
-Interactive priority changes the game, and the journal does not say whether it
-was on. Replay works it out from what the journal contains — a game that
-records the deal, or that contains a pass, was interactive — which is inference
-and is marked as inference in the code. A journal produced some third way could
-be replayed under the wrong assumption.
+Interactive priority changes the game. Journals of format 2 record it and are
+believed; a format-1 journal predates the field, and replay works it out from
+what the journal contains — a game that records the deal, or that contains a
+pass, was interactive. That inference is marked as inference in the code, and
+it is now the fallback rather than the rule.
 
 ### Most cards do nothing
 
@@ -283,8 +313,14 @@ and Four Souls and it is a content gap, not an engine one — see
 Both are complete records of what they cover and both replay, but they are not
 directly comparable, and unifying them moves every number ever measured.
 
-**Recording how a game was played.** The journal does not say whether
-interactive priority was on; replay infers it. A field would end the inference.
+**Per-seat openings.** A scenario asks for the opening hand and cents per
+seat, because "what if one player starts rich" is a question worth asking. This
+build deals one opening to the whole table and refuses a scenario whose seats
+disagree, rather than half-honouring it. The format keeps the shape it needs.
+
+**A scenario library.** Scenarios are files; nothing yet keeps, names or lists
+them, and nothing hashes one so that a study can cite the experiment it ran
+under. That is the next thing worth building on this, and it is not built.
 
 Everything else that has been considered is in [NEXT.md](NEXT.md), which is a
 list of directions rather than a plan.

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from .entry import (
     JOURNAL_FORMAT_VERSION,
+    READABLE_FORMATS,
     Entry,
     Happening,
     Journal,
@@ -35,6 +36,7 @@ __all__ = [
     "Entry",
     "Happening",
     "JOURNAL_FORMAT_VERSION",
+    "READABLE_FORMATS",
     "Journal",
     "JournalFormatError",
     "JournalKeeper",

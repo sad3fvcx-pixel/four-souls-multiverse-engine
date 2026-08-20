@@ -41,6 +41,7 @@ from fsme.commands import Command
 from fsme.content import ContentLibrary
 from fsme.game import Game
 from fsme.journal import Journal
+from fsme.journal.replay import deals_itself, how_it_was_played, scenario_of
 from fsme.lab.bot import HeuristicBot
 from fsme.lab.bot.evaluation import Evaluation, Reason
 
@@ -237,8 +238,21 @@ def risks(
 
     told = Risks(seed=journal.seed, by=bot.name, bot_seats=_who_thought(journal))
 
-    game = Game.from_content(library, list(journal.players), seed=journal.seed)
-    game.start()
+    # Rebuilt the way replay rebuilds it, and for the same reasons: the
+    # scenario comes out of the journal, and the deal is done here only when
+    # the journal does not record one. Dealing unconditionally meant a journal
+    # kept by a Session — which records the deal as its first command — had its
+    # own `start_game` refused, and nothing could be weighed at all.
+    game = Game.from_content(
+        library,
+        list(journal.players),
+        seed=journal.seed,
+        interactive_priority=how_it_was_played(journal),
+        scenario=scenario_of(journal),
+    )
+
+    if not deals_itself(journal):
+        game.start()
 
     weighed: list[Risky] = []
 
