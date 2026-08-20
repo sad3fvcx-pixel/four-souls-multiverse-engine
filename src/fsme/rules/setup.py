@@ -70,8 +70,6 @@ def new_game(
         shop_slots=_number(wanted.table.shop_slots, shop_slots),
     )
 
-    _deal_resources(state, wanted)
-
     rng = RNG(seed)
 
     index = _index(library)
@@ -93,57 +91,6 @@ def _number(asked: int | None, otherwise: int) -> int:
     What a scenario asked for, or what the caller wanted.
     """
     return otherwise if asked is None else int(asked)
-
-
-def _deal_resources(state: GameState, scenario: Scenario) -> None:
-    """
-    Set the opening hand and cents this game will deal.
-
-    The scenario format asks for these per seat, because "what if one player
-    starts rich" is a question somebody will want. This build deals one opening
-    to the whole table — `start_game` reads two numbers off the game — so a
-    scenario whose seats disagree is refused rather than half-honoured. The
-    format keeps the shape; the engine will grow into it.
-
-    Refused in two places on purpose: the scenario loader says it in a sentence
-    somebody reading a file can act on, and this says it again for a scenario
-    built in code, which never went through the loader.
-    """
-    state.starting_coins = _one_number(
-        [seat.coins for seat in scenario.players],
-        state.starting_coins,
-        "coins",
-    )
-    state.starting_hand = _one_number(
-        [seat.loot for seat in scenario.players],
-        state.starting_hand,
-        "loot",
-    )
-
-
-def _one_number(asked: list[int | None], otherwise: int, what: str) -> int:
-    """
-    The one number every seat asked for, or the one the game already had.
-    """
-    named = {value for value in asked if value is not None}
-
-    if not named:
-        return otherwise
-
-    if len(named) > 1:
-        raise SetupError(
-            f"this scenario deals {what} of "
-            f"{', '.join(str(value) for value in sorted(named))} to different "
-            f"seats, and this build deals the same opening to the whole table"
-        )
-
-    if len(asked) != len(named) and any(value is None for value in asked):
-        raise SetupError(
-            f"this scenario names the opening {what} for some seats and not "
-            f"others, and this build deals the same opening to the whole table"
-        )
-
-    return named.pop()
 
 
 def _index(library: ContentLibrary) -> dict[CardType, list[CardDefinition]]:
@@ -301,6 +248,8 @@ def _seat_players(
             hp=health,
             max_hp=health,
             character=character,
+            starting_coins=asked.coins,
+            starting_hand=asked.loot,
         )
 
         state.add_player(player)

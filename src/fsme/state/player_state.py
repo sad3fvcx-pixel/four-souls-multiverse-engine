@@ -28,6 +28,22 @@ class PlayerState:
     max_hp: int = 2
     pennies: int = 0
 
+    starting_coins: int | None = None
+    starting_hand: int | None = None
+    """
+    What this seat is dealt when the game starts, when it is dealt something
+    of its own.
+
+    ``None`` — which is every seat of an ordinary game — means whatever the
+    table deals, which the game carries. A number here is a scenario asking
+    for one player to start differently from the others, and it is a field on
+    the player for the same reason hit points are: it is a fact about a seat,
+    and a fact about a seat has nowhere else to live.
+
+    Read by ``start_game`` and by nothing after it, so a save that predates
+    them reloads into exactly the game it was.
+    """
+
     attacks_left: int = 1
     purchases_left: int = 1
     additional_loot_plays: int = 0

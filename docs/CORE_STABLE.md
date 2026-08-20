@@ -64,13 +64,39 @@ no answer, which is why the test replaces the file instead of deleting it.
 Two experiments on one seed are two games and fingerprint differently; one
 experiment on one seed is one game, compared journal against journal.
 
-**Scenario is not Save, and the difference is worth holding on to.** A
-*scenario* is the configuration a game starts from — which sets are in the
-decks, who sits where, what the table is worth winning. A *save* is a position:
-every card in every zone, whose turn it is, what is on the stack, and it exists
-so a game can be continued. A *journal* is the history of one particular game.
+**Scenario is not Save, and the difference is worth holding on to.**
+
+| | what it is | what it is for |
+|---|---|---|
+| **Scenario** | the configuration a game starts from — which sets are in the decks, who sits where, what each seat opens with, what the table is worth winning | setting up an experiment, before any game exists |
+| **Save** | a position: every card in every zone, whose turn it is, what is on the stack, where the generator stands | continuing one game from the middle |
+| **Journal** | the history of one particular game: every command, every event, a fingerprint after each, and the scenario it was set up from | reading a game, replaying it, counting across thousands |
+
 Every request to add "one more thing the game starts with" to a scenario is a
 request to reinvent the save format inside it.
+
+**The lifecycle.**
+
+```
+scenario.json          written by hand, or taken from a folder of them
+      │                `fsme scenario validate` checks it before a long run
+      ▼
+Game.from_content(scenario=)     Watch · Study · one game
+      │
+      ▼
+journal.json           carries the scenario in full, its fingerprint, the
+      │                content it was dealt from, and how it was played
+      ▼
+replay · report        from the journal alone; the scenario file, and the
+                       whole folder it came from, may be gone
+```
+
+**Two identifiers, because two questions get asked.** A scenario's `id` names
+the experiment somebody is maintaining and survives being edited — renaming a
+study does not make it a different study. Its digest identifies the
+configuration and is taken over what reaches the engine, so renaming or
+reseeding leaves it alone and changing the setup always moves it. A journal
+records both, and needs neither to replay.
 
 ### The journal
 
@@ -313,14 +339,10 @@ and Four Souls and it is a content gap, not an engine one — see
 Both are complete records of what they cover and both replay, but they are not
 directly comparable, and unifying them moves every number ever measured.
 
-**Per-seat openings.** A scenario asks for the opening hand and cents per
-seat, because "what if one player starts rich" is a question worth asking. This
-build deals one opening to the whole table and refuses a scenario whose seats
-disagree, rather than half-honouring it. The format keeps the shape it needs.
-
-**A scenario library.** Scenarios are files; nothing yet keeps, names or lists
-them, and nothing hashes one so that a study can cite the experiment it ran
-under. That is the next thing worth building on this, and it is not built.
+**Custom cards.** They already load and play — a folder with a manifest and
+card files is an expansion, and a scenario can name it — but nothing tells
+anybody that, and two people's `my_set` collide. Naming is the design decision,
+and it gets much more expensive after people have made sets.
 
 Everything else that has been considered is in [NEXT.md](NEXT.md), which is a
 list of directions rather than a plan.

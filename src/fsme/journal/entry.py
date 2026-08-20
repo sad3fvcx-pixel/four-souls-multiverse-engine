@@ -298,6 +298,20 @@ class Journal:
     scenario_digest: str = ""
     """
     A fingerprint of the scenario above, for telling experiments apart.
+
+    Over what the scenario asks the engine for, so renaming or reseeding an
+    experiment does not make it a different one, and changing what it sets up
+    always does.
+    """
+
+    scenario_id: str = ""
+    """
+    What the experiment was called, if it was called anything.
+
+    Written down so a report can say which experiment it came from, and for no
+    other reason: nothing reads it to rebuild a game. A journal must not depend
+    on a library still holding the scenario — the whole snapshot is here, and
+    deleting the library breaks nothing.
     """
 
     interactive_priority: bool | None = None
@@ -348,6 +362,9 @@ class Journal:
         if self.scenario_digest:
             written["scenario_digest"] = self.scenario_digest
 
+        if self.scenario_id:
+            written["scenario_id"] = self.scenario_id
+
         if self.interactive_priority is not None:
             written["interactive_priority"] = self.interactive_priority
 
@@ -375,6 +392,7 @@ class Journal:
             content_version=str(data.get("content", "")),
             scenario=None if scenario is None else dict(scenario),
             scenario_digest=str(data.get("scenario_digest", "")),
+            scenario_id=str(data.get("scenario_id", "")),
             interactive_priority=(
                 None
                 if data.get("interactive_priority") is None

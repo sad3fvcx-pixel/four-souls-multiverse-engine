@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from .errors import ScenarioError
 from .file import load, parse, save, validate
+from .library import Entry, Library, open_library
 from .scenario import (
     FORMAT,
     VERSION,
@@ -24,6 +25,8 @@ from .scenario import (
 
 __all__ = [
     "Content",
+    "Entry",
+    "Library",
     "FORMAT",
     "Scenario",
     "ScenarioError",
@@ -33,6 +36,7 @@ __all__ = [
     "digest_of",
     "from_dict",
     "load",
+    "open_library",
     "parse",
     "save",
     "validate",

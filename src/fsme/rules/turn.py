@@ -73,16 +73,35 @@ class StartGameHandler:
 
         context.emit(EventType.GAME_START)
 
-        # Read off the game rather than off the constants. The rulebook's
-        # numbers are still the defaults — `GameState` starts with them — but
-        # a game that was set up asking for others is a game that has to be
-        # dealt with them, and a process playing a thousand games must not
-        # carry one game's answer into the next.
+        # Read off the seat, then off the game, and never off the constants.
+        # The rulebook's numbers are still the defaults — GameState starts with
+        # them — but a game set up asking for others has to be dealt with them,
+        # and a process playing a thousand games must not carry one game's
+        # answer into the next.
+        #
+        # One loop, not two: a scenario that gives one player five cents is
+        # dealt by the same code that gives everybody three, because a second
+        # way of dealing an opening is a second thing that can be wrong.
         for player in state.players:
-            context.apply("draw_loot", [player], count=state.starting_hand)
-            context.apply("gain_coins", [player], amount=state.starting_coins)
+            context.apply(
+                "draw_loot",
+                [player],
+                count=_opening(player.starting_hand, state.starting_hand),
+            )
+            context.apply(
+                "gain_coins",
+                [player],
+                amount=_opening(player.starting_coins, state.starting_coins),
+            )
 
         _begin_turn(context, active_player=first)
+
+
+def _opening(seat: int | None, table: int) -> int:
+    """
+    What one player is dealt: their own number, or the table's.
+    """
+    return table if seat is None else seat
 
 
 FIRST_PLAYER = "first_player"

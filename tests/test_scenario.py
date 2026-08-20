@@ -250,16 +250,46 @@ def test_the_state_defaults_agree_with_the_rulebook() -> None:
     assert fresh.starting_hand == STARTING_HAND_SIZE
 
 
-def test_seats_that_disagree_about_the_opening_are_refused(
+def test_each_seat_is_dealt_its_own_opening(everything: ContentLibrary) -> None:
+    """
+    The seats may disagree, and that is the point of asking per seat.
+    """
+    game = a_game(
+        everything,
+        players=3,
+        scenario=Scenario(
+            players=(
+                Seat(coins=3, loot=3),
+                Seat(coins=5, loot=1),
+                Seat(coins=0, loot=7),
+            ),
+        ),
+    )
+    game.start()
+
+    assert [player.pennies for player in game.state.players] == [3, 5, 0]
+    assert hands_after_the_deal(game) == [3, 1, 7]
+
+
+def test_a_seat_that_names_no_opening_takes_the_table_s(
     everything: ContentLibrary,
 ) -> None:
-    with pytest.raises(SetupError) as raised:
-        a_game(
-            everything,
-            scenario=Scenario(players=(Seat(coins=10), Seat(coins=2))),
-        )
+    """
+    Naming one seat's opening must not silently change anybody else's.
+    """
+    game = a_game(
+        everything,
+        players=3,
+        scenario=Scenario(players=(Seat(), Seat(coins=9), Seat())),
+    )
+    game.start()
 
-    assert "same opening to the whole table" in str(raised.value)
+    assert [player.pennies for player in game.state.players] == [
+        STARTING_COINS,
+        9,
+        STARTING_COINS,
+    ]
+    assert hands_after_the_deal(game) == [STARTING_HAND_SIZE] * 3
 
 
 # ----------------------------------------------------------------------
@@ -477,14 +507,6 @@ def test_an_empty_scenario_writes_only_what_it_is() -> None:
         (
             {**EMPTY, "players": [{"character": ISAAC}, {"character": ISAAC}]},
             "cannot sit in two chairs",
-        ),
-        (
-            {**EMPTY, "players": [{"coins": 1}, {"coins": 2}]},
-            "same opening to every seat",
-        ),
-        (
-            {**EMPTY, "players": [{"coins": 1}, {}]},
-            "some seats name the opening",
         ),
         ({**EMPTY, "interactive_priority": "yes"}, "true or false"),
         ({**EMPTY, "content": {"expansions": [7]}}, "every entry is an identifier"),

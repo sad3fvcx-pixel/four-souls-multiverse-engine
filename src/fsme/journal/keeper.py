@@ -80,6 +80,7 @@ class JournalKeeper:
             ),
             scenario=None if scenario is None else scenario.to_dict(),
             scenario_digest=digest_of(scenario),
+            scenario_id="" if scenario is None else scenario.id,
             interactive_priority=game.interactive_priority,
         )
 

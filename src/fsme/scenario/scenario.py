@@ -174,6 +174,19 @@ class Scenario:
     One experiment's starting configuration.
     """
 
+    id: str = ""
+    """
+    What somebody calls this experiment, when they keep more than one.
+
+    Names the entry a person is maintaining; the digest identifies the
+    configuration. They answer different questions — "which of my experiments
+    is this" and "is this the same experiment I ran" — and neither substitutes
+    for the other. An id is not required, and a scenario used once does not
+    need one.
+    """
+
+    author: str = ""
+
     name: str = ""
     description: str = ""
 
@@ -214,7 +227,12 @@ class Scenario:
         lets the engine take the argument everywhere without any existing
         measurement moving.
         """
-        return self == Scenario(name=self.name, description=self.description)
+        return self == Scenario(
+            id=self.id,
+            author=self.author,
+            name=self.name,
+            description=self.description,
+        )
 
     def with_seed(self, seed: int) -> Scenario:
         """
@@ -230,6 +248,12 @@ class Scenario:
         nulls: the file is meant to be read and edited by a person.
         """
         written: dict[str, Any] = {"format": FORMAT, "version": VERSION}
+
+        if self.id:
+            written["id"] = self.id
+
+        if self.author:
+            written["author"] = self.author
 
         if self.name:
             written["name"] = self.name
@@ -259,14 +283,47 @@ class Scenario:
         return written
 
 
+def configuration_of(scenario: Scenario) -> dict[str, Any]:
+    """
+    The part of a scenario that changes the game, and nothing else.
+
+    Not the name, not the description, not the id or the author — those say
+    which experiment somebody thinks this is, and renaming one does not make
+    it a different experiment. And not the seed: what names one game is the
+    pair, this scenario and that seed, so a study running one scenario over a
+    thousand seeds is running one experiment a thousand times.
+    """
+    written: dict[str, Any] = {}
+
+    if scenario.interactive_priority is not None:
+        written["interactive_priority"] = scenario.interactive_priority
+
+    content = scenario.content.to_dict()
+
+    if content:
+        written["content"] = content
+
+    table = scenario.table.to_dict()
+
+    if table:
+        written["table"] = table
+
+    if scenario.players:
+        written["players"] = [seat.to_dict() for seat in scenario.players]
+
+    return written
+
+
 def digest_of(scenario: Scenario | None) -> str:
     """
-    A short fingerprint of what a scenario asks for.
+    A short fingerprint of what a scenario asks the engine for.
 
-    Over the written form rather than the object, and with the keys sorted, so
-    two scenarios that ask for the same thing fingerprint the same however they
-    were built or spelled. ``""`` for no scenario, which is the same answer as
-    for a scenario that asks for nothing — because they are the same game.
+    Over the configuration and not the whole file, so that two scenarios which
+    set a game up the same way fingerprint the same however they are named,
+    described or seeded — and two that set it up differently never do.
+
+    ``""`` for no scenario, and the same for one that asks for nothing, because
+    they are the same game.
 
     What it is for: telling two experiments apart at a glance, and noticing
     that a journal's inlined scenario has been edited since. It is not a
@@ -275,7 +332,9 @@ def digest_of(scenario: Scenario | None) -> str:
     if scenario is None or scenario.is_empty:
         return ""
 
-    written = json.dumps(scenario.to_dict(), sort_keys=True, separators=(",", ":"))
+    written = json.dumps(
+        configuration_of(scenario), sort_keys=True, separators=(",", ":")
+    )
 
     return hashlib.sha256(written.encode("utf-8")).hexdigest()[:16]
 
@@ -302,6 +361,8 @@ def from_dict(data: Mapping[str, Any]) -> Scenario:
     players: Sequence[Any] = data.get("players") or ()
 
     return Scenario(
+        id=str(data.get("id", "")),
+        author=str(data.get("author", "")),
         name=str(data.get("name", "")),
         description=str(data.get("description", "")),
         seed=None if data.get("seed") is None else int(data["seed"]),

@@ -22,7 +22,7 @@ pipeline already keeps between its schema stage and its semantic stage.
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +33,8 @@ KNOWN_KEYS = frozenset(
     {
         "format",
         "version",
+        "id",
+        "author",
         "name",
         "description",
         "seed",
@@ -107,6 +109,8 @@ def validate(data: Any, *, where: str = "") -> list[str]:
 
     problems.extend(_unknown(named, data, KNOWN_KEYS, "scenario"))
 
+    _check_text(named, data, "id", problems)
+    _check_text(named, data, "author", problems)
     _check_text(named, data, "name", problems)
     _check_text(named, data, "description", problems)
     _check_whole(named, data, "seed", problems)
@@ -294,44 +298,7 @@ def _players(named: str, data: Mapping[str, Any]) -> list[str]:
             else:
                 seen[character] = index
 
-    problems.extend(_one_opening(named, players, "coins"))
-    problems.extend(_one_opening(named, players, "loot"))
-
     return problems
-
-
-def _one_opening(named: str, players: Sequence[Any], key: str) -> list[str]:
-    """
-    Refuse an opening that differs from seat to seat.
-
-    The format asks for these per seat, because "what if one player starts
-    rich" is a question worth being able to ask. This build deals one opening
-    to the whole table, so a scenario whose seats disagree is refused rather
-    than half-honoured — the format keeps the shape it will need, and the
-    engine says plainly that it has not grown into it yet.
-    """
-    asked = [
-        seat.get(key)
-        for seat in players
-        if isinstance(seat, Mapping)
-    ]
-
-    named_values = {value for value in asked if isinstance(value, int)}
-
-    if len(named_values) > 1:
-        return [
-            f"{named}the seats ask for openings of "
-            f"{', '.join(str(value) for value in sorted(named_values))} "
-            f"{key}, and this build deals the same opening to every seat"
-        ]
-
-    if named_values and any(value is None for value in asked):
-        return [
-            f"{named}some seats name the opening {key} and some do not, and "
-            f"this build deals the same opening to every seat"
-        ]
-
-    return []
 
 
 def parse(data: Any, *, where: str = "") -> Scenario:

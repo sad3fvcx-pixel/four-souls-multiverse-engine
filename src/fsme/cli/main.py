@@ -323,6 +323,56 @@ def replay(args: argparse.Namespace) -> int:
     return 1
 
 
+def scenario_command(args: argparse.Namespace) -> int:
+    """
+    Look at a scenario file, or at a folder of them.
+
+    Two things, because two things are worth doing before a long run: check
+    that a file says what its author meant, and see what is in a folder. Both
+    are answers a person wants *before* spending an hour of processor time, and
+    neither is available any other way — a scenario is refused at the moment a
+    game is dealt, which is a slow place to learn about a typo.
+    """
+    from fsme.scenario import digest_of, open_library
+    from fsme.scenario import load as read_one
+
+    if args.what == "validate":
+        plan = read_one(Path(args.file).expanduser())
+
+        print(f"{args.file} is a scenario this build can read")
+
+        if plan.id:
+            print(f"  id       {plan.id}")
+
+        if plan.name:
+            print(f"  name     {plan.name}")
+
+        print(f"  digest   {digest_of(plan) or '(asks for nothing)'}")
+
+        if plan.content.expansions:
+            print(f"  sets     {', '.join(plan.content.expansions)}")
+
+        if plan.players:
+            print(f"  seats    {len(plan.players)}")
+
+        return 0
+
+    shelf = open_library(Path(args.directory).expanduser())
+
+    if not len(shelf):
+        print(f"{args.directory} holds no scenarios")
+
+        return 0
+
+    width = max(len(entry.id) for entry in shelf)
+
+    for entry in shelf:
+        told = entry.scenario.name or ""
+        print(f"{entry.id:{width}}  {entry.digest}  {told}")
+
+    return 0
+
+
 def report(args: argparse.Namespace) -> int:
     """
     Read one game every way the lab knows how, and write it out once.
@@ -911,6 +961,12 @@ COMMAND_GROUPS: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
             ("simulate", "play a run and count what happened"),
         ),
     ),
+    (
+        "Set an experiment up",
+        (
+            ("scenario", "check a scenario file, or list a folder of them"),
+        ),
+    ),
 )
 """
 The commands, in the order somebody meeting them should read them.
@@ -1187,6 +1243,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="where games played from the page are kept",
     )
     door.set_defaults(run=front)
+
+    plans = commands.add_parser("scenario")
+    inside = plans.add_subparsers(dest="what", required=True)
+
+    checking = inside.add_parser("validate")
+    checking.add_argument("file", help="the scenario file to check")
+
+    shelf = inside.add_parser("list")
+    shelf.add_argument(
+        "directory",
+        nargs="?",
+        default="scenarios",
+        help="a folder of scenario files",
+    )
+
+    plans.set_defaults(run=scenario_command)
 
     listing = commands.add_parser("cards")
     shared(listing)

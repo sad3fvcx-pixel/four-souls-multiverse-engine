@@ -252,6 +252,8 @@ def _save_player(player: PlayerState) -> dict[str, Any]:
         "alive": player.alive,
         "died_this_turn": player.died_this_turn,
         "hp_before_lethal": player.hp_before_lethal,
+        "starting_coins": player.starting_coins,
+        "starting_hand": player.starting_hand,
         "character": _save_card(player.character) if player.character else None,
     }
 
@@ -620,6 +622,15 @@ def _load_player(
     player.loot_limit_lifted = bool(saved.get("loot_limit_lifted", False))
     player.died_this_turn = bool(saved.get("died_this_turn", False))
     player.hp_before_lethal = int(saved.get("hp_before_lethal", 0))
+
+    # Absent in a save written before a seat could be dealt its own opening,
+    # and absent in every ordinary game since. `None` is the right answer to
+    # both, so the format is not bumped for them.
+    opening = saved.get("starting_coins")
+    player.starting_coins = None if opening is None else int(opening)
+
+    hand = saved.get("starting_hand")
+    player.starting_hand = None if hand is None else int(hand)
 
     character = saved.get("character")
 

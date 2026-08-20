@@ -8,6 +8,40 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+- **A seat can open differently from the others, and experiments can be kept
+  in a folder.** The two things the Scenario layer was missing.
+
+  **Per-seat openings.** A scenario asked for the opening hand and cents per
+  seat and the engine dealt one opening to the whole table, refusing anything
+  else. `PlayerState` carries what that seat is dealt — `None` meaning whatever
+  the table deals, which is every seat of an ordinary game — and `start_game`
+  reads the seat, then the game, and never the constants. One loop, not two: a
+  scenario that gives one player five cents is dealt by the same code that
+  gives everybody three, because a second way of dealing an opening is a second
+  thing that can be wrong. Nothing touches the RNG, because drawing a card does
+  not consume it; shuffling does, and the shuffles are where they were.
+
+  **A scenario library** is a folder of scenario files and a way to ask for one
+  by name. The other shape — a directory per scenario with a `metadata.json`
+  beside it — was refused: it splits one record into two files that have to
+  agree, and the scenario format already carries what the second would hold.
+  `scenarios/` in the repository holds two to copy from. A library is a
+  convenience and never a dependency: deleting the whole folder does not stop a
+  journal replaying, and there is a test that deletes it.
+
+  **Two identifiers, because two questions get asked.** A scenario's `id` names
+  the experiment somebody is maintaining; the digest identifies the
+  configuration. This turned up a defect in the digest as it shipped last
+  week — it was taken over the whole file, so renaming an experiment or dealing
+  it from another seed made it look like a different one. It is now taken over
+  what reaches the engine: content, table, seats, priority. Renaming leaves it
+  alone; changing the setup always moves it. A journal records both and needs
+  neither to replay.
+
+  `fsme scenario validate FILE` checks a file and prints its digest before a
+  long run spends an hour finding a typo; `fsme scenario list [DIR]` reads a
+  folder. Two subcommands, because those are the two things worth doing before
+  a run and neither was available any other way.
 - **An experiment is reproducible from its journal alone.** A game set up from
   a scenario now records that scenario inside its journal — in full, not by
   reference — with a fingerprint of it, which content it was dealt from, and
