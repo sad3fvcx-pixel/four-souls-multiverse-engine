@@ -58,7 +58,7 @@ is accepted: the guard inside the engine stays where it is.
 | `may` | — |
 | `modify_event` | `delta` a whole number, `factor` a whole number, `key` text, `value` only a game can judge |
 | `modify_roll` | `amount` a whole number |
-| `move_cards` | `deck` loot | treasure | monster | room, `depth_from` a whole number, `position` top | bottom | discard |
+| `move_cards` | `deck` `loot` or `treasure` or `monster` or `room`, `depth_from` a whole number, `position` `top` or `bottom` or `discard` |
 | `pass_hands` | `direction` text |
 | `place_monster` | `slot` text |
 | `prevent_damage` | `amount` a whole number |
@@ -70,20 +70,20 @@ is accepted: the guard inside the engine stays where it is.
 | `repeat` | — |
 | `require_attack` | `times` a whole number, `what` text, `who` only a game can judge |
 | `reroll` | `sides` a whole number |
-| `reveal_cards` | `count` a whole number ≥ 0, `deck` loot | treasure | monster | room |
+| `reveal_cards` | `count` a whole number ≥ 0, `deck` `loot` or `treasure` or `monster` or `room` |
 | `reveal_hand` | — |
 | `revive` | `hp` a whole number |
 | `roll_dice` | `sides` a whole number |
 | `sequence` | — |
 | `set_coins` | `amount` a whole number ≥ 0 |
 | `set_roll` | `value` a whole number |
-| `shuffle_deck` | `deck` loot | treasure | monster | room |
+| `shuffle_deck` | `deck` `loot` or `treasure` or `monster` or `room` |
 | `skip_next_turn` | — |
 | `steal_soul` | — |
 | `steal_treasure` | — |
 | `stop` | — |
 | `swap_cards` | — |
-| `take_card` | `player` only a game can judge, `shuffle` text, `to` hand | treasures |
+| `take_card` | `player` only a game can judge, `shuffle` text, `to` `hand` or `treasures` |
 | `take_extra_turn` | — |
 | `transfer_coins` | `amount` a whole number, `source_player` a whole number |
 | `watch_for` | `conditions` only a game can judge, `effects` only a game can judge, `event` text, `mine` true or false, `unlimited` true or false, `uses` a whole number, `waits` true or false |
@@ -96,7 +96,7 @@ is accepted: the guard inside the engine stays where it is.
 | --- | --- |
 | `and` | — |
 | `attack_roll` | — |
-| `card_counters` | `counter` text, `operator` == | != | > | >= | < | <=, `value` a whole number |
+| `card_counters` | `counter` text, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `value` a whole number |
 | `card_in_zone` | `zone` text |
 | `combat_damage` | — |
 | `dice_equals` | `value` a whole number |
@@ -105,7 +105,7 @@ is accepted: the guard inside the engine stays where it is.
 | `dice_less` | `value` a whole number |
 | `dice_not_equals` | `value` a whole number |
 | `dice_odd` | — |
-| `event_value` | `key` text*, `operator` == | != | > | >= | < | <=, `value` only a game can judge |
+| `event_value` | `key` text*, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `value` only a game can judge |
 | `first_attack_roll` | — |
 | `first_turn` | — |
 | `game_finished` | — |
@@ -116,81 +116,81 @@ is accepted: the guard inside the engine stays where it is.
 | `is_event_source` | — |
 | `item_charged` | — |
 | `item_depleted` | — |
-| `last_effect_did` | `operator` == | != | > | >= | < | <=, `value` a whole number |
+| `last_effect_did` | `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `value` a whole number |
 | `monster_alive` | `monster` a whole number ≥ 0 |
 | `monster_boss` | `monster` a whole number ≥ 0 |
 | `monster_dead` | `monster` a whole number ≥ 0 |
-| `monster_hp` | `monster` a whole number ≥ 0, `operator` == | != | > | >= | < | <=, `value` a whole number |
+| `monster_hp` | `monster` a whole number ≥ 0, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `value` a whole number |
 | `not` | — |
-| `nth_time_this_turn` | `every` a whole number ≥ 1, `operator` == | != | > | >= | < | <=, `value` a whole number |
+| `nth_time_this_turn` | `every` a whole number ≥ 1, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `value` a whole number |
 | `or` | — |
 | `player_active` | `player` a whole number ≥ 0 |
 | `player_alive` | `player` a whole number ≥ 0 |
-| `player_counters` | `counter` text, `operator` == | != | > | >= | < | <=, `player` a whole number ≥ 0, `value` a whole number |
+| `player_counters` | `counter` text, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `player` a whole number ≥ 0, `value` a whole number |
 | `player_dead` | `player` a whole number ≥ 0 |
-| `player_has_coins` | `amount` a whole number, `count` a whole number, `operator` == | != | > | >= | < | <=, `player` a whole number ≥ 0, `value` a whole number |
-| `player_has_loot` | `amount` a whole number, `count` a whole number, `operator` == | != | > | >= | < | <=, `player` a whole number ≥ 0, `value` a whole number |
-| `player_has_souls` | `amount` a whole number, `count` a whole number, `operator` == | != | > | >= | < | <=, `player` a whole number ≥ 0, `value` a whole number |
-| `player_has_treasure` | `amount` a whole number, `count` a whole number, `operator` == | != | > | >= | < | <=, `player` a whole number ≥ 0, `tag` text, `value` a whole number |
-| `player_hp` | `operator` == | != | > | >= | < | <=, `player` a whole number ≥ 0, `value` a whole number |
+| `player_has_coins` | `amount` a whole number, `count` a whole number, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `player` a whole number ≥ 0, `value` a whole number |
+| `player_has_loot` | `amount` a whole number, `count` a whole number, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `player` a whole number ≥ 0, `value` a whole number |
+| `player_has_souls` | `amount` a whole number, `count` a whole number, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `player` a whole number ≥ 0, `value` a whole number |
+| `player_has_treasure` | `amount` a whole number, `count` a whole number, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `player` a whole number ≥ 0, `tag` text, `value` a whole number |
+| `player_hp` | `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `player` a whole number ≥ 0, `value` a whole number |
 | `player_not_active` | `player` a whole number ≥ 0 |
 | `stack_empty` | — |
 | `stack_not_empty` | — |
-| `stack_size` | `operator` == | != | > | >= | < | <=, `value` a whole number |
-| `values_equal` | `of` only a game can judge |
+| `stack_size` | `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `value` a whole number |
+| `values_equal` | `of` names something this ability stored |
 
 ## Targets
 
 28 of 46 have a section in `TARGET_REGISTRY.md`; **18 are listed here and nowhere else.**
 
-| name | takes |
-| --- | --- |
-| `active_player` | `as` text |
-| `all_monsters` | `as` text, `exclude_attacked` true or false |
-| `all_players` | `as` text, `include_dead` true or false |
-| `all_stack` | `as` text, `kinds` activated_ability | triggered_ability | loot | treasure_activation | dice | combat | engine_effect | custom, `triggers` game_start | game_end | winner_declared | turn_start | turn_end | turn_cleanup | phase_changed | on_enter | on_leave | before_destroy | on_destroy | on_discard | on_gain | on_lose | on_play | before_activate | on_activate | after_activate | attack_start | before_attack_roll | after_attack_roll | before_damage | damage_prevented | after_damage | attack_end | attack_fizzled | monster_killed | before_rewards | before_death | player_died | before_death_penalty | death_penalty | death_penalty_paid | before_roll | after_roll | roll_modified | reroll | before_purchase | after_purchase | treasure_bought | purchase_fizzled | before_loot | before_loot_draw | after_loot | loot_drawn | deck_rebuilt | loot_discarded | revealed | treasure_charged | treasure_deactivated | treasure_destroyed | treasure_stolen | before_coins_gained | stat_modified | stat_expired | soul_gained | soul_lost | stack_push | stack_resolve | stack_cancel | coins_gained | coins_lost | damage_dealt | before_heal | healed | player_revived |
-| `all_treasures` | `as` text, `counter` text, `exclude_eternal` true or false, `exclude_source` true or false, `include_shop` true or false, `of` only a game can judge, `owner` controller | opponents, `tag` text |
-| `another_player` | `as` text |
-| `character` | `as` text |
-| `controller` | `as` text |
-| `current_monster` | `as` text, `exclude_attacked` true or false |
-| `current_player` | `as` text |
-| `deck_top` | `as` text, `count` a whole number ≥ 0, `deck` loot | monster | room | treasure, `exclude` only a game can judge |
-| `event_player` | `as` text |
-| `event_source` | `as` text |
-| `group` | `as` text, `of` only a game can judge |
-| `holder` | `as` text, `of` only a game can judge |
-| `monster` | `as` text, `exclude_attacked` true or false |
-| `most_common` | `as` text, `of` only a game can judge |
-| `none` | `as` text |
-| `opponents` | `as` text |
-| `owned_treasure` | `as` text, `exclude_eternal` true or false, `of` only a game can judge |
-| `owner` | `as` text |
-| `player` | `as` text, `player` a whole number ≥ 0, `value` a whole number ≥ 0 |
-| `player_left` | `as` text |
-| `player_right` | `as` text |
-| `previous_result` | `as` text |
-| `previous_target` | `as` text |
-| `random_loot` | `as` text, `of` only a game can judge |
-| `random_monster` | `as` text, `exclude_attacked` true or false |
-| `random_player` | `as` text, `exclude_controller` true or false |
-| `random_treasure` | `as` text, `counter` text, `exclude_eternal` true or false, `exclude_source` true or false, `include_shop` true or false, `of` only a game can judge, `owner` controller | opponents, `tag` text |
-| `self` | `as` text |
-| `shop_items` | `as` text |
-| `source` | `as` text |
-| `target_character` | `as` text, `chooser` only a game can judge, `count` a whole number ≥ 0, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `prompt` text |
-| `target_curse` | `as` text, `chooser` only a game can judge, `count` a whole number ≥ 0, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `owner` controller, `prompt` text |
-| `target_deck_card` | `as` text, `card_type` character | treasure | loot | monster | room | bonus_soul | event | curse | starting_item | soul | token | other, `chooser` only a game can judge, `count` a whole number ≥ 0, `deck` loot | monster | room | treasure, `exclude_type` character | treasure | loot | monster | room | bonus_soul | event | curse | starting_item | soul | token | other, `from_top` a whole number ≥ 1, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `named` text, `pile` deck | discard, `prompt` text, `tag` text |
-| `target_loot` | `as` text, `chooser` only a game can judge, `count` a whole number ≥ 0, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `of` only a game can judge, `prompt` text |
-| `target_monster` | `as` text, `chooser` only a game can judge, `count` a whole number ≥ 0, `exclude_attacked` true or false, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `prompt` text |
-| `target_player` | `as` text, `chooser` only a game can judge, `count` a whole number ≥ 0, `exclude_controller` true or false, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `most` coins | loot | souls | treasures, `prompt` text |
-| `target_player_or_monster` | `as` text, `chooser` only a game can judge, `count` a whole number ≥ 0, `exclude_attacked` true or false, `exclude_controller` true or false, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `prompt` text |
-| `target_shop_item` | `as` text, `chooser` only a game can judge, `count` a whole number ≥ 0, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `prompt` text |
-| `target_soul` | `as` text, `chooser` only a game can judge, `count` a whole number ≥ 0, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `of` only a game can judge, `prompt` text |
-| `target_stack_item` | `as` text, `chooser` only a game can judge, `count` a whole number ≥ 0, `kinds` activated_ability | triggered_ability | loot | treasure_activation | dice | combat | engine_effect | custom, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `prompt` text, `triggers` game_start | game_end | winner_declared | turn_start | turn_end | turn_cleanup | phase_changed | on_enter | on_leave | before_destroy | on_destroy | on_discard | on_gain | on_lose | on_play | before_activate | on_activate | after_activate | attack_start | before_attack_roll | after_attack_roll | before_damage | damage_prevented | after_damage | attack_end | attack_fizzled | monster_killed | before_rewards | before_death | player_died | before_death_penalty | death_penalty | death_penalty_paid | before_roll | after_roll | roll_modified | reroll | before_purchase | after_purchase | treasure_bought | purchase_fizzled | before_loot | before_loot_draw | after_loot | loot_drawn | deck_rebuilt | loot_discarded | revealed | treasure_charged | treasure_deactivated | treasure_destroyed | treasure_stolen | before_coins_gained | stat_modified | stat_expired | soul_gained | soul_lost | stack_push | stack_resolve | stack_cancel | coins_gained | coins_lost | damage_dealt | before_heal | healed | player_revived |
-| `target_treasure` | `as` text, `chooser` only a game can judge, `count` a whole number ≥ 0, `counter` text, `exclude_eternal` true or false, `exclude_source` true or false, `include_shop` true or false, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `of` only a game can judge, `owner` controller | opponents, `prompt` text, `tag` text |
-| `top_stack` | `as` text |
-| `vote` | `as` text, `counter` text, `exclude_eternal` true or false, `exclude_source` true or false, `include_shop` true or false, `of` only a game can judge, `owner` controller | opponents, `prompt` text, `tag` text |
+| name | hands back | takes |
+| --- | --- | --- |
+| `active_player` | players | `as` text |
+| `all_monsters` | cards | `as` text, `exclude_attacked` true or false |
+| `all_players` | players | `as` text, `include_dead` true or false |
+| `all_stack` | cards | `as` text, `kinds` `activated_ability` or `triggered_ability` or `loot` or `treasure_activation` or `dice` or `combat` or `engine_effect` or `custom`, `triggers` one of 66 triggers names |
+| `all_treasures` | cards | `as` text, `counter` text, `exclude_eternal` true or false, `exclude_source` true or false, `include_shop` true or false, `of` names a group of players the ability bound, `owner` `controller` or `opponents`, `tag` text |
+| `another_player` | players | `as` text |
+| `character` | cards | `as` text |
+| `controller` | players | `as` text |
+| `current_monster` | cards | `as` text, `exclude_attacked` true or false |
+| `current_player` | players | `as` text |
+| `deck_top` | cards | `as` text, `count` a whole number ≥ 0, `deck` `loot` or `monster` or `room` or `treasure`, `exclude` names a group of cards the ability bound |
+| `event_player` | players | `as` text |
+| `event_source` | cards | `as` text |
+| `group` | passthrough | `as` text, `of` names a group the ability bound |
+| `holder` | players | `as` text, `of` names a group of cards the ability bound |
+| `monster` | cards | `as` text, `exclude_attacked` true or false |
+| `most_common` | passthrough | `as` text, `of` names a group the ability bound |
+| `none` | passthrough | `as` text |
+| `opponents` | players | `as` text |
+| `owned_treasure` | cards | `as` text, `exclude_eternal` true or false, `of` names a group of players the ability bound |
+| `owner` | players | `as` text |
+| `player` | players | `as` text, `player` a whole number ≥ 0, `value` a whole number ≥ 0 |
+| `player_left` | players | `as` text |
+| `player_right` | players | `as` text |
+| `previous_result` | passthrough | `as` text |
+| `previous_target` | passthrough | `as` text |
+| `random_loot` | cards | `as` text, `of` names a group of players the ability bound |
+| `random_monster` | cards | `as` text, `exclude_attacked` true or false |
+| `random_player` | players | `as` text, `exclude_controller` true or false |
+| `random_treasure` | cards | `as` text, `counter` text, `exclude_eternal` true or false, `exclude_source` true or false, `include_shop` true or false, `of` names a group of players the ability bound, `owner` `controller` or `opponents`, `tag` text |
+| `self` | cards | `as` text |
+| `shop_items` | cards | `as` text |
+| `source` | cards | `as` text |
+| `target_character` | cards | `as` text, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `prompt` text |
+| `target_curse` | cards | `as` text, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `owner` `controller`, `prompt` text |
+| `target_deck_card` | cards | `as` text, `card_type` one of 12 card_type names, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `deck` `loot` or `monster` or `room` or `treasure`, `exclude_type` one of 12 exclude_type names, `from_top` a whole number ≥ 1, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `named` text, `pile` `deck` or `discard`, `prompt` text, `tag` text |
+| `target_loot` | cards | `as` text, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `of` names a group of players the ability bound, `prompt` text |
+| `target_monster` | cards | `as` text, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `exclude_attacked` true or false, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `prompt` text |
+| `target_player` | players | `as` text, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `exclude_controller` true or false, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `most` `coins` or `loot` or `souls` or `treasures`, `prompt` text |
+| `target_player_or_monster` | mixed | `as` text, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `exclude_attacked` true or false, `exclude_controller` true or false, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `prompt` text |
+| `target_shop_item` | cards | `as` text, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `prompt` text |
+| `target_soul` | cards | `as` text, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `of` names a group of players the ability bound, `prompt` text |
+| `target_stack_item` | cards | `as` text, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `kinds` `activated_ability` or `triggered_ability` or `loot` or `treasure_activation` or `dice` or `combat` or `engine_effect` or `custom`, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `prompt` text, `triggers` one of 66 triggers names |
+| `target_treasure` | cards | `as` text, `chooser` names a group of players the ability bound, `count` a whole number ≥ 0, `counter` text, `exclude_eternal` true or false, `exclude_source` true or false, `include_shop` true or false, `maximum` a whole number ≥ 0, `minimum` a whole number ≥ 0, `of` names a group of players the ability bound, `owner` `controller` or `opponents`, `prompt` text, `tag` text |
+| `top_stack` | cards | `as` text |
+| `vote` | cards | `as` text, `counter` text, `exclude_eternal` true or false, `exclude_source` true or false, `include_shop` true or false, `of` names a group of players the ability bound, `owner` `controller` or `opponents`, `prompt` text, `tag` text |
 
 ## Triggers
 

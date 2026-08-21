@@ -290,17 +290,40 @@ actually implements rather than against a document:
    `last_result`, `player_of` — and a sixth spelling is a typo rather than a
    new one.
 
-Targets are checked the same way, with one part left out on purpose. A
-misspelt deck (`{"target_deck_card": {"deck": "tresure"}}`) is refused, and so
-is a count written as a word, a flag where a family name belongs, and a
-parameter the target would silently drop. What is **not** checked is a
-parameter naming a group the ability bound earlier — `of`, `chooser`,
-`exclude`. Answering those means resolving an ability's alias graph, which is
-a question of its own; see `docs/TARGET_VALIDATION.md` §8.
+Targets are checked the same way. A misspelt deck
+(`{"target_deck_card": {"deck": "tresure"}}`) is refused, and so is a count
+written as a word, a flag where a family name belongs, and a parameter the
+target would silently drop.
+
+5. **References.** The names an ability gives things, and the places it uses
+   them again. An ability binds a group with `as` — or with a bare target's
+   own name — and reads it back with `of`, `chooser`, `exclude`, `for_each`,
+   or an effect's `target`. Four rules:
+
+   - A name must be bound before it is read, and is visible only inside the
+     branch that bound it. `then`, `else`, `may` and a `choose` mode each keep
+     what they bind, because whether they ran is not a fact about the text.
+   - Two targets in one scope may not bind the same name. The second would
+     never run: resolution leaves an already-bound name alone, which is what
+     lets an ability be suspended and resumed.
+   - `watch_for` and `promise` begin a scope of their own. Their contents run
+     later, against a context the engine builds then, so nothing bound outside
+     is there to find.
+   - A group's kind must suit its reader. The engine tells two kinds apart —
+     players and everything else — so `chooser` and an `of` that means "whose
+     hand" want players, while `exclude` and `holder` want cards.
+
+   `of` on the `values_equal` condition is not a group at all: it names what
+   an ability *stored* with `store`. The two namespaces never meet.
 
 Nothing here asks whether a target will find anything on the table, how many
-objects it returns, or what type they are. Those need a board, and a
-description that guessed at them would be a second resolver.
+objects it returns, or what type they are beyond those two kinds. Those need a
+board, and a description that guessed at them would be a second resolver. An
+empty group is not an error: an instruction that cannot be carried out is a
+rule of the game, not a mistake on a card.
+
+`docs/REFERENCE.md` lists what every target hands back, and is generated from
+the engine.
 
 A parameter the engine can only judge with a board in front of it — a card, a
 player, a structure, or a value an event happens to be carrying — is not

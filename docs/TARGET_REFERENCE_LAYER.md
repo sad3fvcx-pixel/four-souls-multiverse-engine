@@ -1,5 +1,9 @@
 # Target Reference Layer
 
+> **Status: built.** All five stages are in. 1045 cards load unchanged, 1000
+> recorded games are identical, 40 journals replay faithfully, and the nine
+> failures below are refused before a game starts.
+
 The last class of card mistake that still reaches a game. No code was changed
 for this document; every rule below was dry-run over all 1045 shipped cards
 and against the failures it is meant to catch, in both directions.

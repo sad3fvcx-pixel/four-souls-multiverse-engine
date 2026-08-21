@@ -50,6 +50,17 @@ class ParamShape:
     values: tuple[Any, ...] = ()
     least: int | None = None
 
+    refers_to: str = ""
+    """
+    What a parameter that names something else is naming.
+
+    Empty for an ordinary value. Otherwise this parameter does not carry a
+    value at all — it carries the name of a group the ability bound earlier,
+    or of a value it stored — and this says which, and of what kind. The
+    engine draws exactly one distinction between kinds, so this has exactly
+    the words for it and no more.
+    """
+
     @property
     def checkable(self) -> bool:
         return self.kind != UNCHECKED
@@ -134,6 +145,28 @@ class ConditionShape:
     """
 
 
+PLAYERS = "players"
+CARDS = "cards"
+MIXED = "mixed"
+PASSTHROUGH = "passthrough"
+ANY_GROUP = "any"
+VALUES = "values"
+"""
+The words a reference is described with.
+
+``players`` and ``cards`` are the only two kinds the engine tells apart —
+everything asking about a kind asks ``isinstance(x, PlayerState)`` — so
+``cards`` means "an object on the board that is not a seat", which includes
+the stack items that stand for cards.
+
+``mixed`` is a target that hands back both. ``passthrough`` is one that hands
+back whatever it was given. Neither can be judged, and neither is refused.
+
+``any`` is a reference that does not care. ``values`` is a reference into the
+other namespace entirely — what an ability stored, not what it chose.
+"""
+
+
 @dataclass(frozen=True, slots=True)
 class TargetShape:
     """
@@ -163,6 +196,14 @@ class TargetShape:
 
     False for every target the engine ships. True is an absence of
     information, not permission.
+    """
+
+    yields: str = ""
+    """
+    What kind of thing this target hands back.
+
+    One of ``players``, ``cards``, ``mixed`` or ``passthrough``; empty when
+    whoever registered it did not say, which is not judged either way.
     """
 
 

@@ -228,16 +228,25 @@ def test_a_group_the_ability_bound_is_not_looked_up(vocabulary: Vocabulary) -> N
     assert complaints(vocabulary, card) == []
 
 
-def test_a_reference_to_a_bound_group_is_not_judged(vocabulary: Vocabulary) -> None:
+def test_a_reference_is_not_judged_as_a_value(vocabulary: Vocabulary) -> None:
     """
-    `of`, `chooser` and `exclude` name a group the ability bound. Checking one
-    means resolving an ability's alias graph, which is a question of its own
-    and is deliberately not asked here — so nothing about their values is
-    refused, and nothing about them is claimed either.
+    `of`, `chooser` and `exclude` carry a name rather than a value, so this
+    layer says nothing about what is written in them — a name is neither a
+    number nor a member of any domain.
+
+    Whether the name resolves is a different question, asked by the reference
+    layer and not here. `tests/test_references.py` covers that; what this
+    pins is that the two do not overlap, which they did not when this file
+    was written and must not begin to.
     """
-    assert aiming(vocabulary, {"target_treasure": {"of": "whoever"}}) == []
-    assert aiming(vocabulary, {"target_player": {"chooser": "whoever"}}) == []
-    assert aiming(vocabulary, {"deck_top": {"exclude": "whatever"}}) == []
+    for spec in (
+        {"target_treasure": {"of": "whoever"}},
+        {"target_player": {"chooser": "whoever"}},
+        {"deck_top": {"exclude": "whatever"}},
+    ):
+        (message,) = aiming(vocabulary, spec)
+
+        assert "is not a group this ability binds" in message, message
 
 
 # ----------------------------------------------------------------------

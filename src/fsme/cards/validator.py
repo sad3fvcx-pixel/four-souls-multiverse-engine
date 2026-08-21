@@ -11,9 +11,10 @@ letting a half-valid card into a game.
 from __future__ import annotations
 
 from collections.abc import Collection, Mapping
-from difflib import get_close_matches
 from typing import Any
 
+from .references import validate_references
+from .suggest import did_you_mean
 from .types import CardType
 
 REQUIRED_FIELDS = ("id", "name", "type", "expansion", "abilities")
@@ -102,6 +103,15 @@ def validate_card(
             data,
             known=known_targets,
             shapes=target_shapes,
+            card_id=str(card_id),
+        )
+    )
+
+    errors.extend(
+        validate_references(
+            data,
+            shapes=target_shapes,
+            known_targets=known_targets,
             card_id=str(card_id),
         )
     )
@@ -454,36 +464,6 @@ def _kind_written(value: Any) -> str:
         return "a list"
 
     return type(value).__name__
-
-
-SUGGESTIONS = 3
-"""How many near misses are worth offering."""
-
-CLOSE_ENOUGH = 0.7
-"""
-How alike two names must be before one is offered for the other.
-
-High on purpose. "Did you mean X?" is worth a great deal when it is right and
-worse than silence when it is wrong, because a wrong suggestion sends somebody
-to read about an effect that was never going to help them.
-"""
-
-
-def did_you_mean(name: str, known: Collection[str]) -> str:
-    """
-    Offer the nearest names the engine does know, when any are near.
-
-    The most common content mistake is not a misunderstanding, it is a typo or
-    a plural — ``gain_coinz`` for ``gain_coins``, ``draw_loots`` for
-    ``draw_loot`` — and the engine holds the whole vocabulary already. Making
-    somebody grep the source for the right spelling is a self-inflicted wound.
-    """
-    close = get_close_matches(name, sorted(known), n=SUGGESTIONS, cutoff=CLOSE_ENOUGH)
-
-    if not close:
-        return ""
-
-    return " — did you mean " + " or ".join(f"'{one}'" for one in close) + "?"
 
 
 _BOOLEAN_NAMES = frozenset({"and", "or", "not"})

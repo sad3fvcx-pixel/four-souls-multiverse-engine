@@ -24,7 +24,16 @@ from types import MappingProxyType
 from typing import Any
 
 from fsme.cards.types import CardType
-from fsme.content.vocabulary import UNCHECKED, ParamShape, TargetShape
+from fsme.content.vocabulary import (
+    ANY_GROUP,
+    CARDS,
+    MIXED,
+    PASSTHROUGH,
+    PLAYERS,
+    UNCHECKED,
+    ParamShape,
+    TargetShape,
+)
 from fsme.events import EventType
 from fsme.rng.rng import RNG
 from fsme.stack.item import StackItemType
@@ -101,9 +110,10 @@ class TargetResolver:
         name: str,
         function: TargetFn,
         takes: Mapping[str, ParamShape] | None = None,
+        yields: str = "",
     ) -> None:
         """
-        Add a target implementation, and say what it takes.
+        Add a target implementation, say what it takes and what it hands back.
 
         ``takes`` is what a card file may write inside this target. Leaving it
         out does not mean the target accepts anything: it means whoever
@@ -118,6 +128,7 @@ class TargetResolver:
             name=name,
             params=MappingProxyType(_shape(EVERY_TARGET, takes or {})),
             open_ended=takes is None,
+            yields=yields,
         )
 
     def names(self) -> frozenset[str]:
@@ -191,63 +202,72 @@ class TargetResolver:
     def _register_builtin(self) -> None:
         register = self.register
 
-        register("self", _self, NOTHING)
-        register("source", _self, NOTHING)
-        register("controller", _controller, NOTHING)
-        register("owner", _owner, NOTHING)
+        register("self", _self, NOTHING, CARDS)
+        register("source", _self, NOTHING, CARDS)
+        register("controller", _controller, NOTHING, PLAYERS)
+        register("owner", _owner, NOTHING, PLAYERS)
 
-        register("active_player", _active_player, NOTHING)
-        register("current_player", _active_player, NOTHING)
-        register("all_players", _all_players, THE_LIVING)
-        register("opponents", _opponents, NOTHING)
-        register("another_player", _opponents, NOTHING)
-        register("random_player", _random_player, NOT_ME)
-        register("character", _character, NOTHING)
-        register("target_character", _target_character, ASKING)
-        register("player_left", _player_left, NOTHING)
-        register("player_right", _player_right, NOTHING)
-        register("random_loot", _random_loot, WHOSE)
-        register("player", _player_by_index, BY_SEAT)
-        register("target_player", _target_player, A_CHOSEN_PLAYER)
+        register("active_player", _active_player, NOTHING, PLAYERS)
+        register("current_player", _active_player, NOTHING, PLAYERS)
+        register("all_players", _all_players, THE_LIVING, PLAYERS)
+        register("opponents", _opponents, NOTHING, PLAYERS)
+        register("another_player", _opponents, NOTHING, PLAYERS)
+        register("random_player", _random_player, NOT_ME, PLAYERS)
+        register("character", _character, NOTHING, CARDS)
+        register("target_character", _target_character, ASKING, CARDS)
+        register("player_left", _player_left, NOTHING, PLAYERS)
+        register("player_right", _player_right, NOTHING, PLAYERS)
+        register("random_loot", _random_loot, WHOSE, CARDS)
+        register("player", _player_by_index, BY_SEAT, PLAYERS)
+        register("target_player", _target_player, A_CHOSEN_PLAYER, PLAYERS)
 
-        register("all_monsters", _all_monsters, MONSTERS)
-        register("current_monster", _current_monster, MONSTERS)
-        register("monster", _current_monster, MONSTERS)
-        register("random_monster", _random_monster, MONSTERS)
-        register("target_monster", _target_monster, _shape(MONSTERS, ASKING))
-        register("target_curse", _target_curse, A_CHOSEN_CURSE)
+        register("all_monsters", _all_monsters, MONSTERS, CARDS)
+        register("current_monster", _current_monster, MONSTERS, CARDS)
+        register("monster", _current_monster, MONSTERS, CARDS)
+        register("random_monster", _random_monster, MONSTERS, CARDS)
+        register("target_monster", _target_monster, _shape(MONSTERS, ASKING), CARDS)
+        register("target_curse", _target_curse, A_CHOSEN_CURSE, CARDS)
 
         register(
             "target_player_or_monster",
             _target_player_or_monster,
             _shape(NOT_ME, MONSTERS, ASKING),
+            MIXED,
         )
-        register("target_loot", _target_loot, _shape(WHOSE, ASKING))
-        register("target_soul", _target_soul, _shape(WHOSE, ASKING))
-        register("target_deck_card", _target_deck_card, _shape(SEARCHING, ASKING))
-        register("deck_top", _deck_top, OFF_THE_TOP)
-        register("target_treasure", _target_treasure, _shape(ITEMS, ASKING))
-        register("holder", _holder, WHOSE)
-        register("random_treasure", _random_treasure, ITEMS)
-        register("owned_treasure", _owned_treasure, OWN_ITEMS)
-        register("all_treasures", _all_treasures, ITEMS)
-        register("shop_items", _shop_items, NOTHING)
-        register("target_shop_item", _target_shop_item, ASKING)
+        register("target_loot", _target_loot, _shape(WHOSE, ASKING), CARDS)
+        register("target_soul", _target_soul, _shape(WHOSE, ASKING), CARDS)
+        register("target_deck_card", _target_deck_card, _shape(SEARCHING, ASKING), CARDS)
+        register("deck_top", _deck_top, OFF_THE_TOP, CARDS)
+        register("target_treasure", _target_treasure, _shape(ITEMS, ASKING), CARDS)
+        register("holder", _holder, WHOSE_CARDS, PLAYERS)
+        register("random_treasure", _random_treasure, ITEMS, CARDS)
+        register("owned_treasure", _owned_treasure, OWN_ITEMS, CARDS)
+        register("all_treasures", _all_treasures, ITEMS, CARDS)
+        register("shop_items", _shop_items, NOTHING, CARDS)
+        register("target_shop_item", _target_shop_item, ASKING, CARDS)
 
-        register("top_stack", _top_stack, NOTHING)
-        register("all_stack", _all_stack, ON_THE_STACK)
+        register("top_stack", _top_stack, NOTHING, CARDS)
+        register("all_stack", _all_stack, ON_THE_STACK, CARDS)
         register(
-            "target_stack_item", _target_stack_item, _shape(ON_THE_STACK, ASKING)
+            "target_stack_item",
+            _target_stack_item,
+            _shape(ON_THE_STACK, ASKING),
+            CARDS,
         )
-        register("event_source", _event_source, NOTHING)
-        register("event_player", _event_player, NOTHING)
-        register("previous_target", _previous_target, NOTHING)
-        register("previous_result", _previous_result, NOTHING)
+        register("event_source", _event_source, NOTHING, CARDS)
+        register("event_player", _event_player, NOTHING, PLAYERS)
+        register("previous_target", _previous_target, NOTHING, PASSTHROUGH)
+        register("previous_result", _previous_result, NOTHING, PASSTHROUGH)
 
-        register("group", _group, WHOSE)
-        register("vote", _vote, _shape(ITEMS, {"prompt": ParamShape("prompt", TEXT)}))
-        register("most_common", _most_common, WHOSE)
-        register("none", _none, NOTHING)
+        register("group", _group, ANY_BOUND_GROUP, PASSTHROUGH)
+        register(
+            "vote",
+            _vote,
+            _shape(ITEMS, {"prompt": ParamShape("prompt", TEXT)}),
+            CARDS,
+        )
+        register("most_common", _most_common, ANY_BOUND_GROUP, PASSTHROUGH)
+        register("none", _none, NOTHING, PASSTHROUGH)
 
 
 def normalise(spec: Any) -> tuple[str, Mapping[str, Any]]:
@@ -501,7 +521,7 @@ ASKING = {
     "minimum": ParamShape("minimum", WHOLE, least=0),
     "maximum": ParamShape("maximum", WHOLE, least=0),
     "prompt": ParamShape("prompt", TEXT),
-    "chooser": ParamShape("chooser", A_BOUND_GROUP),
+    "chooser": ParamShape("chooser", A_BOUND_GROUP, refers_to=PLAYERS),
 }
 """
 What ``_ask`` reads: how many to pick, and who is being asked.
@@ -567,9 +587,23 @@ def _chooser(context: AbilityContext, params: Mapping[str, Any]) -> int | None:
     return context.controller
 
 
-WHOSE = {"of": ParamShape("of", A_BOUND_GROUP)}
+WHOSE = {"of": ParamShape("of", A_BOUND_GROUP, refers_to=PLAYERS)}
 """
 What ``_named_players`` reads: whose things, when the card named them.
+
+It keeps only the players out of the group it is handed, so a card naming a
+group of items here is naming nobody — which is worth saying before a game.
+"""
+
+WHOSE_CARDS = {"of": ParamShape("of", A_BOUND_GROUP, refers_to=CARDS)}
+"""
+What ``_holder`` reads. The other way round: it is handed cards and answers
+with the players holding them.
+"""
+
+ANY_BOUND_GROUP = {"of": ParamShape("of", A_BOUND_GROUP, refers_to=ANY_GROUP)}
+"""
+What ``_group`` reads: one name or several, of anything at all.
 """
 
 
@@ -830,7 +864,7 @@ inside a study and naming no card; this is the same knowledge asked earlier.
 OFF_THE_TOP = {
     "deck": ParamShape("deck", TEXT, values=DECKS),
     "count": ParamShape("count", WHOLE, least=0),
-    "exclude": ParamShape("exclude", A_BOUND_GROUP),
+    "exclude": ParamShape("exclude", A_BOUND_GROUP, refers_to=CARDS),
 }
 """
 What ``_deck_top`` reads. ``count`` is how many cards, not how many to choose:

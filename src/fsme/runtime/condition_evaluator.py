@@ -19,7 +19,12 @@ from collections.abc import Callable, Mapping, Sequence
 from types import MappingProxyType
 from typing import Any
 
-from fsme.content.vocabulary import UNCHECKED, ConditionShape, ParamShape
+from fsme.content.vocabulary import (
+    UNCHECKED,
+    VALUES,
+    ConditionShape,
+    ParamShape,
+)
 from fsme.state import GameState, PlayerState
 
 from .ability_context import AbilityContext
@@ -396,7 +401,15 @@ ABOUT_A_MONSTER = _shape(SUBJECT_MONSTER, COMPARISON)
 COUNTERS = _shape(COMPARISON, {"counter": ParamShape("counter", TEXT)})
 PLAYER_COUNTERS = _shape(SUBJECT_PLAYER, COUNTERS)
 IN_ZONE = {"zone": ParamShape("zone", TEXT)}
-NAMED_VALUES = {"of": ParamShape("of", UNCHECKED)}
+NAMED_VALUES = {"of": ParamShape("of", UNCHECKED, refers_to=VALUES)}
+"""
+What ``values_equal`` reads, and the one place ``of`` means the other thing.
+
+Everywhere else ``of`` names a group of objects an ability chose. Here it
+names what an ability *stored* — two dice kept apart under names so that they
+can be compared. The two namespaces never meet, and a checker that read `of`
+as one thing would be wrong about the other.
+"""
 EVENT_VALUE = _shape(
     COMPARISON,
     {

@@ -62,7 +62,12 @@ def wants(shape, name: str) -> str:
         return "only a game can judge"
 
     if parameter.values:
-        return " | ".join(str(value) for value in parameter.values)
+        if len(parameter.values) > 8:
+            # A domain of sixty-six names is not a table cell. The count says
+            # there is a closed list and the registry says what is in it.
+            return f"one of {len(parameter.values)} {name} names"
+
+        return " or ".join(f"`{value}`" for value in parameter.values)
 
     if parameter.least is not None:
         return f"{parameter.kind} ≥ {parameter.least}"
@@ -70,32 +75,53 @@ def wants(shape, name: str) -> str:
     return str(parameter.kind)
 
 
+def _refers(kind: str) -> str:
+    """
+    How a parameter that names something else reads in a table.
+    """
+    if kind == "values":
+        return "names something this ability stored"
+
+    if kind == "any":
+        return "names a group the ability bound"
+
+    return f"names a group of {kind} the ability bound"
+
+
 def table(shapes, names, *, kind: str) -> list[str]:
     """
-    One row per name, with what it takes.
+    One row per name, with what it takes — and, for a target, what it hands
+    back, since that is what decides where its name may be used again.
     """
-    lines = ["| name | takes |", "| --- | --- |"]
+    hands_back = kind == "targets"
+
+    lines = (
+        ["| name | hands back | takes |", "| --- | --- | --- |"]
+        if hands_back
+        else ["| name | takes |", "| --- | --- |"]
+    )
 
     for name in sorted(names):
         shape = shapes.get(name)
+        gives = f" {getattr(shape, 'yields', '') or '—'} |" if hands_back else ""
 
         if shape is None or not shape.params:
-            lines.append(f"| `{name}` | — |")
-
-            continue
-
-        if getattr(shape, "open_ended", False) and not shape.params:
-            lines.append(f"| `{name}` | anything (undescribed) |")
+            lines.append(f"| `{name}` |{gives} — |")
 
             continue
 
         written = ", ".join(
-            f"`{key}` {wants(shape, key)}"
+            f"`{key}` "
+            + (
+                _refers(shape.params[key].refers_to)
+                if shape.params[key].refers_to
+                else wants(shape, key)
+            )
             + ("*" if shape.params[key].required else "")
             for key in sorted(shape.params)
         )
 
-        lines.append(f"| `{name}` | {written} |")
+        lines.append(f"| `{name}` |{gives} {written} |")
 
     return lines
 
