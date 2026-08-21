@@ -6,6 +6,17 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## 0.3.0 — author experience
+
+- Added a writable workspace for author-created sets.
+- Added the Author UI for creating and editing cards without writing JSON.
+- Added capability discovery from the engine's existing registries.
+- Added human-readable descriptions for conditions, targets, parameters, and triggers.
+- Added target selection for effects that operate on players or items.
+- Added in-app card validation and playable card preview.
+- Added persistence of author-created sets across application restarts.
+- Added an end-to-end authoring workflow and comprehensive Author UI tests.
+
 ## Unreleased
 
 ## 0.2.0 — author preview
