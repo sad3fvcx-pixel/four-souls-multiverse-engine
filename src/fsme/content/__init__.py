@@ -34,6 +34,7 @@ from .vocabulary import (
     ConditionShape,
     EffectShape,
     ParamShape,
+    TargetShape,
     Vocabulary,
 )
 
@@ -48,6 +49,7 @@ __all__ = [
     "Vocabulary",
     "EffectShape",
     "ConditionShape",
+    "TargetShape",
     "ParamShape",
     "UNCHECKED",
     "validate_manifest",

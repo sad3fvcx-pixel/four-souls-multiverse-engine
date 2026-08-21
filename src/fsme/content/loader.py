@@ -247,6 +247,7 @@ class ContentLoader:
             known_targets=self._vocabulary.targets or None,
             shapes=self._vocabulary.shapes or None,
             condition_shapes=self._vocabulary.condition_shapes or None,
+            target_shapes=self._vocabulary.target_shapes or None,
         ):
             report.add(
                 IssueCategory.SCHEMA

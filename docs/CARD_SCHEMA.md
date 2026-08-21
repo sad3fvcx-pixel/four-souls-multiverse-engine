@@ -276,10 +276,10 @@ actually implements rather than against a document:
 
 1. **Structure.** Required fields, and fields of the right kind.
 2. **Names.** Every effect, trigger, condition and target the card mentions.
-3. **Arguments.** What the card gives each effect and each condition: the kind
-   of value, the values allowed where only a few are, and the floors below
-   which a number means nothing. A parameter that is not taken is named, with
-   the nearest one that is offered. This matters most for conditions, which
+3. **Arguments.** What the card gives each effect, each condition and each
+   target: the kind of value, the values allowed where only a few are, and the
+   floors below which a number means nothing. A parameter that is not taken is
+   named, with the nearest one that is offered. This matters most for conditions, which
    ignore a parameter they do not recognise: `{"player_hp": {"operatr": "<",
    "value": 2}}` is not a card that fails, it is a card that quietly means
    "equal to zero" and plays a whole game that way. Conditions are checked
@@ -290,8 +290,17 @@ actually implements rather than against a document:
    `last_result`, `player_of` — and a sixth spelling is a typo rather than a
    new one.
 
-Target parameters are not yet checked; target *names* are. See
-`docs/TARGET_AUDIT.md`.
+Targets are checked the same way, with one part left out on purpose. A
+misspelt deck (`{"target_deck_card": {"deck": "tresure"}}`) is refused, and so
+is a count written as a word, a flag where a family name belongs, and a
+parameter the target would silently drop. What is **not** checked is a
+parameter naming a group the ability bound earlier — `of`, `chooser`,
+`exclude`. Answering those means resolving an ability's alias graph, which is
+a question of its own; see `docs/TARGET_VALIDATION.md` §8.
+
+Nothing here asks whether a target will find anything on the table, how many
+objects it returns, or what type they are. Those need a board, and a
+description that guessed at them would be a second resolver.
 
 A parameter the engine can only judge with a board in front of it — a card, a
 player, a structure, or a value an event happens to be carrying — is not

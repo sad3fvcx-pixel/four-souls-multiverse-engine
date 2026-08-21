@@ -135,6 +135,38 @@ class ConditionShape:
 
 
 @dataclass(frozen=True, slots=True)
+class TargetShape:
+    """
+    What one target takes, as far as a card file is concerned.
+
+    Separate from the other two for the reason they are separate from each
+    other: the questions differ. An effect may be handed a card or a player
+    that only a game can supply. A condition is handed a comparison. A target
+    is handed a description of what to look for — a deck, a role, a family, a
+    number of options — and almost all of that can be read before a game
+    exists.
+
+    What cannot is a parameter that names a group the ability bound earlier.
+    Those carry ``UNCHECKED``: answering would mean resolving an ability's
+    alias graph, which is a question of its own and is not asked here.
+    """
+
+    name: str
+
+    params: Mapping[str, ParamShape] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+
+    open_ended: bool = False
+    """
+    Whether whoever registered this target declined to say what it takes.
+
+    False for every target the engine ships. True is an absence of
+    information, not permission.
+    """
+
+
+@dataclass(frozen=True, slots=True)
 class Vocabulary:
     """
     Every name the engine answers to.
@@ -150,6 +182,13 @@ class Vocabulary:
     )
     """
     What each condition takes, on the same terms as ``shapes`` below.
+    """
+
+    target_shapes: Mapping[str, TargetShape] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    """
+    What each target takes, on the same terms.
     """
 
     shapes: Mapping[str, EffectShape] = field(
@@ -175,6 +214,7 @@ class Vocabulary:
         targets: Collection[str] = (),
         shapes: Mapping[str, EffectShape] | None = None,
         condition_shapes: Mapping[str, ConditionShape] | None = None,
+        target_shapes: Mapping[str, TargetShape] | None = None,
     ) -> Vocabulary:
         """
         Build a vocabulary from any collections of names.
@@ -186,6 +226,7 @@ class Vocabulary:
             targets=frozenset(targets),
             shapes=MappingProxyType(dict(shapes or {})),
             condition_shapes=MappingProxyType(dict(condition_shapes or {})),
+            target_shapes=MappingProxyType(dict(target_shapes or {})),
         )
 
     def shape(self, effect: str) -> EffectShape | None:
@@ -199,6 +240,12 @@ class Vocabulary:
         What one condition takes, or ``None`` when this vocabulary does not say.
         """
         return self.condition_shapes.get(condition)
+
+    def target_shape(self, target: str) -> TargetShape | None:
+        """
+        What one target takes, or ``None`` when this vocabulary does not say.
+        """
+        return self.target_shapes.get(target)
 
     @property
     def is_empty(self) -> bool:

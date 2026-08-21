@@ -30,6 +30,7 @@ def validate_card(
     known_targets: Collection[str] | None = None,
     shapes: Mapping[str, Any] | None = None,
     condition_shapes: Mapping[str, Any] | None = None,
+    target_shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Return every problem found in one raw card.
@@ -92,6 +93,15 @@ def validate_card(
             data,
             known=known_conditions,
             shapes=condition_shapes,
+            card_id=str(card_id),
+        )
+    )
+
+    errors.extend(
+        _validate_targets(
+            data,
+            known=known_targets,
+            shapes=target_shapes,
             card_id=str(card_id),
         )
     )
@@ -477,6 +487,213 @@ def did_you_mean(name: str, known: Collection[str]) -> str:
 
 
 _BOOLEAN_NAMES = frozenset({"and", "or", "not"})
+
+
+LIST = "a list"
+
+TARGET_KEYS = ("targets", "target")
+"""
+The two keys that hold a target specification.
+
+An ability declares ``targets`` and binds them by name; a single effect may
+point at one with ``target``. Both are targets wherever they appear.
+"""
+
+
+def _validate_targets(
+    card: Mapping[str, Any],
+    *,
+    known: Collection[str] | None,
+    shapes: Mapping[str, Any] | None,
+    card_id: str,
+) -> list[str]:
+    """
+    Check what a card wrote inside its targets.
+
+    Names are checked elsewhere and are not checked again here. What this adds
+    is the inside of a specification: a misspelt deck, a count written as a
+    word, a flag where a family name belongs. All of those load cleanly today
+    and are found — if they are found at all — somewhere in the middle of a
+    game, naming no card and no file.
+
+    A specification naming a group the ability bound with ``as`` is passed
+    over. That name belongs to one card, so there is nothing to look it up in.
+    """
+    if not shapes:
+        return []
+
+    errors: list[str] = []
+
+    for where, ability in _abilities_and_statics(card):
+        bound = _declared_target_names(ability) | _effect_aliases(
+            ability.get("effects", ())
+        )
+
+        for path, spec in _target_specs(ability, where):
+            name, params = _target_call(spec)
+
+            if name is None or name in bound or name.startswith("__"):
+                continue
+
+            shape = shapes.get(name)
+
+            if shape is None or shape.open_ended:
+                # Either the engine has never heard of this target — which the
+                # name check has already said — or nobody described it.
+                continue
+
+            errors.extend(
+                _check_target_params(name, params, shape, card_id, path)
+            )
+
+    return errors
+
+
+def _abilities_and_statics(
+    card: Mapping[str, Any],
+) -> list[tuple[str, Mapping[str, Any]]]:
+    """
+    Everything on a card that may carry targets, and where it is written.
+    """
+    found: list[tuple[str, Mapping[str, Any]]] = []
+
+    for key in ("abilities", "statics"):
+        group = card.get(key, ())
+
+        if not isinstance(group, (list, tuple)):
+            continue
+
+        found.extend(
+            (f"{key}[{index}]", item)
+            for index, item in enumerate(group)
+            if isinstance(item, Mapping)
+        )
+
+    return found
+
+
+def _target_specs(node: Any, path: str) -> list[tuple[str, Any]]:
+    """
+    Every target specification in an ability, with where it was found.
+    """
+    found: list[tuple[str, Any]] = []
+
+    if isinstance(node, Mapping):
+        for key, value in node.items():
+            here = f"{path}.{key}"
+
+            if key == "targets" and isinstance(value, (list, tuple)):
+                found.extend(
+                    (f"{here}[{index}]", spec) for index, spec in enumerate(value)
+                )
+            elif key == "target":
+                found.append((here, value))
+            else:
+                found.extend(_target_specs(value, here))
+    elif isinstance(node, (list, tuple)):
+        for index, item in enumerate(node):
+            found.extend(_target_specs(item, f"{path}[{index}]"))
+
+    return found
+
+
+def _target_call(spec: Any) -> tuple[str | None, dict[str, Any]]:
+    """
+    Reduce a target specification to a name and parameters.
+
+    This is ``normalise`` in the resolver, read from the outside. The two must
+    agree about what a card said, or validation would be checking a target the
+    game will not resolve.
+    """
+    if isinstance(spec, str):
+        return spec, {}
+
+    if not isinstance(spec, Mapping):
+        return None, {}
+
+    if "target" in spec:
+        return (
+            str(spec["target"]),
+            {key: value for key, value in spec.items() if key != "target"},
+        )
+
+    if len(spec) != 1:
+        return None, {}
+
+    name, value = next(iter(spec.items()))
+
+    if isinstance(value, Mapping):
+        return str(name), dict(value)
+
+    return str(name), {"value": value}
+
+
+def _check_target_params(
+    name: str,
+    params: Mapping[str, Any],
+    shape: Any,
+    location: str,
+    path: str,
+) -> list[str]:
+    """
+    Check what a card wrote inside one target.
+
+    A parameter the target does not read is refused rather than ignored. That
+    is not pedantry: ``of`` on an item target was dropped in silence for as
+    long as anybody played the two cards that wrote it, and both did something
+    other than what they say.
+    """
+    errors: list[str] = []
+
+    for key in shape.params:
+        if shape.params[key].required and key not in params:
+            errors.append(f"{location}: {path}: '{name}' needs '{key}'")
+
+    for key, value in params.items():
+        parameter = shape.params.get(key)
+
+        if parameter is None:
+            errors.append(
+                f"{location}: {path}: '{name}' takes no '{key}'"
+                f"{did_you_mean(str(key), shape.params)}"
+            )
+            continue
+
+        if not parameter.checkable:
+            continue
+
+        written = _kind_written(value)
+
+        if written != parameter.kind:
+            errors.append(
+                f"{location}: {path}: '{name}' wants {parameter.wants()} "
+                f"for '{key}', card says {value!r}"
+            )
+            continue
+
+        if parameter.kind == LIST:
+            # A list's allowed values are what each of its items may be.
+            errors.extend(
+                f"{location}: {path}: '{name}' has no '{key}' called {item!r}"
+                for item in value
+                if parameter.values and item not in parameter.values
+            )
+            continue
+
+        if parameter.values and value not in parameter.values:
+            errors.append(
+                f"{location}: {path}: '{name}' wants {parameter.wants()} "
+                f"for '{key}', card says {value!r}"
+            )
+            continue
+
+        if parameter.least is not None and int(value) < parameter.least:
+            errors.append(
+                f"{location}: {path}: '{name}' wants {parameter.wants()} "
+                f"for '{key}', card says {value!r}"
+            )
+
+    return errors
 
 
 CONDITION_KEYS = ("conditions", "if")
@@ -944,6 +1161,7 @@ def validate_cards(
     known_targets: Collection[str] | None = None,
     shapes: Mapping[str, Any] | None = None,
     condition_shapes: Mapping[str, Any] | None = None,
+    target_shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Validate a collection of raw cards and report duplicate identifiers.
@@ -964,6 +1182,7 @@ def validate_cards(
                 known_targets=known_targets,
                 shapes=shapes,
                 condition_shapes=condition_shapes,
+                target_shapes=target_shapes,
             )
         )
 

@@ -20,15 +20,70 @@ the game is touched.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
+from types import MappingProxyType
 from typing import Any
 
+from fsme.cards.types import CardType
+from fsme.content.vocabulary import UNCHECKED, ParamShape, TargetShape
+from fsme.events import EventType
 from fsme.rng.rng import RNG
+from fsme.stack.item import StackItemType
 from fsme.state import DecisionKind, GameState, PlayerState
 
 from .ability_context import AbilityContext
 from .errors import DecisionRequired, UnknownTargetError
 
 TargetFn = Callable[[GameState, AbilityContext, Mapping[str, Any], RNG], list[Any]]
+
+WHOLE = "a whole number"
+TEXT = "text"
+FLAG = "true or false"
+LIST = "a list"
+
+
+def _shape(*parts: Mapping[str, ParamShape]) -> dict[str, ParamShape]:
+    """
+    Join the parameter sets a target inherits from the helpers it calls.
+
+    Every target here has the same signature, so what one takes cannot be read
+    off it. What can be read is which helper it hands its parameters to, and
+    the helper is where they are understood — so each set is written once,
+    beside its helper, and each target names the sets it inherits.
+    """
+    joined: dict[str, ParamShape] = {}
+
+    for part in parts:
+        joined.update(part)
+
+    return joined
+
+
+A_BOUND_GROUP = UNCHECKED
+"""
+The kind of a parameter that names a group the ability bound earlier.
+
+Deliberately not checked. Answering means resolving an ability's alias graph —
+which targets bind which names, in what order, and whether a reference points
+at something bound before it is read — and that is a question of its own.
+``of`` also accepts the literal ``all_players``, which is not a group at all,
+so even the shape of the answer is not settled here.
+"""
+
+NOTHING: dict[str, ParamShape] = {}
+"""
+A target that reads nothing beyond what every target reads. A card writing
+parameters into one is not narrowing it — it is being ignored.
+"""
+
+EVERY_TARGET = {"as": ParamShape("as", TEXT)}
+"""
+What ``resolve`` and ``resolve_all`` read, whichever target it is.
+
+``as`` names the group a target binds, and it is the resolver's own: it is
+read before the target is looked up and again when the answer is bound. So it
+belongs to every target rather than to any helper — which is not obvious, and
+was got wrong once before the content said otherwise.
+"""
 
 
 class TargetResolver:
@@ -38,19 +93,45 @@ class TargetResolver:
 
     def __init__(self) -> None:
         self._targets: dict[str, TargetFn] = {}
+        self._shapes: dict[str, TargetShape] = {}
         self._register_builtin()
 
-    def register(self, name: str, function: TargetFn) -> None:
+    def register(
+        self,
+        name: str,
+        function: TargetFn,
+        takes: Mapping[str, ParamShape] | None = None,
+    ) -> None:
         """
-        Add a target implementation.
+        Add a target implementation, and say what it takes.
+
+        ``takes`` is what a card file may write inside this target. Leaving it
+        out does not mean the target accepts anything: it means whoever
+        registered it did not say, so nothing outside a game may judge its
+        parameters. Every target the engine ships says.
         """
         if name in self._targets:
             raise UnknownTargetError(f"target '{name}' is already registered")
 
         self._targets[name] = function
+        self._shapes[name] = TargetShape(
+            name=name,
+            params=MappingProxyType(_shape(EVERY_TARGET, takes or {})),
+            open_ended=takes is None,
+        )
 
     def names(self) -> frozenset[str]:
         return frozenset(self._targets)
+
+    def shapes(self) -> Mapping[str, TargetShape]:
+        """
+        What each target takes, as plain data.
+
+        The functions stay here. What leaves is names and kinds, because the
+        content pipeline that asks runs before a game exists and must not be
+        handed anything that could start one.
+        """
+        return MappingProxyType(dict(self._shapes))
 
     def resolve(
         self,
@@ -110,57 +191,63 @@ class TargetResolver:
     def _register_builtin(self) -> None:
         register = self.register
 
-        register("self", _self)
-        register("source", _self)
-        register("controller", _controller)
-        register("owner", _owner)
+        register("self", _self, NOTHING)
+        register("source", _self, NOTHING)
+        register("controller", _controller, NOTHING)
+        register("owner", _owner, NOTHING)
 
-        register("active_player", _active_player)
-        register("current_player", _active_player)
-        register("all_players", _all_players)
-        register("opponents", _opponents)
-        register("another_player", _opponents)
-        register("random_player", _random_player)
-        register("character", _character)
-        register("target_character", _target_character)
-        register("player_left", _player_left)
-        register("player_right", _player_right)
-        register("random_loot", _random_loot)
-        register("player", _player_by_index)
-        register("target_player", _target_player)
+        register("active_player", _active_player, NOTHING)
+        register("current_player", _active_player, NOTHING)
+        register("all_players", _all_players, THE_LIVING)
+        register("opponents", _opponents, NOTHING)
+        register("another_player", _opponents, NOTHING)
+        register("random_player", _random_player, NOT_ME)
+        register("character", _character, NOTHING)
+        register("target_character", _target_character, ASKING)
+        register("player_left", _player_left, NOTHING)
+        register("player_right", _player_right, NOTHING)
+        register("random_loot", _random_loot, WHOSE)
+        register("player", _player_by_index, BY_SEAT)
+        register("target_player", _target_player, A_CHOSEN_PLAYER)
 
-        register("all_monsters", _all_monsters)
-        register("current_monster", _current_monster)
-        register("monster", _current_monster)
-        register("random_monster", _random_monster)
-        register("target_monster", _target_monster)
-        register("target_curse", _target_curse)
+        register("all_monsters", _all_monsters, MONSTERS)
+        register("current_monster", _current_monster, MONSTERS)
+        register("monster", _current_monster, MONSTERS)
+        register("random_monster", _random_monster, MONSTERS)
+        register("target_monster", _target_monster, _shape(MONSTERS, ASKING))
+        register("target_curse", _target_curse, A_CHOSEN_CURSE)
 
-        register("target_player_or_monster", _target_player_or_monster)
-        register("target_loot", _target_loot)
-        register("target_soul", _target_soul)
-        register("target_deck_card", _target_deck_card)
-        register("deck_top", _deck_top)
-        register("target_treasure", _target_treasure)
-        register("holder", _holder)
-        register("random_treasure", _random_treasure)
-        register("owned_treasure", _owned_treasure)
-        register("all_treasures", _all_treasures)
-        register("shop_items", _shop_items)
-        register("target_shop_item", _target_shop_item)
+        register(
+            "target_player_or_monster",
+            _target_player_or_monster,
+            _shape(NOT_ME, MONSTERS, ASKING),
+        )
+        register("target_loot", _target_loot, _shape(WHOSE, ASKING))
+        register("target_soul", _target_soul, _shape(WHOSE, ASKING))
+        register("target_deck_card", _target_deck_card, _shape(SEARCHING, ASKING))
+        register("deck_top", _deck_top, OFF_THE_TOP)
+        register("target_treasure", _target_treasure, _shape(ITEMS, ASKING))
+        register("holder", _holder, WHOSE)
+        register("random_treasure", _random_treasure, ITEMS)
+        register("owned_treasure", _owned_treasure, OWN_ITEMS)
+        register("all_treasures", _all_treasures, ITEMS)
+        register("shop_items", _shop_items, NOTHING)
+        register("target_shop_item", _target_shop_item, ASKING)
 
-        register("top_stack", _top_stack)
-        register("all_stack", _all_stack)
-        register("target_stack_item", _target_stack_item)
-        register("event_source", _event_source)
-        register("event_player", _event_player)
-        register("previous_target", _previous_target)
-        register("previous_result", _previous_result)
+        register("top_stack", _top_stack, NOTHING)
+        register("all_stack", _all_stack, ON_THE_STACK)
+        register(
+            "target_stack_item", _target_stack_item, _shape(ON_THE_STACK, ASKING)
+        )
+        register("event_source", _event_source, NOTHING)
+        register("event_player", _event_player, NOTHING)
+        register("previous_target", _previous_target, NOTHING)
+        register("previous_result", _previous_result, NOTHING)
 
-        register("group", _group)
-        register("vote", _vote)
-        register("most_common", _most_common)
-        register("none", _none)
+        register("group", _group, WHOSE)
+        register("vote", _vote, _shape(ITEMS, {"prompt": ParamShape("prompt", TEXT)}))
+        register("most_common", _most_common, WHOSE)
+        register("none", _none, NOTHING)
 
 
 def normalise(spec: Any) -> tuple[str, Mapping[str, Any]]:
@@ -235,6 +322,13 @@ def _active_player(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
     return [state.active_player] if state.players else []
+
+
+THE_LIVING = {"include_dead": ParamShape("include_dead", FLAG)}
+"""
+What ``_all_players`` reads. "Each player" means each living player unless a
+card says otherwise.
+"""
 
 
 def _all_players(
@@ -359,6 +453,12 @@ def _random_loot(
     return cards
 
 
+NOT_ME = {"exclude_controller": ParamShape("exclude_controller", FLAG)}
+"""
+The difference between "a player" and "another player".
+"""
+
+
 def _random_player(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
@@ -374,6 +474,17 @@ def _random_player(
     return [candidates[rng.randint(0, len(candidates) - 1)]]
 
 
+BY_SEAT = {
+    "value": ParamShape("value", WHOLE, least=0),
+    "player": ParamShape("player", WHOLE, least=0),
+}
+"""
+What ``_player_by_index`` reads. Two spellings of one seat number: the
+shorthand ``{"player": 2}`` arrives as ``value``, and the long form says
+``player`` outright.
+"""
+
+
 def _player_by_index(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
@@ -383,6 +494,18 @@ def _player_by_index(
         return []
 
     return [state.player(index)]
+
+
+ASKING = {
+    "count": ParamShape("count", WHOLE, least=0),
+    "minimum": ParamShape("minimum", WHOLE, least=0),
+    "maximum": ParamShape("maximum", WHOLE, least=0),
+    "prompt": ParamShape("prompt", TEXT),
+    "chooser": ParamShape("chooser", A_BOUND_GROUP),
+}
+"""
+What ``_ask`` reads: how many to pick, and who is being asked.
+"""
 
 
 def _ask(
@@ -442,6 +565,12 @@ def _chooser(context: AbilityContext, params: Mapping[str, Any]) -> int | None:
             return candidate.player_id
 
     return context.controller
+
+
+WHOSE = {"of": ParamShape("of", A_BOUND_GROUP)}
+"""
+What ``_named_players`` reads: whose things, when the card named them.
+"""
 
 
 def _named_players(
@@ -508,6 +637,22 @@ _COUNTABLE: dict[str, Callable[[Any], int]] = {
 }
 
 
+THE_MOST = {
+    "most": ParamShape("most", TEXT, values=tuple(sorted(_COUNTABLE)))
+}
+"""
+What ``_with_the_most`` reads, over the keys of the table that does the
+counting. A thing the engine cannot count is refused at load time by the same
+fact that makes it fail at run time.
+"""
+
+
+A_CHOSEN_PLAYER = _shape(NOT_ME, THE_MOST, ASKING)
+"""
+What ``_target_player`` takes, from the three helpers it passes through.
+"""
+
+
 def _with_the_most(candidates: list[Any], params: Mapping[str, Any]) -> list[Any]:
     """
     Narrow a list of players to those tied for the most of something.
@@ -532,6 +677,19 @@ def _with_the_most(candidates: list[Any], params: Mapping[str, Any]) -> list[Any
     best = max(count(player) for player in candidates)
 
     return [player for player in candidates if count(player) == best]
+
+
+A_CHOSEN_CURSE = _shape(
+    {"owner": ParamShape("owner", TEXT, values=("controller",))}, ASKING
+)
+"""
+``owner`` here is not ``owner`` on an item target.
+
+``_target_curse`` tests for ``controller`` and treats everything else as the
+whole table, so ``opponents`` — which items understand — would be accepted and
+ignored. The domain is the one this target actually has, which is why the
+descriptions belong to targets rather than to parameter names.
+"""
 
 
 def _target_curse(
@@ -620,6 +778,64 @@ def _target_soul(
         souls.extend(player.souls.cards)
 
     return _ask(DecisionKind.CHOOSE_CARD, souls, context, params, "target_soul")
+
+
+def _piles_of(state_type: type) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """
+    The decks and piles a card may name, read off the state they are found in.
+
+    ``_target_deck_card`` and ``_deck_top`` look their zone up by building an
+    attribute name out of the two words a card wrote. The words that work are
+    therefore the attributes that exist, and reading them here is the same
+    fact rather than a second copy of it — a list written out again would be
+    free to drift from the lookup it is supposed to describe.
+    """
+    from dataclasses import fields
+
+    names = {field.name for field in fields(state_type)}
+    decks = tuple(sorted({n.rsplit("_", 1)[0] for n in names if n.endswith("_deck")}))
+    piles = tuple(
+        sorted(
+            {
+                n.rsplit("_", 1)[1]
+                for n in names
+                if "_" in n
+                and n.rsplit("_", 1)[0] in decks
+                and n.rsplit("_", 1)[1] in ("deck", "discard")
+            }
+        )
+    )
+
+    return decks, piles
+
+
+DECKS, PILES = _piles_of(GameState)
+
+CARD_TYPES = tuple(str(kind) for kind in CardType)
+
+SEARCHING = {
+    "deck": ParamShape("deck", TEXT, values=DECKS),
+    "pile": ParamShape("pile", TEXT, values=PILES),
+    "from_top": ParamShape("from_top", WHOLE, least=1),
+    "card_type": ParamShape("card_type", TEXT, values=CARD_TYPES),
+    "exclude_type": ParamShape("exclude_type", TEXT, values=CARD_TYPES),
+    "tag": ParamShape("tag", TEXT),
+    "named": ParamShape("named", TEXT),
+}
+"""
+What ``_target_deck_card`` reads. A misspelt deck stops the game today, deep
+inside a study and naming no card; this is the same knowledge asked earlier.
+"""
+
+OFF_THE_TOP = {
+    "deck": ParamShape("deck", TEXT, values=DECKS),
+    "count": ParamShape("count", WHOLE, least=0),
+    "exclude": ParamShape("exclude", A_BOUND_GROUP),
+}
+"""
+What ``_deck_top`` reads. ``count`` is how many cards, not how many to choose:
+the same word, a different question from ``_ask``'s.
+"""
 
 
 def _target_deck_card(
@@ -770,6 +986,12 @@ def _holder(
     return seats
 
 
+MONSTERS = {"exclude_attacked": ParamShape("exclude_attacked", FLAG)}
+"""
+What ``_all_monsters`` reads.
+"""
+
+
 def _all_monsters(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
@@ -807,6 +1029,13 @@ def _random_monster(
     return [monsters[rng.randint(0, len(monsters) - 1)]]
 
 
+OWN_ITEMS = _shape(WHOSE, {"exclude_eternal": ParamShape("exclude_eternal", FLAG)})
+"""
+What ``_owned_treasure`` reads: whose items, and whether the untouchable ones
+are among them.
+"""
+
+
 def _owned_treasure(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
@@ -830,6 +1059,23 @@ def _owned_treasure(
         ]
 
     return treasures
+
+
+ITEMS = _shape(
+    WHOSE,
+    {
+        "owner": ParamShape("owner", TEXT, values=("controller", "opponents")),
+        "include_shop": ParamShape("include_shop", FLAG),
+        "exclude_eternal": ParamShape("exclude_eternal", FLAG),
+        "exclude_source": ParamShape("exclude_source", FLAG),
+        "counter": ParamShape("counter", TEXT),
+        "tag": ParamShape("tag", TEXT),
+    },
+)
+"""
+What ``_all_treasures`` reads. Whose items may be said either way — a role, or
+a group the ability bound — so both are here.
+"""
 
 
 def _all_treasures(
@@ -942,6 +1188,20 @@ def _top_stack(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
     return [] if state.stack.is_empty() else [state.stack.peek()]
+
+
+ON_THE_STACK = {
+    "kinds": ParamShape(
+        "kinds", LIST, values=tuple(str(kind) for kind in StackItemType)
+    ),
+    "triggers": ParamShape(
+        "triggers", LIST, values=tuple(str(event) for event in EventType)
+    ),
+}
+"""
+What ``_stack_items`` reads: two lists, each drawn from the enum the filter
+compares against. A list's ``values`` are what each of its items may be.
+"""
 
 
 def _stack_items(

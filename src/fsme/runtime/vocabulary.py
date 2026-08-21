@@ -35,16 +35,18 @@ def engine_vocabulary(effects: EffectRegistry | None = None) -> Vocabulary:
     """
     registry = effects if effects is not None else builtin_registry()
     conditions = ConditionEvaluator()
+    targets = TargetResolver()
 
     return Vocabulary(
         effects=frozenset(registry.names()) | CONTROL_NAMES,
         triggers=frozenset(str(event_type) for event_type in EventType),
         conditions=frozenset(conditions.names()) | BOOLEAN_CONDITIONS,
-        targets=frozenset(TargetResolver().names()),
+        targets=frozenset(targets.names()),
         shapes=MappingProxyType(
             {name: _shape_of(registry.spec(name)) for name in registry.names()}
         ),
         condition_shapes=conditions.shapes(),
+        target_shapes=targets.shapes(),
     )
 
 
