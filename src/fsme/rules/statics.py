@@ -189,6 +189,19 @@ on, and a monster has no seat for the player scopes to match against.
 """
 
 
+PLAYER_SCOPES = ("controller", "opponents", "all_players", "self")
+"""
+Static scopes that reach players, in the words a card writes them.
+
+``self`` is here because a card in play says "this" and means its own holder;
+on a monster there is no holder, and ``monster_value`` reads the same static
+instead. Both spellings arrive at the branch below, and a fifth word would
+fall through it and quietly mean ``controller``.
+"""
+
+STATIC_SCOPES = PLAYER_SCOPES + MONSTER_SCOPES
+
+
 def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
     """
     Return one of a monster's numbers with everything that changes it applied.

@@ -18,7 +18,7 @@ is accepted: the guard inside the engine stays where it is.
 | name | takes |
 | --- | --- |
 | `add_counter` | `amount` a whole number, `clear` true or false, `counter` text, `silences` true or false |
-| `add_modifier` | `amount` a whole number, `duration` text, `stat` text |
+| `add_modifier` | `amount` a whole number, `duration` text, `stat` one of 9 stat names |
 | `attach_curse` | `card` only a game can judge |
 | `cancel_event` | — |
 | `cancel_stack` | — |

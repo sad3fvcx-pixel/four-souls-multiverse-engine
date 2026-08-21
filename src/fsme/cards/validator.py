@@ -32,6 +32,7 @@ def validate_card(
     shapes: Mapping[str, Any] | None = None,
     condition_shapes: Mapping[str, Any] | None = None,
     target_shapes: Mapping[str, Any] | None = None,
+    node_shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Return every problem found in one raw card.
@@ -114,6 +115,10 @@ def validate_card(
             known_targets=known_targets,
             card_id=str(card_id),
         )
+    )
+
+    errors.extend(
+        _validate_nodes(data, nodes=node_shapes, card_id=str(card_id))
     )
 
     for index, ability in enumerate(abilities):
@@ -467,6 +472,171 @@ def _kind_written(value: Any) -> str:
 
 
 _BOOLEAN_NAMES = frozenset({"and", "or", "not"})
+
+
+STATIC_STAT_BY_SCOPE = "the stats a static may change depend on what it reaches"
+
+
+def _validate_nodes(
+    card: Mapping[str, Any],
+    *,
+    nodes: Mapping[str, Any] | None,
+    card_id: str,
+) -> list[str]:
+    """
+    Check the parts of the DSL that have no name inside them to look up.
+
+    An ability, a static and a control node *are* the structure, so what they
+    accept is a closed set of keys — unlike the top of a card, where an
+    unknown field is kept because a set may carry something this engine has
+    not learned yet. Inside the DSL there is nothing to be forward compatible
+    with: the interpreter reads these keys and hands nothing else on, so
+    ``{"if": [...], "thne": [...]}`` is a branch that never runs, silently.
+    """
+    if not nodes:
+        return []
+
+    errors: list[str] = []
+    monster = str(card.get("type", "")) == "monster"
+
+    for index, ability in enumerate(card.get("abilities", ()) or ()):
+        if isinstance(ability, Mapping):
+            errors.extend(
+                _one_node(ability, nodes.get("ability"), card_id, f"abilities[{index}]")
+            )
+            errors.extend(
+                _control_nodes(
+                    ability.get("effects", ()),
+                    nodes,
+                    card_id,
+                    f"abilities[{index}].effects",
+                )
+            )
+
+    for index, static in enumerate(card.get("statics", ()) or ()):
+        if not isinstance(static, Mapping):
+            continue
+
+        where = f"statics[{index}]"
+
+        errors.extend(_one_node(static, nodes.get("static"), card_id, where))
+        errors.extend(_static_stat(static, monster, card_id, where))
+
+    return errors
+
+
+def _one_node(
+    node: Mapping[str, Any],
+    shape: Any,
+    card_id: str,
+    path: str,
+) -> list[str]:
+    """
+    Check one node's keys, and the values of the ones with a domain.
+    """
+    if shape is None:
+        return []
+
+    errors: list[str] = []
+
+    for key, value in node.items():
+        parameter = shape.params.get(key)
+
+        if parameter is None:
+            article = "an" if shape.name[0] in "aeiou" else "a"
+
+            errors.append(
+                f"{card_id}: {path}: '{key}' is not part of "
+                f"{article} {shape.name}{did_you_mean(str(key), shape.params)}"
+            )
+
+            continue
+
+        if parameter.values and isinstance(value, str) and value not in parameter.values:
+            errors.append(
+                f"{card_id}: {path}.{key}: '{value}' is not one of "
+                + " or ".join(f"'{one}'" for one in parameter.values)
+                + did_you_mean(value, parameter.values)
+            )
+
+    return errors
+
+
+def _control_nodes(
+    effects: Any,
+    nodes: Mapping[str, Any],
+    card_id: str,
+    path: str,
+) -> list[str]:
+    """
+    Walk an ability's effects, checking every control node on the way down.
+    """
+    if not isinstance(effects, (list, tuple)):
+        return []
+
+    errors: list[str] = []
+
+    for index, node in enumerate(effects):
+        if not isinstance(node, Mapping):
+            continue
+
+        here = f"{path}[{index}]"
+        head = next((key for key in node if key in nodes and key != "static"), "")
+
+        if head and head != "ability":
+            errors.extend(_one_node(node, nodes[head], card_id, here))
+
+        for key, value in node.items():
+            if isinstance(value, (list, tuple)):
+                errors.extend(_control_nodes(value, nodes, card_id, f"{here}.{key}"))
+            elif isinstance(value, Mapping):
+                errors.extend(
+                    _control_nodes(
+                        value.get("effects", ()), nodes, card_id, f"{here}.{key}"
+                    )
+                )
+
+    return errors
+
+
+def _static_stat(
+    static: Mapping[str, Any],
+    monster: bool,
+    card_id: str,
+    path: str,
+) -> list[str]:
+    """
+    Check a static's stat against the stats of whatever it reaches.
+
+    Unlike ``add_modifier``, a static's landing place is known before a game.
+    Two functions read statics and they never overlap: one walks player
+    statics and skips any whose source has no controller, the other walks a
+    monster's. A monster has no controller, so the split is automatic — and a
+    player statistic written on a monster's static is read by nobody.
+    """
+    from fsme.rules.statics import MONSTER_SCOPES
+    from fsme.state.modifiers import MONSTER_STATS, STATS
+
+    stat = static.get("stat")
+
+    if not isinstance(stat, str) or not stat:
+        return []
+
+    scope = str(static.get("scope", "controller"))
+    reaches_monsters = scope in MONSTER_SCOPES or (monster and scope == "self")
+    allowed = MONSTER_STATS if reaches_monsters else STATS
+
+    if stat in allowed:
+        return []
+
+    whose = "a monster" if reaches_monsters else "a player"
+
+    return [
+        f"{card_id}: {path}.stat: '{stat}' is not something {whose} has"
+        f"{did_you_mean(stat, allowed)}"
+        f" — this static reaches {whose}, whose stats are "
+        + ", ".join(f"'{one}'" for one in sorted(allowed))
+    ]
 
 
 LIST = "a list"
@@ -1085,7 +1255,12 @@ def _effect_names(nodes: Any) -> list[str]:
 
         if "effect" in node:
             names.append(str(node["effect"]))
-        else:
+        elif not any(key in _CONTROL_NAMES for key in node):
+            # A control node is named by its head, and everything else on it
+            # belongs to that node rather than being an effect. Reading the
+            # next key along as an effect name turned one typo into two
+            # complaints: `{"may": [...], "promt": "..."}` is a `may` with a
+            # misspelled key, not a `may` and an effect called `promt`.
             for key in node:
                 if key not in _MODIFIER_KEYS and key not in _BRANCH_KEYS:
                     names.append(str(key))
@@ -1146,6 +1321,7 @@ def validate_cards(
     shapes: Mapping[str, Any] | None = None,
     condition_shapes: Mapping[str, Any] | None = None,
     target_shapes: Mapping[str, Any] | None = None,
+    node_shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Validate a collection of raw cards and report duplicate identifiers.
@@ -1167,6 +1343,7 @@ def validate_cards(
                 shapes=shapes,
                 condition_shapes=condition_shapes,
                 target_shapes=target_shapes,
+                node_shapes=node_shapes,
             )
         )
 

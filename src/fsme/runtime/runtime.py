@@ -115,6 +115,16 @@ play loot cards, or pass. Everything else waits until the stack is empty.
 """
 
 
+ABILITY_SCOPES = ("self", "controller", "any")
+"""
+The three answers ``in_scope`` gives, in the words a card writes them.
+
+Named here rather than listed somewhere else, because the branch below is what
+makes them mean anything: a fourth word would fall through to ``any`` and the
+card would react to every event at the table without saying so.
+"""
+
+
 def ability_scope(ability: Ability) -> str:
     """
     Return the effective scope of an ability.

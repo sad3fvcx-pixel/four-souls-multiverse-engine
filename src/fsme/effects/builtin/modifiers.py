@@ -493,5 +493,10 @@ def register(registry: EffectRegistry) -> None:
         add_modifier,
         needs_target=True,
         primary="stat",
+        # The union of both, because this effect defers the choice: which set
+        # applies is decided by whether the target turns out to be a player or
+        # a monster, and that is not known until a board exists. The guard
+        # inside `add_modifier` reads the same two tuples.
+        values={"stat": tuple(sorted(set(STATS) | set(MONSTER_STATS)))},
         description="Give a player a bonus that lasts beyond its card.",
     )

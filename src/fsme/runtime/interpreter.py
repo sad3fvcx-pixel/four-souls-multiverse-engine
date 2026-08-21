@@ -48,6 +48,28 @@ _MODIFIER_KEYS = frozenset(
     {"target", "as", "optional", "description", "prompt", "store"}
 )
 
+CONTROL_KEYS: dict[str, tuple[str, ...]] = {
+    "sequence": ("sequence", "effects"),
+    "may": ("may", "effects", "prompt", "as"),
+    "choose": ("choose", "modes", "as", "prompt"),
+    "if": ("if", "conditions", "then", "else"),
+    "repeat": ("repeat", "times", "effects"),
+    "for_each": ("for_each", "of", "effects"),
+    "stop": ("stop",),
+}
+"""
+What each control node is allowed to be written with.
+
+Read off the expanders below, one entry per ``_expand_*``: these are exactly
+the keys ``params.get`` is called with, plus the head that names the node.
+Anything else on such a node is dropped without a word, so
+``{"if": [...], "thne": [...]}`` is a branch that never runs and never
+complains.
+
+``_MODIFIER_KEYS`` are accepted on top of these, because the executor takes
+them off any node before the node is looked at.
+"""
+
 DEFAULT_MAX_OPS = 512
 
 DEFAULT_TARGET_KEY = "__default_target__"

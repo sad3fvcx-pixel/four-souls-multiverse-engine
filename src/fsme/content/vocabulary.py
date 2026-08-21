@@ -208,6 +208,30 @@ class TargetShape:
 
 
 @dataclass(frozen=True, slots=True)
+class NodeShape:
+    """
+    What one piece of the DSL that is not an effect may be written with.
+
+    An ability, a static, a control node. Unlike an effect or a target, these
+    have no name inside them to look up — they *are* the structure — so what
+    they accept is a closed set of keys, and a key outside it is a mistake
+    rather than a field a later engine will read.
+
+    Which is the opposite of the rule at the top level of a card, and
+    deliberately: there, an unknown field is kept, because a set may carry an
+    artist credit or something this engine has not learned yet. Inside the DSL
+    there is nothing to be forward compatible with — the interpreter reads
+    these keys and hands nothing else on.
+    """
+
+    name: str
+
+    params: Mapping[str, ParamShape] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class Vocabulary:
     """
     Every name the engine answers to.
@@ -230,6 +254,13 @@ class Vocabulary:
     )
     """
     What each target takes, on the same terms.
+    """
+
+    node_shapes: Mapping[str, NodeShape] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    """
+    What an ability, a static and each control node may be written with.
     """
 
     shapes: Mapping[str, EffectShape] = field(
@@ -256,6 +287,7 @@ class Vocabulary:
         shapes: Mapping[str, EffectShape] | None = None,
         condition_shapes: Mapping[str, ConditionShape] | None = None,
         target_shapes: Mapping[str, TargetShape] | None = None,
+        node_shapes: Mapping[str, NodeShape] | None = None,
     ) -> Vocabulary:
         """
         Build a vocabulary from any collections of names.
@@ -268,6 +300,7 @@ class Vocabulary:
             shapes=MappingProxyType(dict(shapes or {})),
             condition_shapes=MappingProxyType(dict(condition_shapes or {})),
             target_shapes=MappingProxyType(dict(target_shapes or {})),
+            node_shapes=MappingProxyType(dict(node_shapes or {})),
         )
 
     def shape(self, effect: str) -> EffectShape | None:
@@ -281,6 +314,12 @@ class Vocabulary:
         What one condition takes, or ``None`` when this vocabulary does not say.
         """
         return self.condition_shapes.get(condition)
+
+    def node_shape(self, node: str) -> NodeShape | None:
+        """
+        What one DSL node may be written with, or ``None`` when unknown.
+        """
+        return self.node_shapes.get(node)
 
     def target_shape(self, target: str) -> TargetShape | None:
         """

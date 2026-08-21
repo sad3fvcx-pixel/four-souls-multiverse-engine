@@ -10,16 +10,26 @@ content passes validation for effects nobody wrote.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from dataclasses import fields
 from types import MappingProxyType
 
+from fsme.cards.definition import Ability, Static
 from fsme.content import Vocabulary
-from fsme.content.vocabulary import UNCHECKED, EffectShape, ParamShape
+from fsme.content.vocabulary import (
+    UNCHECKED,
+    EffectShape,
+    NodeShape,
+    ParamShape,
+)
 from fsme.effects import EffectRegistry, builtin_registry
 from fsme.effects.registry import EffectSpec, ParamKind
 from fsme.events import EventType
+from fsme.rules.statics import STATIC_SCOPES
 
 from .condition_evaluator import ConditionEvaluator
-from .interpreter import CONTROL_NAMES
+from .interpreter import _MODIFIER_KEYS, CONTROL_KEYS, CONTROL_NAMES
+from .runtime import ABILITY_SCOPES
 from .target_resolver import TargetResolver
 
 BOOLEAN_CONDITIONS = frozenset({"and", "or", "not"})
@@ -47,6 +57,67 @@ def engine_vocabulary(effects: EffectRegistry | None = None) -> Vocabulary:
         ),
         condition_shapes=conditions.shapes(),
         target_shapes=targets.shapes(),
+        node_shapes=_node_shapes(),
+    )
+
+
+TEXT = "text"
+
+
+def _node_shapes() -> Mapping[str, NodeShape]:
+    """
+    What an ability, a static and each control node may be written with.
+
+    The two card structures are read off their own dataclasses: ``from_data``
+    reads exactly the fields, so the fields are what a card may write, and
+    adding one to the language widens this the moment it exists. The control
+    nodes are read off the table beside the expanders that consume them.
+
+    Only two keys carry a domain, and both are places a misspelling used to
+    change what a card did rather than stop it: a scope the engine does not
+    know falls through to the branch that means something else.
+    """
+    return MappingProxyType(
+        {
+            "ability": NodeShape(
+                name="ability",
+                params=MappingProxyType(
+                    {
+                        field.name: ParamShape(
+                            field.name,
+                            TEXT,
+                            values=ABILITY_SCOPES if field.name == "scope" else (),
+                        )
+                        for field in fields(Ability)
+                    }
+                ),
+            ),
+            "static": NodeShape(
+                name="static",
+                params=MappingProxyType(
+                    {
+                        field.name: ParamShape(
+                            field.name,
+                            TEXT,
+                            values=STATIC_SCOPES if field.name == "scope" else (),
+                        )
+                        for field in fields(Static)
+                    }
+                ),
+            ),
+            **{
+                name: NodeShape(
+                    name=name,
+                    params=MappingProxyType(
+                        {
+                            key: ParamShape(key, TEXT)
+                            for key in tuple(keys) + tuple(sorted(_MODIFIER_KEYS))
+                        }
+                    ),
+                )
+                for name, keys in CONTROL_KEYS.items()
+            },
+        }
     )
 
 

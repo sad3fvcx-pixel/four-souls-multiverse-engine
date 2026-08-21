@@ -98,6 +98,43 @@ Read the wording carefully — it is chosen to be honest rather than impressive.
 
 ## 5. Write a card
 
+### What a card can and cannot do
+
+Before the first one, the shape of the whole thing:
+
+**A card is data.** You combine what the engine already has. `gain_coins`
+exists because somebody wrote it in the engine; your card names it. That is
+the whole arrangement, and it is what makes a set safe to download from a
+stranger.
+
+An expansion **can**:
+
+- add cards of any type — loot, treasure, monster, room, character, curse;
+- give them abilities built from the effects, conditions, targets and triggers
+  in [REFERENCE.md](REFERENCE.md);
+- give them statics — numbers that are simply always on while the card is in
+  play;
+- combine those into something complicated: branches, choices, loops,
+  reactions to events, promises about events that have not happened yet;
+- name what an ability chose and use it again later in the same ability.
+
+An expansion **cannot**:
+
+- add a new effect, condition, target or trigger. If a card needs something
+  that is not in the reference, it cannot be written yet, and that is a gap in
+  the engine worth reporting rather than working around;
+- contain Python, or any other code. Nothing in a set is ever executed —
+  the engine reads a card and interprets it, and there is no path by which a
+  card file becomes a program;
+- change how an existing effect behaves;
+- reach outside its own directory.
+
+A card that seems to need a new mechanic usually does not. Look at
+[`author-kit/examples/reference_card/`](../author-kit/examples/reference_card/):
+"choose a player, they choose a card from their hand, you take it" is three
+existing pieces and no new machinery.
+
+
 Make a set under `content/user/`:
 
 ```
