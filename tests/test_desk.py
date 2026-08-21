@@ -99,7 +99,14 @@ def finished(address: str, number: int) -> Any:
 
 
 def test_the_front_door_is_the_four_things(address: str) -> None:
-    home = page(address, "/")
+    """
+    The four tools, which now live at `/advanced`.
+
+    `/` became the page somebody making a card lands on — tasks rather than
+    engine functions — and these four moved one click behind it rather than
+    going anywhere. See `tests/test_author_ui.py` for the other half.
+    """
+    home = page(address, "/advanced")
 
     for what in ("Play a game", "Run a study", "Test a card", "Open a report"):
         assert what in home, what
@@ -291,7 +298,7 @@ def test_a_card_can_be_told_apart_from_the_others_that_share_its_name(
 def test_the_page_shows_the_name_and_submits_the_identifier(
     address: str,
 ) -> None:
-    home = page(address, "/")
+    home = page(address, "/advanced")
 
     # A select, not a datalist: a datalist displays what it submits.
     assert "<datalist" not in home
@@ -317,7 +324,7 @@ def test_every_seat_can_be_played_by_the_bot(address: str) -> None:
     assert job["state"] == "done", job["error"]
     assert "Seats 0, 1, 2 were played by that bot" in job["text"]
 
-    home = page(address, "/")
+    home = page(address, "/advanced")
 
     assert "every seat by the bot" in home
 
@@ -499,6 +506,6 @@ def test_a_card_says_what_it_does_before_it_is_measured(address: str) -> None:
     assert bone["text"], "the printed text never reached the page"
     assert "counter" in bone["text"].lower()
 
-    home = page(address, "/")
+    home = page(address, "/advanced")
 
     assert 'id="card-text"' in home

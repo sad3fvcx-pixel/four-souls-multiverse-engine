@@ -161,9 +161,15 @@ class ConditionEvaluator:
         name: str,
         function: ConditionFn,
         takes: Mapping[str, ParamShape] | None = None,
+        describes: str = "",
     ) -> None:
         """
-        Add a condition implementation, and say what it takes.
+        Add a condition implementation, and say what it takes and asks.
+
+        ``describes`` is the question in a person's words. Anything offering
+        an author a list of conditions had no way to label them before this,
+        and would have had to keep words of its own — a second table, and
+        second tables drift.
 
         ``takes`` is what a card file may write inside this condition. Leaving
         it out does not mean the condition accepts anything: it means whoever
@@ -178,6 +184,7 @@ class ConditionEvaluator:
             name=name,
             params=MappingProxyType(dict(takes or {})),
             open_ended=takes is None,
+            describes=describes,
         )
 
     def names(self) -> frozenset[str]:
@@ -236,52 +243,124 @@ class ConditionEvaluator:
     def _register_builtin(self) -> None:
         register = self.register
 
-        register("player_alive", _player_alive, SUBJECT_PLAYER)
-        register("player_dead", _player_dead, SUBJECT_PLAYER)
-        register("player_active", _player_active, SUBJECT_PLAYER)
-        register("player_not_active", _player_not_active, SUBJECT_PLAYER)
-        register("player_has_coins", _player_has_coins, HAS_SOMETHING)
-        register("player_has_loot", _player_has_loot, HAS_SOMETHING)
-        register("player_has_treasure", _player_has_treasure, HAS_TREASURE)
-        register("player_has_souls", _player_has_souls, HAS_SOMETHING)
-        register("player_hp", _player_hp, ABOUT_A_PLAYER)
+        register("player_alive", _player_alive, SUBJECT_PLAYER, "the player is alive")
+        register("player_dead", _player_dead, SUBJECT_PLAYER, "the player is dead")
+        register("player_active", _player_active, SUBJECT_PLAYER, "it is that player's turn")
+        register(
+            "player_not_active",
+            _player_not_active, SUBJECT_PLAYER,
+            "it is not that player's turn",
+        )
+        register(
+            "player_has_coins",
+            _player_has_coins, HAS_SOMETHING,
+            "the player has that many cents",
+        )
+        register(
+            "player_has_loot",
+            _player_has_loot, HAS_SOMETHING,
+            "the player holds that many loot cards",
+        )
+        register(
+            "player_has_treasure",
+            _player_has_treasure, HAS_TREASURE,
+            "the player controls that many items",
+        )
+        register(
+            "player_has_souls",
+            _player_has_souls, HAS_SOMETHING,
+            "the player has that many souls",
+        )
+        register("player_hp", _player_hp, ABOUT_A_PLAYER, "the player's health compares as you say")
 
-        register("monster_alive", _monster_alive, SUBJECT_MONSTER)
-        register("monster_dead", _monster_dead, SUBJECT_MONSTER)
-        register("monster_boss", _monster_boss, SUBJECT_MONSTER)
-        register("monster_hp", _monster_hp, ABOUT_A_MONSTER)
+        register("monster_alive", _monster_alive, SUBJECT_MONSTER, "the monster is still alive")
+        register("monster_dead", _monster_dead, SUBJECT_MONSTER, "the monster is dead")
+        register("monster_boss", _monster_boss, SUBJECT_MONSTER, "the monster is a boss")
+        register(
+            "monster_hp",
+            _monster_hp, ABOUT_A_MONSTER,
+            "the monster's health compares as you say",
+        )
 
-        register("attack_roll", _attack_roll, NOTHING)
-        register("is_attacked", _is_attacked, NOTHING)
-        register("card_counters", _card_counters, COUNTERS)
-        register("player_counters", _player_counters, PLAYER_COUNTERS)
-        register("card_in_zone", _card_in_zone, IN_ZONE)
-        register("combat_damage", _combat_damage, NOTHING)
-        register("is_damage_source", _is_event_source, NOTHING)
-        register("is_event_source", _is_event_source, NOTHING)
-        register("event_value", _event_value, EVENT_VALUE)
-        register("values_equal", _values_equal, NAMED_VALUES)
-        register("is_damage_target", _is_damage_target, NOTHING)
-        register("is_damage_actor", _is_damage_actor, NOTHING)
-        register("dice_equals", _dice_equals, DICE)
-        register("dice_not_equals", _dice_not_equals, DICE)
-        register("dice_greater", _dice_greater, DICE)
-        register("dice_less", _dice_less, DICE)
-        register("dice_even", _dice_even, NOTHING)
-        register("dice_odd", _dice_odd, NOTHING)
+        register("attack_roll", _attack_roll, NOTHING, "the roll being answered is an attack roll")
+        register("is_attacked", _is_attacked, NOTHING, "this monster is the one under attack")
+        register(
+            "card_counters",
+            _card_counters, COUNTERS,
+            "the counters on this card compare as you say",
+        )
+        register(
+            "player_counters",
+            _player_counters, PLAYER_COUNTERS,
+            "the counters on the player compare as you say",
+        )
+        register("card_in_zone", _card_in_zone, IN_ZONE, "this card is in the place you name")
+        register("combat_damage", _combat_damage, NOTHING, "the damage came from an attack")
+        register(
+            "is_damage_source",
+            _is_event_source, NOTHING,
+            "this card is what the damage came from",
+        )
+        register(
+            "is_event_source",
+            _is_event_source, NOTHING,
+            "this card is what the event is about",
+        )
+        register(
+            "event_value",
+            _event_value, EVENT_VALUE,
+            "something the event carries is what you expect",
+        )
+        register(
+            "values_equal",
+            _values_equal, NAMED_VALUES,
+            "two things kept earlier are the same",
+        )
+        register(
+            "is_damage_target",
+            _is_damage_target, NOTHING,
+            "this card is what the damage landed on",
+        )
+        register(
+            "is_damage_actor",
+            _is_damage_actor, NOTHING,
+            "this card's controller dealt the damage",
+        )
+        register("dice_equals", _dice_equals, DICE, "the roll is exactly that")
+        register("dice_not_equals", _dice_not_equals, DICE, "the roll is anything but that")
+        register("dice_greater", _dice_greater, DICE, "the roll is higher than that")
+        register("dice_less", _dice_less, DICE, "the roll is lower than that")
+        register("dice_even", _dice_even, NOTHING, "the roll is even")
+        register("dice_odd", _dice_odd, NOTHING, "the roll is odd")
 
-        register("item_charged", _item_charged, NOTHING)
-        register("item_depleted", _item_depleted, NOTHING)
+        register("item_charged", _item_charged, NOTHING, "this item is ready to use")
+        register("item_depleted", _item_depleted, NOTHING, "this item has been used")
 
-        register("stack_empty", _stack_empty, NOTHING)
-        register("stack_not_empty", _stack_not_empty, NOTHING)
-        register("stack_size", _stack_size, COMPARISON)
+        register("stack_empty", _stack_empty, NOTHING, "nothing is waiting to resolve")
+        register("stack_not_empty", _stack_not_empty, NOTHING, "something is waiting to resolve")
+        register(
+            "stack_size",
+            _stack_size, COMPARISON,
+            "the number waiting to resolve compares as you say",
+        )
 
-        register("first_turn", _first_turn, NOTHING)
-        register("first_attack_roll", _first_attack_roll, NOTHING)
-        register("nth_time_this_turn", _nth_time_this_turn, NTH_TIME_SHAPE)
-        register("last_effect_did", _last_effect_did, COMPARISON)
-        register("game_finished", _game_finished, NOTHING)
+        register("first_turn", _first_turn, NOTHING, "it is the first turn of the game")
+        register(
+            "first_attack_roll",
+            _first_attack_roll, NOTHING,
+            "this is the turn's first attack roll",
+        )
+        register(
+            "nth_time_this_turn",
+            _nth_time_this_turn, NTH_TIME_SHAPE,
+            "this is the occurrence you mean this turn",
+        )
+        register(
+            "last_effect_did",
+            _last_effect_did, COMPARISON,
+            "the effect before this one did something",
+        )
+        register("game_finished", _game_finished, NOTHING, "the game is over")
 
 
 def normalise(node: Any) -> tuple[str, Mapping[str, Any]]:

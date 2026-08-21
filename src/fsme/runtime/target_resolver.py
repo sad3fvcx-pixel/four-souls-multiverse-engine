@@ -111,9 +111,15 @@ class TargetResolver:
         function: TargetFn,
         takes: Mapping[str, ParamShape] | None = None,
         yields: str = "",
+        describes: str = "",
     ) -> None:
         """
-        Add a target implementation, say what it takes and what it hands back.
+        Add a target implementation, and say what it is.
+
+        ``describes`` is the target in a person's words — what it picks out,
+        not how. An effect has said this since it was written; a target had no
+        way to, so anything showing an author a list of targets had to invent
+        the words itself, which is a second table.
 
         ``takes`` is what a card file may write inside this target. Leaving it
         out does not mean the target accepts anything: it means whoever
@@ -129,6 +135,7 @@ class TargetResolver:
             params=MappingProxyType(_shape(EVERY_TARGET, takes or {})),
             open_ended=takes is None,
             yields=yields,
+            describes=describes,
         )
 
     def names(self) -> frozenset[str]:
@@ -202,72 +209,153 @@ class TargetResolver:
     def _register_builtin(self) -> None:
         register = self.register
 
-        register("self", _self, NOTHING, CARDS)
-        register("source", _self, NOTHING, CARDS)
-        register("controller", _controller, NOTHING, PLAYERS)
-        register("owner", _owner, NOTHING, PLAYERS)
+        register("self", _self, NOTHING, CARDS, "this card itself")
+        register("source", _self, NOTHING, CARDS, "this card itself")
+        register("controller", _controller, NOTHING, PLAYERS, "whoever controls this card")
+        register("owner", _owner, NOTHING, PLAYERS, "whoever owns this card")
 
-        register("active_player", _active_player, NOTHING, PLAYERS)
-        register("current_player", _active_player, NOTHING, PLAYERS)
-        register("all_players", _all_players, THE_LIVING, PLAYERS)
-        register("opponents", _opponents, NOTHING, PLAYERS)
-        register("another_player", _opponents, NOTHING, PLAYERS)
-        register("random_player", _random_player, NOT_ME, PLAYERS)
-        register("character", _character, NOTHING, CARDS)
-        register("target_character", _target_character, ASKING, CARDS)
-        register("player_left", _player_left, NOTHING, PLAYERS)
-        register("player_right", _player_right, NOTHING, PLAYERS)
-        register("random_loot", _random_loot, WHOSE, CARDS)
-        register("player", _player_by_index, BY_SEAT, PLAYERS)
-        register("target_player", _target_player, A_CHOSEN_PLAYER, PLAYERS)
+        register("active_player", _active_player, NOTHING, PLAYERS, "the player whose turn it is")
+        register("current_player", _active_player, NOTHING, PLAYERS, "the player whose turn it is")
+        register("all_players", _all_players, THE_LIVING, PLAYERS, "every living player")
+        register("opponents", _opponents, NOTHING, PLAYERS, "every other player")
+        register("another_player", _opponents, NOTHING, PLAYERS, "every other player")
+        register("random_player", _random_player, NOT_ME, PLAYERS, "a player at random")
+        register("character", _character, NOTHING, CARDS, "your character card")
+        register(
+            "target_character",
+            _target_character,
+            ASKING,
+            CARDS,
+            "a character card somebody picks",
+        )
+        register("player_left", _player_left, NOTHING, PLAYERS, "the player to the left")
+        register("player_right", _player_right, NOTHING, PLAYERS, "the player to the right")
+        register("random_loot", _random_loot, WHOSE, CARDS, "a loot card taken blindly from a hand")
+        register("player", _player_by_index, BY_SEAT, PLAYERS, "the player in a particular seat")
+        register(
+            "target_player",
+            _target_player,
+            A_CHOSEN_PLAYER,
+            PLAYERS,
+            "a player somebody picks",
+        )
 
-        register("all_monsters", _all_monsters, MONSTERS, CARDS)
-        register("current_monster", _current_monster, MONSTERS, CARDS)
-        register("monster", _current_monster, MONSTERS, CARDS)
-        register("random_monster", _random_monster, MONSTERS, CARDS)
-        register("target_monster", _target_monster, _shape(MONSTERS, ASKING), CARDS)
-        register("target_curse", _target_curse, A_CHOSEN_CURSE, CARDS)
+        register("all_monsters", _all_monsters, MONSTERS, CARDS, "every monster in play")
+        register("current_monster", _current_monster, MONSTERS, CARDS, "the monster being fought")
+        register("monster", _current_monster, MONSTERS, CARDS, "the monster being fought")
+        register("random_monster", _random_monster, MONSTERS, CARDS, "a monster at random")
+        register(
+            "target_monster",
+            _target_monster,
+            _shape(MONSTERS, ASKING),
+            CARDS,
+            "a monster somebody picks",
+        )
+        register("target_curse", _target_curse, A_CHOSEN_CURSE, CARDS, "a curse somebody picks")
 
         register(
             "target_player_or_monster",
             _target_player_or_monster,
             _shape(NOT_ME, MONSTERS, ASKING),
             MIXED,
+            "a player or a monster, whichever is picked",
         )
-        register("target_loot", _target_loot, _shape(WHOSE, ASKING), CARDS)
-        register("target_soul", _target_soul, _shape(WHOSE, ASKING), CARDS)
-        register("target_deck_card", _target_deck_card, _shape(SEARCHING, ASKING), CARDS)
-        register("deck_top", _deck_top, OFF_THE_TOP, CARDS)
-        register("target_treasure", _target_treasure, _shape(ITEMS, ASKING), CARDS)
-        register("holder", _holder, WHOSE_CARDS, PLAYERS)
-        register("random_treasure", _random_treasure, ITEMS, CARDS)
-        register("owned_treasure", _owned_treasure, OWN_ITEMS, CARDS)
-        register("all_treasures", _all_treasures, ITEMS, CARDS)
-        register("shop_items", _shop_items, NOTHING, CARDS)
-        register("target_shop_item", _target_shop_item, ASKING, CARDS)
+        register(
+            "target_loot",
+            _target_loot,
+            _shape(WHOSE, ASKING),
+            CARDS,
+            "a loot card somebody picks out of a hand",
+        )
+        register("target_soul", _target_soul, _shape(WHOSE, ASKING), CARDS, "a soul somebody picks")
+        register(
+            "target_deck_card",
+            _target_deck_card,
+            _shape(SEARCHING, ASKING),
+            CARDS,
+            "a card somebody finds by searching a deck",
+        )
+        register("deck_top", _deck_top, OFF_THE_TOP, CARDS, "the top cards of a deck")
+        register(
+            "target_treasure",
+            _target_treasure,
+            _shape(ITEMS, ASKING),
+            CARDS,
+            "an item somebody picks",
+        )
+        register(
+            "holder",
+            _holder,
+            WHOSE_CARDS,
+            PLAYERS,
+            "whoever is holding a card chosen earlier",
+        )
+        register("random_treasure", _random_treasure, ITEMS, CARDS, "an item at random")
+        register(
+            "owned_treasure",
+            _owned_treasure,
+            OWN_ITEMS,
+            CARDS,
+            "every item a player controls",
+        )
+        register("all_treasures", _all_treasures, ITEMS, CARDS, "every item in play")
+        register("shop_items", _shop_items, NOTHING, CARDS, "everything for sale in the shop")
+        register(
+            "target_shop_item",
+            _target_shop_item,
+            ASKING,
+            CARDS,
+            "an item somebody picks from the shop",
+        )
 
-        register("top_stack", _top_stack, NOTHING, CARDS)
-        register("all_stack", _all_stack, ON_THE_STACK, CARDS)
+        register("top_stack", _top_stack, NOTHING, CARDS, "the ability waiting on top of the stack")
+        register("all_stack", _all_stack, ON_THE_STACK, CARDS, "everything waiting on the stack")
         register(
             "target_stack_item",
             _target_stack_item,
             _shape(ON_THE_STACK, ASKING),
             CARDS,
+            "something waiting on the stack, picked",
         )
-        register("event_source", _event_source, NOTHING, CARDS)
-        register("event_player", _event_player, NOTHING, PLAYERS)
-        register("previous_target", _previous_target, NOTHING, PASSTHROUGH)
-        register("previous_result", _previous_result, NOTHING, PASSTHROUGH)
+        register("event_source", _event_source, NOTHING, CARDS, "the card the event is about")
+        register("event_player", _event_player, NOTHING, PLAYERS, "the player the event is about")
+        register(
+            "previous_target",
+            _previous_target,
+            NOTHING,
+            PASSTHROUGH,
+            "whatever the last effect acted on",
+        )
+        register(
+            "previous_result",
+            _previous_result,
+            NOTHING,
+            PASSTHROUGH,
+            "whatever the last effect produced",
+        )
 
-        register("group", _group, ANY_BOUND_GROUP, PASSTHROUGH)
+        register(
+            "group",
+            _group,
+            ANY_BOUND_GROUP,
+            PASSTHROUGH,
+            "several things chosen earlier, together",
+        )
         register(
             "vote",
             _vote,
             _shape(ITEMS, {"prompt": ParamShape("prompt", TEXT)}),
             CARDS,
+            "the item every player votes for",
         )
-        register("most_common", _most_common, ANY_BOUND_GROUP, PASSTHROUGH)
-        register("none", _none, NOTHING, PASSTHROUGH)
+        register(
+            "most_common",
+            _most_common,
+            ANY_BOUND_GROUP,
+            PASSTHROUGH,
+            "the thing named more often than any other",
+        )
+        register("none", _none, NOTHING, PASSTHROUGH, "nothing at all")
 
 
 def normalise(spec: Any) -> tuple[str, Mapping[str, Any]]:

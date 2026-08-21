@@ -15,7 +15,7 @@ someone repairing an expansion should see everything wrong with it at once.
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -66,25 +66,48 @@ class ContentLoader:
         Directories are visited in sorted order so that two runs over the same
         files register cards in the same order.
         """
-        root_path = Path(root)
+        return self.load_roots([root])
 
-        if not root_path.is_dir():
-            raise ContentLoadError(f"{root_path}: not a content directory")
+    def load_roots(self, roots: Sequence[Path | str]) -> ContentLibrary:
+        """
+        Load several content roots into one library.
+
+        The cards FSME ships live in one place and the cards somebody writes
+        live in another — a frozen build carries its own inside itself, where
+        nothing an author saved could survive being closed. Both are ordinary
+        content and belong in the same library, so both are read here, in the
+        order given, and checked together: a card id repeated between the two
+        is reported exactly as one repeated inside either.
+
+        Roots are read in the order given. A root that does not exist is
+        skipped rather than refused — an author who has not made a set yet has
+        no directory, and that is not a mistake.
+        """
+        given = [Path(root) for root in roots]
+        present = [root for root in given if root.is_dir()]
+
+        if not present:
+            raise ContentLoadError(
+                f"{given[0] if given else '<nothing>'}: not a content directory"
+            )
 
         library = ContentLibrary()
         report = ValidationReport()
         seen: dict[str, str] = {}
 
-        for directory in self._expansion_directories(root_path):
-            expansion = self._load_expansion(directory, report, seen)
+        for root_path in present:
+            for directory in self._expansion_directories(root_path):
+                expansion = self._load_expansion(directory, report, seen)
 
-            if expansion is not None:
-                self._register(library, expansion, report, directory)
+                if expansion is not None:
+                    self._register(library, expansion, report, directory)
 
         self._resolve_references(library, report)
         self._check_dependencies(library, report)
 
-        report.raise_if_failed(f"content in {root_path}")
+        report.raise_if_failed(
+            "content in " + ", ".join(str(root) for root in present)
+        )
 
         return library
 

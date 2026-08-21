@@ -407,6 +407,9 @@ def register(registry: EffectRegistry) -> None:
         primary="amount",
         description="Deal damage to a player or monster.",
         least={"amount": 0},
+        asks={
+            "amount": "how much damage",
+        },
     )
     registry.register(
         "divide_damage",
@@ -422,6 +425,9 @@ def register(registry: EffectRegistry) -> None:
         primary="amount",
         description="Restore hit points.",
         least={"amount": 0},
+        asks={
+            "amount": "how much health",
+        },
     )
     registry.register(
         "kill", kill, needs_target=True, description="Reduce a target to zero hit points."

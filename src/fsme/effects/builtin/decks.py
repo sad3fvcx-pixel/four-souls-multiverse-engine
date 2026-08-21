@@ -461,6 +461,9 @@ def register(registry: EffectRegistry) -> None:
         description="Show the top cards of a deck.",
         values={"deck": DECKS},
         least={"count": 0},
+        asks={
+            "count": "how many cards",
+        },
     )
     registry.register(
         "reveal_hand",

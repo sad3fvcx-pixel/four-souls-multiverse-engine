@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import threading
 import traceback
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -114,6 +114,62 @@ class Workbench:
     @property
     def work(self) -> Path:
         return self._work
+
+    def show_card(self, card: Mapping[str, Any]) -> list[dict[str, Any]]:
+        """
+        Play one card in a game and say what happened, moment by moment.
+
+        Not the same question as "does this card change how games go" — that
+        is a study, takes two minutes, and answers with statistics. This is the
+        first question anybody has about a card they just made: *does it do
+        what I meant?* So the card is put into a hand and played, and what the
+        engine announced is read back in plain sentences.
+
+        A card that is never dealt teaches nobody anything, which is why it is
+        placed rather than shuffled for.
+        """
+        from fsme.cards import CardDefinition, CardInstance
+        from fsme.commands import Command, CommandType
+        from fsme.game import Game
+
+        definition = CardDefinition.from_data(dict(card))
+        game = Game.from_content(self._library, ["You", "Bea", "Cass", "Dee"], seed=5)
+        game.start()
+
+        held = CardInstance(
+            definition=definition,
+            instance_id=game.state.ids.allocate("preview"),
+            controller=0,
+            owner=0,
+        )
+        before = _snapshot(game)
+
+        if str(definition.type) == "loot":
+            game.state.player(0).hand.add_top(held)
+            index = list(game.state.player(0).hand.cards).index(held)
+            game.submit(
+                Command(
+                    type=CommandType.PLAY_LOOT, player=0, payload={"index": index}
+                )
+            )
+        else:
+            game.state.player(0).treasures.add_top(held)
+
+        for _ in range(20):
+            waiting = game.runtime.awaiting_decision
+
+            if waiting is None:
+                break
+
+            game.submit(
+                Command(
+                    type=CommandType.CHOOSE_TARGET,
+                    player=waiting.player,
+                    payload={"choices": [0]},
+                )
+            )
+
+        return _what_changed(before, _snapshot(game), definition.name)
 
     def jobs(self) -> list[Job]:
         """
@@ -456,3 +512,66 @@ class Workbench:
             raise ValueError(f"{name!r} is not in the work directory")
 
         return where
+
+
+def _snapshot(game: Any) -> dict[str, Any]:
+    """
+    The few numbers a person watching a card would look at.
+    """
+    return {
+        "coins": [player.pennies for player in game.state.players],
+        "hp": [player.hp for player in game.state.players],
+        "hand": [player.hand_size for player in game.state.players],
+        "items": [player.treasure_count for player in game.state.players],
+        "names": [player.name for player in game.state.players],
+    }
+
+
+def _what_changed(
+    before: Mapping[str, Any],
+    after: Mapping[str, Any],
+    card: str,
+) -> list[dict[str, Any]]:
+    """
+    Say what moved, in sentences rather than numbers.
+
+    Nothing moving is an answer too, and a common one for a card whose first
+    version does nothing — so it is said out loud rather than left as an empty
+    list somebody has to interpret.
+    """
+    said: list[dict[str, Any]] = []
+    words = {
+        "coins": "¢",
+        "hp": " health",
+        "hand": " cards in hand",
+        "items": " items",
+    }
+
+    for seat, who in enumerate(after["names"]):
+        for field, noun in words.items():
+            was, now = before[field][seat], after[field][seat]
+
+            if was == now:
+                continue
+
+            direction = "gained" if now > was else "lost"
+
+            said.append(
+                {
+                    "who": who,
+                    "what": f"{who} {direction} {abs(now - was)}{noun}"
+                    f" ({was} → {now})",
+                }
+            )
+
+    if not said:
+        said.append(
+            {
+                "who": "",
+                "what": f"{card} was played and nothing changed. That may be "
+                f"right — some cards only matter later, or need something on "
+                f"the table that was not there.",
+            }
+        )
+
+    return said

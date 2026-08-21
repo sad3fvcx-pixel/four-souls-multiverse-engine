@@ -14,6 +14,7 @@ to make a client work, it belongs in ``fsme.rules``, not in this file.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -30,11 +31,17 @@ from .view import events, snapshot
 DEFAULT_PLAYERS = ("Ann", "Bo", "Cy", "Di")
 
 
-def load_content(root: Path) -> ContentLibrary:
+def load_content(root: Path | Sequence[Path | str]) -> ContentLibrary:
     """
-    Read every card the engine knows about from a content directory.
+    Read every card the engine knows about.
+
+    One directory, or several read into one library — the cards FSME ships
+    live in one place and the cards somebody writes live in another, and a
+    game deals from both without knowing the difference.
     """
-    return ContentLoader(engine_vocabulary()).load_root(root)
+    roots = [root] if isinstance(root, (str, Path)) else list(root)
+
+    return ContentLoader(engine_vocabulary()).load_roots(roots)
 
 
 class Session:

@@ -404,6 +404,9 @@ def register(registry: EffectRegistry) -> None:
         primary="count",
         description="Draw loot cards.",
         least={"count": 0},
+        asks={
+            "count": "how many cards",
+        },
     )
     registry.register(
         "pass_hands",
@@ -418,6 +421,9 @@ def register(registry: EffectRegistry) -> None:
         primary="count",
         description="Discard loot cards.",
         least={"count": 0},
+        asks={
+            "count": "how many cards",
+        },
     )
     registry.register(
         "discard_cards",

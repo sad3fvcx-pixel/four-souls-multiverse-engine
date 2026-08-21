@@ -50,6 +50,15 @@ class ParamShape:
     values: tuple[Any, ...] = ()
     least: int | None = None
 
+    describes: str = ""
+    """
+    What this parameter is, in the words a person would use for it.
+
+    ``amount`` is a name for us; "how many cents" is what a form asks. Empty
+    means nobody has said, and whatever is asking should fall back to the
+    parameter's own name.
+    """
+
     refers_to: str = ""
     """
     What a parameter that names something else is naming.
@@ -144,6 +153,11 @@ class ConditionShape:
     about.
     """
 
+    describes: str = ""
+    """
+    What this condition asks, in a person's words.
+    """
+
 
 PLAYERS = "players"
 CARDS = "cards"
@@ -196,6 +210,11 @@ class TargetShape:
 
     False for every target the engine ships. True is an absence of
     information, not permission.
+    """
+
+    describes: str = ""
+    """
+    What this target picks out, in a person's words.
     """
 
     yields: str = ""

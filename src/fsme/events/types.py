@@ -158,3 +158,81 @@ class EventType(StrEnum):
     HEALED = "healed"
     PLAYER_REVIVED = "player_revived"
 
+
+
+WHEN_IT_HAPPENS: dict[EventType, str] = {
+    EventType.GAME_START: "the game begins",
+    EventType.GAME_END: "the game ends",
+    EventType.WINNER_DECLARED: "somebody wins",
+    EventType.TURN_START: "a turn begins",
+    EventType.TURN_END: "a turn ends",
+    EventType.TURN_CLEANUP: "a turn is tidied away",
+    EventType.PHASE_CHANGED: "a turn moves on",
+    EventType.ON_ENTER: "this card comes into play",
+    EventType.ON_LEAVE: "this card leaves play",
+    EventType.BEFORE_DESTROY: "an item is about to be destroyed",
+    EventType.ON_DESTROY: "an item is destroyed",
+    EventType.ON_DISCARD: "a card is discarded",
+    EventType.ON_GAIN: "a card is gained",
+    EventType.ON_LOSE: "a card is lost",
+    EventType.ON_PLAY: "this card is played",
+    EventType.BEFORE_ACTIVATE: "an item is about to be used",
+    EventType.ON_ACTIVATE: "somebody uses this item",
+    EventType.AFTER_ACTIVATE: "an item has been used",
+    EventType.ATTACK_START: "an attack begins",
+    EventType.BEFORE_ATTACK_ROLL: "an attack roll is about to be made",
+    EventType.AFTER_ATTACK_ROLL: "an attack roll has been made",
+    EventType.BEFORE_DAMAGE: "damage is about to be dealt",
+    EventType.DAMAGE_PREVENTED: "damage is stopped",
+    EventType.AFTER_DAMAGE: "damage has been dealt",
+    EventType.ATTACK_END: "an attack finishes",
+    EventType.ATTACK_FIZZLED: "an attack comes to nothing",
+    EventType.MONSTER_KILLED: "a monster dies",
+    EventType.BEFORE_REWARDS: "rewards are about to be paid",
+    EventType.BEFORE_DEATH: "somebody is about to die",
+    EventType.PLAYER_DIED: "a player dies",
+    EventType.BEFORE_DEATH_PENALTY: "a death penalty is about to be paid",
+    EventType.DEATH_PENALTY: "a death penalty is set",
+    EventType.DEATH_PENALTY_PAID: "a death penalty is paid",
+    EventType.BEFORE_ROLL: "a die is about to be rolled",
+    EventType.AFTER_ROLL: "somebody rolls a die",
+    EventType.ROLL_MODIFIED: "a roll is changed",
+    EventType.REROLL: "a die is rolled again",
+    EventType.BEFORE_PURCHASE: "somebody is about to buy",
+    EventType.AFTER_PURCHASE: "a purchase is finished",
+    EventType.TREASURE_BOUGHT: "an item is bought",
+    EventType.PURCHASE_FIZZLED: "a purchase comes to nothing",
+    EventType.BEFORE_LOOT: "the loot step is about to happen",
+    EventType.BEFORE_LOOT_DRAW: "a loot card is about to be drawn",
+    EventType.AFTER_LOOT: "the loot step is over",
+    EventType.LOOT_DRAWN: "a loot card is drawn",
+    EventType.DECK_REBUILT: "a deck runs out and is shuffled again",
+    EventType.LOOT_DISCARDED: "a loot card is discarded",
+    EventType.REVEALED: "a card is shown to everybody",
+    EventType.TREASURE_CHARGED: "an item is made ready again",
+    EventType.TREASURE_DEACTIVATED: "an item is used up",
+    EventType.TREASURE_DESTROYED: "an item is destroyed",
+    EventType.TREASURE_STOLEN: "an item is stolen",
+    EventType.BEFORE_COINS_GAINED: "cents are about to be gained",
+    EventType.STAT_MODIFIED: "one of a player's numbers changes",
+    EventType.STAT_EXPIRED: "a temporary bonus runs out",
+    EventType.SOUL_GAINED: "somebody gains a soul",
+    EventType.SOUL_LOST: "somebody loses a soul",
+    EventType.STACK_PUSH: "something is put on the stack",
+    EventType.STACK_RESOLVE: "something on the stack resolves",
+    EventType.STACK_CANCEL: "something on the stack is cancelled",
+    EventType.COINS_GAINED: "somebody gains cents",
+    EventType.COINS_LOST: "somebody loses cents",
+    EventType.DAMAGE_DEALT: "damage is dealt",
+    EventType.BEFORE_HEAL: "somebody is about to be healed",
+    EventType.HEALED: "somebody is healed",
+    EventType.PLAYER_REVIVED: "a player comes back",
+}
+"""
+Every event above, in the words somebody would use to describe it.
+
+Kept in this file rather than anywhere else so that the two cannot drift: a
+member added to the enum without a sentence here fails a test. Anything that
+offers an author a list of moments to react to reads this — without it, such
+a list would have to invent words of its own, and that is a second table.
+"""

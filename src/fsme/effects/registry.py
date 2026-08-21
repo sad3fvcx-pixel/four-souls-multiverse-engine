@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from types import MappingProxyType
 from typing import Any
@@ -98,6 +98,15 @@ class ParamSpec:
     least: int | None = None
     """
     The smallest number accepted, where there is a floor.
+    """
+
+    asks: str = ""
+    """
+    What to call this field when a person is filling it in.
+
+    ``amount`` is cents on one effect and damage on another, so the words
+    belong to the effect that takes it rather than to the word itself. Empty
+    means nobody has said, and whoever is asking should fall back to the name.
     """
 
     def wants(self) -> str:
@@ -270,6 +279,7 @@ class EffectRegistry:
         description: str = "",
         values: Mapping[str, Sequence[Any]] | None = None,
         least: Mapping[str, int] | None = None,
+        asks: Mapping[str, str] | None = None,
     ) -> EffectSpec:
         """
         Register an effect implementation.
@@ -296,6 +306,14 @@ class EffectRegistry:
 
         for parameter, floor in (least or {}).items():
             described[parameter] = _narrow(described, parameter, name, least=floor)
+
+        for parameter, question in (asks or {}).items():
+            # What to call this field when a person is filling it in. `amount`
+            # is cents on one effect and damage on another, so the words
+            # belong to the effect rather than to the word.
+            described[parameter] = _narrow(
+                described, parameter, name, asks=question
+            )
 
         spec = EffectSpec(
             name=name,
@@ -383,13 +401,18 @@ def _narrow(
     *,
     values: Sequence[Any] | None = None,
     least: int | None = None,
+    asks: str | None = None,
 ) -> ParamSpec:
     """
-    Add a domain or a floor to a parameter the handler already declares.
+    Add a domain, a floor or a label to a parameter the handler declares.
 
     Refused for a parameter the effect does not take, because a domain named
     for a parameter that does not exist is a typo in the engine, and the moment
     to find one of those is while it is being written.
+
+    Additive on purpose: each call keeps everything the parameter already had,
+    so an effect may say two of these three things about one parameter and get
+    both.
     """
     known = described.get(parameter)
 
@@ -398,23 +421,11 @@ def _narrow(
             f"effect '{effect}' has no parameter '{parameter}' to constrain"
         )
 
-    if values is not None:
-        return ParamSpec(
-            name=known.name,
-            kind=known.kind,
-            required=known.required,
-            nullable=known.nullable,
-            values=tuple(values),
-            least=known.least,
-        )
-
-    return ParamSpec(
-        name=known.name,
-        kind=known.kind,
-        required=known.required,
-        nullable=known.nullable,
-        values=known.values,
-        least=least,
+    return replace(
+        known,
+        values=tuple(values) if values is not None else known.values,
+        least=least if least is not None else known.least,
+        asks=asks if asks is not None else known.asks,
     )
 
 

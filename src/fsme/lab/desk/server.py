@@ -28,7 +28,9 @@ from fsme.api import Session
 from fsme.web.server import HTML, JSON, GameHandler, GameServer
 from fsme.web.server import STATIC as GAME_STATIC
 
+from . import author
 from .bench import Workbench
+from .capabilities import catalogue
 
 STATIC = Path(__file__).resolve().parent / "static"
 
@@ -61,7 +63,26 @@ class DeskHandler(GameHandler):
         path = self.path.split("?", 1)[0]
 
         if path in ("/", "/index.html"):
+            # What a person came to do. The engine's own four things are still
+            # here, one click away, under "Everything else".
+            self._send(HTML, (STATIC / "author.html").read_bytes())
+
+            return
+
+        if path in ("/advanced", "/desk"):
             self._send(HTML, (STATIC / "desk.html").read_bytes())
+
+            return
+
+        if path == "/api/capabilities":
+            # Everything the engine can do, with the words already on it, so
+            # that a page never has to keep a list of its own.
+            self._json(catalogue())
+
+            return
+
+        if path == "/api/sets":
+            self._json({"sets": author.sets(), "where": str(author.sets_directory())})
 
             return
 
@@ -159,6 +180,24 @@ class DeskHandler(GameHandler):
                         since=self._since(),
                     )
                 )
+
+            return
+
+        if path in ("/api/sets/new", "/api/sets/delete",
+                    "/api/cards/save", "/api/cards/check",
+                    "/api/cards/delete", "/api/cards/try"):
+            try:
+                body = self._body()
+            except ValueError as error:
+                self._json({"error": str(error)}, status=400)
+
+                return
+
+            try:
+                self._json(self._author(path, body))
+            except author.AuthorError as complaint:
+                # Something the person did, said in words meant for them.
+                self._json({"error": str(complaint)}, status=400)
 
             return
 
@@ -320,6 +359,39 @@ class DeskHandler(GameHandler):
             return self.bench.open_report(name)
 
         raise ValueError(f"nothing here does {kind!r}")
+
+    def _author(self, path: str, body: Any) -> Any:
+        """
+        The authoring calls, which all take what a person filled in.
+        """
+        if path == "/api/sets/new":
+            return author.make_set(str(body.get("name", "")))
+
+        if path == "/api/sets/delete":
+            author.delete_set(str(body.get("set", "")))
+
+            return {"deleted": True}
+
+        if path == "/api/cards/save":
+            return author.save_card(body)
+
+        if path == "/api/cards/check":
+            card = author.build_card(body)
+
+            return {"card": card, "problems": author.check_card(card)}
+
+        if path == "/api/cards/delete":
+            author.delete_card(str(body.get("set", "")), str(body.get("card", "")))
+
+            return {"deleted": True}
+
+        card = author.build_card(body)
+        problems = author.check_card(card)
+
+        if problems:
+            return {"problems": problems, "moments": []}
+
+        return {"problems": [], "moments": self.bench.show_card(card)}
 
     def _json(self, payload: Any, status: int = 200) -> None:
         self._send(JSON, json.dumps(payload).encode("utf-8"), status=status)

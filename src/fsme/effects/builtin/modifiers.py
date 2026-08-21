@@ -444,6 +444,10 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="counter",
         description="Change a counter on a card.",
+        asks={
+            "amount": "how many counters",
+            "counter": "what the counter is called",
+        },
     )
     registry.register(
         "take_extra_turn",
@@ -499,4 +503,9 @@ def register(registry: EffectRegistry) -> None:
         # inside `add_modifier` reads the same two tuples.
         values={"stat": tuple(sorted(set(STATS) | set(MONSTER_STATS)))},
         description="Give a player a bonus that lasts beyond its card.",
+        asks={
+            "stat": "which number to change",
+            "amount": "how much to change it by",
+            "duration": "how long it lasts",
+        },
     )

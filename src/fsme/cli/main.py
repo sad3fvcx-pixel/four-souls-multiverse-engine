@@ -101,8 +101,27 @@ def content_root(given: str | None) -> Path:
     )
 
 
+def content_roots(given: str | None) -> list[Path]:
+    """
+    Every place cards are read from: the ones we ship, then the author's own.
+
+    An author's sets live in their own directory precisely because a frozen
+    build's cards are inside the bundle, where nothing written could survive
+    the program closing. Both are ordinary content and both are loaded, so a
+    card somebody wrote is dealt exactly like a card we shipped and needs no
+    flag to be seen.
+
+    ``--content`` replaces the shipped cards and leaves the author's alone: it
+    is for pointing at a different copy of the game, not for hiding somebody's
+    work from them.
+    """
+    from fsme.content.workspace import home
+
+    return [content_root(given), home() / "my sets"]
+
+
 def library(args: argparse.Namespace) -> ContentLibrary:
-    return load_content(content_root(args.content))
+    return load_content(content_roots(args.content))
 
 
 def experiment(args: argparse.Namespace) -> Scenario | None:

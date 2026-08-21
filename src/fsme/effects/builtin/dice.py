@@ -219,6 +219,9 @@ def register(registry: EffectRegistry) -> None:
         primary="sides",
         stores="dice",
         description="Roll a die through the engine RNG.",
+        asks={
+            "sides": "how many sides the die has",
+        },
     )
     registry.register(
         "reroll",

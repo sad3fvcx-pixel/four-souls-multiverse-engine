@@ -144,6 +144,7 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
                     nullable=param.nullable,
                     values=param.values,
                     least=param.least,
+                    describes=param.asks,
                 )
                 for name, param in spec.params.items()
             }

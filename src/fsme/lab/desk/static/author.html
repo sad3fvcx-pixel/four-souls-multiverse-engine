@@ -1,0 +1,352 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>FSME — cards for Four Souls</title>
+<style>
+ :root { color-scheme: light dark; --line:#8884; --dim:#8889; --bad:#c0392b; --good:#1e8449; }
+ body { font: 16px/1.55 system-ui, sans-serif; margin:0; padding:2rem 1.2rem 4rem;
+        max-width:52rem; margin-inline:auto; }
+ h1 { font-size:1.5rem; margin:0 0 .2rem; }
+ h2 { font-size:1.15rem; margin:1.8rem 0 .6rem; }
+ p.lead { color:var(--dim); margin:0 0 2rem; }
+ .task { display:block; width:100%; text-align:left; border:1px solid var(--line);
+         border-radius:.6rem; padding:1rem 1.1rem; margin:0 0 .7rem; background:none;
+         font:inherit; color:inherit; cursor:pointer; }
+ .task:hover { border-color:currentColor; }
+ .task b { display:block; font-size:1.05rem; }
+ .task span { color:var(--dim); font-size:.92rem; }
+ label { display:block; margin:.8rem 0 .2rem; font-size:.92rem; }
+ input, select, textarea { font:inherit; padding:.4rem .5rem; border:1px solid var(--line);
+        border-radius:.35rem; background:none; color:inherit; width:100%; box-sizing:border-box; }
+ textarea { min-height:4rem; }
+ button { font:inherit; padding:.45rem .9rem; border:1px solid var(--line);
+        border-radius:.35rem; background:none; color:inherit; cursor:pointer; }
+ button.go { border-color:currentColor; font-weight:600; }
+ .row { display:flex; gap:.6rem; align-items:flex-end; flex-wrap:wrap; }
+ .row > * { flex:1; }
+ .row > button { flex:0 0 auto; }
+ .step { border:1px solid var(--line); border-radius:.5rem; padding:.8rem .9rem; margin:.6rem 0; }
+ .step .head { display:flex; justify-content:space-between; align-items:center; gap:.5rem; }
+ .kinds { display:grid; grid-template-columns:repeat(auto-fill,minmax(13rem,1fr)); gap:.6rem; }
+ .problem { color:var(--bad); font-size:.92rem; margin:.35rem 0; }
+ .ok { color:var(--good); }
+ .card { border:1px solid var(--line); border-radius:.5rem; padding:1rem; }
+ .card .kind { color:var(--dim); font-size:.85rem; text-transform:uppercase;
+               letter-spacing:.06em; }
+ .card .text { white-space:pre-wrap; margin-top:.5rem; }
+ .muted { color:var(--dim); font-size:.9rem; }
+ .back { background:none; border:none; color:inherit; cursor:pointer; padding:0;
+         font:inherit; opacity:.7; margin-bottom:1rem; }
+ .list { list-style:none; padding:0; margin:0; }
+ .list li { border-bottom:1px solid var(--line); padding:.55rem 0; display:flex;
+            justify-content:space-between; gap:.6rem; align-items:center; }
+ .moment { margin:.3rem 0; }
+ hr { border:none; border-top:1px solid var(--line); margin:2rem 0 1rem; }
+</style>
+
+<div id="page"></div>
+
+<script>
+const api = async (path, body) => {
+  const options = body === undefined ? {} :
+    { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body) };
+  const answer = await fetch(path, options);
+  return answer.json();
+};
+
+let can = null;          // what the engine can do
+let state = {};          // the card being made
+const page = document.getElementById("page");
+const el = (html) => { page.innerHTML = html; };
+const esc = (s) => String(s ?? "").replace(/[<>&"]/g, c =>
+  ({ "<":"&lt;", ">":"&gt;", "&":"&amp;", '"':"&quot;" }[c]));
+
+// ---------------------------------------------------------------- home
+
+async function home() {
+  const { sets, where } = await api("/api/sets");
+  const cards = sets.reduce((n, s) => n + s.cards.length, 0);
+  el(`
+    <h1>FSME</h1>
+    <p class="lead">Make cards for Four Souls and watch the game play them.</p>
+    <button class="task" onclick="startCard()">
+      <b>Make a card</b><span>Start something new.</span></button>
+    <button class="task" onclick="mine()">
+      <b>My cards</b><span>${cards} card${cards === 1 ? "" : "s"} in
+      ${sets.length} set${sets.length === 1 ? "" : "s"}.</span></button>
+    <button class="task" onclick="location.href='/play'">
+      <b>Watch a game</b><span>See the engine play, with your cards in it.</span></button>
+    <hr>
+    <button class="task" onclick="location.href='/advanced'">
+      <b>Everything else</b><span>Runs, studies, reports — the tools for
+      measuring, once a card works.</span></button>
+    <p class="muted">Your sets are kept in ${esc(where)}</p>`);
+}
+
+// ------------------------------------------------------------- my cards
+
+async function mine() {
+  const { sets } = await api("/api/sets");
+  el(`<button class="back" onclick="home()">← back</button>
+      <h1>My cards</h1>` +
+    (sets.length ? sets.map(s => `
+      <h2>${esc(s.name)}</h2>
+      <ul class="list">${s.cards.length
+        ? s.cards.map(c => `<li><span>${esc(c)}</span></li>`).join("")
+        : '<li><span class="muted">No cards yet.</span></li>'}</ul>`).join("")
+      : `<p class="muted">You have not made a set yet.</p>`) +
+    `<p><button class="go" onclick="startCard()">Make a card</button></p>`);
+}
+
+// ------------------------------------------------------- making a card
+
+async function startCard() {
+  if (!can) can = await api("/api/capabilities");
+  const { sets } = await api("/api/sets");
+  state = { set: sets[0]?.id || "", name: "", kind: "", text: "",
+            numbers: {}, ability: { trigger: "on_play", effects: [], targets: [] } };
+  if (!sets.length) return newSet();
+  chooseKind();
+}
+
+async function newSet() {
+  el(`<button class="back" onclick="home()">← back</button>
+      <h1>Name your set</h1>
+      <p class="lead">A set is a box of cards. Call it whatever you like —
+        you can make more later.</p>
+      <label for="n">What is it called?</label>
+      <input id="n" placeholder="My First Set" autofocus>
+      <p id="err" class="problem"></p>
+      <p><button class="go" onclick="createSet()">Make it</button></p>`);
+  document.getElementById("n").addEventListener("keydown",
+    e => { if (e.key === "Enter") createSet(); });
+}
+
+async function createSet() {
+  const name = document.getElementById("n").value;
+  const made = await api("/api/sets/new", { name });
+  if (made.error) { document.getElementById("err").textContent = made.error; return; }
+  state.set = made.id;
+  chooseKind();
+}
+
+function chooseKind() {
+  el(`<button class="back" onclick="home()">← back</button>
+      <h1>What kind of card?</h1>
+      <div class="kinds">${can.kinds.map(k => `
+        <button class="task" onclick="pickKind('${k.id}')">
+          <b>${esc(k.name)}</b><span>${esc(k.about)}</span></button>`).join("")}</div>`);
+}
+
+function pickKind(kind) { state.kind = kind; editor(); }
+
+// ------------------------------------------------------------- the editor
+
+function editor(problems = [], moments = []) {
+  const kindName = can.kinds.find(k => k.id === state.kind)?.name || state.kind;
+  el(`<button class="back" onclick="home()">← back</button>
+    <h1>Your ${esc(kindName.toLowerCase())}</h1>
+
+    <label for="name">What is it called?</label>
+    <input id="name" value="${esc(state.name)}" placeholder="Lucky Penny"
+           oninput="state.name=this.value; face()">
+
+    <label for="text">What does the card say?</label>
+    <textarea id="text" placeholder="Gain 3¢."
+      oninput="state.text=this.value; face()">${esc(state.text)}</textarea>
+
+    <h2>When does it happen?</h2>
+    <select id="trigger" onchange="state.ability.trigger=this.value">
+      ${can.triggers.filter(t => t.common).map(t =>
+        `<option value="${t.id}" ${t.id === state.ability.trigger ? "selected" : ""}>
+           ${esc(t.about)}</option>`).join("")}
+      <optgroup label="less common">
+      ${can.triggers.filter(t => !t.common).map(t =>
+        `<option value="${t.id}" ${t.id === state.ability.trigger ? "selected" : ""}>
+           ${esc(t.about)}</option>`).join("")}
+      </optgroup>
+    </select>
+
+    <h2>What happens?</h2>
+    <div id="steps">${state.ability.effects.map(stepHtml).join("")}</div>
+    <p class="row">
+      <button onclick="addStep()">＋ something happens</button>
+      <button onclick="addBranch()">＋ depending on something</button>
+    </p>
+
+    <hr>
+    <div class="row">
+      <button class="go" onclick="save()">Save this card</button>
+      <button onclick="tryIt()">Try it in a game</button>
+    </div>
+    <div id="says">
+      ${problems.map(p => `<p class="problem">${esc(p)}</p>`).join("")}
+      ${moments.map(m => `<p class="moment">${esc(m.what)}</p>`).join("")}
+    </div>
+
+    <h2>The card</h2>
+    <div id="face"></div>`);
+  face();
+}
+
+function stepHtml(step, index) {
+  if (step.branch) {
+    const c = step.branch.condition || {};
+    return `<div class="step">
+      <div class="head"><b>Depending on…</b>
+        <button onclick="dropStep(${index})">remove</button></div>
+      <select onchange="setCondition(${index}, this.value)">
+        <option value="">— choose —</option>
+        ${can.conditions.map(x => `<option value="${x.id}"
+          ${x.id === c.id ? "selected" : ""}>${esc(x.about)}</option>`).join("")}
+      </select>
+      ${fieldsHtml(conditionFields(c.id), c.fields || {},
+                   `state.ability.effects[${index}].branch.condition.fields`)}
+      <p class="muted">if it is true</p>
+      ${innerHtml(index, "then")}
+      <p class="muted">otherwise</p>
+      ${innerHtml(index, "else")}
+    </div>`;
+  }
+  const chosen = can.effects.find(e => e.id === step.id);
+  return `<div class="step">
+    <div class="head">
+      <select onchange="setEffect(${index}, this.value)">
+        <option value="">— choose what happens —</option>
+        ${can.effects.filter(e => e.common).map(e => `<option value="${e.id}"
+          ${e.id === step.id ? "selected" : ""}>${esc(e.about)}</option>`).join("")}
+        <optgroup label="everything else">
+        ${can.effects.filter(e => !e.common).map(e => `<option value="${e.id}"
+          ${e.id === step.id ? "selected" : ""}>${esc(e.about)}</option>`).join("")}
+        </optgroup>
+      </select>
+      <button onclick="dropStep(${index})">remove</button>
+    </div>
+    ${fieldsHtml(chosen ? chosen.fields : [], step.fields || {},
+                 `state.ability.effects[${index}].fields`)}
+  </div>`;
+}
+
+function innerHtml(index, branch) {
+  const list = state.ability.effects[index].branch[branch] || [];
+  return `<div>${list.map((step, i) => {
+    const chosen = can.effects.find(e => e.id === step.id);
+    return `<div class="step">
+      <div class="head">
+        <select onchange="setInner(${index},'${branch}',${i},this.value)">
+          <option value="">— choose —</option>
+          ${can.effects.filter(e => e.common).map(e => `<option value="${e.id}"
+            ${e.id === step.id ? "selected" : ""}>${esc(e.about)}</option>`).join("")}
+          <optgroup label="everything else">
+          ${can.effects.filter(e => !e.common).map(e => `<option value="${e.id}"
+            ${e.id === step.id ? "selected" : ""}>${esc(e.about)}</option>`).join("")}
+          </optgroup>
+        </select>
+        <button onclick="dropInner(${index},'${branch}',${i})">remove</button>
+      </div>
+      ${fieldsHtml(chosen ? chosen.fields : [], step.fields || {},
+        `state.ability.effects[${index}].branch.${branch}[${i}].fields`)}
+    </div>`;
+  }).join("")}
+  <button onclick="addInner(${index},'${branch}')">＋ add</button></div>`;
+}
+
+function fieldsHtml(fields, values, path) {
+  return (fields || []).filter(f => !f.picks).map(f => {
+    const value = values[f.id] ?? "";
+    if (f.choices && f.choices.length) {
+      return `<label>${esc(f.about)}</label>
+        <select onchange="setField('${path}','${f.id}',this.value)">
+          <option value="">— choose —</option>
+          ${f.choices.map(c => `<option ${c === value ? "selected" : ""}>${esc(c)}</option>`).join("")}
+        </select>`;
+    }
+    const number = f.kind === "a whole number";
+    if (f.kind === "true or false") {
+      return `<label><input type="checkbox" style="width:auto"
+        ${value === true ? "checked" : ""}
+        onchange="setField('${path}','${f.id}',this.checked)"> ${esc(f.about)}</label>`;
+    }
+    return `<label>${esc(f.about)}</label>
+      <input ${number ? `type="number" ${f.least != null ? `min="${f.least}"` : ""}` : ""}
+        value="${esc(value)}"
+        oninput="setField('${path}','${f.id}',${number ? "this.valueAsNumber" : "this.value"})">`;
+  }).join("");
+}
+
+function conditionFields(id) {
+  return (can.conditions.find(c => c.id === id) || {}).fields || [];
+}
+
+// -------------------------------------------------------------- editing
+
+const at = (path) => path.split(/[.\[\]]+/).filter(Boolean)
+  .reduce((o, k) => o[k] ?? (o[k] = {}), window);
+
+function setField(path, key, value) {
+  at(path)[key] = value;
+  face();
+}
+function setEffect(i, id) { state.ability.effects[i] = { id, fields: {} }; editor(); }
+function setInner(i, branch, j, id) {
+  state.ability.effects[i].branch[branch][j] = { id, fields: {} }; editor();
+}
+function setCondition(i, id) {
+  state.ability.effects[i].branch.condition = { id, fields: {} }; editor();
+}
+function addStep() { state.ability.effects.push({ id: "", fields: {} }); editor(); }
+function addBranch() {
+  state.ability.effects.push(
+    { branch: { condition: { id: "", fields: {} }, then: [], else: [] } });
+  editor();
+}
+function addInner(i, branch) {
+  state.ability.effects[i].branch[branch].push({ id: "", fields: {} }); editor();
+}
+function dropStep(i) { state.ability.effects.splice(i, 1); editor(); }
+function dropInner(i, branch, j) {
+  state.ability.effects[i].branch[branch].splice(j, 1); editor();
+}
+
+// ------------------------------------------------------- the card's face
+
+async function face() {
+  const kindName = can.kinds.find(k => k.id === state.kind)?.name || state.kind;
+  const holder = document.getElementById("face");
+  if (holder) {
+    holder.innerHTML = `<div class="card">
+      <div class="kind">${esc(kindName)}</div>
+      <b>${esc(state.name || "Untitled")}</b>
+      <div class="text">${esc(state.text || "")}</div>
+      <div class="muted" id="reads"></div></div>`;
+  }
+  const said = await api("/api/cards/check", state);
+  const reads = document.getElementById("reads");
+  if (reads) {
+    reads.innerHTML = said.problems && said.problems.length
+      ? said.problems.map(p => `<div class="problem">${esc(plain(p))}</div>`).join("")
+      : '<div class="ok">This card is ready.</div>';
+  }
+}
+
+// Engine messages name a path through a file. A person did not write a file.
+function plain(message) {
+  const tail = message.split(": ").slice(-1)[0];
+  return tail.charAt(0).toUpperCase() + tail.slice(1);
+}
+
+async function save() {
+  const said = await api("/api/cards/save", state);
+  if (said.error) return editor([said.error]);
+  editor(said.problems.map(plain),
+         said.saved ? [{ what: `Saved. ${state.name} is in your set.` }] : []);
+}
+
+async function tryIt() {
+  const said = await api("/api/cards/try", state);
+  if (said.error) return editor([said.error]);
+  editor((said.problems || []).map(plain), said.moments || []);
+}
+
+home();
+</script>

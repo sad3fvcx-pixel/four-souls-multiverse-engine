@@ -372,6 +372,9 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="count",
         description="Take treasures from the top of the deck.",
+        asks={
+            "count": "how many items",
+        },
     )
     registry.register(
         "destroy_treasure",
