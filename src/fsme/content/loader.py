@@ -73,18 +73,18 @@ class ContentLoader:
 
         library = ContentLibrary()
         report = ValidationReport()
+        seen: dict[str, str] = {}
 
         for directory in self._expansion_directories(root_path):
-            expansion = self._load_expansion(directory, report)
+            expansion = self._load_expansion(directory, report, seen)
 
             if expansion is not None:
                 self._register(library, expansion, report, directory)
 
         self._resolve_references(library, report)
+        self._check_dependencies(library, report)
 
         report.raise_if_failed(f"content in {root_path}")
-
-        library.check_dependencies()
 
         return library
 
@@ -122,13 +122,16 @@ class ContentLoader:
 
         library = ContentLibrary()
 
+        seen: dict[str, str] = {}
+
         for directory in self._expansion_directories(root_path):
-            expansion = self._load_expansion(directory, report)
+            expansion = self._load_expansion(directory, report, seen)
 
             if expansion is not None:
                 self._register(library, expansion, report, directory)
 
         self._resolve_references(library, report)
+        self._check_dependencies(library, report)
 
         return report
 
@@ -180,6 +183,7 @@ class ContentLoader:
         self,
         directory: Path,
         report: ValidationReport,
+        seen: dict[str, str] | None = None,
     ) -> Expansion | None:
         manifest_path = directory / MANIFEST_NAME
         raw_manifest = self._read_json(manifest_path, report)
@@ -194,7 +198,9 @@ class ContentLoader:
             return None
 
         manifest = Manifest.from_data(raw_manifest)
-        definitions = self._load_cards(directory, manifest, report)
+        definitions = self._load_cards(
+            directory, manifest, report, {} if seen is None else seen
+        )
 
         return Expansion(manifest=manifest, definitions=tuple(definitions))
 
@@ -203,9 +209,19 @@ class ContentLoader:
         directory: Path,
         manifest: Manifest,
         report: ValidationReport,
+        seen: dict[str, str],
     ) -> list[CardDefinition]:
+        """
+        Read one set's card files.
+
+        ``seen`` maps every card identifier already read to the file it came
+        from, and it spans the whole root rather than one set. A card
+        identifier is global — the registry keeps one table for the table, so
+        two sets that ship the same identifier cannot both be loaded — and
+        finding that out here is the difference between a report naming both
+        files and an exception raised later, naming neither.
+        """
         definitions: list[CardDefinition] = []
-        seen: dict[str, str] = {}
 
         for file_path in sorted(directory.rglob(f"*{CARD_FILE_EXTENSION}")):
             if file_path.name == MANIFEST_NAME or file_path.name.startswith("_"):
@@ -264,11 +280,19 @@ class ContentLoader:
 
             identifier = str(card.get("id", ""))
 
-            if identifier and identifier in seen:
+            if identifier and seen.get(identifier, str(file_path)) != str(file_path):
+                # Two cards in one file are `validate_cards`' business: it is
+                # handed the whole list and says so on its own. What only this
+                # can see is the same identifier in two different files, which
+                # includes two different sets.
                 report.add(
                     IssueCategory.DUPLICATE,
-                    f"card '{identifier}' is already defined in {seen[identifier]}",
-                    file=str(file_path),
+                    f"card id is used in two files:\n"
+                    f"      {seen[identifier]}\n"
+                    f"      {file_path}\n"
+                    f"    card ids must be unique across every set "
+                    f"loaded together",
+                    expansion=manifest.id,
                     identifier=identifier,
                 )
             elif identifier:
@@ -317,6 +341,40 @@ class ContentLoader:
             return
 
         library.add(expansion)
+
+    def _check_dependencies(
+        self,
+        library: ContentLibrary,
+        report: ValidationReport,
+    ) -> None:
+        """
+        Check that every set has what its manifest says it needs.
+
+        This used to be raised after the report was already finished, so a set
+        with a missing dependency and three broken cards told its author about
+        the dependency and nothing else. A missing requirement is an ordinary
+        problem with a file, and it is reported like one.
+
+        Only presence is checked. Nothing in the pipeline orders sets by their
+        requirements — directories are read in sorted order and every set is
+        read independently — so a requirement is an assertion that a set is
+        present, not an instruction about when to read it. That is why a cycle
+        is not an error here: two sets that require each other are both
+        present, and nothing was going to be ordered by the answer. It would
+        become worth checking the moment anything reads sets in dependency
+        order, and not before.
+        """
+        for expansion in library:
+            for required in expansion.manifest.requires:
+                if required in library.expansions:
+                    continue
+
+                report.add(
+                    IssueCategory.REFERENCE,
+                    f"requires '{required}', which is not loaded",
+                    expansion=expansion.id,
+                    identifier=required,
+                )
 
     def _resolve_references(
         self,

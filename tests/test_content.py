@@ -18,7 +18,6 @@ from fsme.content import (
     InvalidContentError,
     IssueCategory,
     Manifest,
-    MissingDependencyError,
     Vocabulary,
     validate_manifest,
 )
@@ -313,6 +312,13 @@ def test_loading_invalid_content_raises_with_every_problem(tmp_path) -> None:
 
 
 def test_a_missing_dependency_is_refused(tmp_path) -> None:
+    """
+    Reported like any other problem with a file rather than raised on its own.
+
+    It used to be raised after the report was already finished, so a set with
+    a missing dependency and three broken cards told its author about the
+    dependency and nothing else.
+    """
     write_set(
         tmp_path,
         "dependent",
@@ -320,8 +326,10 @@ def test_a_missing_dependency_is_refused(tmp_path) -> None:
         {"cards": [GOOD_CARD]},
     )
 
-    with pytest.raises(MissingDependencyError):
+    with pytest.raises(InvalidContentError) as error:
         loader().load_root(tmp_path)
+
+    assert "requires 'nowhere'" in str(error.value)
 
 
 def test_manifest_validation_reports_missing_fields() -> None:

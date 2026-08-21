@@ -1,5 +1,9 @@
 # Content Pipeline Audit
 
+> **Status.** Items 1–5 of §6 are done — see `docs/CONTENT_PIPELINE_FIXES.md`.
+> What remains in §6 is the two decisions that need a rules answer, and the
+> Target Reference Layer.
+
 The question: **if somebody who has never seen this code writes their own
 expansion, where can they still come unstuck?**
 

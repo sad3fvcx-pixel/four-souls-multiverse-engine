@@ -967,6 +967,14 @@ def _declared_target_names(ability: Mapping[str, Any]) -> set[str]:
     point an effect at ``victim``. That name is not part of the engine's
     vocabulary and never will be — it belongs to this one card — so it has to
     be gathered from the ability rather than looked up.
+
+    Only ``as`` introduces such a name. A bare string in ``targets`` does bind
+    a group — under the target's own name, which is what
+    ``{"targets": ["all_players"]}`` relies on — but binding is not declaring,
+    and reading it as a declaration used to make every misspelling legal:
+    ``{"targets": ["target_playr"]}`` loaded cleanly and stopped the game when
+    the ability fired, while the same mistake written as an object was caught
+    at once.
     """
     names: set[str] = set()
 
@@ -976,10 +984,6 @@ def _declared_target_names(ability: Mapping[str, Any]) -> set[str]:
         return names
 
     for spec in declared:
-        if isinstance(spec, str):
-            names.add(spec)
-            continue
-
         if not isinstance(spec, Mapping):
             continue
 

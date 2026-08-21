@@ -115,6 +115,8 @@ def replay_journal(
     if interactive_priority is None:
         interactive_priority = how_it_was_played(journal)
 
+    content = why_the_content_differs(journal, library)
+
     game = Game.from_content(
         library,
         list(journal.players),
@@ -164,10 +166,48 @@ def replay_journal(
                     player=entry.player,
                     expected=entry.digest,
                     found=found,
+                    reason=content,
                 ),
             )
 
     return Playback(game=game, replayed=played)
+
+
+def why_the_content_differs(journal: Journal, library: ContentLibrary) -> str:
+    """
+    What to say about the content if this replay comes out differently.
+
+    A journal records what it was played against — every set and the version
+    its manifest claimed. Until now nothing read it back, so a game replayed
+    against changed content reported a state digest that did not match and
+    stopped there, which tells the reader that something is different and
+    nothing about what.
+
+    The comparison is of manifest versions and not of a fingerprint over the
+    cards, which is the decision ``ContentLibrary.identity`` was written for
+    and this does not revisit. Two libraries with the same identity are not
+    proven identical, so this cannot see a card edited without its manifest
+    version changing; two with different ones are proven different, which is
+    the half somebody looking for the reason can act on.
+
+    An empty string means there is nothing to say — either the journal records
+    no content, or the two identities agree. It does not mean the content is
+    the same, and nothing here claims that it is.
+    """
+    written = journal.content_version
+
+    if not written:
+        return ""
+
+    here = library.identity()
+
+    if written == here:
+        return ""
+
+    return (
+        f"the content is not what this was played against — "
+        f"the journal says {written}, this library is {here}"
+    )
 
 
 def deals_itself(journal: Journal) -> bool:
