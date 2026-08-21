@@ -121,7 +121,8 @@ content/user/my_set/
     "name": "Lucky Penny",
     "type": "loot",
     "expansion": "my_set",
-    "text": "Gain 3 cents.",
+    "schema_version": "1",
+    "metadata": { "text": "Gain 3¢." },
     "abilities": [
       { "trigger": "on_play", "effects": [{ "effect": "gain_coins", "amount": 3 }] }
     ]
@@ -142,11 +143,23 @@ A mistake is named where it is, with the nearest thing the engine does know:
       unknown effect 'gain_coinz' — did you mean 'gain_coins'?
 ```
 
-The full vocabulary is in [EFFECT_REGISTRY.md](EFFECT_REGISTRY.md),
+The card's printed words go in `metadata.text`, which is where all 1045
+shipped cards keep theirs and where the browser view reads them from. A `text`
+field at the top level of a card is not an error — unknown fields there are
+kept for forward compatibility — but nothing reads it, so nothing would show.
+
+Every effect, condition, target and trigger there is, with what each one
+takes, is in [REFERENCE.md](REFERENCE.md), which is generated from the engine
+and cannot go stale. What each of them is *for* is in
+[EFFECT_REGISTRY.md](EFFECT_REGISTRY.md),
 [TRIGGER_REGISTRY.md](TRIGGER_REGISTRY.md),
 [CONDITION_REGISTRY.md](CONDITION_REGISTRY.md) and
-[TARGET_REGISTRY.md](TARGET_REGISTRY.md). The shape of a card is in
-[CARD_SCHEMA.md](CARD_SCHEMA.md).
+[TARGET_REGISTRY.md](TARGET_REGISTRY.md) — between them they describe rather
+less than the reference lists, and the reference says by how much. The shape
+of a card is in [CARD_SCHEMA.md](CARD_SCHEMA.md).
+
+Working sets to copy rather than type are in
+[`author-kit/`](../author-kit/README.md).
 
 ---
 
