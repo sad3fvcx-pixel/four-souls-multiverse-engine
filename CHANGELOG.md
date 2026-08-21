@@ -8,6 +8,8 @@ that cannot be read says so) and the **card schema**.
 
 ## Unreleased
 
+## 0.2.0 — author preview
+
 - **A card that is wrong is refused before anybody plays it.** The pipeline
   checked that an effect's name existed and never looked at what the card gave
   it, so `{"effect": "gain_coins", "amount": "lots"}` loaded cleanly and then,
