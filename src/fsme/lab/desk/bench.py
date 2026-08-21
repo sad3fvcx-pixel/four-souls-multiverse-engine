@@ -135,6 +135,7 @@ class Workbench:
         definition = CardDefinition.from_data(dict(card))
         game = Game.from_content(self._library, ["You", "Bea", "Cass", "Dee"], seed=5)
         game.start()
+        _give_everyone_something(game)
 
         held = CardInstance(
             definition=definition,
@@ -155,11 +156,24 @@ class Workbench:
         else:
             game.state.player(0).treasures.add_top(held)
 
+        chose: list[str] = []
+
         for _ in range(20):
             waiting = game.runtime.awaiting_decision
 
             if waiting is None:
                 break
+
+            # Somebody has to answer, and nobody is here to. The first option
+            # is taken and *said out loud*: a card that then does nothing is
+            # usually a card that was handed something it cannot act on — an
+            # eternal item, say — and "nothing changed" on its own would send
+            # the author looking for a fault in the card.
+            if waiting.options:
+                chose.append(
+                    f"{game.state.player(waiting.player).name} chose "
+                    f"{_name_of(waiting.options[0])}"
+                )
 
             game.submit(
                 Command(
@@ -169,7 +183,9 @@ class Workbench:
                 )
             )
 
-        return _what_changed(before, _snapshot(game), definition.name)
+        return [{"who": "", "what": said} for said in chose] + _what_changed(
+            before, _snapshot(game), definition.name
+        )
 
     def jobs(self) -> list[Job]:
         """
@@ -514,6 +530,45 @@ class Workbench:
         return where
 
 
+def _name_of(thing: Any) -> str:
+    """
+    What to call something the preview picked, for somebody reading along.
+    """
+    definition = getattr(thing, "definition", None)
+
+    if definition is not None:
+        return str(definition.name)
+
+    return str(getattr(thing, "name", thing))
+
+
+def _give_everyone_something(game: Any) -> None:
+    """
+    Put a destroyable item in front of every player before the card is tried.
+
+    A fresh table holds nothing but starting items, and those are eternal —
+    they cannot be destroyed, stolen or given away. A card that does any of
+    those things would find nothing to do and report that it did nothing,
+    which is true of the board and false of the card. So the board is one an
+    ordinary card can act on.
+    """
+    state = game.state
+    spare = [
+        card
+        for card in state.treasure_deck.cards
+        if not getattr(card, "is_eternal", False)
+    ]
+
+    for seat in range(len(state.players)):
+        if seat >= len(spare):
+            return
+
+        card = spare[seat]
+        state.treasure_deck.cards.remove(card)
+        card.owner = card.controller = seat
+        state.player(seat).treasures.add_top(card)
+
+
 def _snapshot(game: Any) -> dict[str, Any]:
     """
     The few numbers a person watching a card would look at.
@@ -541,14 +596,14 @@ def _what_changed(
     """
     said: list[dict[str, Any]] = []
     words = {
-        "coins": "¢",
-        "hp": " health",
-        "hand": " cards in hand",
-        "items": " items",
+        "coins": ("¢", "¢"),
+        "hp": (" health", " health"),
+        "hand": (" card in hand", " cards in hand"),
+        "items": (" item", " items"),
     }
 
     for seat, who in enumerate(after["names"]):
-        for field, noun in words.items():
+        for field, (one, many) in words.items():
             was, now = before[field][seat], after[field][seat]
 
             if was == now:
@@ -559,8 +614,8 @@ def _what_changed(
             said.append(
                 {
                     "who": who,
-                    "what": f"{who} {direction} {abs(now - was)}{noun}"
-                    f" ({was} → {now})",
+                    "what": f"{who} {direction} {abs(now - was)}"
+                    f"{one if abs(now - was) == 1 else many} ({was} → {now})",
                 }
             )
 

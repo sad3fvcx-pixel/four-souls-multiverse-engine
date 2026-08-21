@@ -50,12 +50,41 @@ COMMON_TRIGGERS = (
     "turn_start",
     "turn_end",
     "monster_killed",
-    "after_roll",
-    "after_damage",
+    "player_died",
     "damage_dealt",
+    "after_roll",
 )
 """
 The moments real cards react to most, for the same reason.
+"""
+
+COMMON_TARGETS = (
+    "target_player",
+    "another_player",
+    "all_players",
+    "controller",
+    "target_treasure",
+    "target_monster",
+    "current_monster",
+    "target_loot",
+    "random_player",
+    "self",
+)
+"""
+The things a card most often acts on, shown before the rest.
+
+An ordering over the registry's own list, like the two above — not a list of
+what exists. Everything the engine has is still offered; this decides what a
+person sees without opening "everything else".
+"""
+
+NEEDS_SOMETHING_EARLIER = "passthrough"
+"""
+Targets that hand back whatever they were given.
+
+`group`, `most_common`, `previous_target` and the rest mean nothing on their
+own — they refer to something the ability already chose — so they are not
+offered as a thing to aim at. That is read off `yields` rather than listed.
 """
 
 CARD_KINDS = (
@@ -144,6 +173,8 @@ def _targets(vocabulary: Any) -> list[dict[str, Any]]:
             "id": name,
             "about": shape.describes or name.replace("_", " "),
             "gives": shape.yields,
+            "common": name in COMMON_TARGETS,
+            "aimable": shape.yields != NEEDS_SOMETHING_EARLIER,
             "fields": _fields(shape),
         }
         for name in sorted(vocabulary.targets)

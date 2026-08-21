@@ -359,6 +359,215 @@ def test_a_set_cannot_be_made_twice(address: str) -> None:
     assert "already have a set" in said["error"]
 
 
+# ----------------------------------------------------------------------
+# Aiming an effect at something
+# ----------------------------------------------------------------------
+
+
+def test_an_effect_can_be_aimed_at_somebody_chosen(address: str) -> None:
+    """
+    The card that used to come out wrong. "Deal 1 damage" with nothing to aim
+    at hits whoever played it — which is the opposite of what a Four Souls
+    author writing "deal 1 damage to another player" means, and it validated
+    cleanly.
+    """
+    post(address, "/api/sets/new", {"name": "Mine"})
+
+    saved = post(
+        address,
+        "/api/cards/save",
+        {
+            "set": "mine",
+            "name": "Shared Burden",
+            "kind": "loot",
+            "ability": {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "id": "deal_damage",
+                        "fields": {"amount": 1},
+                        "aim": "target_player",
+                        "aim_fields": {"exclude_controller": True},
+                    }
+                ],
+            },
+        },
+    )
+
+    assert saved["saved"], saved.get("problems")
+
+    ability = saved["card"]["abilities"][0]
+
+    assert ability["targets"] == [
+        {"target_player": {"exclude_controller": True, "as": "chosen_1"}}
+    ]
+    assert ability["effects"][0]["target"] == "chosen_1"
+
+
+def test_the_aimed_card_hits_somebody_else(address: str) -> None:
+    post(address, "/api/sets/new", {"name": "Mine"})
+
+    watched = post(
+        address,
+        "/api/cards/try",
+        {
+            "set": "mine",
+            "name": "Shared Burden",
+            "kind": "loot",
+            "ability": {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "id": "deal_damage",
+                        "fields": {"amount": 1},
+                        "aim": "target_player",
+                        "aim_fields": {"exclude_controller": True},
+                    }
+                ],
+            },
+        },
+    )
+
+    hurt = [m["what"] for m in watched["moments"] if "health" in m["what"]]
+
+    assert hurt, watched["moments"]
+    assert not any(one.startswith("You lost") for one in hurt), hurt
+
+
+def test_aiming_twice_at_the_same_thing_chooses_once(address: str) -> None:
+    """
+    "Deal 1 damage to a player and steal a cent from them" is one player, not
+    two. Two effects aimed the same way share the choice.
+    """
+    post(address, "/api/sets/new", {"name": "Mine"})
+
+    aim = {"aim": "target_player", "aim_fields": {"exclude_controller": True}}
+    saved = post(
+        address,
+        "/api/cards/save",
+        {
+            "set": "mine",
+            "name": "Mugging",
+            "kind": "loot",
+            "ability": {
+                "trigger": "on_play",
+                "effects": [
+                    dict(id="deal_damage", fields={"amount": 1}, **aim),
+                    dict(id="lose_coins", fields={"amount": 1}, **aim),
+                ],
+            },
+        },
+    )
+
+    ability = saved["card"]["abilities"][0]
+
+    assert len(ability["targets"]) == 1, "one player, chosen once"
+    assert {effect["target"] for effect in ability["effects"]} == {"chosen_1"}
+
+
+def test_the_page_is_told_what_may_be_aimed_at(address: str) -> None:
+    can = get(address, "/api/capabilities")
+    aimable = [one for one in can["targets"] if one["aimable"]]
+
+    assert len(aimable) > 35
+
+    # The ones that only mean something after the ability has chosen already
+    # are not offered as a thing to aim at.
+    assert {one["id"] for one in can["targets"] if not one["aimable"]} == {
+        "group",
+        "most_common",
+        "none",
+        "previous_result",
+        "previous_target",
+    }
+
+
+# ----------------------------------------------------------------------
+# Being told what is wrong, in one's own words
+# ----------------------------------------------------------------------
+
+
+def test_a_mistake_names_the_box_it_is_in(address: str) -> None:
+    """
+    Not `abilities[0].effects[0].amount`, and not `gain_coins` either — the
+    author picked "Add coins to a player" from a list and typed into a box
+    labelled "how many cents".
+    """
+    post(address, "/api/sets/new", {"name": "Mine"})
+
+    said = post(
+        address,
+        "/api/cards/check",
+        {
+            "set": "mine",
+            "name": "Odd",
+            "kind": "loot",
+            "ability": {
+                "trigger": "on_play",
+                "effects": [{"id": "gain_coins", "fields": {"amount": "three"}}],
+            },
+        },
+    )
+
+    (message,) = said["problems"]
+
+    assert message.startswith("How many cents needs")
+    assert "you wrote" in message
+    assert "abilities[" not in message
+    assert "gain_coins" not in message
+
+
+def test_a_card_that_does_nothing_is_not_called_ready(address: str) -> None:
+    post(address, "/api/sets/new", {"name": "Mine"})
+
+    said = post(
+        address,
+        "/api/cards/check",
+        {
+            "set": "mine",
+            "name": "Blank",
+            "kind": "loot",
+            "ability": {"trigger": "on_play", "effects": []},
+        },
+    )
+
+    (message,) = said["problems"]
+
+    assert "does not do anything yet" in message
+
+
+# ----------------------------------------------------------------------
+# Knowing when things happen
+# ----------------------------------------------------------------------
+
+
+def test_the_moments_a_card_reacts_to_are_distinguishable(address: str) -> None:
+    """
+    Two of them used to read "damage has been dealt" and "damage is dealt",
+    which is not a choice anybody can make.
+    """
+    can = get(address, "/api/capabilities")
+    words = [one["about"] for one in can["triggers"]]
+
+    assert len(words) == len(set(words)), "no two moments read the same"
+
+
+def test_the_moments_offered_first_are_the_ones_cards_use(address: str) -> None:
+    can = get(address, "/api/capabilities")
+    first = {one["id"] for one in can["triggers"] if one["common"]}
+
+    for wanted in (
+        "turn_start",
+        "turn_end",
+        "player_died",
+        "monster_killed",
+        "damage_dealt",
+        "on_activate",
+        "on_play",
+    ):
+        assert wanted in first, wanted
+
+
 def test_a_set_needs_a_usable_name(address: str) -> None:
     assert "needs a name" in post(address, "/api/sets/new", {"name": "  "})["error"]
     assert "no letters" in post(address, "/api/sets/new", {"name": "!!!"})["error"]

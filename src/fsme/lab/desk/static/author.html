@@ -224,7 +224,27 @@ function stepHtml(step, index) {
     </div>
     ${fieldsHtml(chosen ? chosen.fields : [], step.fields || {},
                  `state.ability.effects[${index}].fields`)}
+    ${aimHtml(chosen, step, `state.ability.effects[${index}]`)}
   </div>`;
+}
+
+// "Who does this happen to?" — offered only for effects that act on
+// something, with the engine's own words for each choice.
+function aimHtml(chosen, step, path) {
+  if (!chosen || !chosen.needs_target) return "";
+  const options = can.targets.filter(t => t.aimable);
+  const common = options.filter(t => t.common);
+  const rest = options.filter(t => !t.common);
+  const one = (t) => `<option value="${t.id}" ${t.id === step.aim ? "selected" : ""}>
+      ${esc(t.about)}</option>`;
+  const picked = can.targets.find(t => t.id === step.aim);
+  return `<label>Who or what does this happen to?</label>
+    <select onchange="setAim('${path}', this.value)">
+      <option value="">— the usual one for this card —</option>
+      ${common.map(one).join("")}
+      <optgroup label="everything else">${rest.map(one).join("")}</optgroup>
+    </select>
+    ${picked ? fieldsHtml(picked.fields, step.aim_fields || {}, `${path}.aim_fields`) : ""}`;
 }
 
 function innerHtml(index, branch) {
@@ -246,6 +266,8 @@ function innerHtml(index, branch) {
       </div>
       ${fieldsHtml(chosen ? chosen.fields : [], step.fields || {},
         `state.ability.effects[${index}].branch.${branch}[${i}].fields`)}
+      ${aimHtml(chosen, step,
+        `state.ability.effects[${index}].branch.${branch}[${i}]`)}
     </div>`;
   }).join("")}
   <button onclick="addInner(${index},'${branch}')">＋ add</button></div>`;
@@ -281,13 +303,19 @@ function conditionFields(id) {
 // -------------------------------------------------------------- editing
 
 const at = (path) => path.split(/[.\[\]]+/).filter(Boolean)
-  .reduce((o, k) => o[k] ?? (o[k] = {}), window);
+  .reduce((o, k) => (o[k] ??= {}), window);
 
 function setField(path, key, value) {
   at(path)[key] = value;
   face();
 }
 function setEffect(i, id) { state.ability.effects[i] = { id, fields: {} }; editor(); }
+function setAim(path, id) {
+  const step = at(path);
+  if (id) { step.aim = id; step.aim_fields = {}; }
+  else { delete step.aim; delete step.aim_fields; }
+  editor();
+}
 function setInner(i, branch, j, id) {
   state.ability.effects[i].branch[branch][j] = { id, fields: {} }; editor();
 }

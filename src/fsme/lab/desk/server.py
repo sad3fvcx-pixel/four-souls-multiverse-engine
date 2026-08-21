@@ -373,12 +373,18 @@ class DeskHandler(GameHandler):
             return {"deleted": True}
 
         if path == "/api/cards/save":
-            return author.save_card(body)
+            saved = author.save_card(body)
+            saved["problems"] = author.in_plain_words(saved["problems"])
+
+            return saved
 
         if path == "/api/cards/check":
             card = author.build_card(body)
 
-            return {"card": card, "problems": author.check_card(card)}
+            return {
+                "card": card,
+                "problems": author.in_plain_words(author.check_card(card)),
+            }
 
         if path == "/api/cards/delete":
             author.delete_card(str(body.get("set", "")), str(body.get("card", "")))
@@ -389,7 +395,7 @@ class DeskHandler(GameHandler):
         problems = author.check_card(card)
 
         if problems:
-            return {"problems": problems, "moments": []}
+            return {"problems": author.in_plain_words(problems), "moments": []}
 
         return {"problems": [], "moments": self.bench.show_card(card)}
 

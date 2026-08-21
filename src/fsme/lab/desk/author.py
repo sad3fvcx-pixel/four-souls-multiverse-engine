@@ -222,8 +222,20 @@ def delete_card(set_id: str, card_id: str) -> None:
 def check_card(card: Any) -> list[str]:
     """
     Everything wrong with a card, from the engine that will have to load it.
+
+    Plus one thing the engine does not mind and a person would: a card with no
+    rules at all. That is perfectly valid content — the shipped sets are full
+    of cards whose text has not been implemented — but somebody who has just
+    filled in a form did not mean to make one, and telling them it is ready
+    would be telling them their card works.
     """
     vocabulary = engine_vocabulary()
+
+    if isinstance(card, dict) and not (card.get("abilities") or card.get("statics")):
+        return [
+            "This card does not do anything yet — say what happens when it "
+            "is played."
+        ]
 
     return validate_card(
         card,
@@ -236,6 +248,80 @@ def check_card(card: Any) -> list[str]:
         target_shapes=vocabulary.target_shapes,
         node_shapes=vocabulary.node_shapes,
     )
+
+
+def in_plain_words(problems: list[str]) -> list[str]:
+    """
+    Say what is wrong in the words the person used, not the engine's.
+
+    A validation message names a path through a file and an effect by its
+    identifier — ``abilities[0].effects[0].amount: 'gain_coins' takes a whole
+    number…``. Neither is anything the author wrote: they picked "Add coins to
+    a player" from a list and typed into a box labelled "how many cents". So
+    the message is rebuilt out of the things they chose.
+
+    The engine's own sentence is kept whenever nothing better can be made,
+    because a plain message that has lost the detail is worse than a technical
+    one that still has it.
+    """
+    vocabulary = engine_vocabulary()
+
+    return [_said_plainly(problem, vocabulary) for problem in problems]
+
+
+def _said_plainly(problem: str, vocabulary: Any) -> str:
+    """
+    One message, with identifiers swapped for the words a person saw.
+
+    A validation message is colon-separated: where it is, then what is wrong.
+    The last part carries the complaint and the one before it carries the path,
+    whose final step is the field. Both are needed — a message that says a
+    number is wanted without saying *which* box is a message that sends
+    somebody hunting.
+    """
+    parts = [part.strip() for part in problem.split(": ") if part.strip()]
+
+    if not parts:
+        return problem
+
+    complaint = parts[-1]
+    path = parts[-2] if len(parts) > 1 else ""
+    field = path.rsplit(".", 1)[-1] if "." in path else ""
+
+    for name in sorted(vocabulary.effects, key=len, reverse=True):
+        if f"'{name}'" not in complaint:
+            continue
+
+        shape = vocabulary.shape(name)
+        parameter = shape.params.get(field) if shape is not None else None
+        label = (
+            (parameter.describes or field.replace("_", " "))
+            if parameter is not None
+            else field.replace("_", " ")
+        )
+        wanted = (
+            complaint.split(" takes ", 1)[-1]
+            if " takes " in complaint
+            else complaint
+        )
+        wanted = wanted.replace(" here, and the card gives", " — you wrote")
+
+        if label:
+            return f"{label.capitalize()} needs {wanted}."
+
+        described = getattr(_spec(name), "description", "") or name
+        return f"{described.rstrip('.')}: {wanted}."
+
+    return complaint[:1].upper() + complaint[1:]
+
+
+def _spec(name: str) -> Any:
+    from fsme.effects import builtin_registry
+
+    try:
+        return builtin_registry().spec(name)
+    except Exception:
+        return None
 
 
 # ----------------------------------------------------------------------
@@ -295,11 +381,17 @@ def build_card(described: Any) -> dict[str, Any]:
 def _ability(described: Any) -> dict[str, Any] | None:
     """
     One ability, from a trigger and a list of things that happen.
+
+    An effect that says what it acts on gets that written twice: once as a
+    thing the ability picks out, and once as the effect pointing at it. The
+    author says it once — "to a player somebody picks" — and never sees the
+    name in between.
     """
     if not isinstance(described, dict):
         return None
 
-    effects = _effects(described.get("effects", ()))
+    aimed: list[dict[str, Any]] = []
+    effects = _effects(described.get("effects", ()), aimed)
 
     if not effects:
         return None
@@ -309,7 +401,7 @@ def _ability(described: Any) -> dict[str, Any] | None:
         "effects": effects,
     }
 
-    targets = _targets(described.get("targets", ()))
+    targets = _targets(described.get("targets", ())) + aimed
 
     if targets:
         ability["targets"] = targets
@@ -347,13 +439,18 @@ def _targets(described: Any) -> list[dict[str, Any]]:
     return written
 
 
-def _effects(described: Any) -> list[Any]:
+def _effects(described: Any, aimed: list[dict[str, Any]] | None = None) -> list[Any]:
     """
     The list of things that happen, in order.
 
     A branch is one of them — "depending on the roll" is a thing that happens
     as much as "gain 3 cents" is, and a person building a card thinks of it
     that way even though the engine calls it a control node.
+
+    ``aimed`` collects the things this ability has to pick out before any of it
+    runs. An effect saying it acts on "a player somebody picks" needs the
+    ability to choose one first, and the two halves are written here so that
+    the author writes neither.
     """
     if not isinstance(described, (list, tuple)):
         return []
@@ -365,7 +462,7 @@ def _effects(described: Any) -> list[Any]:
             continue
 
         if "branch" in one:
-            written.append(_branch(one["branch"]))
+            written.append(_branch(one["branch"], aimed))
 
             continue
 
@@ -377,17 +474,53 @@ def _effects(described: Any) -> list[Any]:
         node: dict[str, Any] = {"effect": effect}
         node.update(_written_fields(one.get("fields", {})))
 
-        aimed = str(one.get("target", "") or "")
+        pointed = str(one.get("target", "") or "")
+        aim = str(one.get("aim", "") or "")
 
-        if aimed:
-            node["target"] = aimed
+        if aim and aimed is not None:
+            pointed = _pick_out(aim, one.get("aim_fields", {}), aimed)
+
+        if pointed:
+            node["target"] = pointed
 
         written.append(node)
 
     return written
 
 
-def _branch(described: Any) -> dict[str, Any]:
+def _pick_out(
+    target: str,
+    fields: Any,
+    aimed: list[dict[str, Any]],
+) -> str:
+    """
+    Have the ability choose something, and give it a name to be pointed at.
+
+    The same thing chosen twice is chosen once: two effects that both act on
+    "a player somebody picks" mean the same player, which is what a card
+    saying "deal 1 damage to a player and steal a cent from them" means.
+    """
+    written = _written_fields(fields)
+    already = [
+        one
+        for one in aimed
+        if target in one and _without_name(one[target]) == written
+    ]
+
+    if already:
+        return str(already[0][target]["as"])
+
+    name = f"chosen_{len(aimed) + 1}"
+    aimed.append({target: dict(written, **{"as": name})})
+
+    return name
+
+
+def _without_name(body: Any) -> dict[str, Any]:
+    return {k: v for k, v in dict(body).items() if k != "as"}
+
+
+def _branch(described: Any, aimed: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     """
     "Depending on …" — one condition, and what happens either way.
     """
@@ -404,10 +537,10 @@ def _branch(described: Any) -> dict[str, Any]:
 
     node: dict[str, Any] = {
         "if": [{asked: fields} if fields else asked],
-        "then": _effects(described.get("then", ())),
+        "then": _effects(described.get("then", ()), aimed),
     }
 
-    otherwise = _effects(described.get("else", ()))
+    otherwise = _effects(described.get("else", ()), aimed)
 
     if otherwise:
         node["else"] = otherwise
