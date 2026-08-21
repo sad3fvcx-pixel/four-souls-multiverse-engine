@@ -448,7 +448,22 @@ def _named_players(
     state: GameState, context: AbilityContext, params: Mapping[str, Any]
 ) -> list[PlayerState]:
     """
-    Whose cards a choice is about: a bound group, or the controller.
+    Whose things a target is about, when the card named them.
+
+    ``of`` points at a group this ability has already bound — "choose a
+    player, destroy an item they control" is two steps, and this is the second
+    one reading the first. Without it the answer is the controller, which is
+    what "an item you control" and "a card in your hand" both mean.
+
+    ``all_players`` is the one value that is not a bound group. It is written
+    on cards that are about the whole table and would otherwise have to bind a
+    group they never use.
+
+    This is the only reading of ``of`` that names players, and every target
+    that asks whose things it is about comes here. It used to be written
+    twice, once for hands and souls and once for items, and the copies drifted:
+    the third place that needed it grew a parameter of its own instead, and two
+    cards written against the shared meaning were quietly ignored.
     """
     named = params.get("of")
 
@@ -755,34 +770,6 @@ def _holder(
     return seats
 
 
-def _holders(
-    state: GameState, context: AbilityContext, params: Mapping[str, Any]
-) -> list[Any]:
-    """
-    Whose items a treasure target is about.
-
-    ``of`` names a group this ability has already chosen — "choose a player,
-    recharge each item they control" — and without it the answer is the
-    controller's own items, which is what "an item you control" means.
-    """
-    named = params.get("of")
-
-    if named is None:
-        if context.controller is None or not 0 <= context.controller < len(state.players):
-            return []
-
-        return [state.player(context.controller)]
-
-    if named == "all_players":
-        return list(state.players)
-
-    return [
-        player
-        for player in context.targets.get(str(named), ())
-        if isinstance(player, PlayerState)
-    ]
-
-
 def _all_monsters(
     state: GameState, context: AbilityContext, params: Mapping[str, Any], rng: RNG
 ) -> list[Any]:
@@ -834,7 +821,7 @@ def _owned_treasure(
     """
     treasures: list[Any] = []
 
-    for player in _holders(state, context, params):
+    for player in _named_players(state, context, params):
         treasures.extend(player.treasures.cards)
 
     if params.get("exclude_eternal", False):
@@ -851,14 +838,28 @@ def _all_treasures(
     """
     Every item that can be pointed at.
 
-    ``owner`` narrows the list the way a card does: "an item you control" is
-    ``controller``, "an item another player controls" is ``opponents``.
+    Whose items may be said two ways, and both are the card's own words.
+    ``owner`` names a role: "an item you control" is ``controller``, "an item
+    another player controls" is ``opponents``. ``of`` names a group this
+    ability has already bound: "choose a player at random, that player
+    destroys an item they control" cannot be a role, because the player chosen
+    may turn out to be anybody.
+
+    ``of`` means here exactly what it means for a hand or a pile of souls, and
+    is read by the same helper. It did not used to be read at all, and the two
+    cards written with it were handed every item on the table instead.
+
+    With neither, every item is a candidate — a card that does not say whose
+    is not asking about anybody in particular.
+
     ``include_shop`` adds the items for sale, which some cards may take.
     ``exclude_eternal`` leaves out the ones no effect may touch.
     """
     owner = params.get("owner")
 
-    if owner == "controller":
+    if "of" in params:
+        players = _named_players(state, context, params)
+    elif owner == "controller":
         players = [
             player
             for player in state.players

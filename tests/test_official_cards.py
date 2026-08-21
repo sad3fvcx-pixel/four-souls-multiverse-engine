@@ -3285,9 +3285,23 @@ def test_monstros_tooth_is_destroyed_by_the_player_it_lands_on(
 
     give(game, "treasure_deck-passive_items-base_game-monstro_s_tooth")
 
-    doomed = [
-        give(game, "treasure_deck-passive_items-base_game-breakfast", player=index)
-        for index in range(2)
+    # Two destroyable items each, so that whoever is chosen has a real choice
+    # to make. With one apiece the engine takes the only candidate rather than
+    # interrupting the game to confirm the obvious, and the test would be
+    # about that instead.
+    mine = [
+        give(game, card, player=0)
+        for card in (
+            "treasure_deck-passive_items-base_game-breakfast",
+            "treasure_deck-passive_items-base_game-the_relic",
+        )
+    ]
+    theirs = [
+        give(game, card, player=1)
+        for card in (
+            "treasure_deck-passive_items-base_game-breakfast",
+            "treasure_deck-passive_items-base_game-the_relic",
+        )
     ]
 
     end_turn(game)
@@ -3298,11 +3312,18 @@ def test_monstros_tooth_is_destroyed_by_the_player_it_lands_on(
     assert decision is not None
 
     unlucky = decision.player
-    item = doomed[unlucky]
+    ours = mine if unlucky == 0 else theirs
 
-    assert item in decision.options, "a player destroys an item of their own"
+    # The card says "an item they control", and that is the whole of it: the
+    # player chosen at random is offered their own items and nobody else's.
+    assert all(card.controller == unlucky for card in decision.options), (
+        "a player destroys an item of their own, not one of anybody else's"
+    )
+    assert all(any(card is option for option in decision.options) for card in ours)
+
+    item = ours[0]
+
     assert pick(game, unlucky, item).accepted
-
     assert item in game.state.treasure_discard.cards
 
 
@@ -3374,17 +3395,34 @@ def test_the_finger_swaps_items_with_whoever_rolled_a_two(
 
     give(game, "treasure_deck-passive_items-base_game-finger", player=1)
 
+    # Player 0 rolls the 2, so player 0 is "they". Two items each, so both
+    # halves of the swap are a real choice rather than a lone candidate the
+    # engine takes without asking.
     theirs = give(game, "treasure_deck-passive_items-base_game-breakfast")
-    mine = give(
-        game, "treasure_deck-passive_items-base_game-the_relic", player=1
-    )
+    give(game, "treasure_deck-passive_items-base_game-the_relic", player=0)
+
+    mine = give(game, "treasure_deck-passive_items-base_game-breakfast", player=1)
+    give(game, "treasure_deck-passive_items-base_game-the_relic", player=1)
 
     assert play(game, deal(game, "loot_deck-pills_runes-base_game-pills")).accepted
 
     answer(game, "yes", player=1)
 
-    # The holder of the Finger! chooses on both sides: it is their swap.
+    # The holder of the Finger! chooses on both sides: it is their swap. What
+    # they are offered is the point — "an item you control" is theirs, and "an
+    # item they control" is the roller's.
+    first = pending(game, 1)
+
+    assert all(card.controller == 1 for card in first.options), (
+        "the first half is an item you control"
+    )
     assert pick(game, 1, mine).accepted
+
+    second = pending(game, 1)
+
+    assert all(card.controller == 0 for card in second.options), (
+        "the second half is an item the player who rolled controls"
+    )
     assert pick(game, 1, theirs).accepted
 
     assert theirs in game.state.player(1).treasures.cards
