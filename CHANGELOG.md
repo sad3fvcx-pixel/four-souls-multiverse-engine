@@ -6,6 +6,16 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## 0.4.0 — capability metadata
+
+- Added capability metadata for effect parameters.
+- Added parameter roles and appropriate Author UI controls.
+- Added declared parameter domains and required parameters.
+- Added target selection metadata for parameters supplied by the engine.
+- Added parameter dependencies and validation for capability metadata.
+- Added drift checks to keep runtime requirements and UI metadata synchronized.
+- Audited all registered effects and their parameters.
+
 ## 0.3.0 — author experience
 
 - Added a writable workspace for author-created sets.
