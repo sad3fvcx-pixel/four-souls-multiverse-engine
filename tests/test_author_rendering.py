@@ -25,6 +25,7 @@ import pytest
 
 from fsme.content.vocabulary import (
     A_LIST,
+    BY_BINDING,
     BY_ENGINE,
     BY_NAME,
     BY_PLAYER_OF,
@@ -187,7 +188,7 @@ def test_nothing_that_names_somebody_is_a_text_box(can: dict[str, Any]) -> None:
         if field["role"] != WHOM:
             continue
 
-        assert field["shown"] in ("group", "engine"), f"{owner}.{field['id']}"
+        assert field["shown"] in ("group", "given"), f"{owner}.{field['id']}"
         assert field["written"] in (BY_NAME, BY_PLAYER_OF, BY_ENGINE)
         assert field["picks"] in ("players", "cards")
 
@@ -408,7 +409,11 @@ def test_what_the_engine_insists_on_reaches_the_page(
         "add_modifier.stat",
         "event_value.key",
         "modify_event.key",
+        # Both structures. Their handlers have always raised without them, and
+        # a form that called such a card ready was agreeing with nothing.
+        "promise.changes",
         "promise.event",
+        "watch_for.effects",
         "watch_for.event",
     }
 
@@ -496,14 +501,14 @@ def test_a_target_that_names_a_group_keeps_naming_one() -> None:
     assert check_card(card) == []
 
 
-def test_a_target_that_hands_back_what_it_was_given_is_not_aimed_at(
+def test_a_target_that_hands_back_what_it_was_given_says_so(
     can: dict[str, Any],
 ) -> None:
     by_name = {target["id"]: target for target in can["targets"]}
 
     assert by_name["group"]["gives"] == "passthrough"
-    assert not by_name["group"]["aimable"]
-    assert by_name["target_player"]["aimable"]
+    assert by_name["group"]["after"]
+    assert not by_name["target_player"]["after"]
 
 
 # ----------------------------------------------------------------------
@@ -593,12 +598,16 @@ def test_the_page_names_no_effect_of_its_own() -> None:
 def test_every_parameter_still_arrives_somewhere(can: dict[str, Any]) -> None:
     """
     Nothing may be dropped for being hard to draw, and every parameter has to
-    land in one of the four places the page knows.
+    land in one of the places the page knows.
     """
     for _, owner, field in every_field(can):
-        assert field["shown"] in ("form", "group", "advanced", "engine"), (
-            f"{owner}.{field['id']} has nowhere to go"
-        )
+        assert field["shown"] in (
+            "form",
+            "group",
+            "advanced",
+            "given",
+            "spelling",
+        ), f"{owner}.{field['id']} has nowhere to go"
 
 
 def test_an_answer_is_written_into_the_card_and_not_beside_it() -> None:
@@ -623,3 +632,302 @@ def test_a_card_too_unfinished_to_build_is_not_called_ready() -> None:
 
     assert "said.error" in page
     assert page.index("said.error") < page.index("This card is ready.")
+
+
+# ----------------------------------------------------------------------
+# Phase two: what the audit found after the renderer landed
+# ----------------------------------------------------------------------
+
+
+def test_a_card_the_engine_stops_on_is_reported_and_not_raised() -> None:
+    """
+    "Try it in a game" answers a question, and "the engine would not play it"
+    is one of the answers. Letting the error out of the request handler killed
+    the connection, and the page — whose fetch simply failed — showed nothing
+    at all, so pressing the button did visibly nothing.
+    """
+    from fsme.lab.desk.author import said_by_the_engine
+    from fsme.runtime.errors import AbilityResolutionError
+
+    said = said_by_the_engine(
+        AbilityResolutionError(
+            "effect 'watch_for' failed: watch_for requires the effects it will run"
+        )
+    )
+
+    assert said.startswith("The engine would not play this card:")
+    assert "watch_for requires the effects it will run" in said
+
+
+def test_a_structure_the_handler_insists_on_is_one_the_form_insists_on(
+    can: dict[str, Any],
+) -> None:
+    """
+    `promise` raises without its changes and `watch_for` without its effects.
+    Neither said so, so a card that could not be played saved as ready.
+    """
+    needed = {
+        f"{owner}.{field['id']}"
+        for _, owner, field in every_field(can)
+        if field["required"] and field["role"] == STRUCTURE
+    }
+
+    assert needed == {"promise.changes", "watch_for.effects"}
+
+
+def test_the_two_cards_that_used_to_save_as_ready_are_refused() -> None:
+    for effect in ("watch_for", "promise"):
+        card = a_card([{"id": effect, "fields": {"event": "damage_dealt"}}])
+        problems = check_card(card)
+
+        assert problems, f"{effect} with no structure was accepted"
+        assert "needs" in problems[0]
+
+
+def test_an_answer_another_answer_settles_is_left_out_of_the_card() -> None:
+    """
+    A form that greys out a question and a card that answers it anyway are two
+    different cards. The runtime reads one of the two values and the printed
+    text says the other.
+    """
+    written = [
+        ("heal", {"amount": 3, "full": True}, {"full": True}),
+        (
+            "add_counter",
+            {"counter": "egg", "amount": 4, "clear": True},
+            {"counter": "egg", "clear": True},
+        ),
+        (
+            "modify_event",
+            {"key": "amount", "factor": 2, "delta": 5},
+            {"key": "amount", "delta": 5},
+        ),
+        # Nobody chose a position, so it is the bottom, and a depth counted
+        # from the top means nothing there.
+        ("move_cards", {"depth_from": 6}, {}),
+        # And with a position that does read it, it survives.
+        (
+            "move_cards",
+            {"depth_from": 6, "position": "top"},
+            {"depth_from": 6, "position": "top"},
+        ),
+    ]
+
+    for effect, filled, expected in written:
+        card = a_card([{"id": effect, "fields": filled}])
+        node = one_effect(card)
+
+        node.pop("effect")
+
+        assert node == expected, f"{effect} wrote {node}"
+
+
+def test_the_page_keeps_the_greyed_out_answer_so_it_can_come_back() -> None:
+    """
+    Dropped from the card, not from the form: unticking the box has to give
+    the number back rather than silently having thrown it away.
+    """
+    page = PAGE.read_text("utf-8")
+
+    assert "function moot(" in page
+    assert "delete at(path)[key]" not in page.split("function moot(")[1][:400]
+
+
+def test_a_name_the_tool_writes_is_not_a_box(can: dict[str, Any]) -> None:
+    """
+    Every target is bound under a name so that later steps can point at it,
+    and `_pick_out` chooses that name. Offering the box took an answer it was
+    about to overwrite — on all forty-six targets.
+    """
+    ours = {
+        f"{owner}.{field['id']}"
+        for _, owner, field in every_field(can)
+        if field["written"] == BY_BINDING
+    }
+
+    assert ours == {f"{target['id']}.as" for target in can["targets"]}
+
+    for _, owner, field in every_field(can):
+        if field["written"] == BY_BINDING:
+            assert field["shown"] == "given", f"{owner}.{field['id']}"
+
+
+def test_a_name_the_tool_writes_never_reaches_the_card_from_a_form() -> None:
+    card = a_card(
+        [
+            {
+                "id": "cancel_stack",
+                "fields": {},
+                "aim": "target_stack_item",
+                "aim_fields": {"as": "mine", "kinds": ["loot"]},
+            }
+        ]
+    )
+    chosen = card["abilities"][0]["targets"][0]["target_stack_item"]
+
+    assert chosen["as"].startswith("chosen_")
+    assert chosen["kinds"] == ["loot"]
+    assert check_card(card) == []
+
+
+def test_a_target_that_needs_an_earlier_step_is_offered_apart_not_dropped(
+    can: dict[str, Any],
+) -> None:
+    """
+    "Destroy what you just damaged" points an effect at `previous_target`, and
+    the engine resolves it like any other. Reading "hands back what it was
+    given" as "cannot be aimed at" took three targets away.
+    """
+    by_name = {target["id"]: target for target in can["targets"]}
+
+    for name in ("group", "previous_target", "previous_result", "most_common"):
+        assert by_name[name]["aimable"], name
+        assert by_name[name]["after"], name
+
+    assert not by_name["target_player"]["after"]
+    assert all(target["aimable"] for target in can["targets"])
+
+
+def test_the_page_offers_them_under_their_own_heading() -> None:
+    page = PAGE.read_text("utf-8")
+
+    assert "what an earlier step chose" in page
+    assert "t.after" in page
+
+
+def test_aiming_at_what_an_earlier_step_chose_makes_a_card() -> None:
+    card = a_card(
+        [
+            {"id": "deal_damage", "fields": {"amount": 1}, "aim": "target_monster"},
+            {"id": "kill", "fields": {}, "aim": "previous_target"},
+        ]
+    )
+
+    assert check_card(card) == []
+    assert card["abilities"][0]["effects"][1]["target"] == "chosen_2"
+
+
+def test_one_number_is_one_question(can: dict[str, Any]) -> None:
+    """
+    `player_has_coins` reads `amount`, then `count`, then `value`, and takes
+    the first it finds. Asking for all three asks the same thing three times
+    and says nothing about which answer wins.
+    """
+    spellings = {
+        f"{owner}.{field['id']}": field["instead_of"]
+        for _, owner, field in every_field(can)
+        if field["instead_of"]
+    }
+
+    assert spellings == {
+        f"player_has_{what}.{key}": "value"
+        for what in ("coins", "loot", "souls", "treasure")
+        for key in ("amount", "count")
+    }
+
+    for _, owner, field in every_field(can):
+        if field["instead_of"]:
+            assert field["shown"] == "spelling", f"{owner}.{field['id']}"
+
+
+def test_every_spelling_names_a_parameter_beside_it(can: dict[str, Any]) -> None:
+    for group in ("effects", "conditions", "targets"):
+        for one in can[group]:
+            beside = {field["id"] for field in one["fields"]}
+
+            for field in one["fields"]:
+                if field["instead_of"]:
+                    assert field["instead_of"] in beside, one["id"]
+
+
+def test_a_second_spelling_is_still_read_from_a_card_that_writes_it() -> None:
+    """
+    Not asked is not refused. Cards already written with `amount` still load,
+    because the engine still reads them.
+    """
+    card = a_card(
+        [
+            {
+                "branch": {
+                    "condition": {
+                        "id": "player_has_coins",
+                        "fields": {"amount": 3},
+                    },
+                    "then": [{"id": "gain_coins", "fields": {"amount": 1}}],
+                }
+            }
+        ]
+    )
+
+    assert check_card(card) == []
+
+
+def test_the_page_asks_a_second_spelling_nothing() -> None:
+    page = PAGE.read_text("utf-8")
+
+    assert 'f.shown === "spelling"' in page
+
+
+def test_a_branch_with_nothing_in_it_is_refused() -> None:
+    """
+    A branch that runs and does nothing reads exactly like one that works.
+    """
+    empty = a_card(
+        [
+            {
+                "branch": {
+                    "condition": {"id": "player_alive", "fields": {}},
+                    "then": [],
+                    "else": [],
+                }
+            }
+        ]
+    )
+    problems = check_card(empty)
+
+    assert problems
+    assert "nothing to do" in problems[0]
+
+    filled = a_card(
+        [
+            {
+                "branch": {
+                    "condition": {"id": "player_alive", "fields": {}},
+                    "then": [{"id": "gain_coins", "fields": {"amount": 1}}],
+                }
+            }
+        ]
+    )
+
+    assert check_card(filled) == []
+
+
+def test_where_a_control_node_keeps_its_body_is_the_interpreter_s_own_word() -> None:
+    """
+    One statement, beside the expanders that read it — not a list here that
+    goes stale the first time a control node learns a second spelling.
+    """
+    from fsme.runtime.interpreter import CONTROL_BODIES, CONTROL_KEYS
+
+    assert set(CONTROL_BODIES) == set(CONTROL_KEYS)
+
+    for name, bodies in CONTROL_BODIES.items():
+        for key in bodies:
+            assert key in CONTROL_KEYS[name], f"{name}.{key}"
+
+
+def test_every_target_and_condition_asks_in_words(can: dict[str, Any]) -> None:
+    """
+    An author meets a target's parameters the moment they aim anything. They
+    used to meet `as`, `count`, `maximum`, `minimum`, `prompt` and `tag` — the
+    engine's own names, with nothing said about any of them.
+    """
+    bare = [
+        f"{owner}.{field['id']}"
+        for group, owner, field in every_field(can)
+        if group in ("targets", "conditions")
+        and field["shown"] == "form"
+        and field["about"] == field["id"].replace("_", " ")
+    ]
+
+    assert bare == []

@@ -22,6 +22,7 @@ from typing import Any
 
 from fsme.content.vocabulary import (
     A_LIST,
+    BY_BINDING,
     BY_ENGINE,
     BY_NAME,
     BY_PLAYER_OF,
@@ -89,8 +90,11 @@ NEEDS_SOMETHING_EARLIER = "passthrough"
 Targets that hand back whatever they were given.
 
 `group`, `most_common`, `previous_target` and the rest mean nothing on their
-own — they refer to something the ability already chose — so they are not
-offered as a thing to aim at. That is read off `yields` rather than listed.
+own — they refer to something the ability already chose. That does not make
+them un-aimable: "deal 1 damage, then destroy what you damaged" points an
+effect straight at `previous_target`, and the engine resolves it like any
+other. It makes them *second*, so they are offered apart and said to need
+something before them. Read off `yields` rather than listed.
 """
 
 CARD_KINDS = (
@@ -180,7 +184,8 @@ def _targets(vocabulary: Any) -> list[dict[str, Any]]:
             "about": shape.describes or name.replace("_", " "),
             "gives": shape.yields,
             "common": name in COMMON_TARGETS,
-            "aimable": shape.yields != NEEDS_SOMETHING_EARLIER,
+            "aimable": True,
+            "after": shape.yields == NEEDS_SOMETHING_EARLIER,
             "fields": _fields(shape),
         }
         for name in sorted(vocabulary.targets)
@@ -204,7 +209,11 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
     - ``group`` — the name of something the ability picks out. Not a box: the
       page offers the engine's own targets and writes the name behind it.
     - ``advanced`` — the effect's own nested data. Shown as what it is.
-    - ``engine`` — not asked at all, because no card can answer it.
+    - ``given`` — not a question. Either no card can answer it or whatever is
+      writing the card answers it, and a box would take an answer that is
+      about to be overwritten.
+    - ``spelling`` — the same question as another parameter, under a second
+      name the engine also reads. Asked once, under the first.
     """
     found = []
 
@@ -221,6 +230,7 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             "unless": parameter.unless,
             "unless_when": [str(value) for value in parameter.unless_when],
             "written": parameter.written_as,
+            "instead_of": parameter.instead_of,
             "picks": parameter.refers_to,
             # Several answers out of a known set — which is a control the
             # page has. A list with nothing to choose from is the effect's own
@@ -229,8 +239,10 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
         }
 
         entry["shown"] = (
-            "engine"
-            if parameter.written_as == BY_ENGINE
+            "spelling"
+            if parameter.instead_of
+            else "given"
+            if parameter.written_as in (BY_ENGINE, BY_BINDING)
             else "group"
             if parameter.written_as in (BY_NAME, BY_PLAYER_OF)
             else "advanced"

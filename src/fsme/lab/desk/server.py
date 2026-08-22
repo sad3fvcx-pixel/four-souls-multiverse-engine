@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from fsme.api import Session
+from fsme.util.errors import EngineError
 from fsme.web.server import HTML, JSON, GameHandler, GameServer
 from fsme.web.server import STATIC as GAME_STATIC
 
@@ -397,7 +398,18 @@ class DeskHandler(GameHandler):
         if problems:
             return {"problems": author.in_plain_words(problems), "moments": []}
 
-        return {"problems": [], "moments": self.bench.show_card(card)}
+        try:
+            return {"problems": [], "moments": self.bench.show_card(card)}
+        except EngineError as refused:
+            # The engine would not play it. That is an answer to "try it in a
+            # game" and not a failure of the request: a card can be well formed
+            # and still be one the engine stops on, and somebody who pressed a
+            # button has to be told which. Letting this out of the handler
+            # killed the connection and left the page silent.
+            return {
+                "problems": [author.said_by_the_engine(refused)],
+                "moments": [],
+            }
 
     def _json(self, payload: Any, status: int = 200) -> None:
         self._send(JSON, json.dumps(payload).encode("utf-8"), status=status)

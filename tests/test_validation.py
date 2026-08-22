@@ -64,12 +64,30 @@ def _minimally(vocabulary: Vocabulary, effect: str, extra: dict) -> dict:
     node: dict[str, Any] = {"effect": effect}
 
     for name, parameter in (shape.params if shape else {}).items():
-        if parameter.required and name not in extra:
-            node[name] = parameter.values[0] if parameter.values else "x"
+        if not parameter.required or name in extra:
+            continue
+
+        node[name] = _something(parameter)
 
     node.update(extra)
 
     return node
+
+
+def _something(parameter: Any) -> Any:
+    """
+    A value of the right shape, whatever shape the parameter says it takes.
+    """
+    if parameter.values:
+        return parameter.values[0]
+
+    if parameter.kind == "a list":
+        return []
+
+    if parameter.kind == "a set of named values":
+        return {}
+
+    return "x"
 
 
 def complaints(vocabulary: Vocabulary, *effects: Any) -> list[str]:

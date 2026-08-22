@@ -208,6 +208,9 @@ def register(registry: EffectRegistry) -> None:
         primary="amount",
         description="Set a player's coins.",
         least={"amount": 0},
+        asks={
+            "amount": "how many cents they end up with",
+        },
     )
     registry.register(
         "transfer_coins",
@@ -217,5 +220,6 @@ def register(registry: EffectRegistry) -> None:
         description="Move coins between players.",
         asks={
             "source_player": "who pays",
+            "amount": "how many cents",
         },
     )

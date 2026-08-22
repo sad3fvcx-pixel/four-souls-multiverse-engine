@@ -415,6 +415,9 @@ def register(registry: EffectRegistry) -> None:
         primary="direction",
         description="Every player hands their whole hand to a neighbour.",
         values={"direction": (LEFT, RIGHT)},
+        asks={
+            "direction": "which way the hands go",
+        },
     )
     registry.register(
         "discard_loot",

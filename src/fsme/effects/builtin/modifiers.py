@@ -488,6 +488,7 @@ def register(registry: EffectRegistry) -> None:
         values={"area": AREAS},
         asks={
             "area": "which row to add a slot to",
+            "amount": "how many slots to add",
         },
     )
     registry.register(

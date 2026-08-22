@@ -22,6 +22,7 @@ import pytest
 from fsme.content.vocabulary import (
     A_LIST,
     A_MAPPING,
+    BY_BINDING,
     BY_ENGINE,
     BY_PLAYER_OF,
     ROLES,
@@ -118,8 +119,8 @@ def test_the_things_that_are_not_boxes_are_not_sent_to_the_form() -> None:
             for field in one["fields"]:
                 where = f"{one['id']}.{field['id']}"
 
-                if field["written"] == BY_ENGINE:
-                    assert field["shown"] == "engine", where
+                if field["written"] in (BY_ENGINE, BY_BINDING):
+                    assert field["shown"] == "given", where
                 elif field["role"] == WHOM:
                     assert field["shown"] == "group", where
                 elif field["role"] == STRUCTURE:

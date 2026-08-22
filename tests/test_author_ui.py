@@ -467,19 +467,59 @@ def test_aiming_twice_at_the_same_thing_chooses_once(address: str) -> None:
 
 def test_the_page_is_told_what_may_be_aimed_at(address: str) -> None:
     can = get(address, "/api/capabilities")
-    aimable = [one for one in can["targets"] if one["aimable"]]
 
-    assert len(aimable) > 35
+    # Every one of them. "Destroy what you just damaged" points an effect at
+    # `previous_target`, and the engine resolves it like any other.
+    assert all(one["aimable"] for one in can["targets"])
+    assert len(can["targets"]) > 35
 
     # The ones that only mean something after the ability has chosen already
-    # are not offered as a thing to aim at.
-    assert {one["id"] for one in can["targets"] if not one["aimable"]} == {
+    # are offered under their own heading rather than among the rest.
+    assert {one["id"] for one in can["targets"] if one["after"]} == {
         "group",
         "most_common",
         "none",
         "previous_result",
         "previous_target",
     }
+
+
+def test_trying_a_card_the_engine_refuses_answers_rather_than_dies(
+    address: str, home: Path
+) -> None:
+    """
+    A card can be well formed and still be one the engine stops on — an
+    attack owed zero times is refused by the handler and by nothing before it.
+
+    "Try it in a game" has to say so. Letting the engine's error out of the
+    request handler killed the connection, and the page, whose fetch simply
+    failed, showed nothing: pressing the button did visibly nothing at all.
+    """
+    post(address, "/api/sets/new", {"name": "Refused"})
+
+    said = post(
+        address,
+        "/api/cards/try",
+        {
+            "set": "refused",
+            "name": "Nothing Doing",
+            "kind": "loot",
+            "ability": {
+                "trigger": "on_play",
+                "effects": [{"id": "require_attack", "fields": {"times": 0}}],
+            },
+        },
+    )
+
+    assert "error" not in said, said
+    assert said["moments"] == []
+    assert said["problems"]
+    assert "would not play" in said["problems"][0]
+    assert "at least one" in said["problems"][0]
+
+    # And the server is still answering, which is the half that used to be
+    # missing: the handler thread died with the request.
+    assert get(address, "/api/sets")["sets"]
 
 
 # ----------------------------------------------------------------------

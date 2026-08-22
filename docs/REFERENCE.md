@@ -65,7 +65,7 @@ an effect and for a target.
 | `place_monster` | `slot` text |
 | `prevent_damage` | `amount` a whole number |
 | `prevent_next_damage` | `amount` a whole number, `label` text |
-| `promise` | `changes` a set of named values, `event` one of 66 event names*, `unlimited` true or false, `uses` a whole number, `when` a set of named values |
+| `promise` | `changes` a set of named values*, `event` one of 66 event names*, `unlimited` true or false, `uses` a whole number, `when` a set of named values |
 | `put_into_play` | — |
 | `recharge` | — |
 | `remove_curse` | — |
@@ -88,7 +88,7 @@ an effect and for a target.
 | `take_card` | `player` `{"player_of": name}`, a group of players the ability bound, `shuffle` `` or `loot` or `treasure` or `monster` or `room`, `to` `hand` or `treasures` |
 | `take_extra_turn` | — |
 | `transfer_coins` | `amount` a whole number, `source_player` a whole number |
-| `watch_for` | `conditions` only a game can judge, `effects` a list, `event` one of 66 event names*, `mine` true or false, `unlimited` true or false, `uses` a whole number, `waits` true or false |
+| `watch_for` | `conditions` only a game can judge, `effects` a list*, `event` one of 66 event names*, `mine` true or false, `unlimited` true or false, `uses` a whole number, `waits` true or false |
 
 ## Conditions
 

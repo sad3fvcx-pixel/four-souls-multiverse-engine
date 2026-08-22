@@ -229,6 +229,9 @@ def register(registry: EffectRegistry) -> None:
         primary="sides",
         stores="dice",
         description="Roll a die again, replacing the stored result.",
+        asks={
+            "sides": "how many sides the die has",
+        },
     )
     registry.register(
         "set_roll",
@@ -249,4 +252,7 @@ def register(registry: EffectRegistry) -> None:
         modify_roll,
         primary="amount",
         description="Change a roll while it is being modified.",
+        asks={
+            "amount": "how much to change the roll by",
+        },
     )

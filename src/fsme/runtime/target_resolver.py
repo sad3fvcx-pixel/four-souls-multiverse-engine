@@ -27,6 +27,7 @@ from fsme.cards.types import CardType
 from fsme.content.vocabulary import (
     A_LIST,
     ANY_GROUP,
+    BY_BINDING,
     CARDS,
     MIXED,
     PASSTHROUGH,
@@ -85,7 +86,14 @@ A target that reads nothing beyond what every target reads. A card writing
 parameters into one is not narrowing it — it is being ignored.
 """
 
-EVERY_TARGET = {"as": ParamShape("as", TEXT)}
+EVERY_TARGET = {
+    "as": ParamShape(
+        "as",
+        TEXT,
+        written_as=BY_BINDING,
+        describes="the name later steps point at this by",
+    )
+}
 """
 What ``resolve`` and ``resolve_all`` read, whichever target it is.
 
@@ -345,7 +353,10 @@ class TargetResolver:
         register(
             "vote",
             _vote,
-            _shape(ITEMS, {"prompt": ParamShape("prompt", TEXT)}),
+            _shape(
+                ITEMS,
+                {"prompt": ParamShape("prompt", TEXT, describes="what to ask them")},
+            ),
             CARDS,
             "the item every player votes for",
         )
@@ -433,7 +444,11 @@ def _active_player(
     return [state.active_player] if state.players else []
 
 
-THE_LIVING = {"include_dead": ParamShape("include_dead", FLAG)}
+THE_LIVING = {
+    "include_dead": ParamShape(
+        "include_dead", FLAG, describes="count players who have died too"
+    )
+}
 """
 What ``_all_players`` reads. "Each player" means each living player unless a
 card says otherwise.
@@ -562,7 +577,11 @@ def _random_loot(
     return cards
 
 
-NOT_ME = {"exclude_controller": ParamShape("exclude_controller", FLAG)}
+NOT_ME = {
+    "exclude_controller": ParamShape(
+        "exclude_controller", FLAG, describes="leave out whoever played this"
+    )
+}
 """
 The difference between "a player" and "another player".
 """
@@ -610,10 +629,16 @@ def _player_by_index(
 
 
 ASKING = {
-    "count": ParamShape("count", WHOLE, least=0),
-    "minimum": ParamShape("minimum", WHOLE, least=0),
-    "maximum": ParamShape("maximum", WHOLE, least=0),
-    "prompt": ParamShape("prompt", TEXT),
+    "count": ParamShape(
+        "count", WHOLE, least=0, describes="how many to pick"
+    ),
+    "minimum": ParamShape(
+        "minimum", WHOLE, least=0, describes="the fewest they may pick"
+    ),
+    "maximum": ParamShape(
+        "maximum", WHOLE, least=0, describes="the most they may pick"
+    ),
+    "prompt": ParamShape("prompt", TEXT, describes="what to ask them"),
     "chooser": ParamShape(
         "chooser",
         A_BOUND_GROUP,
@@ -785,7 +810,12 @@ _COUNTABLE: dict[str, Callable[[Any], int]] = {
 
 
 THE_MOST = {
-    "most": ParamShape("most", TEXT, values=tuple(sorted(_COUNTABLE)))
+    "most": ParamShape(
+        "most",
+        TEXT,
+        values=tuple(sorted(_COUNTABLE)),
+        describes="only whoever has the most of this",
+    )
 }
 """
 What ``_with_the_most`` reads, over the keys of the table that does the
@@ -827,7 +857,15 @@ def _with_the_most(candidates: list[Any], params: Mapping[str, Any]) -> list[Any
 
 
 A_CHOSEN_CURSE = _shape(
-    {"owner": ParamShape("owner", TEXT, values=("controller",))}, ASKING
+    {
+        "owner": ParamShape(
+            "owner",
+            TEXT,
+            values=("controller",),
+            describes="whose curses — leave it out for everybody's",
+        )
+    },
+    ASKING,
 )
 """
 ``owner`` here is not ``owner`` on an item target.
@@ -961,13 +999,21 @@ DECKS, PILES = _piles_of(GameState)
 CARD_TYPES = tuple(str(kind) for kind in CardType)
 
 SEARCHING = {
-    "deck": ParamShape("deck", TEXT, values=DECKS),
-    "pile": ParamShape("pile", TEXT, values=PILES),
-    "from_top": ParamShape("from_top", WHOLE, least=1),
-    "card_type": ParamShape("card_type", TEXT, values=CARD_TYPES),
-    "exclude_type": ParamShape("exclude_type", TEXT, values=CARD_TYPES),
-    "tag": ParamShape("tag", TEXT),
-    "named": ParamShape("named", TEXT),
+    "deck": ParamShape("deck", TEXT, values=DECKS, describes="which deck to search"),
+    "pile": ParamShape(
+        "pile", TEXT, values=PILES, describes="a discard pile to search instead"
+    ),
+    "from_top": ParamShape(
+        "from_top", WHOLE, least=1, describes="search only this many from the top"
+    ),
+    "card_type": ParamShape(
+        "card_type", TEXT, values=CARD_TYPES, describes="only cards of this kind"
+    ),
+    "exclude_type": ParamShape(
+        "exclude_type", TEXT, values=CARD_TYPES, describes="leave out cards of this kind"
+    ),
+    "tag": ParamShape("tag", TEXT, describes="only ones marked with this word"),
+    "named": ParamShape("named", TEXT, describes="only the card with this name"),
 }
 """
 What ``_target_deck_card`` reads. A misspelt deck stops the game today, deep
@@ -975,8 +1021,10 @@ inside a study and naming no card; this is the same knowledge asked earlier.
 """
 
 OFF_THE_TOP = {
-    "deck": ParamShape("deck", TEXT, values=DECKS),
-    "count": ParamShape("count", WHOLE, least=0),
+    "deck": ParamShape("deck", TEXT, values=DECKS, describes="which deck"),
+    "count": ParamShape(
+        "count", WHOLE, least=0, describes="how many cards off the top"
+    ),
     "exclude": ParamShape(
         "exclude",
         A_BOUND_GROUP,
@@ -1138,7 +1186,11 @@ def _holder(
     return seats
 
 
-MONSTERS = {"exclude_attacked": ParamShape("exclude_attacked", FLAG)}
+MONSTERS = {
+    "exclude_attacked": ParamShape(
+        "exclude_attacked", FLAG, describes="leave out the monster being fought"
+    )
+}
 """
 What ``_all_monsters`` reads.
 """
@@ -1181,7 +1233,14 @@ def _random_monster(
     return [monsters[rng.randint(0, len(monsters) - 1)]]
 
 
-OWN_ITEMS = _shape(WHOSE, {"exclude_eternal": ParamShape("exclude_eternal", FLAG)})
+OWN_ITEMS = _shape(
+    WHOSE,
+    {
+        "exclude_eternal": ParamShape(
+            "exclude_eternal", FLAG, describes="leave out eternal items"
+        )
+    },
+)
 """
 What ``_owned_treasure`` reads: whose items, and whether the untouchable ones
 are among them.
@@ -1216,12 +1275,25 @@ def _owned_treasure(
 ITEMS = _shape(
     WHOSE,
     {
-        "owner": ParamShape("owner", TEXT, values=("controller", "opponents")),
-        "include_shop": ParamShape("include_shop", FLAG),
-        "exclude_eternal": ParamShape("exclude_eternal", FLAG),
-        "exclude_source": ParamShape("exclude_source", FLAG),
-        "counter": ParamShape("counter", TEXT),
-        "tag": ParamShape("tag", TEXT),
+        "owner": ParamShape(
+            "owner",
+            TEXT,
+            values=("controller", "opponents"),
+            describes="whose items",
+        ),
+        "include_shop": ParamShape(
+            "include_shop", FLAG, describes="count the ones for sale too"
+        ),
+        "exclude_eternal": ParamShape(
+            "exclude_eternal", FLAG, describes="leave out eternal items"
+        ),
+        "exclude_source": ParamShape(
+            "exclude_source", FLAG, describes="leave out this card itself"
+        ),
+        "counter": ParamShape(
+            "counter", TEXT, describes="only ones carrying this counter"
+        ),
+        "tag": ParamShape("tag", TEXT, describes="only ones marked with this word"),
     },
 )
 """

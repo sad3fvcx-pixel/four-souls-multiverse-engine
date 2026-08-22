@@ -17,11 +17,12 @@ from __future__ import annotations
 
 import json
 import shutil
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
 from fsme.cards import validate_card
-from fsme.content.vocabulary import BY_PLAYER_OF
+from fsme.content.vocabulary import BY_BINDING, BY_PLAYER_OF
 from fsme.content.workspace import (
     card_identifier,
     identifier_for,
@@ -57,6 +58,7 @@ __all__ = [
     "delete_set",
     "make_set",
     "save_card",
+    "said_by_the_engine",
     "sets",
     "sets_directory",
 ]
@@ -270,6 +272,17 @@ def in_plain_words(problems: list[str]) -> list[str]:
     return [_said_plainly(problem, vocabulary) for problem in problems]
 
 
+ABOUT_A_PARAMETER = (" takes ", " needs '", " wants ", " has no ")
+"""
+How a validation message says it is about one parameter of one thing.
+
+The three verbs the checker uses, plus the one for a value outside a domain.
+A message using none of them is about the card's shape rather than about a box
+somebody filled in, and rewriting it as though it named a box names the path
+instead.
+"""
+
+
 def _said_plainly(problem: str, vocabulary: Any) -> str:
     """
     One message, with identifiers swapped for the words a person saw.
@@ -289,17 +302,23 @@ def _said_plainly(problem: str, vocabulary: Any) -> str:
     path = parts[-2] if len(parts) > 1 else ""
     field = path.rsplit(".", 1)[-1] if "." in path else ""
 
+    if not any(verb in complaint for verb in ABOUT_A_PARAMETER):
+        # Not a complaint about a box, so there is no box to name. Rebuilding
+        # it around the last step of the path would put a path there instead —
+        # "Effects[0] needs this 'if' has nothing to do" is what that reads
+        # like.
+        return complaint[:1].upper() + complaint[1:]
+
     for name in sorted(vocabulary.effects, key=len, reverse=True):
         if f"'{name}'" not in complaint:
             continue
 
         shape = vocabulary.shape(name)
         parameter = shape.params.get(field) if shape is not None else None
-        label = (
-            (parameter.describes or field.replace("_", " "))
-            if parameter is not None
-            else field.replace("_", " ")
-        )
+        # Only a parameter the effect actually has. A path ending in a misspelt
+        # key names no box, and calling it one turns "takes no parameter called
+        # 'amont'" into "Amont needs no parameter called 'amont'".
+        label = parameter.describes or field.replace("_", " ") if parameter else ""
         wanted = (
             complaint.split(" takes ", 1)[-1]
             if " takes " in complaint
@@ -314,6 +333,20 @@ def _said_plainly(problem: str, vocabulary: Any) -> str:
         return f"{described.rstrip('.')}: {wanted}."
 
     return complaint[:1].upper() + complaint[1:]
+
+
+def said_by_the_engine(refused: Exception) -> str:
+    """
+    What the engine stopped on, said to the person who pressed the button.
+
+    An engine message names the effect that refused and why —
+    ``effect 'watch_for' failed: watch_for requires the effects it will run``.
+    The chain of causes belongs in a log; what an author needs is the last
+    thing said, which is the one that names what is missing.
+    """
+    said = str(refused).split(": ")[-1].strip() or str(refused)
+
+    return f"The engine would not play this card: {said}."
 
 
 def _spec(name: str) -> Any:
@@ -459,8 +492,11 @@ def _given(
     answers with a seat. Nothing in this function knows which effect it is
     looking at, and nothing in it may learn.
     """
-    written = _written_fields(
-        described.get("fields", {}) if isinstance(described, dict) else {}
+    written = _without_the_moot(
+        shape,
+        _written_fields(
+            described.get("fields", {}) if isinstance(described, dict) else {}
+        ),
     )
 
     picked = described.get("groups", {}) if isinstance(described, dict) else {}
@@ -491,6 +527,71 @@ def _given(
         )
 
     return written
+
+
+def _without_the_moot(shape: Any, written: dict[str, Any]) -> dict[str, Any]:
+    """
+    Leave out what the other answers have already settled.
+
+    A form greys out a question another answer makes meaningless, and the card
+    has to agree: "heal 3, and heal fully" is a card saying two things and
+    getting one, and the one it gets is not the one printed on it. The page
+    keeps the greyed-out value so that unticking the box gives it back — the
+    card is where it must not appear.
+
+    Which answer settles which is the engine's own statement, read off the
+    parameter. Nothing here knows an effect by name.
+    """
+    if shape is None:
+        return written
+
+    return {
+        name: value
+        for name, value in written.items()
+        if not _settled(shape.params.get(name), shape, written)
+        and not _ours(shape.params.get(name))
+    }
+
+
+def _ours(parameter: Any) -> bool:
+    """
+    Whether this is a name we write rather than an answer somebody gives.
+
+    Every target is bound under a name so that later steps can point at it,
+    and `_pick_out` chooses it. A value arriving here for one of those is a
+    value about to be overwritten, so it never gets as far as the card.
+    """
+    return parameter is not None and parameter.written_as == BY_BINDING
+
+
+def _settled(parameter: Any, shape: Any, written: Mapping[str, Any]) -> bool:
+    """
+    Whether another parameter currently makes this one moot.
+
+    A switch settles it when it is on. Anything else settles it when it holds
+    one of the values the engine named, or — where it named none — any value
+    at all. What counts as "holds" includes the effect's own default, because
+    a question nobody answered still has an answer: `move_cards` puts cards on
+    the bottom unless told otherwise, and a depth from the top means nothing
+    there.
+    """
+    if parameter is None or not parameter.unless:
+        return False
+
+    other = shape.params.get(parameter.unless)
+
+    if other is None:
+        return False
+
+    now = written.get(other.name, other.default)
+
+    if other.kind == "true or false":
+        return now is True
+
+    if parameter.unless_when:
+        return now in parameter.unless_when
+
+    return now not in (None, "", False)
 
 
 def _effects(described: Any, aimed: list[dict[str, Any]] | None = None) -> list[Any]:

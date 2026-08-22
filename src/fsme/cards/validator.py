@@ -595,7 +595,16 @@ def _control_nodes(
         head = next((key for key in node if key in nodes and key != "static"), "")
 
         if head and head != "ability":
-            errors.extend(_one_node(node, nodes[head], card_id, here))
+            wrong = _one_node(node, nodes[head], card_id, here)
+
+            errors.extend(wrong)
+
+            # Only when the node is otherwise written correctly. `thne` is a
+            # branch with nothing under `then`, and saying so as well as naming
+            # the typo is two complaints about one mistake — which is how a
+            # list of problems stops being read.
+            if not wrong:
+                errors.extend(_does_something(node, nodes[head], card_id, here))
 
         for key, value in node.items():
             if isinstance(value, (list, tuple)):
@@ -608,6 +617,38 @@ def _control_nodes(
                 )
 
     return errors
+
+
+def _does_something(
+    node: Mapping[str, Any],
+    shape: Any,
+    card_id: str,
+    path: str,
+) -> list[str]:
+    """
+    Whether a control node has anything to do.
+
+    ``{"if": ["player_alive"], "then": []}`` is a branch that runs and does
+    nothing. It loads, it resolves, it changes nothing, and it reads exactly
+    like a branch that works — which is the worst kind of mistake to leave for
+    somebody to find during a game.
+
+    Where a node keeps what it does is the interpreter's own statement, carried
+    on the shape. A node that keeps nothing anywhere — ``stop`` — is not asked.
+    """
+    bodies = getattr(shape, "bodies", ())
+
+    if not bodies:
+        return []
+
+    if any(node.get(key) for key in bodies):
+        return []
+
+    return [
+        f"{card_id}: {path}: this '{shape.name}' has nothing to do — "
+        f"say what happens under "
+        + " or ".join(f"'{key}'" for key in bodies)
+    ]
 
 
 def _static_stat(
@@ -854,6 +895,13 @@ def _naming(
     if not written:
         return None
 
+    if written == BY_BINDING:
+        # A name, and one the card is allowed to choose for itself.
+        return [] if isinstance(value, str) else [
+            f"{where}: '{name}' is bound under a name, and the card gives "
+            f"{value!r}"
+        ]
+
     if written == BY_ENGINE:
         return [
             f"{where}: '{name}' is handed this by the engine, and there is no "
@@ -887,13 +935,20 @@ def _naming(
     ]
 
 
+BY_BINDING = "FSME writes this one for you"
+"""
+What ``written_as`` says for the name a target is bound under.
+
+A card writes it; no author answers it. Checked as a name and nothing more.
+"""
+
 BY_ENGINE = "the engine supplies it"
 """
-What ``written_as`` says for a parameter no card may write.
+What ``written_as`` says for a parameter no card may write at all.
 
-Spelled here rather than imported: this module is the one the content pipeline
-runs without an engine, and it reads shapes as plain data on purpose. The
-string is the engine's, and a test holds the two together.
+Both are spelled here rather than imported: this module is the one the content
+pipeline runs without an engine, and it reads shapes as plain data on purpose.
+The strings are the engine's, and a test holds the two together.
 """
 
 

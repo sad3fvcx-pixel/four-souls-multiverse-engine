@@ -33,7 +33,12 @@ from fsme.events import EventType
 from fsme.rules.statics import STATIC_SCOPES
 
 from .condition_evaluator import ConditionEvaluator
-from .interpreter import _MODIFIER_KEYS, CONTROL_KEYS, CONTROL_NAMES
+from .interpreter import (
+    _MODIFIER_KEYS,
+    CONTROL_BODIES,
+    CONTROL_KEYS,
+    CONTROL_NAMES,
+)
 from .runtime import ABILITY_SCOPES
 from .target_resolver import TargetResolver
 
@@ -119,6 +124,7 @@ def _node_shapes() -> Mapping[str, NodeShape]:
                             for key in tuple(keys) + tuple(sorted(_MODIFIER_KEYS))
                         }
                     ),
+                    bodies=CONTROL_BODIES.get(name, ()),
                 )
                 for name, keys in CONTROL_KEYS.items()
             },

@@ -57,8 +57,9 @@ BY_NAME = "the name of something the ability chose"
 BY_PLAYER_OF = "player_of"
 BY_STORED = "the name of a value an earlier step stored"
 BY_ENGINE = "the engine supplies it"
+BY_BINDING = "FSME writes this one for you"
 
-WRITINGS = (BY_NAME, BY_PLAYER_OF, BY_STORED, BY_ENGINE)
+WRITINGS = (BY_NAME, BY_PLAYER_OF, BY_STORED, BY_ENGINE, BY_BINDING)
 """
 How a card writes a parameter that names something instead of carrying a value.
 
@@ -75,6 +76,10 @@ Four sentences, because the engine has four answers and no more:
 - ``BY_ENGINE`` — nothing a card writes at all. ``claim_soul`` takes the card
   that becomes the soul and no card file has ever given it one, because the
   only way to name a card is to be one.
+- ``BY_BINDING`` — the name a target is bound under, so that later steps can
+  point at it. Written in every card file and answered by no author: whatever
+  is writing the card chooses the name, and a form offering the box takes an
+  answer it is about to overwrite.
 
 Anything showing a parameter to a person reads this to decide *what to offer*;
 ``role`` decides how to draw it and ``refers_to`` says what kind of thing is
@@ -181,6 +186,21 @@ class ParamShape:
 
     A switch is moot-making when it is on, whatever this says: ``false`` is
     what a card that left it out means.
+    """
+
+    instead_of: str = ""
+    """
+    Another parameter this one is a second spelling of.
+
+    ``player_has_coins`` reads ``amount``, then ``count``, then ``value``, and
+    takes the first it finds: three names for one number, because cards were
+    written with all three. That is right for reading a card and wrong for
+    asking a person, who would be asked the same question three times and told
+    nothing about which answer wins.
+
+    So the spellings are named here and the question is asked once, under the
+    one this points at. Nothing is refused: a card writing any of them still
+    loads, because the engine still reads all of them.
     """
 
     written_as: str = ""
@@ -451,6 +471,15 @@ class NodeShape:
     params: Mapping[str, ParamShape] = field(
         default_factory=lambda: MappingProxyType({})
     )
+
+    bodies: tuple[str, ...] = ()
+    """
+    The keys this node keeps the things it does under, if it does anything.
+
+    Empty for a node with no body — an ability, a static, `stop`. Otherwise a
+    node with every one of these empty expands to nothing at all, which reads
+    exactly like one that works and is not a card anybody meant to write.
+    """
 
 
 @dataclass(frozen=True, slots=True)

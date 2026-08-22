@@ -245,8 +245,12 @@ function stepHtml(step, index) {
 function aimHtml(chosen, step, path) {
   if (!chosen || !chosen.needs_target) return "";
   const options = can.targets.filter(t => t.aimable);
-  const common = options.filter(t => t.common);
-  const rest = options.filter(t => !t.common);
+  const common = options.filter(t => t.common && !t.after);
+  const rest = options.filter(t => !t.common && !t.after);
+  // Ones that mean nothing on their own. Offered, because the engine resolves
+  // them like any other — "destroy what you just damaged" is one of these —
+  // and offered apart, because picking one first would mean nothing.
+  const after = options.filter(t => t.after);
   const one = (t) => `<option value="${t.id}" ${t.id === step.aim ? "selected" : ""}>
       ${esc(t.about)}</option>`;
   const picked = can.targets.find(t => t.id === step.aim);
@@ -255,6 +259,7 @@ function aimHtml(chosen, step, path) {
       <option value="">— the usual one for this card —</option>
       ${common.map(one).join("")}
       <optgroup label="everything else">${rest.map(one).join("")}</optgroup>
+      <optgroup label="what an earlier step chose">${after.map(one).join("")}</optgroup>
     </select>
     ${picked ? fieldsHtml(picked.fields, step.aim_fields, step.aim_groups,
         `${path}.aim_fields`, `${path}.aim_groups`) : ""}`;
@@ -304,18 +309,24 @@ function fieldsHtml(fields, values, groups, path, groupPath) {
   values = values || {};
   groups = groups || {};
   return list.map(f => {
-    if (f.shown === "engine") return engineHtml(f);
+    // A second name the engine also reads for a question already asked. Asking
+    // it again would be asking the same thing twice and saying nothing about
+    // which answer wins.
+    if (f.shown === "spelling") return "";
+    if (f.shown === "given") return givenHtml(f);
     if (f.shown === "group") return groupHtml(f, groups, groupPath);
     if (f.shown === "advanced") return structureHtml(f, values, path);
     return valueHtml(f, values, list, path);
   }).join("");
 }
 
-// Not a question. Four parameters take a card the engine already holds, and
-// no card file has ever named a card — the only way to name one is to be one
-// — so a box here would be a box whose every answer is wrong.
-function engineHtml(f) {
-  return `<p class="muted"><b>${esc(f.about)}</b> — the engine fills this in.</p>`;
+// Not a question. Some parameters take a thing the engine already holds — the
+// only way to name a card is to be one — and some are the names FSME writes so
+// that later steps can point back at what was chosen. Either way a box here
+// would take an answer that is wrong or about to be overwritten, so the page
+// says which it is instead. The words come from the metadata, not from here.
+function givenHtml(f) {
+  return `<p class="muted"><b>${esc(f.about)}</b> — ${esc(f.written)}.</p>`;
 }
 
 // A parameter that names something the ability picks out. Never a text box:
@@ -331,9 +342,11 @@ function groupHtml(f, groups, groupPath) {
   return `<label>${esc(f.about)}${needed(f)}</label>
     <select onchange="setPick('${groupPath}','${f.id}',this.value)">
       <option value="">${esc(nobody(f))}</option>
-      ${options.filter(t => t.common).map(one).join("")}
+      ${options.filter(t => t.common && !t.after).map(one).join("")}
       <optgroup label="everything else"
-        >${options.filter(t => !t.common).map(one).join("")}</optgroup>
+        >${options.filter(t => !t.common && !t.after).map(one).join("")}</optgroup>
+      <optgroup label="what an earlier step chose"
+        >${options.filter(t => t.after).map(one).join("")}</optgroup>
     </select>
     ${picked ? `<div class="nested">${fieldsHtml(picked.fields, pick.fields,
         pick.groups, `${mine}.fields`, `${mine}.groups`)}</div>` : ""}`;

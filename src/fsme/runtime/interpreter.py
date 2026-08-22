@@ -70,6 +70,25 @@ complains.
 them off any node before the node is looked at.
 """
 
+CONTROL_BODIES: dict[str, tuple[str, ...]] = {
+    "sequence": ("effects", "sequence"),
+    "may": ("effects", "may"),
+    "choose": ("modes", "choose"),
+    "if": ("then", "else"),
+    "repeat": ("effects",),
+    "for_each": ("effects",),
+    "stop": (),
+}
+"""
+Where each control node keeps the things it does, if it does anything.
+
+Read off the same expanders, one entry per ``params.get`` that is handed to
+``build``. A node with every one of these empty expands to nothing at all —
+``{"if": ["player_alive"], "then": []}`` is a branch that runs and does
+nothing, which is not a card anybody meant to write and reads exactly like one
+that works. ``stop`` has no body because stopping *is* what it does.
+"""
+
 DEFAULT_MAX_OPS = 512
 
 DEFAULT_TARGET_KEY = "__default_target__"

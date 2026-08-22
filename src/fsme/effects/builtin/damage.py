@@ -414,6 +414,8 @@ def register(registry: EffectRegistry) -> None:
         asks={
             "amount": "how much damage",
             "dealt_by": "who is dealing it, if not the card's controller",
+            "combat": "this counts as combat damage",
+            "roll": "the die roll that caused it, if one did",
         },
         picks={"dealt_by": PLAYERS},
     )
@@ -426,6 +428,7 @@ def register(registry: EffectRegistry) -> None:
         picks={"dealt_by": PLAYERS},
         asks={
             "dealt_by": "who is dealing it, if not the card's controller",
+            "each": "how much each one takes",
         },
     )
     registry.register(
@@ -455,5 +458,8 @@ def register(registry: EffectRegistry) -> None:
         revive,
         needs_target=True,
         primary="hp",
-        description="Return a dead player to play."
+        description="Return a dead player to play.",
+        asks={
+            "hp": "how much health they come back with",
+        },
     )

@@ -91,7 +91,11 @@ def _compare(value: int, params: Mapping[str, Any]) -> bool:
     return comparison(value, expected)
 
 
-SUBJECT_PLAYER = {"player": ParamShape("player", WHOLE, least=0)}
+SUBJECT_PLAYER = {
+    "player": ParamShape(
+        "player", WHOLE, least=0, describes="which seat at the table"
+    )
+}
 """
 What ``_subject_player`` reads: which seat, when the card names one.
 """
@@ -119,7 +123,11 @@ def _subject_player(
     return state.player(index)
 
 
-SUBJECT_MONSTER = {"monster": ParamShape("monster", WHOLE, least=0)}
+SUBJECT_MONSTER = {
+    "monster": ParamShape(
+        "monster", WHOLE, least=0, describes="which monster slot"
+    )
+}
 """
 What ``_subject_monster`` reads: which slot, when the card names one.
 """
@@ -440,12 +448,16 @@ def _player_not_active(
 HOW_MANY = _shape(
     COMPARISON,
     {
-        "amount": ParamShape("amount", WHOLE),
-        "count": ParamShape("count", WHOLE),
+        "amount": ParamShape("amount", WHOLE, instead_of="value"),
+        "count": ParamShape("count", WHOLE, instead_of="value"),
     },
 )
 """
 What ``_has`` reads: a number, however the card chose to spell it.
+
+Named beside the reading below, which takes the first of the three it finds.
+Three spellings are worth accepting from a card that already exists and are
+not worth asking anybody for, so two of them say which one they are.
 """
 
 
@@ -478,11 +490,17 @@ narrowing it — it is being ignored, which is worth saying before a game.
 
 ABOUT_A_PLAYER = _shape(SUBJECT_PLAYER, COMPARISON)
 HAS_SOMETHING = _shape(SUBJECT_PLAYER, HOW_MANY)
-HAS_TREASURE = _shape(HAS_SOMETHING, {"tag": ParamShape("tag", TEXT)})
+HAS_TREASURE = _shape(
+    HAS_SOMETHING,
+    {"tag": ParamShape("tag", TEXT, describes="only items marked with this word")},
+)
 ABOUT_A_MONSTER = _shape(SUBJECT_MONSTER, COMPARISON)
-COUNTERS = _shape(COMPARISON, {"counter": ParamShape("counter", TEXT)})
+COUNTERS = _shape(
+    COMPARISON,
+    {"counter": ParamShape("counter", TEXT, describes="what the counter is called")},
+)
 PLAYER_COUNTERS = _shape(SUBJECT_PLAYER, COUNTERS)
-IN_ZONE = {"zone": ParamShape("zone", TEXT)}
+IN_ZONE = {"zone": ParamShape("zone", TEXT, describes="which pile to look in")}
 NAMED_VALUES = {
     "of": ParamShape(
         "of",
@@ -665,7 +683,12 @@ handed to the condition along with everything else it knows.
 
 
 NTH_TIME_SHAPE = _shape(
-    COMPARISON, {"every": ParamShape("every", WHOLE, least=1)}
+    COMPARISON,
+    {
+        "every": ParamShape(
+            "every", WHOLE, least=1, describes="how often — 2 means every other time"
+        )
+    },
 )
 """
 Every other time is a period, and a period of zero is not a period.
