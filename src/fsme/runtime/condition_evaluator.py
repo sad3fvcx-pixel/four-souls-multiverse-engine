@@ -20,6 +20,8 @@ from types import MappingProxyType
 from typing import Any
 
 from fsme.content.vocabulary import (
+    A_LIST,
+    CONDITION,
     OPEN,
     UNCHECKED,
     VALUES,
@@ -208,8 +210,13 @@ class ConditionEvaluator:
         The functions stay here. What leaves is names and kinds, because the
         content pipeline that asks this question runs before a game exists and
         must not be handed anything that could start one.
+
+        The three joining words come with them. ``evaluate`` answers them above
+        the table rather than out of it, so they have no implementation to
+        register — and a layer that described the forty-one leaves and not the
+        three ways of joining them would describe a tree one node deep.
         """
-        return MappingProxyType(dict(self._shapes))
+        return MappingProxyType({**self._shapes, **JOINING})
 
     def evaluate_all(
         self,
@@ -480,6 +487,51 @@ def _has(
         return amount >= int(params.get("amount", params.get("count", params.get("value", 1))))
 
     return _compare(amount, params)
+
+
+JOINED = {
+    "of": ParamShape(
+        "of",
+        A_LIST,
+        a_list_of=CONDITION,
+        describes="the conditions being joined",
+    )
+}
+"""
+What ``and``, ``or`` and ``not`` read: more conditions.
+
+Written once because the three are one shape. ``normalise`` turns
+``{"not": [...]}`` and ``{"not": "player_alive"}`` alike into ``of``, so this
+is what a card is asking either way.
+"""
+
+JOINING = MappingProxyType(
+    {
+        "and": ConditionShape(
+            name="and",
+            params=MappingProxyType(JOINED),
+            describes="all of these are true",
+        ),
+        "or": ConditionShape(
+            name="or",
+            params=MappingProxyType(JOINED),
+            describes="any of these is true",
+        ),
+        "not": ConditionShape(
+            name="not",
+            params=MappingProxyType(JOINED),
+            describes="none of these is true",
+        ),
+    }
+)
+"""
+The three conditions that are made of other conditions.
+
+Answered by ``evaluate`` itself rather than by a registered function, which is
+why they are described here and not registered: there is nothing to register.
+A card may nest them as deeply as it likes, and this says so by naming what
+they hold — themselves.
+"""
 
 
 NOTHING: dict[str, ParamShape] = {}

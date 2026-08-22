@@ -96,7 +96,7 @@ an effect and for a target.
 
 | name | takes |
 | --- | --- |
-| `and` | — |
+| `and` | `of` a list |
 | `attack_roll` | — |
 | `card_counters` | `counter` text, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `value` a whole number |
 | `card_in_zone` | `zone` text |
@@ -123,9 +123,9 @@ an effect and for a target.
 | `monster_boss` | `monster` a whole number ≥ 0 |
 | `monster_dead` | `monster` a whole number ≥ 0 |
 | `monster_hp` | `monster` a whole number ≥ 0, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `value` a whole number |
-| `not` | — |
+| `not` | `of` a list |
 | `nth_time_this_turn` | `every` a whole number ≥ 1, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `value` a whole number |
-| `or` | — |
+| `or` | `of` a list |
 | `player_active` | `player` a whole number ≥ 0 |
 | `player_alive` | `player` a whole number ≥ 0 |
 | `player_counters` | `counter` text, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `player` a whole number ≥ 0, `value` a whole number |

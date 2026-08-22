@@ -164,12 +164,8 @@ def _validate_ability(
             f"{did_you_mean(str(trigger), known_triggers)}"
         )
 
-    for key in ("targets", "effects"):
-        value = ability.get(key, ())
-
-        if not isinstance(value, (list, tuple)):
-            errors.append(f"{location}: '{key}' must be a list")
-
+    # That `targets` and `effects` are lists is said by the ability's own shape
+    # and checked against it, so it is not said again here.
     effects = ability.get("effects", ())
 
     if isinstance(effects, (list, tuple)):
@@ -513,7 +509,13 @@ def _validate_nodes(
     for index, ability in enumerate(card.get("abilities", ()) or ()):
         if isinstance(ability, Mapping):
             errors.extend(
-                _one_node(ability, nodes.get("ability"), card_id, f"abilities[{index}]")
+                _one_node(
+                    ability,
+                    nodes.get("ability"),
+                    card_id,
+                    f"abilities[{index}]",
+                    nodes,
+                )
             )
             errors.extend(
                 _control_nodes(
@@ -530,10 +532,19 @@ def _validate_nodes(
 
         where = f"statics[{index}]"
 
-        errors.extend(_one_node(static, nodes.get("static"), card_id, where))
+        errors.extend(
+            _one_node(static, nodes.get("static"), card_id, where, nodes)
+        )
         errors.extend(_static_stat(static, monster, card_id, where))
 
     return errors
+
+
+_UNCHECKED_KIND = "anything the engine can only judge during a game"
+"""
+The kind this layer deliberately does not judge — the engine's own word for it,
+spelled here for the reason `BY_ENGINE` is.
+"""
 
 
 def _one_node(
@@ -541,9 +552,15 @@ def _one_node(
     shape: Any,
     card_id: str,
     path: str,
+    nodes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
-    Check one node's keys, and the values of the ones with a domain.
+    Check one node against the shape that describes it.
+
+    Everything the shape says: which keys belong, what kind each value is, the
+    domains, and — where a parameter holds another node — that node in turn.
+    The same description a form would be drawn from, read here, so that the two
+    cannot come to disagree about what a card may say.
     """
     if shape is None:
         return []
@@ -563,14 +580,128 @@ def _one_node(
 
             continue
 
-        if parameter.values and isinstance(value, str) and value not in parameter.values:
-            errors.append(
-                f"{card_id}: {path}.{key}: '{value}' is not one of "
-                + " or ".join(f"'{one}'" for one in parameter.values)
-                + did_you_mean(value, parameter.values)
-            )
+        errors.extend(
+            _one_value(parameter, value, card_id, f"{path}.{key}", nodes)
+        )
 
     return errors
+
+
+def _one_value(
+    parameter: Any,
+    value: Any,
+    card_id: str,
+    where: str,
+    nodes: Mapping[str, Any] | None,
+) -> list[str]:
+    """
+    One value against the ways its parameter says it may be written.
+
+    A parameter usually has one way. Where it has more — a number *or* a way of
+    working one out — a value matching any of them is right, and only a value
+    matching none of them is worth a word.
+    """
+    ways = [parameter, *getattr(parameter, "also", ())]
+    tried: list[tuple[bool, list[str]]] = []
+
+    for way in ways:
+        said = _written_this_way(way, value, card_id, where, nodes)
+
+        if not said:
+            return []
+
+        tried.append((_outwardly(way, value), said))
+
+    # Every way refused it. Complain in the words of the one it came closest
+    # to: a card writing `{"counter": "egg"}` where a number or a named number
+    # belongs meant the named number, and being told it is not a number sends
+    # somebody looking in the wrong place.
+    for close, said in tried:
+        if close:
+            return said
+
+    return tried[0][1]
+
+
+def _outwardly(way: Any, value: Any) -> bool:
+    """
+    Whether a value is at least the right *sort* of thing for one way.
+
+    Not whether it fits — whether it is a mapping where a mapping belongs, a
+    list where a list belongs. Enough to tell which complaint is the useful
+    one.
+    """
+    if getattr(way, "shaped_like", ""):
+        return isinstance(value, Mapping)
+
+    if getattr(way, "a_list_of", ""):
+        return isinstance(value, (list, tuple))
+
+    return not isinstance(value, (Mapping, list, tuple))
+
+
+def _written_this_way(
+    way: Any,
+    value: Any,
+    card_id: str,
+    where: str,
+    nodes: Mapping[str, Any] | None,
+) -> list[str]:
+    """
+    Whether a value fits one way of being written, and what is wrong if not.
+    """
+    named = getattr(way, "shaped_like", "")
+
+    if named:
+        if not isinstance(value, Mapping):
+            return [
+                f"{card_id}: {where}: this is written as a {named}, "
+                f"and the card gives {_kind_written(value)}"
+            ]
+
+        inside = (nodes or {}).get(named)
+
+        return _one_node(value, inside, card_id, where, nodes) if inside else []
+
+    if getattr(way, "a_list_of", ""):
+        if not isinstance(value, (list, tuple)):
+            return [
+                f"{card_id}: {where}: this is a list of "
+                f"{way.a_list_of}s, and the card gives {_kind_written(value)}"
+            ]
+
+        # What is *in* the list is walked by whatever walks that kind — the
+        # effects walker, the conditions walker, the targets walker — so that
+        # one mistake is named once.
+        return []
+
+    kind = getattr(way, "kind", "")
+
+    if not kind or kind == _UNCHECKED_KIND:
+        return []
+
+    written = _kind_written(value)
+
+    if written != kind:
+        return [
+            f"{card_id}: {where}: this takes {kind}, "
+            f"and the card gives {written} ({value!r})"
+        ]
+
+    if way.values and value not in way.values:
+        return [
+            f"{card_id}: {where}: '{value}' is not one of "
+            + " or ".join(f"'{one}'" for one in way.values)
+            + did_you_mean(str(value), [str(one) for one in way.values])
+        ]
+
+    if way.least is not None and isinstance(value, int) and value < way.least:
+        return [
+            f"{card_id}: {where}: this takes {kind} of at least "
+            f"{way.least}, and the card gives {value!r}"
+        ]
+
+    return []
 
 
 def _control_nodes(
@@ -595,7 +726,7 @@ def _control_nodes(
         head = next((key for key in node if key in nodes and key != "static"), "")
 
         if head and head != "ability":
-            wrong = _one_node(node, nodes[head], card_id, here)
+            wrong = _one_node(node, nodes[head], card_id, here, nodes)
 
             errors.extend(wrong)
 
@@ -1038,7 +1169,6 @@ appear, which is what makes it safe to look for them anywhere in a card rather
 than only in the places official cards happen to use.
 """
 
-_UNCHECKED_KIND = "anything the engine can only judge during a game"
 
 
 def _validate_conditions(

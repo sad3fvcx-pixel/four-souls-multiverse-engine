@@ -225,6 +225,38 @@ def _counted(
     return max(int(spec.get("floor", 0)), total)
 
 
+WORKING_OUT = {
+    "from": "the name an earlier step stored the number under",
+    "from_event": "a number the event being answered carries",
+    "last_result": "what the step before this one came to",
+    "count": "something to count across a group of players",
+    "player_of": "a group whose player is wanted",
+    "of": "whose things to count",
+    "minus": "a group to count and take away",
+    "floor": "the smallest the count may come to",
+    "times": "what to multiply the number by",
+    "plus": "what to add to it afterwards",
+}
+"""
+Every key this module reads when a card gives a way of working a number out
+instead of the number.
+
+One entry per ``spec.get`` and per branch of ``_resolve_params`` above, which
+is what keeps it the same fact rather than a second copy of it. The first five
+are the heads — a specification names exactly one — and the rest shape whatever
+the head produced.
+
+Named here so that a layer describing what a card may write can say "a whole
+number, or one of these", which is what the cards actually say and what nothing
+outside this file could otherwise know.
+"""
+
+COUNTABLE = tuple(sorted(_COUNTS))
+"""
+The things ``count`` can count, off the table that counts them.
+"""
+
+
 def _group(
     name: Any,
     ability: AbilityContext,

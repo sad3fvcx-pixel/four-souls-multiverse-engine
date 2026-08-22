@@ -138,14 +138,15 @@ What describes a card's ability: the ability itself, and the shape of what it
 charges. ``mode`` is not here — it belongs to ``choose``, which is a structure.
 """
 
-STRUCTURE_NODES = (*sorted(CONTROL_NAMES), "mode")
+STRUCTURE_NODES = (*sorted(CONTROL_NAMES), "mode", "worked_out", "named_count")
 """
 The nodes that shape what happens, and the one small shape they refer to.
 
-``mode`` is published beside them rather than on its own because it is not a
-thing a card writes anywhere else: it is what a ``choose`` is a list of, and a
-name in ``a_list_of`` that nothing describes would be a promise this layer
-cannot keep.
+``mode``, ``worked_out`` and ``named_count`` are published beside them rather
+than on their own because none of them is a thing a card writes by itself: one
+is what a ``choose`` is a list of, and the other two are the second way of
+writing a value somewhere else. A name in ``a_list_of`` or ``shaped_like``
+that nothing describes would be a promise this layer cannot keep.
 """
 
 STATIC_NODES = ("static",)
@@ -197,6 +198,8 @@ ABOUT_NODES = {
     "static": "a number this card changes while it is in play",
     "cost": "what a player pays to use an ability",
     "mode": "one option of a choice",
+    "worked_out": "a value the ability works out while it runs",
+    "named_count": "a price paid in counters of a named kind",
     "if": "depending on something",
     "may": "the controller may choose to",
     "choose": "one of several options",
@@ -312,6 +315,11 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
     - ``body`` — more of the language, listed. ``a_list_of`` says of what, and
       whatever draws one list of effects draws every one of them.
     - ``nested`` — more of the language, once. ``shaped_like`` says which.
+
+    ``also`` carries the other ways the same parameter may be written, on the
+    same terms, because a parameter that takes a number *or* a way of working
+    one out is not two parameters and must not be drawn as one question with
+    half its answers refused.
     """
     found = []
 
@@ -332,6 +340,20 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             "picks": parameter.refers_to,
             "a_list_of": parameter.a_list_of,
             "shaped_like": parameter.shaped_like,
+            "defines": parameter.defines,
+            "domain_from": parameter.domain_from,
+            "names_the_node": parameter.names_the_node,
+            "also": [
+                {
+                    "kind": way.kind,
+                    "choices": [str(v) for v in way.values],
+                    "least": way.least,
+                    "shaped_like": way.shaped_like,
+                    "a_list_of": way.a_list_of,
+                    "about": way.describes,
+                }
+                for way in parameter.also
+            ],
             # Several answers out of a known set — which is a control the
             # page has. A list with nothing to choose from is the effect's own
             # data and goes to the advanced view instead.

@@ -20,22 +20,27 @@ from fsme.content import Vocabulary
 from fsme.content.vocabulary import (
     A_LIST,
     A_MAPPING,
+    ANY_GROUP,
     BY_BINDING,
     BY_ENGINE,
     BY_PLAYER_OF,
     CARDS,
     CONDITION,
     COST,
-    EFFECT,
     MODE,
+    NAMED_COUNT,
     OPEN,
     PLAYERS,
+    STEP,
     STRUCTURE,
     TARGET,
     UNCHECKED,
+    VALUES,
+    WORKED_OUT,
     EffectShape,
     NodeShape,
     ParamShape,
+    Written,
 )
 from fsme.effects import EffectRegistry, builtin_registry
 from fsme.effects.registry import EffectSpec, ParamKind
@@ -45,11 +50,13 @@ from fsme.rules.restrictions import ACTIONS
 from fsme.rules.statics import STATIC_SCOPES
 
 from .condition_evaluator import ConditionEvaluator
+from .effect_executor import COUNTABLE, WORKING_OUT
 from .interpreter import (
     _MODIFIER_KEYS,
     CONTROL_BODIES,
     CONTROL_KEYS,
     CONTROL_NAMES,
+    CONTROL_SPELLINGS,
 )
 from .runtime import ABILITY_SCOPES, ABILITY_ZONES, ability_scope
 from .target_resolver import TargetResolver
@@ -145,6 +152,8 @@ def _node_shapes() -> Mapping[str, NodeShape]:
             ),
             "cost": _COST,
             "mode": _MODE,
+            "worked_out": _WORKED_OUT,
+            "named_count": _NAMED_COUNT,
             **{
                 name: NodeShape(
                     name=name,
@@ -214,7 +223,7 @@ def _ability_field(field: Field[Any]) -> ParamShape:
     """
     One field of an ability, as a card may write it.
     """
-    lists = {"conditions": CONDITION, "targets": TARGET, "effects": EFFECT}
+    lists = {"conditions": CONDITION, "targets": TARGET, "effects": STEP}
     values = {
         "trigger": tuple(str(event_type) for event_type in EventType),
         "scope": ABILITY_SCOPES,
@@ -252,6 +261,7 @@ def _static_field(field: Field[Any]) -> ParamShape:
             else ()
         ),
         a_list_of=CONDITION if field.name == "conditions" else "",
+        domain_from="scope" if field.name == "stat" else "",
         describes=STATIC_WORDS.get(field.name, ""),
         default=_default_of(field),
     )
@@ -280,9 +290,11 @@ _COST = NodeShape(
             ),
             COUNTERS: ParamShape(
                 COUNTERS,
-                UNCHECKED,
-                role=OPEN,
-                describes="counters to spend, as a number or a named number",
+                WHOLE,
+                least=0,
+                also=(Written(shaped_like=NAMED_COUNT, describes="of a named kind"),),
+                describes="counters to spend",
+                default=0,
             ),
             HP: ParamShape(
                 HP, WHOLE, least=0, describes="hit points, never the last one", default=0
@@ -306,7 +318,7 @@ _MODE = NodeShape(
                 "description", TEXT, required=True, describes="what this option offers"
             ),
             "effects": ParamShape(
-                "effects", A_LIST, a_list_of=EFFECT, describes="what it does"
+                "effects", A_LIST, a_list_of=STEP, describes="what it does"
             ),
         }
     ),
@@ -321,7 +333,81 @@ about the effects behind it.
 """
 
 
+_WORKED_OUT = NodeShape(
+    name="worked_out",
+    params=MappingProxyType(
+        {
+            "from": ParamShape(
+                "from", TEXT, refers_to=VALUES, describes=WORKING_OUT["from"]
+            ),
+            "from_event": ParamShape(
+                "from_event", TEXT, describes=WORKING_OUT["from_event"]
+            ),
+            "last_result": ParamShape(
+                "last_result", UNCHECKED, role=OPEN,
+                describes=WORKING_OUT["last_result"],
+            ),
+            "count": ParamShape(
+                "count", TEXT, values=COUNTABLE, describes=WORKING_OUT["count"]
+            ),
+            "player_of": ParamShape(
+                "player_of", TEXT, refers_to=PLAYERS,
+                describes=WORKING_OUT["player_of"],
+            ),
+            "of": ParamShape(
+                "of", UNCHECKED, refers_to=ANY_GROUP, describes=WORKING_OUT["of"]
+            ),
+            "minus": ParamShape(
+                "minus", UNCHECKED, refers_to=ANY_GROUP,
+                describes=WORKING_OUT["minus"],
+            ),
+            "floor": ParamShape("floor", WHOLE, describes=WORKING_OUT["floor"]),
+            "times": ParamShape("times", WHOLE, describes=WORKING_OUT["times"]),
+            "plus": ParamShape("plus", WHOLE, describes=WORKING_OUT["plus"]),
+        }
+    ),
+)
+"""
+A number a card does not know when it is written.
+
+Every key `_resolve_params` reads, described where the executor names them, so
+that a layer offering "a number, or work one out" can say what working one out
+looks like.
+"""
+
+_NAMED_COUNT = NodeShape(
+    name="named_count",
+    params=MappingProxyType(
+        {
+            "counter": ParamShape(
+                "counter", TEXT, describes="which counter to spend"
+            ),
+            "amount": ParamShape(
+                "amount", WHOLE, least=0, describes="how many of them"
+            ),
+        }
+    ),
+)
+"""
+A price paid in counters, when the card has more than one kind on it.
+
+`_counter_cost` reads a plain number as `charge` counters and this as any of
+them, which is two ways of writing one price.
+"""
+
+
 _CONTROL_FIELDS: dict[tuple[str, str], ParamShape] = {}
+
+
+A_TARGET_NAMED = (Written(kind=TEXT, describes="a target, named"),)
+"""
+The two ways a card may say what something acts on.
+
+``normalise`` takes ``"all_players"`` and
+``{"random_player": {"exclude_controller": true}}`` alike, so a layer offering
+only one of them would call half the cards in the game mistakes. The described
+form leads because it is the general one; this is the other.
+"""
 
 
 def _control_field(node: str, key: str) -> ParamShape:
@@ -333,38 +419,74 @@ def _control_field(node: str, key: str) -> ParamShape:
     accepts mean the same thing wherever they appear.
     """
     bodies = {
-        ("if", "then"): EFFECT,
-        ("if", "else"): EFFECT,
+        ("if", "then"): STEP,
+        ("if", "else"): STEP,
         ("if", "if"): CONDITION,
         ("if", "conditions"): CONDITION,
-        ("may", "may"): EFFECT,
-        ("may", "effects"): EFFECT,
+        ("may", "may"): STEP,
+        ("may", "effects"): STEP,
         ("choose", "choose"): MODE,
         ("choose", "modes"): MODE,
-        ("repeat", "effects"): EFFECT,
-        ("for_each", "effects"): EFFECT,
-        ("sequence", "sequence"): EFFECT,
-        ("sequence", "effects"): EFFECT,
+        ("repeat", "effects"): STEP,
+        ("for_each", "effects"): STEP,
+        ("sequence", "sequence"): STEP,
+        ("sequence", "effects"): STEP,
     }
+
+    first, second = CONTROL_SPELLINGS.get(node, ("", ""))
+    spelling = key if key == second else ""
+    # A head that is also the second spelling has to be there to name its node
+    # and is read only when the first spelling is absent, so what it carries
+    # when the first *is* there is nothing anybody reads.
+    placeholder = (
+        (Written(kind=UNCHECKED, describes="a placeholder, when the answer is "
+                                           "written under its other name"),)
+        if spelling and key == node
+        else ()
+    )
 
     if (node, key) in bodies:
         return ParamShape(
             key,
             A_LIST,
             a_list_of=bodies[(node, key)],
+            also=placeholder,
+            instead_of=first if spelling else "",
+            names_the_node=key == node,
             describes=_CONTROL_WORDS.get((node, key), ""),
         )
 
     if (node, key) == ("for_each", "for_each") or (node, key) == ("for_each", "of"):
         return ParamShape(
-            key, UNCHECKED, shaped_like=TARGET, describes="what to do it for each of"
+            key,
+            UNCHECKED,
+            shaped_like=TARGET,
+            also=A_TARGET_NAMED,
+            instead_of=first if spelling else "",
+            names_the_node=key == node,
+            describes="what to do it for each of",
         )
 
     if (node, key) in (("repeat", "repeat"), ("repeat", "times")):
-        return ParamShape(key, WHOLE, least=0, describes="how many times")
+        return ParamShape(
+            key,
+            WHOLE,
+            least=0,
+            instead_of=first if spelling else "",
+            names_the_node=key == node,
+            describes="how many times",
+        )
 
     if (node, key) == ("stop", "stop"):
-        return ParamShape(key, FLAG, describes="stop the ability here")
+        # The head names the node and carries nothing: the interpreter reads
+        # `op.name` and never looks at the value.
+        return ParamShape(
+            key,
+            UNCHECKED,
+            role=OPEN,
+            names_the_node=True,
+            describes="nothing further happens",
+        )
 
     return _ANY_NODE.get(key, ParamShape(key, TEXT))
 
@@ -389,20 +511,60 @@ _ANY_NODE = {
         "as",
         TEXT,
         written_as=BY_BINDING,
+        defines=ANY_GROUP,
         describes="the name later steps point at this by",
     ),
-    "target": ParamShape("target", UNCHECKED, shaped_like=TARGET,
-                         describes="what it acts on"),
+    "target": ParamShape(
+        "target",
+        UNCHECKED,
+        shaped_like=TARGET,
+        also=A_TARGET_NAMED,
+        describes="what it acts on",
+    ),
     "optional": ParamShape("optional", FLAG, describes="the controller may decline it"),
     "description": ParamShape("description", TEXT, describes="what it says"),
     "prompt": ParamShape("prompt", TEXT, describes="what to ask them"),
-    "store": ParamShape("store", TEXT, describes="a name to keep the result under"),
+    "store": ParamShape(
+        "store",
+        TEXT,
+        defines=VALUES,
+        describes="a name to keep the result under",
+    ),
 }
 """
 The keys the executor takes off any node before the node is looked at.
 
 One meaning each, wherever they appear, which is why they are described once.
 """
+
+
+WORKED_OUT_INSTEAD = (
+    Written(
+        shaped_like=WORKED_OUT,
+        describes="worked out while the ability runs",
+    ),
+)
+"""
+The second way nearly every effect parameter may be written.
+"""
+
+
+def _also_worked_out(spec: EffectSpec, name: str) -> tuple[Written, ...]:
+    """
+    Whether this parameter may be given a way of working its value out.
+
+    ``_resolve_params`` walks every key an effect was written with and turns a
+    specification into a value — every key except the ones the effect keeps
+    exactly as the card wrote them. So the answer is not per parameter and not
+    per effect: it is "all of them but the literal ones", read off the same
+    ``literal`` the executor reads.
+
+    Which is why this is derived here rather than declared sixty-three times.
+    A card writing ``{"amount": {"from": "dice"}}`` has not made a mistake, and
+    a layer saying ``amount`` is a whole number and nothing else was calling
+    thirteen shipped cards wrong.
+    """
+    return () if name in spec.literal else WORKED_OUT_INSTEAD
 
 
 def _written_as(refers_to: str) -> str:
@@ -455,6 +617,7 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
                     unless_when=param.unless_when,
                     refers_to=param.refers_to,
                     written_as=_written_as(param.refers_to),
+                    also=_also_worked_out(spec, name),
                 )
                 for name, param in spec.params.items()
             }

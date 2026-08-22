@@ -70,6 +70,25 @@ complains.
 them off any node before the node is looked at.
 """
 
+CONTROL_SPELLINGS: dict[str, tuple[str, str]] = {
+    "sequence": ("effects", "sequence"),
+    "may": ("effects", "may"),
+    "choose": ("modes", "choose"),
+    "if": ("if", "conditions"),
+    "repeat": ("repeat", "times"),
+    "for_each": ("for_each", "of"),
+}
+"""
+Two names for one answer, and which of them the expander reads first.
+
+``params.get("effects", params.get("may", ()))`` is one question written two
+ways, and the first of the pair is the one that wins when a card writes both.
+Cards exist with each spelling, so both are accepted; nobody should be asked
+twice.
+
+``stop`` is not here: its head names the node and carries no answer at all.
+"""
+
 CONTROL_BODIES: dict[str, tuple[str, ...]] = {
     "sequence": ("effects", "sequence"),
     "may": ("effects", "may"),

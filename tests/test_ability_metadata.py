@@ -234,21 +234,23 @@ def test_a_list_of_nodes_says_what_it_is_a_list_of(can: dict[str, Any]) -> None:
     assert listed == {
         "ability.conditions": "condition",
         "ability.targets": "target",
-        "ability.effects": "effect",
+        # A list of things that happen holds effect nodes and control nodes
+        # alike, and `step` is the word for either.
+        "ability.effects": "step",
         "static.conditions": "condition",
-        "mode.effects": "effect",
+        "mode.effects": "step",
         "if.if": "condition",
         "if.conditions": "condition",
-        "if.then": "effect",
-        "if.else": "effect",
-        "may.may": "effect",
-        "may.effects": "effect",
+        "if.then": "step",
+        "if.else": "step",
+        "may.may": "step",
+        "may.effects": "step",
         "choose.choose": "mode",
         "choose.modes": "mode",
-        "repeat.effects": "effect",
-        "for_each.effects": "effect",
-        "sequence.sequence": "effect",
-        "sequence.effects": "effect",
+        "repeat.effects": "step",
+        "for_each.effects": "step",
+        "sequence.sequence": "step",
+        "sequence.effects": "step",
     }
 
 
@@ -257,7 +259,8 @@ def test_a_list_is_never_published_as_text(can: dict[str, Any]) -> None:
         if field["a_list_of"]:
             assert field["kind"] == A_LIST, f"{owner}.{field['id']}"
             assert field["role"] == BODY, f"{owner}.{field['id']}"
-            assert field["shown"] == "body", f"{owner}.{field['id']}"
+            # …unless it is the second spelling of a body asked elsewhere.
+            assert field["shown"] in ("body", "spelling"), f"{owner}.{field['id']}"
 
 
 def test_a_list_of_nodes_is_not_a_structure(can: dict[str, Any]) -> None:
@@ -290,7 +293,7 @@ def test_a_nested_field_says_which_shape_it_holds(can: dict[str, Any]) -> None:
     for owner, field in every_field(can):
         if field["shaped_like"]:
             assert field["role"] == NESTED, f"{owner}.{field['id']}"
-            assert field["shown"] == "nested", f"{owner}.{field['id']}"
+            assert field["shown"] in ("nested", "spelling"), f"{owner}.{field['id']}"
 
 
 def test_every_named_kind_is_one_this_layer_can_answer(can: dict[str, Any]) -> None:
@@ -299,7 +302,8 @@ def test_every_named_kind_is_one_this_layer_can_answer(can: dict[str, Any]) -> N
     metadata describes — three registries and two node shapes, and no more.
     """
     published = set(shapes(can))
-    answerable = {"effect", "condition", "target"} | published
+    # A step is an effect node or a control node; both are described.
+    answerable = {"effect", "condition", "target", "step"} | published
 
     for owner, field in every_field(can):
         for named in (field["a_list_of"], field["shaped_like"]):
@@ -332,7 +336,7 @@ def test_a_mode_is_a_description_and_a_body(can: dict[str, Any]) -> None:
     by_name = {field["id"]: field for field in mode["fields"]}
 
     assert by_name["description"]["required"]
-    assert by_name["effects"]["a_list_of"] == "effect"
+    assert by_name["effects"]["a_list_of"] == "step"
 
 
 # ----------------------------------------------------------------------
@@ -400,7 +404,8 @@ def test_publishing_the_default_changes_nothing_a_card_may_write() -> None:
 def test_the_sections_that_were_there_are_still_there(can: dict[str, Any]) -> None:
     assert {"kinds", "triggers", "effects", "conditions", "targets"} <= set(can)
     assert len(can["effects"]) == 63
-    assert len(can["conditions"]) == 41
+    # 41 leaves, plus the three ways of joining them.
+    assert len(can["conditions"]) == 44
     assert len(can["targets"]) == 46
 
 
@@ -413,9 +418,17 @@ def test_no_effect_condition_or_target_parameter_gained_a_body(
     is a list of effect nodes, and saying so here would change what the form
     already draws, which is a separate decision from this one.
     """
+    joining = {"and", "or", "not"}
+
     for group in ("effects", "conditions", "targets"):
         for one in can[group]:
             for field in one["fields"]:
+                if one["id"] in joining:
+                    # The three that are made of other conditions. Describing
+                    # them is what §3 of this pass was for.
+                    assert field["a_list_of"] == "condition"
+                    continue
+
                 assert not field["a_list_of"], f"{one['id']}.{field['id']}"
                 assert not field["shaped_like"], f"{one['id']}.{field['id']}"
                 assert field["shown"] in (

@@ -25,12 +25,24 @@ WHICH = "which"
 SWITCH = "switch"
 NAMES = "names"
 WHOM = "whom"
+DEFINES = "defines"
 STRUCTURE = "structure"
 BODY = "body"
 NESTED = "nested"
 OPEN = "open"
 
-ROLES = (AMOUNT, WHICH, SWITCH, NAMES, WHOM, STRUCTURE, BODY, NESTED, OPEN)
+ROLES = (
+    AMOUNT,
+    WHICH,
+    SWITCH,
+    NAMES,
+    WHOM,
+    DEFINES,
+    STRUCTURE,
+    BODY,
+    NESTED,
+    OPEN,
+)
 """
 What a parameter is *for*, as distinct from what it accepts.
 
@@ -47,6 +59,10 @@ is a card the engine hands over and the other is a word an author types.
 - ``whom`` — a card or a player the *ability* picks out. **Not a field**: an
   author says this by aiming the effect, which is a question the form already
   asks.
+- ``defines`` — a name this step invents for a later one to point at. The
+  other end of ``whom`` and of ``refers_to``: those read a name, this writes
+  one, and calling both of them "some text" is how an interface comes to offer
+  a box for reading a name nothing can create.
 - ``structure`` — nested data whose inside this layer does not describe. The
   only honest way to show one is as what it is; never a box.
 - ``body`` — a list of nodes of a kind that *is* described: effects,
@@ -110,8 +126,11 @@ CONDITION = "condition"
 TARGET = "target"
 MODE = "mode"
 COST = "cost"
+STEP = "step"
+WORKED_OUT = "worked_out"
+NAMED_COUNT = "named_count"
 
-NODES = (EFFECT, CONDITION, TARGET, MODE, COST)
+NODES = (EFFECT, CONDITION, TARGET, MODE, COST, STEP, WORKED_OUT, NAMED_COUNT)
 """
 The kinds of node one part of the language may be built out of another.
 
@@ -120,9 +139,12 @@ today. What is new is saying so: an ability's ``effects`` is a list of effect
 nodes, a branch's ``then`` is the same list, ``choose`` holds a list of modes,
 and an ability's ``cost`` is one node of its own kind.
 
-Three of the five are described by registries a card already reads —
-``effect``, ``condition`` and ``target``. Two are described by node shapes of
-their own, because nothing else describes them: ``mode`` and ``cost``.
+Three of them are described by registries a card already reads — ``effect``,
+``condition`` and ``target``. ``step`` is the pair of them a list of things
+that happen really holds: an effect node, or a control node, and a list whose
+elements may be either is not a list of effects however it is usually written.
+The rest are described by node shapes of their own, because nothing else
+describes them: ``mode``, ``cost``, ``worked_out`` and ``named_count``.
 
 Named here so that ``a_list_of`` and ``shaped_like`` can only say something the
 rest of this layer can answer.
@@ -148,6 +170,29 @@ something once a board exists — **not** that anything is acceptable. The
 runtime guard stays where it is and still raises; what this says is that load
 time is the wrong place to ask, because answering would need a game.
 """
+
+
+@dataclass(frozen=True, slots=True)
+class Written:
+    """
+    One of the ways a parameter may be written, when there is more than one.
+
+    ``deal_damage`` takes a number of hearts — or ``{"from": "dice"}``, which
+    is not a number and becomes one while the ability runs. Both are correct
+    and the card means something different by each, so a layer that can only
+    say "a whole number" is a layer that calls half the cards in the game
+    mistakes.
+
+    Said with the same words a parameter uses for its first way of being
+    written, because it is the same question asked again.
+    """
+
+    kind: str = ""
+    values: tuple[Any, ...] = ()
+    least: int | None = None
+    shaped_like: str = ""
+    a_list_of: str = ""
+    describes: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -219,6 +264,45 @@ class ParamShape:
 
     A switch is moot-making when it is on, whatever this says: ``false`` is
     what a card that left it out means.
+    """
+
+    also: tuple[Written, ...] = ()
+    """
+    The other ways this parameter may be written — see ``Written``.
+
+    Empty for nearly everything: most parameters take one sort of thing. Where
+    it is not empty, the first way is the one above and these are the rest, and
+    a card matching any of them is a card that says what it means.
+    """
+
+    defines: str = ""
+    """
+    The kind of name this parameter invents, for a later step to point at.
+
+    The mirror of ``refers_to``. ``store`` writes a name into the ability's
+    values and ``values_equal`` reads one back; ``as`` writes a name into its
+    groups and ``chooser`` reads one back. Both ends said the same way, so that
+    nothing offers a box for reading a name that nothing can create.
+    """
+
+    domain_from: str = ""
+    """
+    Another answer in this node that decides which values are allowed.
+
+    A static's ``stat`` is one of a monster's two or one of a player's eight,
+    and which depends on the scope written beside it. There is no list to give
+    until that is answered, and giving the union would be giving a list that is
+    wrong half the time — so what is said instead is *where the answer comes
+    from*.
+    """
+
+    names_the_node: bool = False
+    """
+    Whether this key is the node's name rather than one of its answers.
+
+    ``{"if": [...]}`` is a branch because it says ``if``, and the same key
+    carries the conditions. Something writing a card has to put the key there;
+    nobody has to be asked for it.
     """
 
     a_list_of: str = ""
@@ -380,6 +464,10 @@ def _role_for(parameter: ParamShape) -> str:
     """
     What kind of question a parameter is, read off the rest of it.
     """
+    if parameter.defines:
+        # It invents a name rather than answering a question.
+        return DEFINES
+
     if parameter.a_list_of:
         # More of the language, listed. Whatever draws one draws them all.
         return BODY
@@ -402,7 +490,10 @@ def _role_for(parameter: ParamShape) -> str:
     if parameter.kind == "a whole number":
         return AMOUNT
 
-    if parameter.values:
+    if parameter.values or parameter.domain_from:
+        # A closed choice either way. That the list is only known once
+        # something else is answered makes it no less a choice, and calling it
+        # free text would invite anything at all.
         return WHICH
 
     return NAMES if parameter.kind in ("text", A_LIST) else OPEN

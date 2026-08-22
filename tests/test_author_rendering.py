@@ -607,6 +607,8 @@ def test_every_parameter_still_arrives_somewhere(can: dict[str, Any]) -> None:
             "advanced",
             "given",
             "spelling",
+            "body",
+            "nested",
         ), f"{owner}.{field['id']} has nowhere to go"
 
 
