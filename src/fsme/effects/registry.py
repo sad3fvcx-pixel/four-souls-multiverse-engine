@@ -109,6 +109,18 @@ class ParamSpec:
     means nobody has said, and whoever is asking should fall back to the name.
     """
 
+    role: str = ""
+    """
+    What kind of question this parameter is — see `content.vocabulary.ROLES`.
+
+    Declared only where it cannot be worked out from the rest.
+    """
+
+    unless: str = ""
+    """
+    Another parameter that makes this one meaningless.
+    """
+
     def wants(self) -> str:
         """
         What this parameter takes, in the words an error message needs.
@@ -280,6 +292,9 @@ class EffectRegistry:
         values: Mapping[str, Sequence[Any]] | None = None,
         least: Mapping[str, int] | None = None,
         asks: Mapping[str, str] | None = None,
+        needs: Sequence[str] = (),
+        roles: Mapping[str, str] | None = None,
+        unless: Mapping[str, str] | None = None,
     ) -> EffectSpec:
         """
         Register an effect implementation.
@@ -306,6 +321,29 @@ class EffectRegistry:
 
         for parameter, floor in (least or {}).items():
             described[parameter] = _narrow(described, parameter, name, least=floor)
+
+        for parameter in needs:
+            # A parameter the handler raises on when it is missing. Its
+            # signature gives it a default — every effect parameter has one —
+            # so nothing but this can tell a form that leaving it blank makes
+            # a card that will not run.
+            described[parameter] = _narrow(
+                described, parameter, name, required=True
+            )
+
+        for parameter, role in (roles or {}).items():
+            # Only where it cannot be worked out. A flag is a switch, a number
+            # is an amount, a closed set is a choice — those need nobody to say
+            # so. What needs saying is whether something the pipeline cannot
+            # judge is a card the engine hands over or a word somebody types.
+            described[parameter] = _narrow(
+                described, parameter, name, role=role
+            )
+
+        for parameter, other in (unless or {}).items():
+            described[parameter] = _narrow(
+                described, parameter, name, unless=other
+            )
 
         for parameter, question in (asks or {}).items():
             # What to call this field when a person is filling it in. `amount`
@@ -402,6 +440,9 @@ def _narrow(
     values: Sequence[Any] | None = None,
     least: int | None = None,
     asks: str | None = None,
+    required: bool | None = None,
+    role: str | None = None,
+    unless: str | None = None,
 ) -> ParamSpec:
     """
     Add a domain, a floor or a label to a parameter the handler declares.
@@ -426,6 +467,9 @@ def _narrow(
         values=tuple(values) if values is not None else known.values,
         least=least if least is not None else known.least,
         asks=asks if asks is not None else known.asks,
+        required=required if required is not None else known.required,
+        role=role if role is not None else known.role,
+        unless=unless if unless is not None else known.unless,
     )
 
 

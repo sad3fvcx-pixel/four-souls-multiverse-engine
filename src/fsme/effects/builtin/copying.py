@@ -61,6 +61,15 @@ def copy_effect(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     return copied
 
 
+_TRIGGER_NAMES = tuple(str(one) for one in EventType)
+"""
+The moments an ability can be copied from.
+
+`copy_ability` looks for abilities answering a trigger; a name no event has
+finds none, silently. Named so the form offers the list instead of a box.
+"""
+
+
 def copy_ability(
     ctx: EffectContext,
     targets: Sequence[Any],
@@ -198,6 +207,7 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="trigger",
         description="Use another card's ability.",
+        values={"trigger": _TRIGGER_NAMES},
     )
     registry.register(
         "copy_card",
@@ -205,6 +215,7 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="until",
         description="Play by another card's rules until the copy lapses.",
+        values={"until": (TILL_END_OF_TURN, INDEFINITELY)},
     )
     registry.register(
         "duplicate",

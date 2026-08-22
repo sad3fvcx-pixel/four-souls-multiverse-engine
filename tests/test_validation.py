@@ -51,6 +51,26 @@ def a_card(*effects: Any, card_id: str = "example_expansion-loot-dark_coin") -> 
     }
 
 
+def _minimally(vocabulary: Vocabulary, effect: str, extra: dict) -> dict:
+    """
+    An effect node with everything the effect insists on, plus what is asked.
+
+    Some effects refuse to run without a parameter — `promise` needs the event
+    it is waiting for. A probe about something else should not have to know
+    which, so the required ones are filled from the effect's own description.
+    """
+    shape = vocabulary.shape(effect)
+    node: dict[str, Any] = {"effect": effect}
+
+    for name, parameter in (shape.params if shape else {}).items():
+        if parameter.required and name not in extra:
+            node[name] = parameter.values[0] if parameter.values else "x"
+
+    node.update(extra)
+
+    return node
+
+
 def complaints(vocabulary: Vocabulary, *effects: Any) -> list[str]:
     return validate_card(
         a_card(*effects),
@@ -150,7 +170,7 @@ def test_a_parameter_the_effect_keeps_as_written_is_not_judged(
 
     for name, key in pairs:
         assert complaints(
-            vocabulary, {"effect": name, key: {"anything": ["at", "all"]}}
+            vocabulary, _minimally(vocabulary, name, {key: {"anything": ["at", "all"]}})
         ) == [], f"{name}.{key}"
 
 
@@ -436,7 +456,9 @@ def test_anything_means_not_checked_here_and_not_anything_goes(
 
     name, parameter = open_ones[0]
 
-    assert complaints(vocabulary, {"effect": name, parameter: "anything at all"}) == []
+    assert complaints(
+        vocabulary, _minimally(vocabulary, name, {parameter: "anything at all"})
+    ) == []
 
     from fsme.effects.builtin.decks import DECKS
 

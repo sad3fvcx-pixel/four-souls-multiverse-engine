@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+from fsme.content.vocabulary import WHOM
 from fsme.events import EventType
 from fsme.state import (
     CardModifier,
@@ -155,6 +156,16 @@ def take_extra_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int
     return granted
 
 
+AREAS = ("monster", "shop")
+"""
+The rows a card can make longer.
+
+Named here because the branch below is what makes them mean anything: a third
+word raises, and a form offering a free text box for a two-value choice was
+offering a way to write that raise.
+"""
+
+
 def expand_slots(
     ctx: EffectContext,
     targets: Sequence[Any],
@@ -170,14 +181,15 @@ def expand_slots(
     """
     state = ctx.state
 
+    if area not in AREAS:
+        raise EffectExecutionError(
+            f"unknown area '{area}'; use {' or '.join(repr(one) for one in AREAS)}"
+        )
+
     if area == "monster":
         state.monster_slots = max(0, state.monster_slots + int(amount))
-    elif area == "shop":
-        state.shop_slots = max(0, state.shop_slots + int(amount))
     else:
-        raise EffectExecutionError(
-            f"unknown area '{area}'; use 'monster' or 'shop'"
-        )
+        state.shop_slots = max(0, state.shop_slots + int(amount))
 
     return int(amount)
 
@@ -365,6 +377,15 @@ def require_attack(
     return len(monsters) or 1
 
 
+LIMITS = ("loot_plays",)
+"""
+The limits a card can lift.
+
+One, so far. Written as a tuple because the guard below reads it and so does
+the form, and the day a second arrives both learn at once.
+"""
+
+
 def lift_limit(
     ctx: EffectContext,
     targets: Sequence[Any],
@@ -377,7 +398,7 @@ def lift_limit(
     writing one in would be a guess about how big. The limit is lifted instead,
     and the turn puts it back.
     """
-    if what != "loot_plays":
+    if what not in LIMITS:
         raise EffectExecutionError(
             f"there is no limit called '{what}' to lift; loot_plays is the one"
         )
@@ -448,6 +469,8 @@ def register(registry: EffectRegistry) -> None:
             "amount": "how many counters",
             "counter": "what the counter is called",
         },
+        needs=("counter",),
+        unless={"amount": "clear"},
     )
     registry.register(
         "take_extra_turn",
@@ -460,6 +483,7 @@ def register(registry: EffectRegistry) -> None:
         expand_slots,
         primary="area",
         description="Add a monster slot or a shop slot.",
+        values={"area": AREAS},
     )
     registry.register(
         "skip_next_turn",
@@ -472,6 +496,8 @@ def register(registry: EffectRegistry) -> None:
         require_attack,
         primary="times",
         description="Make a player owe an attack this turn.",
+        values={"what": (MONSTER_DECK,)},
+        roles={"who": WHOM},
     )
     registry.register(
         "hold_tapped",
@@ -491,6 +517,7 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="what",
         description="Let a player act as often as they like this turn.",
+        values={"what": LIMITS},
     )
     registry.register(
         "add_modifier",
@@ -501,11 +528,15 @@ def register(registry: EffectRegistry) -> None:
         # applies is decided by whether the target turns out to be a player or
         # a monster, and that is not known until a board exists. The guard
         # inside `add_modifier` reads the same two tuples.
-        values={"stat": tuple(sorted(set(STATS) | set(MONSTER_STATS)))},
+        values={
+            "duration": tuple(str(one) for one in Duration),
+            "stat": tuple(sorted(set(STATS) | set(MONSTER_STATS))),
+        },
         description="Give a player a bonus that lasts beyond its card.",
         asks={
             "stat": "which number to change",
             "amount": "how much to change it by",
             "duration": "how long it lasts",
         },
+        needs=("stat",),
     )

@@ -14,6 +14,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+from fsme.content.vocabulary import WHOM
 from fsme.events import EventType
 from fsme.state import PlayerState
 
@@ -410,6 +411,7 @@ def register(registry: EffectRegistry) -> None:
         asks={
             "amount": "how much damage",
         },
+        roles={"dealt_by": WHOM},
     )
     registry.register(
         "divide_damage",
@@ -417,6 +419,7 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="each",
         description="Deal damage split among the things chosen.",
+        roles={"dealt_by": WHOM},
     )
     registry.register(
         "heal",
@@ -428,6 +431,7 @@ def register(registry: EffectRegistry) -> None:
         asks={
             "amount": "how much health",
         },
+        unless={"amount": "full"},
     )
     registry.register(
         "kill", kill, needs_target=True, description="Reduce a target to zero hit points."

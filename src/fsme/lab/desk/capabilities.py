@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fsme.content.vocabulary import UNCHECKED
+from fsme.content.vocabulary import STRUCTURE, WHOM
 from fsme.events.types import WHEN_IT_HAPPENS, EventType
 from fsme.runtime.vocabulary import engine_vocabulary
 
@@ -184,39 +184,46 @@ def _targets(vocabulary: Any) -> list[dict[str, Any]]:
 
 def _fields(shape: Any) -> list[dict[str, Any]]:
     """
-    One entry per thing a person may fill in.
+    One entry per thing a person may be asked, and how to ask it.
 
-    A parameter that names a group the ability chose earlier is left out: it
-    is not a value somebody types, and the page offers those as choices from
-    what the card has already picked.
+    Every parameter appears, with the role that says how. Nothing is dropped
+    for being hard to render: a role the page cannot draw yet is marked and
+    shown in the advanced view, because a parameter the engine understands and
+    the interface omits is a capability quietly taken away.
+
+    Two are not text boxes and never were. A ``whom`` is a card or player the
+    ability picks out — an author says that by aiming the effect, which is a
+    question the form already asks — and a ``structure`` is the effect's own
+    nested data, which needs a form of its own.
     """
     found = []
 
     for name, parameter in sorted(shape.params.items()):
+        entry: dict[str, Any] = {
+            "id": name,
+            "about": parameter.describes or name.replace("_", " "),
+            "role": parameter.role,
+            "kind": parameter.kind,
+            "choices": [str(value) for value in parameter.values],
+            "least": parameter.least,
+            "required": parameter.required,
+            "unless": parameter.unless,
+        }
+
         if parameter.refers_to:
-            found.append(
-                {
-                    "id": name,
-                    "about": parameter.describes or name.replace("_", " "),
-                    "picks": parameter.refers_to,
-                }
-            )
+            entry["picks"] = parameter.refers_to
 
-            continue
-
-        if parameter.kind == UNCHECKED:
-            continue
-
-        found.append(
-            {
-                "id": name,
-                "about": parameter.describes or name.replace("_", " "),
-                "kind": parameter.kind,
-                "choices": [str(value) for value in parameter.values],
-                "least": parameter.least,
-                "required": parameter.required,
-            }
+        # Where the page must send it. `aim` and `advanced` are the two the
+        # ordinary form does not draw; everything else it does.
+        entry["shown"] = (
+            "aim"
+            if parameter.role == WHOM
+            else "advanced"
+            if parameter.role == STRUCTURE or parameter.refers_to
+            else "form"
         )
+
+        found.append(entry)
 
     return found
 

@@ -17,15 +17,15 @@ is accepted: the guard inside the engine stays where it is.
 
 | name | takes |
 | --- | --- |
-| `add_counter` | `amount` a whole number, `clear` true or false, `counter` text, `silences` true or false |
-| `add_modifier` | `amount` a whole number, `duration` text, `stat` one of 9 stat names |
+| `add_counter` | `amount` a whole number, `clear` true or false, `counter` text*, `silences` true or false |
+| `add_modifier` | `amount` a whole number, `duration` `end_of_turn` or `game`, `stat` one of 9 stat names* |
 | `attach_curse` | `card` only a game can judge |
 | `cancel_event` | — |
 | `cancel_stack` | — |
 | `choose` | — |
 | `claim_soul` | `card` only a game can judge |
-| `copy_ability` | `trigger` text |
-| `copy_card` | `until` text |
+| `copy_ability` | `trigger` one of 66 trigger names |
+| `copy_card` | `until` `end_of_turn` or `game` |
 | `copy_effect` | — |
 | `deactivate` | — |
 | `deal_damage` | `amount` a whole number ≥ 0, `combat` true or false, `dealt_by` only a game can judge, `roll` a whole number |
@@ -39,7 +39,7 @@ is accepted: the guard inside the engine stays where it is.
 | `end_attack` | — |
 | `end_turn` | — |
 | `enter_room` | `count` a whole number |
-| `expand_slots` | `amount` a whole number, `area` text |
+| `expand_slots` | `amount` a whole number, `area` `monster` or `shop` |
 | `flip_roll` | — |
 | `for_each` | — |
 | `gain_coins` | `amount` a whole number ≥ 0 |
@@ -51,24 +51,24 @@ is accepted: the guard inside the engine stays where it is.
 | `if` | — |
 | `kill` | — |
 | `leave_room` | — |
-| `lift_limit` | `what` text |
+| `lift_limit` | `what` `loot_plays` |
 | `lose_coins` | `amount` a whole number ≥ 0 |
 | `lose_soul` | `count` a whole number |
 | `make_eternal` | — |
 | `may` | — |
-| `modify_event` | `delta` a whole number, `factor` a whole number, `key` text, `value` only a game can judge |
+| `modify_event` | `delta` a whole number, `factor` a whole number, `key` text*, `value` only a game can judge |
 | `modify_roll` | `amount` a whole number |
 | `move_cards` | `deck` `loot` or `treasure` or `monster` or `room`, `depth_from` a whole number, `position` `top` or `bottom` or `discard` |
-| `pass_hands` | `direction` text |
+| `pass_hands` | `direction` `left` or `right` |
 | `place_monster` | `slot` text |
 | `prevent_damage` | `amount` a whole number |
 | `prevent_next_damage` | `amount` a whole number, `label` text |
-| `promise` | `changes` only a game can judge, `event` text, `unlimited` true or false, `uses` a whole number, `when` only a game can judge |
+| `promise` | `changes` only a game can judge, `event` one of 66 event names*, `unlimited` true or false, `uses` a whole number, `when` only a game can judge |
 | `put_into_play` | — |
 | `recharge` | — |
 | `remove_curse` | — |
 | `repeat` | — |
-| `require_attack` | `times` a whole number, `what` text, `who` only a game can judge |
+| `require_attack` | `times` a whole number, `what` `monster_deck`, `who` only a game can judge |
 | `reroll` | `sides` a whole number |
 | `reveal_cards` | `count` a whole number ≥ 0, `deck` `loot` or `treasure` or `monster` or `room` |
 | `reveal_hand` | — |
@@ -83,10 +83,10 @@ is accepted: the guard inside the engine stays where it is.
 | `steal_treasure` | — |
 | `stop` | — |
 | `swap_cards` | — |
-| `take_card` | `player` only a game can judge, `shuffle` text, `to` `hand` or `treasures` |
+| `take_card` | `player` only a game can judge, `shuffle` `` or `loot` or `treasure` or `monster` or `room`, `to` `hand` or `treasures` |
 | `take_extra_turn` | — |
 | `transfer_coins` | `amount` a whole number, `source_player` a whole number |
-| `watch_for` | `conditions` only a game can judge, `effects` only a game can judge, `event` text, `mine` true or false, `unlimited` true or false, `uses` a whole number, `waits` true or false |
+| `watch_for` | `conditions` only a game can judge, `effects` only a game can judge, `event` one of 66 event names*, `mine` true or false, `unlimited` true or false, `uses` a whole number, `waits` true or false |
 
 ## Conditions
 

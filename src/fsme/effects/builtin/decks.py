@@ -15,6 +15,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+from fsme.content.vocabulary import WHOM
 from fsme.events import EventType
 from fsme.state import GameState, PlayerState, Zone
 
@@ -446,6 +447,7 @@ def register(registry: EffectRegistry) -> None:
         primary="deck",
         description="Put cards on the top or bottom of a deck.",
         values={"deck": DECKS, "position": POSITIONS},
+        unless={"depth_from": "position"},
     )
     registry.register(
         "shuffle_deck",
@@ -477,5 +479,6 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="to",
         description="Take chosen cards into a hand or into play.",
-        values={"to": DESTINATIONS},
+        values={"shuffle": ("",) + DECKS, "to": DESTINATIONS},
+        roles={"player": WHOM},
     )

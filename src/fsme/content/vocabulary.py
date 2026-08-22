@@ -20,6 +20,39 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any
 
+AMOUNT = "amount"
+WHICH = "which"
+SWITCH = "switch"
+NAMES = "names"
+WHOM = "whom"
+STRUCTURE = "structure"
+OPEN = "open"
+
+ROLES = (AMOUNT, WHICH, SWITCH, NAMES, WHOM, STRUCTURE, OPEN)
+"""
+What a parameter is *for*, as distinct from what it accepts.
+
+``kind`` says what a value must be if a card writes one; a role says what
+somebody is being asked and therefore how to ask it. They are different
+questions and the difference matters: ``deal_damage.dealt_by`` and
+``add_counter.counter`` both accept a thing the pipeline cannot judge, but one
+is a card the engine hands over and the other is a word an author types.
+
+- ``amount`` — how many of the effect's own thing. A number.
+- ``which`` — one of a closed set. A choice.
+- ``switch`` — on or off.
+- ``names`` — free text naming something: a counter, a label.
+- ``whom`` — a card or a player the *ability* picks out. **Not a field**: an
+  author says this by aiming the effect, which is a question the form already
+  asks.
+- ``structure`` — the effect's own nested data. A form of its own, never a box.
+- ``open`` — genuinely any value, and the last resort.
+
+A role is one word rather than a sentence, which is what makes it possible to
+require one of every parameter. Anything showing a parameter to a person reads
+this to decide *how*; ``describes`` refines *what it is called*.
+"""
+
 UNCHECKED = "anything the engine can only judge during a game"
 """
 The kind given to a parameter this layer deliberately does not check.
@@ -50,6 +83,25 @@ class ParamShape:
     values: tuple[Any, ...] = ()
     least: int | None = None
 
+    role: str = ""
+    """
+    What kind of question this parameter is — see ``ROLES``.
+
+    Empty means nobody has said, which is a fault rather than a default: a
+    parameter with no role cannot be shown to anybody, because nothing knows
+    how to ask for it. A test refuses an engine that has one.
+    """
+
+    unless: str = ""
+    """
+    Another parameter that makes this one meaningless.
+
+    ``heal`` restores everything when ``full`` is set and ignores ``amount``,
+    so a form that shows both at once invites a card that says two things and
+    quietly gets one. Named here because the handler is where the choice is
+    made.
+    """
+
     describes: str = ""
     """
     What this parameter is, in the words a person would use for it.
@@ -74,11 +126,38 @@ class ParamShape:
     def checkable(self) -> bool:
         return self.kind != UNCHECKED
 
+    LISTABLE = 12
+    """
+    How many allowed values are worth naming before a list stops helping.
+
+    Nine stats read as a choice. Sixty-six event names read as a wall, and
+    a message somebody scrolls past is a message that did not say anything.
+    """
+
+    def __post_init__(self) -> None:
+        """
+        Work out the role when nobody said, which is nearly always.
+
+        Four of the seven follow from what a parameter accepts, so requiring
+        anybody to write them down would be requiring them to repeat
+        themselves — and a thing people have to repeat is a thing that drifts.
+        What cannot be worked out is a value this layer is unable to judge:
+        that is either the effect's own nested data or something a game hands
+        over, and only whoever wrote the effect knows which.
+        """
+        if self.role:
+            return
+
+        object.__setattr__(self, "role", _role_for(self))
+
     def wants(self) -> str:
         """
         What this parameter takes, in the words an error message needs.
         """
         if self.values:
+            if len(self.values) > self.LISTABLE:
+                return f"one of the {len(self.values)} {self.name}s the engine knows"
+
             return " or ".join(repr(value) for value in self.values)
 
         if self.least is not None:
@@ -122,6 +201,30 @@ class EffectShape:
     Their values are the effect's own structured data, so nothing here may
     judge them.
     """
+
+
+def _role_for(parameter: ParamShape) -> str:
+    """
+    What kind of question a parameter is, read off the rest of it.
+    """
+    if parameter.refers_to:
+        # It names something the ability chose, which is a question about the
+        # card's own shape rather than a value anybody types.
+        return WHOM if parameter.refers_to in (PLAYERS, CARDS) else NAMES
+
+    if parameter.kind == UNCHECKED:
+        return ""
+
+    if parameter.kind == "true or false":
+        return SWITCH
+
+    if parameter.kind == "a whole number":
+        return AMOUNT
+
+    if parameter.values:
+        return WHICH
+
+    return NAMES if parameter.kind in ("text", "a list") else OPEN
 
 
 @dataclass(frozen=True, slots=True)

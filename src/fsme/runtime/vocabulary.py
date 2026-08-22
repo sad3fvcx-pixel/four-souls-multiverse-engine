@@ -17,6 +17,7 @@ from types import MappingProxyType
 from fsme.cards.definition import Ability, Static
 from fsme.content import Vocabulary
 from fsme.content.vocabulary import (
+    STRUCTURE,
     UNCHECKED,
     EffectShape,
     NodeShape,
@@ -145,6 +146,8 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
                     values=param.values,
                     least=param.least,
                     describes=param.asks,
+                    role=param.role or (STRUCTURE if name in spec.literal else ""),
+                    unless=param.unless,
                 )
                 for name, param in spec.params.items()
             }

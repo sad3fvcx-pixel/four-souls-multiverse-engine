@@ -10,6 +10,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from fsme.cards import SoulToken
+from fsme.content.vocabulary import WHOM
 from fsme.events import EventType
 from fsme.state import GameState, PlayerState
 
@@ -413,6 +414,7 @@ def register(registry: EffectRegistry) -> None:
         pass_hands,
         primary="direction",
         description="Every player hands their whole hand to a neighbour.",
+        values={"direction": (LEFT, RIGHT)},
     )
     registry.register(
         "discard_loot",
@@ -438,12 +440,14 @@ def register(registry: EffectRegistry) -> None:
         primary="count",
         description="Gain souls.",
         least={"count": 0},
+        roles={"card": WHOM, "earned_from": WHOM},
     )
     registry.register(
         "claim_soul",
         claim_soul,
         needs_target=True,
         description="Give a bonus soul card itself to a player.",
+        roles={"card": WHOM},
     )
     registry.register(
         "steal_soul",

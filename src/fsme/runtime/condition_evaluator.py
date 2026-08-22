@@ -20,6 +20,7 @@ from types import MappingProxyType
 from typing import Any
 
 from fsme.content.vocabulary import (
+    OPEN,
     UNCHECKED,
     VALUES,
     ConditionShape,
@@ -493,7 +494,7 @@ EVENT_VALUE = _shape(
     COMPARISON,
     {
         "key": ParamShape("key", TEXT, required=True),
-        "value": ParamShape("value", UNCHECKED),
+        "value": ParamShape("value", UNCHECKED, role=OPEN),
     },
 )
 """

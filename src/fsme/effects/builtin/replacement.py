@@ -13,6 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from fsme.content.vocabulary import OPEN
 from fsme.events import EventType
 from fsme.state import DamageShield, Duration, Promise, Watcher
 from fsme.state.promises import CHANGES
@@ -103,6 +104,16 @@ def prevent_next_damage(
 
 
 
+_EVENT_NAMES = tuple(str(known) for known in EventType)
+"""
+Every event a card may wait for.
+
+The set both guards below build on the spot, named once so that the form can
+offer it instead of a text box. It is the trigger list under another name —
+waiting for an event and reacting to one are the same list of moments.
+"""
+
+
 def promise(
     ctx: EffectContext,
     targets: Sequence[Any],
@@ -130,7 +141,7 @@ def promise(
     if not event:
         raise EffectExecutionError("promise requires an event to wait for")
 
-    if str(event) not in {str(known) for known in EventType}:
+    if str(event) not in _EVENT_NAMES:
         raise EffectExecutionError(f"promise cannot wait for unknown event '{event}'")
 
     if not isinstance(changes, Mapping) or not changes:
@@ -208,7 +219,7 @@ def watch_for(
     if not event:
         raise EffectExecutionError("watch_for requires an event to wait for")
 
-    if str(event) not in {str(known) for known in EventType}:
+    if str(event) not in _EVENT_NAMES:
         raise EffectExecutionError(f"watch_for cannot wait for unknown event '{event}'")
 
     if not isinstance(effects, (list, tuple)) or not effects:
@@ -294,6 +305,8 @@ def register(registry: EffectRegistry) -> None:
         primary="event",
         literal=("changes", "when"),
         description="Owe a change to the next event of a kind.",
+        values={"event": _EVENT_NAMES},
+        needs=("event",),
     )
     registry.register(
         "watch_for",
@@ -302,6 +315,8 @@ def register(registry: EffectRegistry) -> None:
         primary="event",
         literal=("effects", "conditions"),
         description="Wait for an event and resolve an ability when it happens.",
+        values={"event": _EVENT_NAMES},
+        needs=("event",),
     )
     registry.register(
         "cancel_event",
@@ -313,4 +328,7 @@ def register(registry: EffectRegistry) -> None:
         modify_event,
         primary="key",
         description="Change a value carried by the event being replaced.",
+        needs=("key",),
+        roles={"value": OPEN},
+        unless={"factor": "delta"},
     )
