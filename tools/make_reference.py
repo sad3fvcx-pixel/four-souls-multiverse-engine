@@ -27,7 +27,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from fsme.content.vocabulary import UNCHECKED  # noqa: E402
+from fsme.content.vocabulary import (  # noqa: E402
+    BY_ENGINE,
+    BY_PLAYER_OF,
+    UNCHECKED,
+)
 from fsme.runtime.vocabulary import engine_vocabulary  # noqa: E402
 
 OUTPUT = ROOT / "docs" / "REFERENCE.md"
@@ -75,10 +79,23 @@ def wants(shape, name: str) -> str:
     return str(parameter.kind)
 
 
-def _refers(kind: str) -> str:
+def _refers(parameter) -> str:
     """
     How a parameter that names something else reads in a table.
+
+    Two facts, not one: *what* is named, and *how a card writes it*. They come
+    apart — an effect naming a player writes the one dynamic head that answers
+    with a seat, and a target naming the same player writes a bare name — and a
+    table that gave only the first would send somebody to write the wrong one.
     """
+    kind = parameter.refers_to
+
+    if parameter.written_as == BY_ENGINE:
+        return "the engine supplies it"
+
+    if parameter.written_as == BY_PLAYER_OF:
+        return f"`{{\"{BY_PLAYER_OF}\": name}}`, a group of players the ability bound"
+
     if kind == "values":
         return "names something this ability stored"
 
@@ -113,7 +130,7 @@ def table(shapes, names, *, kind: str) -> list[str]:
         written = ", ".join(
             f"`{key}` "
             + (
-                _refers(shape.params[key].refers_to)
+                _refers(shape.params[key])
                 if shape.params[key].refers_to
                 else wants(shape, key)
             )
@@ -155,9 +172,11 @@ def main() -> int:
         "list, and it is read off the engine so that it cannot drift from it.",
         "",
         "A `*` marks a parameter that must be given. \"only a game can judge\"",
-        "means the pipeline deliberately does not check that value — a card, a",
-        "player, or a group the ability bound earlier — and not that anything",
-        "is accepted: the guard inside the engine stays where it is.",
+        "means the pipeline deliberately does not check that value — and not",
+        "that anything is accepted: the guard inside the engine stays where it",
+        "is. A parameter that *names* something says so instead, along with how",
+        "a card writes the name, because the two are not the same sentence for",
+        "an effect and for a target.",
         "",
     ]
 

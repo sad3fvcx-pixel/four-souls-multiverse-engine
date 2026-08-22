@@ -15,7 +15,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from fsme.content.vocabulary import WHOM
+from fsme.content.vocabulary import PLAYERS
 from fsme.events import EventType
 from fsme.state import GameState, PlayerState, Zone
 
@@ -23,7 +23,16 @@ from ..context import EffectContext
 from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
 
-POSITIONS = ("top", "bottom", "discard")
+BOTTOM = "bottom"
+"""
+The one position that settles the question of depth.
+
+A depth is counted from the top, so a card going to the bottom has none — and
+since bottom is also what a card that says nothing gets, a form has to know
+this name to avoid offering a depth the effect will not read.
+"""
+
+POSITIONS = ("top", BOTTOM, "discard")
 """
 Where `move_cards` may put a card.
 
@@ -367,7 +376,7 @@ def move_cards(
     ctx: EffectContext,
     targets: Sequence[Any],
     deck: str = "loot",
-    position: str = "bottom",
+    position: str = BOTTOM,
     depth_from: int | None = None,
 ) -> int:
     """
@@ -402,7 +411,7 @@ def move_cards(
 
         _remove_from_anywhere(state, card)
 
-        if position == "bottom":
+        if position == BOTTOM:
             zone.cards.insert(0, card)
         elif depth is not None:
             # Counted from the top, which is how a card says it: "six cards
@@ -448,6 +457,12 @@ def register(registry: EffectRegistry) -> None:
         description="Put cards on the top or bottom of a deck.",
         values={"deck": DECKS, "position": POSITIONS},
         unless={"depth_from": "position"},
+        unless_when={"depth_from": (BOTTOM,)},
+        asks={
+            "deck": "which deck",
+            "position": "where in it",
+            "depth_from": "how many cards from the top",
+        },
     )
     registry.register(
         "shuffle_deck",
@@ -480,5 +495,10 @@ def register(registry: EffectRegistry) -> None:
         primary="to",
         description="Take chosen cards into a hand or into play.",
         values={"shuffle": ("",) + DECKS, "to": DESTINATIONS},
-        roles={"player": WHOM},
+        picks={"player": PLAYERS},
+        asks={
+            "player": "who takes it",
+                    "shuffle": "a deck to shuffle afterwards, if any",
+            "to": "where it goes",
+        },
     )

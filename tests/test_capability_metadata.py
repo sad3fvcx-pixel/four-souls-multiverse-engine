@@ -19,7 +19,16 @@ import inspect
 
 import pytest
 
-from fsme.content.vocabulary import ROLES, STRUCTURE, WHOM
+from fsme.content.vocabulary import (
+    A_LIST,
+    A_MAPPING,
+    BY_ENGINE,
+    BY_PLAYER_OF,
+    ROLES,
+    STRUCTURE,
+    WHOM,
+    WRITINGS,
+)
 from fsme.effects import builtin_registry
 from fsme.lab.desk.capabilities import catalogue
 from fsme.runtime.condition_evaluator import ConditionEvaluator
@@ -94,23 +103,47 @@ def test_nothing_reaches_the_form_as_a_bare_name() -> None:
     assert bare == []
 
 
-def test_the_two_roles_the_form_cannot_draw_are_sent_elsewhere() -> None:
+def test_the_things_that_are_not_boxes_are_not_sent_to_the_form() -> None:
     """
-    A card or player the ability picks out is not a field — it is aiming, and
-    the form already asks that. Nested data goes to the advanced view.
+    A card or player the ability picks out is not a field, and neither is the
+    effect's own nested data. Each goes where it can be asked for properly.
 
-    Neither is dropped: a parameter the engine understands and the interface
-    omits is a capability quietly taken away.
+    None of them is dropped: a parameter the engine understands and the
+    interface omits is a capability quietly taken away.
     """
     can = catalogue()
 
     for group in ("effects", "conditions", "targets"):
         for one in can[group]:
             for field in one["fields"]:
-                if field["role"] == WHOM:
-                    assert field["shown"] == "aim", f"{one['id']}.{field['id']}"
+                where = f"{one['id']}.{field['id']}"
+
+                if field["written"] == BY_ENGINE:
+                    assert field["shown"] == "engine", where
+                elif field["role"] == WHOM:
+                    assert field["shown"] == "group", where
                 elif field["role"] == STRUCTURE:
-                    assert field["shown"] == "advanced", f"{one['id']}.{field['id']}"
+                    assert field["shown"] == "advanced", where
+
+
+def test_every_parameter_that_names_somebody_says_how_it_is_written() -> None:
+    """
+    Naming a player is not the same sentence for an effect and for a target,
+    and a form that cannot tell them apart writes one where the other belongs.
+    """
+    can = catalogue()
+
+    for group in ("effects", "conditions", "targets"):
+        for one in can[group]:
+            for field in one["fields"]:
+                if field["role"] != WHOM:
+                    continue
+
+                assert field["written"] in WRITINGS, (
+                    f"{one['id']}.{field['id']} names somebody and does not "
+                    f"say how a card writes it"
+                )
+                assert field["picks"], f"{one['id']}.{field['id']}"
 
 
 def test_a_choice_always_comes_with_its_choices(vocabulary) -> None:
@@ -312,3 +345,17 @@ def test_the_registries_still_describe_themselves() -> None:
         for name in ConditionEvaluator().names()
         if not ConditionEvaluator().shapes()[name].describes
     ] == []
+
+
+def test_the_checker_spells_the_engine_s_words_the_engine_s_way() -> None:
+    """
+    The content checker runs without an engine and reads shapes as plain data,
+    so it spells three of the engine's words out for itself. Two copies of a
+    word is how they come to disagree, and this is what stops that.
+    """
+    from fsme.cards import validator
+
+    assert validator.BY_ENGINE == BY_ENGINE
+    assert validator.LIST == A_LIST
+    assert validator.MAPPING == A_MAPPING
+    assert validator.DYNAMIC_HEADS >= {BY_PLAYER_OF}

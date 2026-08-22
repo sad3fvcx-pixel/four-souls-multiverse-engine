@@ -208,6 +208,9 @@ def register(registry: EffectRegistry) -> None:
         primary="trigger",
         description="Use another card's ability.",
         values={"trigger": _TRIGGER_NAMES},
+        asks={
+            "trigger": "the moment the copy reacts to",
+        },
     )
     registry.register(
         "copy_card",
@@ -216,6 +219,9 @@ def register(registry: EffectRegistry) -> None:
         primary="until",
         description="Play by another card's rules until the copy lapses.",
         values={"until": (TILL_END_OF_TURN, INDEFINITELY)},
+        asks={
+            "until": "how long the copy lasts",
+        },
     )
     registry.register(
         "duplicate",

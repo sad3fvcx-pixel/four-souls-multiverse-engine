@@ -41,6 +41,16 @@
             justify-content:space-between; gap:.6rem; align-items:center; }
  .moment { margin:.3rem 0; }
  hr { border:none; border-top:1px solid var(--line); margin:2rem 0 1rem; }
+ .need { color:var(--bad); font-size:.78rem; text-transform:uppercase;
+         letter-spacing:.06em; margin-left:.35rem; }
+ .nested { border-left:2px solid var(--line); padding-left:.8rem; margin:.4rem 0 .4rem .2rem; }
+ .deep { margin:.6rem 0; }
+ .deep > summary { cursor:pointer; font-size:.92rem; }
+ .deep textarea { font-family:ui-monospace, monospace; font-size:.88rem; min-height:6rem; }
+ label.flag { display:flex; gap:.45rem; align-items:center; }
+ select[multiple] { height:auto; }
+ :disabled { opacity:.45; }
+ p.problem:empty { display:none; }
 </style>
 
 <div id="page"></div>
@@ -200,8 +210,9 @@ function stepHtml(step, index) {
         ${can.conditions.map(x => `<option value="${x.id}"
           ${x.id === c.id ? "selected" : ""}>${esc(x.about)}</option>`).join("")}
       </select>
-      ${fieldsHtml(conditionFields(c.id), c.fields || {},
-                   `state.ability.effects[${index}].branch.condition.fields`)}
+      ${fieldsHtml(conditionFields(c.id), c.fields, c.groups,
+                   `state.ability.effects[${index}].branch.condition.fields`,
+                   `state.ability.effects[${index}].branch.condition.groups`)}
       <p class="muted">if it is true</p>
       ${innerHtml(index, "then")}
       <p class="muted">otherwise</p>
@@ -222,8 +233,9 @@ function stepHtml(step, index) {
       </select>
       <button onclick="dropStep(${index})">remove</button>
     </div>
-    ${fieldsHtml(chosen ? chosen.fields : [], step.fields || {},
-                 `state.ability.effects[${index}].fields`)}
+    ${fieldsHtml(chosen ? chosen.fields : [], step.fields, step.groups,
+                 `state.ability.effects[${index}].fields`,
+                 `state.ability.effects[${index}].groups`)}
     ${aimHtml(chosen, step, `state.ability.effects[${index}]`)}
   </div>`;
 }
@@ -244,7 +256,8 @@ function aimHtml(chosen, step, path) {
       ${common.map(one).join("")}
       <optgroup label="everything else">${rest.map(one).join("")}</optgroup>
     </select>
-    ${picked ? fieldsHtml(picked.fields, step.aim_fields || {}, `${path}.aim_fields`) : ""}`;
+    ${picked ? fieldsHtml(picked.fields, step.aim_fields, step.aim_groups,
+        `${path}.aim_fields`, `${path}.aim_groups`) : ""}`;
 }
 
 function innerHtml(index, branch) {
@@ -264,8 +277,9 @@ function innerHtml(index, branch) {
         </select>
         <button onclick="dropInner(${index},'${branch}',${i})">remove</button>
       </div>
-      ${fieldsHtml(chosen ? chosen.fields : [], step.fields || {},
-        `state.ability.effects[${index}].branch.${branch}[${i}].fields`)}
+      ${fieldsHtml(chosen ? chosen.fields : [], step.fields, step.groups,
+        `state.ability.effects[${index}].branch.${branch}[${i}].fields`,
+        `state.ability.effects[${index}].branch.${branch}[${i}].groups`)}
       ${aimHtml(chosen, step,
         `state.ability.effects[${index}].branch.${branch}[${i}]`)}
     </div>`;
@@ -273,27 +287,184 @@ function innerHtml(index, branch) {
   <button onclick="addInner(${index},'${branch}')">＋ add</button></div>`;
 }
 
-function fieldsHtml(fields, values, path) {
-  return (fields || []).filter(f => !f.picks).map(f => {
-    const value = values[f.id] ?? "";
-    if (f.choices && f.choices.length) {
-      return `<label>${esc(f.about)}</label>
-        <select onchange="setField('${path}','${f.id}',this.value)">
-          <option value="">— choose —</option>
-          ${f.choices.map(c => `<option ${c === value ? "selected" : ""}>${esc(c)}</option>`).join("")}
-        </select>`;
-    }
-    const number = f.kind === "a whole number";
-    if (f.kind === "true or false") {
-      return `<label><input type="checkbox" style="width:auto"
-        ${value === true ? "checked" : ""}
-        onchange="setField('${path}','${f.id}',this.checked)"> ${esc(f.about)}</label>`;
-    }
-    return `<label>${esc(f.about)}</label>
-      <input ${number ? `type="number" ${f.least != null ? `min="${f.least}"` : ""}` : ""}
-        value="${esc(value)}"
-        oninput="setField('${path}','${f.id}',${number ? "this.valueAsNumber" : "this.value"})">`;
+// ------------------------------------------------------------- the fields
+//
+// One renderer for every parameter the engine has, driven entirely by what
+// `/api/capabilities` says about it. There is no list of effects here and
+// there must never be one: an effect the engine gains draws itself, and an
+// effect whose metadata changes draws itself differently, because this reads
+// `shown`, `role`, `kind`, `many`, `choices`, `required`, `unless` and `picks`
+// and nothing else.
+//
+// `values` is what the author filled in and `groups` is what they pointed at;
+// the two are kept apart because they become different things in the card.
+
+function fieldsHtml(fields, values, groups, path, groupPath) {
+  const list = fields || [];
+  values = values || {};
+  groups = groups || {};
+  return list.map(f => {
+    if (f.shown === "engine") return engineHtml(f);
+    if (f.shown === "group") return groupHtml(f, groups, groupPath);
+    if (f.shown === "advanced") return structureHtml(f, values, path);
+    return valueHtml(f, values, list, path);
   }).join("");
+}
+
+// Not a question. Four parameters take a card the engine already holds, and
+// no card file has ever named a card — the only way to name one is to be one
+// — so a box here would be a box whose every answer is wrong.
+function engineHtml(f) {
+  return `<p class="muted"><b>${esc(f.about)}</b> — the engine fills this in.</p>`;
+}
+
+// A parameter that names something the ability picks out. Never a text box:
+// the author chooses from the engine's own targets and the name is written
+// behind them, which is the machinery the aim already uses.
+function groupHtml(f, groups, groupPath) {
+  const pick = groups[f.id] || {};
+  const options = can.targets.filter(t => t.aimable && fits(t, f.picks));
+  const one = (t) => `<option value="${t.id}" ${
+      t.id === pick.id ? "selected" : ""}>${esc(t.about)}</option>`;
+  const picked = can.targets.find(t => t.id === pick.id);
+  const mine = `${groupPath}.${f.id}`;
+  return `<label>${esc(f.about)}${needed(f)}</label>
+    <select onchange="setPick('${groupPath}','${f.id}',this.value)">
+      <option value="">${esc(nobody(f))}</option>
+      ${options.filter(t => t.common).map(one).join("")}
+      <optgroup label="everything else"
+        >${options.filter(t => !t.common).map(one).join("")}</optgroup>
+    </select>
+    ${picked ? `<div class="nested">${fieldsHtml(picked.fields, pick.fields,
+        pick.groups, `${mine}.fields`, `${mine}.groups`)}</div>` : ""}`;
+}
+
+// Which of the engine's targets can answer a parameter that names players,
+// cards, or anything the ability has already chosen.
+function fits(target, picks) {
+  if (picks === "players") return target.gives === "players" || target.gives === "mixed";
+  if (picks === "cards") return target.gives === "cards" || target.gives === "mixed";
+  return true;
+}
+
+function nobody(f) {
+  return f.picks === "players"
+    ? "— whoever is playing the card —"
+    : "— whatever the card is aimed at —";
+}
+
+// The effect's own nested data. Shown as what it is rather than as a string:
+// a structure typed into a text box arrives as text, and the effect is handed
+// a sentence where it wanted a list of things to do.
+function structureHtml(f, values, path) {
+  const written = values[f.id];
+  const shown = written === undefined ? "" : JSON.stringify(written, null, 1);
+  return `<details class="deep">
+    <summary>${esc(f.about)} — written out in full${needed(f)}</summary>
+    <p class="muted">Not a single answer: this one is a piece of the card's own
+      rules, so it is written the way a card file writes it.</p>
+    <textarea spellcheck="false" data-deep="${esc(f.id)}"
+      oninput="setStructure('${path}','${f.id}',this)">${esc(shown)}</textarea>
+    <p class="problem" id="${note(path, f.id)}"></p>
+  </details>`;
+}
+
+// Everything a person simply answers. `role` decides the control, `many`
+// decides whether one answer or several, and `unless` decides whether the
+// question is worth asking at all.
+function valueHtml(f, values, siblings, path) {
+  const value = values[f.id];
+  const off = moot(f, values, siblings);
+  const why = off ? `<p class="muted">Not used while
+      <b>${esc(labelOf(siblings, f.unless))}</b> says what it says.</p>` : "";
+  const dead = off ? "disabled" : "";
+  // A field others depend on redraws the form, so the questions that no longer
+  // apply stop being asked the moment the answer changes.
+  const seen = siblings.some(o => o.unless === f.id);
+  const put = (what) => `${seen ? "onchange" : "oninput"}="setField('${path}','${
+      f.id}',${what},${seen})"`;
+
+  if (f.many) return `<label>${esc(f.about)}${needed(f)}</label>${why}
+    <select multiple size="${Math.min(8, Math.max(2, f.choices.length))}" ${dead}
+      onchange="setMany('${path}','${f.id}',this)">
+      ${f.choices.map(c => `<option ${
+        (Array.isArray(value) ? value : []).includes(c) ? "selected" : ""
+        }>${esc(c)}</option>`).join("")}
+    </select>
+    <p class="muted">More than one may be picked; none means every one of them.</p>
+    <p class="problem" ${f.required ? 'data-needed="1"' : ""}
+       id="${note(path, f.id)}">${blank(f, value)}</p>`;
+
+  if (f.role === "switch") return `${why}<label class="flag"><input type="checkbox"
+      style="width:auto" ${value === true ? "checked" : ""} ${dead}
+      onchange="setField('${path}','${f.id}',this.checked,${seen})">
+      ${esc(f.about)}</label>`;
+
+  if (f.role === "which" && f.choices.length)
+    return `<label>${esc(f.about)}${needed(f)}</label>${why}
+    <select ${dead} onchange="setField('${path}','${f.id}',this.value,${seen})">
+      <option value="">${esc(fallback(f))}</option>
+      ${f.choices.map(c => `<option ${c === value ? "selected" : ""}
+        >${esc(c)}</option>`).join("")}
+    </select>
+    <p class="problem" ${f.required ? 'data-needed="1"' : ""}
+       id="${note(path, f.id)}">${blank(f, value)}</p>`;
+
+  const number = f.role === "amount";
+  const kept = value === undefined || value === null ? "" : value;
+  const read = number ? "this.valueAsNumber"
+    : f.role === "open" ? "guess(this.value)" : "this.value";
+  return `<label>${esc(f.about)}${needed(f)}</label>${why}
+    <input ${dead} ${number
+      ? `type="number" ${f.least != null ? `min="${f.least}"` : ""}` : ""}
+      placeholder="${esc(fallback(f))}" value="${esc(kept)}" ${put(read)}>
+    ${f.role === "open"
+      ? '<p class="muted">Any value at all — a number, true or false, or words.</p>'
+      : ""}
+    <p class="problem" ${f.required ? 'data-needed="1"' : ""}
+       id="${note(path, f.id)}">${blank(f, value)}</p>`;
+}
+
+// Whether a parameter the engine says can be overridden currently is.
+//
+// A switch overrides when it is on. Anything else overrides when it holds one
+// of the values the engine named, or — where it named none — any value at all.
+// What counts as "holds" includes the effect's own default, because a box left
+// empty is not a question left open: `move_cards` puts cards on the bottom
+// unless told otherwise, and a depth from the top means nothing there.
+function moot(f, values, siblings) {
+  if (!f.unless) return false;
+  const other = siblings.find(o => o.id === f.unless);
+  if (!other) return false;
+  const written = values[other.id];
+  const now = written === undefined || written === "" ? other.otherwise : written;
+  if (other.role === "switch") return now === true;
+  if (f.unless_when.length) return f.unless_when.includes(String(now));
+  return now !== undefined && now !== null && now !== "" && now !== false;
+}
+
+function labelOf(fields, id) {
+  const f = fields.find(o => o.id === id);
+  return f ? f.about : id;
+}
+function needed(f) { return f.required ? ' <span class="need">needed</span>' : ""; }
+function blank(f, value) {
+  return f.required && (value === undefined || value === "" || value === null)
+    ? "This one has to be filled in." : "";
+}
+// What the effect does when the box is left empty, in the engine's own words.
+function fallback(f) {
+  if (f.required) return "— nothing yet —";
+  if (f.otherwise === null || f.otherwise === undefined) return "— leave it out —";
+  return `— ${f.otherwise} —`;
+}
+function note(path, id) {
+  return ("need-" + path + "-" + id).replace(/[^A-Za-z0-9_-]/g, "_");
+}
+// A parameter the engine will not judge takes any value at all, so what is
+// typed is read the way a card file would read it and kept as words otherwise.
+function guess(written) {
+  try { return JSON.parse(written); } catch (e) { return written; }
 }
 
 function conditionFields(id) {
@@ -302,34 +473,102 @@ function conditionFields(id) {
 
 // -------------------------------------------------------------- editing
 
-const at = (path) => path.split(/[.\[\]]+/).filter(Boolean)
-  .reduce((o, k) => (o[k] ??= {}), window);
+// The object a path points at, making the way to it if it is not there yet.
+//
+// Walked from the card being made rather than from the window. `state` is a
+// script-scoped binding and not a property of anything, so starting at the
+// window used to reach a second object of the same name — every answer landed
+// in it, and the card kept none of them.
+const at = (path) => {
+  const steps = path.split(/[.\[\]]+/).filter(Boolean);
+  if (steps.shift() !== "state") throw new Error("not a path into the card: " + path);
+  return steps.reduce((o, k) => (o[k] ??= {}), state);
+};
 
-function setField(path, key, value) {
+function setField(path, key, value, redraw) {
   at(path)[key] = value;
+  if (redraw) return editor();
+  told(path, key, value);
   face();
 }
-function setEffect(i, id) { state.ability.effects[i] = { id, fields: {} }; editor(); }
+
+// Several answers rather than one. A parameter the engine describes as a list
+// gets a list, even when only one thing is picked: the difference between
+// "loot" and ["loot"] is invisible in a form and fatal in a card.
+function setMany(path, key, box) {
+  const picked = Array.from(box.selectedOptions).map(o => o.value);
+  if (picked.length) at(path)[key] = picked; else delete at(path)[key];
+  told(path, key, picked.length ? picked : undefined);
+  face();
+}
+
+// Something the ability picks out, named behind the author's back.
+function setPick(groupPath, key, target) {
+  const groups = at(groupPath);
+  if (target) groups[key] = { id: target, fields: {}, groups: {} };
+  else delete groups[key];
+  editor();
+}
+
+// The effect's own nested data, kept as the structure it is. Text that is not
+// yet a structure is not stored as one: half-typed JSON is not a value, and
+// writing it into the card as a string is how a structure becomes a sentence.
+function setStructure(path, key, box) {
+  const said = document.getElementById(note(path, key));
+  const written = box.value.trim();
+  if (!written) {
+    delete at(path)[key];
+    if (said) said.textContent = "";
+    return face();
+  }
+  try {
+    at(path)[key] = JSON.parse(written);
+    if (said) said.textContent = "";
+    face();
+  } catch (e) {
+    delete at(path)[key];
+    if (said) said.textContent = "Not finished yet — " + e.message;
+  }
+}
+
+// A required box that has been emptied says so without waiting for the server.
+function told(path, key, value) {
+  const said = document.getElementById(note(path, key));
+  if (!said) return;
+  const empty = value === undefined || value === "" || value === null
+    || (Array.isArray(value) && !value.length);
+  said.textContent = empty && said.dataset.needed ? "This one has to be filled in." : "";
+}
+
+function setEffect(i, id) {
+  state.ability.effects[i] = { id, fields: {}, groups: {} }; editor();
+}
 function setAim(path, id) {
   const step = at(path);
-  if (id) { step.aim = id; step.aim_fields = {}; }
-  else { delete step.aim; delete step.aim_fields; }
+  if (id) { step.aim = id; step.aim_fields = {}; step.aim_groups = {}; }
+  else { delete step.aim; delete step.aim_fields; delete step.aim_groups; }
   editor();
 }
 function setInner(i, branch, j, id) {
-  state.ability.effects[i].branch[branch][j] = { id, fields: {} }; editor();
+  state.ability.effects[i].branch[branch][j] = { id, fields: {}, groups: {} };
+  editor();
 }
 function setCondition(i, id) {
-  state.ability.effects[i].branch.condition = { id, fields: {} }; editor();
+  state.ability.effects[i].branch.condition = { id, fields: {}, groups: {} };
+  editor();
 }
-function addStep() { state.ability.effects.push({ id: "", fields: {} }); editor(); }
+function addStep() {
+  state.ability.effects.push({ id: "", fields: {}, groups: {} }); editor();
+}
 function addBranch() {
   state.ability.effects.push(
-    { branch: { condition: { id: "", fields: {} }, then: [], else: [] } });
+    { branch: {
+        condition: { id: "", fields: {}, groups: {} }, then: [], else: [] } });
   editor();
 }
 function addInner(i, branch) {
-  state.ability.effects[i].branch[branch].push({ id: "", fields: {} }); editor();
+  state.ability.effects[i].branch[branch].push({ id: "", fields: {}, groups: {} });
+  editor();
 }
 function dropStep(i) { state.ability.effects.splice(i, 1); editor(); }
 function dropInner(i, branch, j) {
@@ -351,7 +590,12 @@ async function face() {
   const said = await api("/api/cards/check", state);
   const reads = document.getElementById("reads");
   if (reads) {
-    reads.innerHTML = said.problems && said.problems.length
+    // A card too unfinished to build at all is not a ready card. Saying so
+    // matters more here than anywhere: this is the line somebody reads to
+    // decide whether they are done.
+    reads.innerHTML = said.error
+      ? `<div class="problem">${esc(said.error)}</div>`
+      : said.problems && said.problems.length
       ? said.problems.map(p => `<div class="problem">${esc(plain(p))}</div>`).join("")
       : '<div class="ok">This card is ready.</div>';
   }

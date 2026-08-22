@@ -25,6 +25,7 @@ from typing import Any
 
 from fsme.cards.types import CardType
 from fsme.content.vocabulary import (
+    A_LIST,
     ANY_GROUP,
     CARDS,
     MIXED,
@@ -47,7 +48,7 @@ TargetFn = Callable[[GameState, AbilityContext, Mapping[str, Any], RNG], list[An
 WHOLE = "a whole number"
 TEXT = "text"
 FLAG = "true or false"
-LIST = "a list"
+LIST = A_LIST
 
 
 def _shape(*parts: Mapping[str, ParamShape]) -> dict[str, ParamShape]:
@@ -583,8 +584,12 @@ def _random_player(
 
 
 BY_SEAT = {
-    "value": ParamShape("value", WHOLE, least=0),
-    "player": ParamShape("player", WHOLE, least=0),
+    "value": ParamShape(
+        "value", WHOLE, least=0, describes="which seat at the table"
+    ),
+    "player": ParamShape(
+        "player", WHOLE, least=0, describes="which seat at the table"
+    ),
 }
 """
 What ``_player_by_index`` reads. Two spellings of one seat number: the
@@ -609,7 +614,12 @@ ASKING = {
     "minimum": ParamShape("minimum", WHOLE, least=0),
     "maximum": ParamShape("maximum", WHOLE, least=0),
     "prompt": ParamShape("prompt", TEXT),
-    "chooser": ParamShape("chooser", A_BOUND_GROUP, refers_to=PLAYERS),
+    "chooser": ParamShape(
+        "chooser",
+        A_BOUND_GROUP,
+        refers_to=PLAYERS,
+        describes="who makes the choice, if not the card's controller",
+    ),
 }
 """
 What ``_ask`` reads: how many to pick, and who is being asked.
@@ -675,7 +685,11 @@ def _chooser(context: AbilityContext, params: Mapping[str, Any]) -> int | None:
     return context.controller
 
 
-WHOSE = {"of": ParamShape("of", A_BOUND_GROUP, refers_to=PLAYERS)}
+WHOSE = {
+    "of": ParamShape(
+        "of", A_BOUND_GROUP, refers_to=PLAYERS, describes="whose things"
+    )
+}
 """
 What ``_named_players`` reads: whose things, when the card named them.
 
@@ -683,13 +697,24 @@ It keeps only the players out of the group it is handed, so a card naming a
 group of items here is naming nobody — which is worth saying before a game.
 """
 
-WHOSE_CARDS = {"of": ParamShape("of", A_BOUND_GROUP, refers_to=CARDS)}
+WHOSE_CARDS = {
+    "of": ParamShape(
+        "of", A_BOUND_GROUP, refers_to=CARDS, describes="which cards"
+    )
+}
 """
 What ``_holder`` reads. The other way round: it is handed cards and answers
 with the players holding them.
 """
 
-ANY_BOUND_GROUP = {"of": ParamShape("of", A_BOUND_GROUP, refers_to=ANY_GROUP)}
+ANY_BOUND_GROUP = {
+    "of": ParamShape(
+        "of",
+        A_BOUND_GROUP,
+        refers_to=ANY_GROUP,
+        describes="which of the things this ability already chose",
+    )
+}
 """
 What ``_group`` reads: one name or several, of anything at all.
 """
@@ -952,7 +977,12 @@ inside a study and naming no card; this is the same knowledge asked earlier.
 OFF_THE_TOP = {
     "deck": ParamShape("deck", TEXT, values=DECKS),
     "count": ParamShape("count", WHOLE, least=0),
-    "exclude": ParamShape("exclude", A_BOUND_GROUP, refers_to=CARDS),
+    "exclude": ParamShape(
+        "exclude",
+        A_BOUND_GROUP,
+        refers_to=CARDS,
+        describes="cards to leave out",
+    ),
 }
 """
 What ``_deck_top`` reads. ``count`` is how many cards, not how many to choose:
@@ -1314,10 +1344,16 @@ def _top_stack(
 
 ON_THE_STACK = {
     "kinds": ParamShape(
-        "kinds", LIST, values=tuple(str(kind) for kind in StackItemType)
+        "kinds",
+        LIST,
+        values=tuple(str(kind) for kind in StackItemType),
+        describes="which sorts of thing on the stack",
     ),
     "triggers": ParamShape(
-        "triggers", LIST, values=tuple(str(event) for event in EventType)
+        "triggers",
+        LIST,
+        values=tuple(str(event) for event in EventType),
+        describes="which moments the thing on the stack reacted to",
     ),
 }
 """

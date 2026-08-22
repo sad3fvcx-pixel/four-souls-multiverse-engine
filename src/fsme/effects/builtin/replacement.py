@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from fsme.content.vocabulary import OPEN
+from fsme.content.vocabulary import A_LIST, A_MAPPING, OPEN
 from fsme.events import EventType
 from fsme.state import DamageShield, Duration, Promise, Watcher
 from fsme.state.promises import CHANGES
@@ -297,6 +297,9 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="amount",
         description="Promise to reduce the next damage a player takes.",
+        asks={
+            "label": "a name for this shield, so another card can find it",
+        },
     )
     registry.register(
         "promise",
@@ -304,9 +307,17 @@ def register(registry: EffectRegistry) -> None:
         needs_target=False,
         primary="event",
         literal=("changes", "when"),
+        holds={"changes": A_MAPPING, "when": A_MAPPING},
         description="Owe a change to the next event of a kind.",
         values={"event": _EVENT_NAMES},
         needs=("event",),
+        asks={
+            "event": "the moment it is checked",
+            "when": "the conditions it waits for",
+            "changes": "what it does to the event",
+            "uses": "how many times it may fire",
+            "unlimited": "it may fire any number of times",
+        },
     )
     registry.register(
         "watch_for",
@@ -314,9 +325,19 @@ def register(registry: EffectRegistry) -> None:
         needs_target=False,
         primary="event",
         literal=("effects", "conditions"),
+        holds={"effects": A_LIST},
         description="Wait for an event and resolve an ability when it happens.",
         values={"event": _EVENT_NAMES},
         needs=("event",),
+        asks={
+            "event": "the moment it watches for",
+            "conditions": "what must be true",
+            "effects": "what happens then",
+            "mine": "only when this card's controller is involved",
+            "waits": "how many of the moment to let past first",
+            "uses": "how many times it may fire",
+            "unlimited": "it may fire any number of times",
+        },
     )
     registry.register(
         "cancel_event",
@@ -331,4 +352,10 @@ def register(registry: EffectRegistry) -> None:
         needs=("key",),
         roles={"value": OPEN},
         unless={"factor": "delta"},
+        asks={
+            "key": "which of the event's values",
+            "value": "what to put there instead",
+            "delta": "how much to add to it",
+            "factor": "what to multiply it by",
+        },
     )

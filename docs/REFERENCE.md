@@ -7,9 +7,11 @@ registry documents explain what the names are *for*; this one is the
 list, and it is read off the engine so that it cannot drift from it.
 
 A `*` marks a parameter that must be given. "only a game can judge"
-means the pipeline deliberately does not check that value — a card, a
-player, or a group the ability bound earlier — and not that anything
-is accepted: the guard inside the engine stays where it is.
+means the pipeline deliberately does not check that value — and not
+that anything is accepted: the guard inside the engine stays where it
+is. A parameter that *names* something says so instead, along with how
+a card writes the name, because the two are not the same sentence for
+an effect and for a target.
 
 ## Effects
 
@@ -19,21 +21,21 @@ is accepted: the guard inside the engine stays where it is.
 | --- | --- |
 | `add_counter` | `amount` a whole number, `clear` true or false, `counter` text*, `silences` true or false |
 | `add_modifier` | `amount` a whole number, `duration` `end_of_turn` or `game`, `stat` one of 9 stat names* |
-| `attach_curse` | `card` only a game can judge |
+| `attach_curse` | `card` the engine supplies it |
 | `cancel_event` | — |
 | `cancel_stack` | — |
 | `choose` | — |
-| `claim_soul` | `card` only a game can judge |
+| `claim_soul` | `card` the engine supplies it |
 | `copy_ability` | `trigger` one of 66 trigger names |
 | `copy_card` | `until` `end_of_turn` or `game` |
 | `copy_effect` | — |
 | `deactivate` | — |
-| `deal_damage` | `amount` a whole number ≥ 0, `combat` true or false, `dealt_by` only a game can judge, `roll` a whole number |
+| `deal_damage` | `amount` a whole number ≥ 0, `combat` true or false, `dealt_by` `{"player_of": name}`, a group of players the ability bound, `roll` a whole number |
 | `destroy_treasure` | — |
 | `discard_cards` | — |
 | `discard_loot` | `count` a whole number ≥ 0 |
 | `discard_monsters` | — |
-| `divide_damage` | `dealt_by` only a game can judge, `each` a whole number |
+| `divide_damage` | `dealt_by` `{"player_of": name}`, a group of players the ability bound, `each` a whole number |
 | `draw_loot` | `count` a whole number ≥ 0 |
 | `duplicate` | — |
 | `end_attack` | — |
@@ -43,9 +45,9 @@ is accepted: the guard inside the engine stays where it is.
 | `flip_roll` | — |
 | `for_each` | — |
 | `gain_coins` | `amount` a whole number ≥ 0 |
-| `gain_soul` | `card` only a game can judge, `count` a whole number ≥ 0, `earned_from` only a game can judge |
+| `gain_soul` | `card` the engine supplies it, `count` a whole number ≥ 0, `earned_from` the engine supplies it |
 | `gain_treasure` | `count` a whole number |
-| `give_treasure` | `to` only a game can judge |
+| `give_treasure` | `to` `{"player_of": name}`, a group of players the ability bound |
 | `heal` | `amount` a whole number ≥ 0, `full` true or false |
 | `hold_tapped` | — |
 | `if` | — |
@@ -63,12 +65,12 @@ is accepted: the guard inside the engine stays where it is.
 | `place_monster` | `slot` text |
 | `prevent_damage` | `amount` a whole number |
 | `prevent_next_damage` | `amount` a whole number, `label` text |
-| `promise` | `changes` only a game can judge, `event` one of 66 event names*, `unlimited` true or false, `uses` a whole number, `when` only a game can judge |
+| `promise` | `changes` a set of named values, `event` one of 66 event names*, `unlimited` true or false, `uses` a whole number, `when` a set of named values |
 | `put_into_play` | — |
 | `recharge` | — |
 | `remove_curse` | — |
 | `repeat` | — |
-| `require_attack` | `times` a whole number, `what` `monster_deck`, `who` only a game can judge |
+| `require_attack` | `times` a whole number, `what` `monster_deck`, `who` `{"player_of": name}`, a group of players the ability bound |
 | `reroll` | `sides` a whole number |
 | `reveal_cards` | `count` a whole number ≥ 0, `deck` `loot` or `treasure` or `monster` or `room` |
 | `reveal_hand` | — |
@@ -83,10 +85,10 @@ is accepted: the guard inside the engine stays where it is.
 | `steal_treasure` | — |
 | `stop` | — |
 | `swap_cards` | — |
-| `take_card` | `player` only a game can judge, `shuffle` `` or `loot` or `treasure` or `monster` or `room`, `to` `hand` or `treasures` |
+| `take_card` | `player` `{"player_of": name}`, a group of players the ability bound, `shuffle` `` or `loot` or `treasure` or `monster` or `room`, `to` `hand` or `treasures` |
 | `take_extra_turn` | — |
 | `transfer_coins` | `amount` a whole number, `source_player` a whole number |
-| `watch_for` | `conditions` only a game can judge, `effects` only a game can judge, `event` one of 66 event names*, `mine` true or false, `unlimited` true or false, `uses` a whole number, `waits` true or false |
+| `watch_for` | `conditions` only a game can judge, `effects` a list, `event` one of 66 event names*, `mine` true or false, `unlimited` true or false, `uses` a whole number, `waits` true or false |
 
 ## Conditions
 

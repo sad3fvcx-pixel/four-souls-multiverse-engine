@@ -53,6 +53,54 @@ require one of every parameter. Anything showing a parameter to a person reads
 this to decide *how*; ``describes`` refines *what it is called*.
 """
 
+BY_NAME = "the name of something the ability chose"
+BY_PLAYER_OF = "player_of"
+BY_STORED = "the name of a value an earlier step stored"
+BY_ENGINE = "the engine supplies it"
+
+WRITINGS = (BY_NAME, BY_PLAYER_OF, BY_STORED, BY_ENGINE)
+"""
+How a card writes a parameter that names something instead of carrying a value.
+
+Four sentences, because the engine has four answers and no more:
+
+- ``BY_NAME`` — the bare name of a group the ability bound with ``as``. Every
+  target that asks whose things it is about reads its ``of`` this way.
+- ``BY_PLAYER_OF`` — ``{"player_of": "gift"}``, the one dynamic head that
+  answers with a player. Effects are handed players as seat numbers, so an
+  effect naming a player writes this and a target naming one does not.
+- ``BY_STORED`` — the name of a value an earlier step wrote with ``store``.
+  A different namespace from the groups, and asking for one where the other
+  belongs is a card that quietly compares nothing.
+- ``BY_ENGINE`` — nothing a card writes at all. ``claim_soul`` takes the card
+  that becomes the soul and no card file has ever given it one, because the
+  only way to name a card is to be one.
+
+Anything showing a parameter to a person reads this to decide *what to offer*;
+``role`` decides how to draw it and ``refers_to`` says what kind of thing is
+being named.
+"""
+
+
+A_LIST = "a list"
+"""
+The kind given to a parameter that takes several values rather than one.
+
+Named because the difference between ``"loot"`` and ``["loot"]`` is invisible
+in a form and fatal in a card: a parameter that takes a list and is given one
+value has been given a mistake, not a shorthand.
+"""
+
+A_MAPPING = "a set of named values"
+"""
+The kind given to a parameter that takes named values rather than one value.
+
+``promise`` is owed a change per key — ``{"amount": {"times": 2}}`` — and a
+card that writes a word there has written a sentence where a structure belongs.
+What is *inside* one of these cannot be judged before a game exists; that it is
+one can, and the handler already refuses anything else.
+"""
+
 UNCHECKED = "anything the engine can only judge during a game"
 """
 The kind given to a parameter this layer deliberately does not check.
@@ -83,6 +131,15 @@ class ParamShape:
     values: tuple[Any, ...] = ()
     least: int | None = None
 
+    default: Any = None
+    """
+    What the effect does when a card leaves this out, where anything knows.
+
+    Only effects say: their parameters are read off the function that
+    implements them, so the default is the handler's own. A target or a
+    condition names its parameters by hand and names no default with them.
+    """
+
     role: str = ""
     """
     What kind of question this parameter is — see ``ROLES``.
@@ -109,6 +166,32 @@ class ParamShape:
     ``amount`` is a name for us; "how many cents" is what a form asks. Empty
     means nobody has said, and whatever is asking should fall back to the
     parameter's own name.
+    """
+
+    unless_when: tuple[Any, ...] = ()
+    """
+    The values of ``unless`` that actually make this parameter moot.
+
+    Empty means any value the author gives — ``modify_event`` reads ``factor``
+    only when ``delta`` was left out, so writing a delta at all settles it.
+    ``move_cards`` is the other shape: ``depth_from`` is counted from the top
+    and means nothing when ``position`` is ``bottom``, which is also the
+    default, so the value has to be named or a form would offer a depth that
+    the effect will not read.
+
+    A switch is moot-making when it is on, whatever this says: ``false`` is
+    what a card that left it out means.
+    """
+
+    written_as: str = ""
+    """
+    How a card writes this parameter, when it names something rather than
+    carrying a value — see ``WRITINGS``.
+
+    Worked out from ``refers_to`` for anything a target or a condition takes,
+    because those all name a group the same way. An effect is the exception
+    and says so at registration: the engine hands effects players and cards
+    directly, so naming one is a different sentence.
     """
 
     refers_to: str = ""
@@ -145,6 +228,9 @@ class ParamShape:
         that is either the effect's own nested data or something a game hands
         over, and only whoever wrote the effect knows which.
         """
+        if not self.written_as:
+            object.__setattr__(self, "written_as", _written_as_for(self))
+
         if self.role:
             return
 
@@ -203,6 +289,20 @@ class EffectShape:
     """
 
 
+def _written_as_for(parameter: ParamShape) -> str:
+    """
+    How a card writes this parameter, read off what it names.
+
+    Only the two a target or a condition can say. An effect that names a
+    player or a card is told at registration, because for an effect the answer
+    depends on the engine handing it the thing rather than on the parameter.
+    """
+    if not parameter.refers_to:
+        return ""
+
+    return BY_STORED if parameter.refers_to == VALUES else BY_NAME
+
+
 def _role_for(parameter: ParamShape) -> str:
     """
     What kind of question a parameter is, read off the rest of it.
@@ -224,7 +324,7 @@ def _role_for(parameter: ParamShape) -> str:
     if parameter.values:
         return WHICH
 
-    return NAMES if parameter.kind in ("text", "a list") else OPEN
+    return NAMES if parameter.kind in ("text", A_LIST) else OPEN
 
 
 @dataclass(frozen=True, slots=True)

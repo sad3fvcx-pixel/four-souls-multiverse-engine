@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from fsme.cards import validate_card
+from fsme.content.vocabulary import BY_PLAYER_OF
 from fsme.content.workspace import (
     card_identifier,
     identifier_for,
@@ -439,6 +440,59 @@ def _targets(described: Any) -> list[dict[str, Any]]:
     return written
 
 
+def _given(
+    shape: Any,
+    described: Any,
+    aimed: list[dict[str, Any]] | None,
+) -> dict[str, Any]:
+    """
+    Everything written beside one effect, condition or target.
+
+    Two halves. What somebody typed comes through as it is. What they *pointed
+    at* — a parameter naming a player or a card rather than carrying a value —
+    arrives as a target they picked, and becomes two things: a group the
+    ability chooses, and this parameter naming it.
+
+    How it is named is the engine's own answer, read off the parameter rather
+    than decided here. A target reads a bound group by its bare name; an effect
+    is handed players as seat numbers and writes the one dynamic head that
+    answers with a seat. Nothing in this function knows which effect it is
+    looking at, and nothing in it may learn.
+    """
+    written = _written_fields(
+        described.get("fields", {}) if isinstance(described, dict) else {}
+    )
+
+    picked = described.get("groups", {}) if isinstance(described, dict) else {}
+
+    if not isinstance(picked, dict) or aimed is None or shape is None:
+        return written
+
+    vocabulary = engine_vocabulary()
+
+    for key, pick in picked.items():
+        parameter = shape.params.get(str(key))
+
+        if parameter is None or not isinstance(pick, dict):
+            continue
+
+        target = str(pick.get("id", ""))
+
+        if not target:
+            continue
+
+        inside = _given(vocabulary.target_shape(target), pick, aimed)
+        name = _pick_out(target, inside, aimed)
+
+        written[str(key)] = (
+            {BY_PLAYER_OF: name}
+            if parameter.written_as == BY_PLAYER_OF
+            else name
+        )
+
+    return written
+
+
 def _effects(described: Any, aimed: list[dict[str, Any]] | None = None) -> list[Any]:
     """
     The list of things that happen, in order.
@@ -472,13 +526,24 @@ def _effects(described: Any, aimed: list[dict[str, Any]] | None = None) -> list[
             continue
 
         node: dict[str, Any] = {"effect": effect}
-        node.update(_written_fields(one.get("fields", {})))
+        node.update(_given(engine_vocabulary().shape(effect), one, aimed))
 
         pointed = str(one.get("target", "") or "")
         aim = str(one.get("aim", "") or "")
 
         if aim and aimed is not None:
-            pointed = _pick_out(aim, one.get("aim_fields", {}), aimed)
+            pointed = _pick_out(
+                aim,
+                _given(
+                    engine_vocabulary().target_shape(aim),
+                    {
+                        "fields": one.get("aim_fields", {}),
+                        "groups": one.get("aim_groups", {}),
+                    },
+                    aimed,
+                ),
+                aimed,
+            )
 
         if pointed:
             node["target"] = pointed
@@ -533,7 +598,9 @@ def _branch(described: Any, aimed: list[dict[str, Any]] | None = None) -> dict[s
         raise AuthorError("Say what the branch depends on.")
 
     asked = str(condition["id"])
-    fields = _written_fields(condition.get("fields", {}))
+    fields = _given(
+        engine_vocabulary().condition_shape(asked), condition, aimed
+    )
 
     node: dict[str, Any] = {
         "if": [{asked: fields} if fields else asked],
@@ -562,7 +629,7 @@ def _written_fields(fields: Any) -> dict[str, Any]:
     kept: dict[str, Any] = {}
 
     for name, value in fields.items():
-        if value in (None, ""):
+        if value is None or value == "" or value == []:
             continue
 
         kept[str(name)] = value

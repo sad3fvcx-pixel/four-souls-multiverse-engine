@@ -352,7 +352,13 @@ def _validate_call(
 
     for key, value in params.items():
         if key in shape.literal:
-            # The effect's own structured data. Nothing here may judge it.
+            # The effect's own structured data. What is *inside* it needs a
+            # game and nothing here may judge that — but whether it is a
+            # structure at all is a different question, and the effect answers
+            # it at registration because its handler raises on anything else.
+            errors.extend(
+                _outer_shape(name, shape.params.get(key), value, location, path)
+            )
             continue
 
         parameter = shape.params.get(key)
@@ -390,6 +396,11 @@ def _validate_value(
     One value, against the one parameter it was written for.
     """
     where = f"{location}: {path}.{parameter.name}"
+
+    named = _naming(parameter, value, where, name)
+
+    if named is not None:
+        return named
 
     if value is None:
         if parameter.nullable:
@@ -778,6 +789,114 @@ def _target_call(spec: Any) -> tuple[str | None, dict[str, Any]]:
     return str(name), {"value": value}
 
 
+MAPPING = "a set of named values"
+"""
+What ``kind`` says for a parameter holding named values.
+
+Spelled here for the reason ``BY_ENGINE`` is: this module reads shapes as plain
+data and runs without an engine. A test holds every one of these spellings
+against the engine's own.
+"""
+
+
+def _outer_shape(
+    name: str,
+    parameter: Any,
+    value: Any,
+    location: str,
+    path: str,
+) -> list[str]:
+    """
+    Whether a parameter the effect keeps as written is the shape it keeps.
+
+    Only the outside. ``{"effects": "gain_coins"}`` is a card that meant a list
+    of things to do and wrote the name of one, which used to load and then fail
+    the first time anybody played it.
+    """
+    if parameter is None or parameter.kind not in (LIST, MAPPING):
+        return []
+
+    fits = (
+        isinstance(value, Mapping)
+        if parameter.kind == MAPPING
+        else isinstance(value, (list, tuple))
+    )
+
+    if fits or value is None:
+        return []
+
+    return [
+        f"{location}: {path}.{parameter.name}: '{name}' takes "
+        f"{parameter.kind} here, and the card gives {value!r}"
+    ]
+
+
+def _naming(
+    parameter: Any,
+    value: Any,
+    where: str,
+    name: str,
+) -> list[str] | None:
+    """
+    A parameter that names somebody, checked against how it may be named.
+
+    ``None`` means this is not one of those and the ordinary checks apply.
+
+    The engine says both halves — what a parameter names and how a card writes
+    it — so this asks the parameter rather than the effect. Nothing here knows
+    which effect it is looking at, which is what stops it becoming a list of
+    special cases. Until now these carried no checkable kind at all, so
+    ``{"who": "the loser"}`` loaded and then died the moment somebody played
+    it, which is the worst place to find out.
+    """
+    written = str(getattr(parameter, "written_as", "") or "")
+
+    if not written:
+        return None
+
+    if written == BY_ENGINE:
+        return [
+            f"{where}: '{name}' is handed this by the engine, and there is no "
+            f"way for a card to write one; leave the key out"
+        ]
+
+    if written in DYNAMIC_HEADS:
+        if isinstance(value, int) and not isinstance(value, bool):
+            return []
+
+        if isinstance(value, Mapping) and written in value:
+            return []
+
+        return [
+            f"{where}: '{name}' takes somebody the ability picked out, written "
+            f"as {{{written!r}: the name it was bound with}}, "
+            f"and the card gives {value!r}"
+        ]
+
+    if isinstance(value, str):
+        return []
+
+    if isinstance(value, (list, tuple)) and all(
+        isinstance(one, str) for one in value
+    ):
+        return []
+
+    return [
+        f"{where}: '{name}' takes the name something the ability chose was "
+        f"bound with, and the card gives {value!r}"
+    ]
+
+
+BY_ENGINE = "the engine supplies it"
+"""
+What ``written_as`` says for a parameter no card may write.
+
+Spelled here rather than imported: this module is the one the content pipeline
+runs without an engine, and it reads shapes as plain data on purpose. The
+string is the engine's, and a test holds the two together.
+"""
+
+
 def _check_target_params(
     name: str,
     params: Mapping[str, Any],
@@ -807,6 +926,14 @@ def _check_target_params(
                 f"{location}: {path}: '{name}' takes no '{key}'"
                 f"{did_you_mean(str(key), shape.params)}"
             )
+            continue
+
+        named = _naming(
+            parameter, value, f"{location}: {path}", name
+        )
+
+        if named is not None:
+            errors.extend(named)
             continue
 
         if not parameter.checkable:

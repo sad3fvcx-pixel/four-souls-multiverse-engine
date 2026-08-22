@@ -28,6 +28,7 @@ from fsme.api import load_content
 from fsme.cards import validate_card
 from fsme.content import UNCHECKED, ContentLoader, Vocabulary
 from fsme.content.errors import InvalidContentError
+from fsme.content.vocabulary import BY_PLAYER_OF
 from fsme.runtime.vocabulary import engine_vocabulary
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
@@ -149,29 +150,63 @@ def test_a_parameter_the_effect_keeps_as_written_is_not_judged(
 ) -> None:
     """
     `EffectSpec.literal` names parameters handed over exactly as the card wrote
-    them — the effect's own structured data, which nothing here may read.
+    them — the effect's own structured data, whose contents nothing here may
+    read. Its outer shape is a different question and has its own test below.
     """
-    from fsme.cards.validator import CONDITION_KEYS
+    from fsme.cards.validator import _BRANCH_KEYS, CONDITION_KEYS
 
     pairs = sorted(
         (name, key)
         for name in vocabulary.effects
         if vocabulary.shape(name) is not None
         for key in vocabulary.shape(name).literal
-        # `watch_for` keeps its `conditions` as written, and they really are
-        # conditions: the runtime hands them to the same evaluator an ability's
-        # are handed to. So they are checked, and checking them is right —
-        # see the test below. Sampling one here would be sampling the one
-        # literal parameter that has a second meaning.
-        if key not in CONDITION_KEYS
+        # Two of them have a second meaning. `watch_for` keeps its `conditions`
+        # and its `effects` as written, and they really are conditions and
+        # effects: the runtime hands them to the same evaluator and the same
+        # interpreter an ability's are handed to, and the checker walks into
+        # both. Sampling one of those would be sampling the exception.
+        if key not in CONDITION_KEYS and key not in _BRANCH_KEYS
     )
 
     assert pairs, "some effect keeps a parameter as written"
 
     for name, key in pairs:
         assert complaints(
-            vocabulary, _minimally(vocabulary, name, {key: {"anything": ["at", "all"]}})
+            vocabulary,
+            _minimally(vocabulary, name, {key: {"anything": ["at", "all"]}}),
         ) == [], f"{name}.{key}"
+
+
+def test_the_shape_a_kept_parameter_is_kept_in_is_judged(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    Not what is inside — whether there is an inside at all.
+
+    ``{"effects": "gain_coins"}`` is a card that meant a list of things to do
+    and wrote the name of one. It used to load, and then fail the first time
+    somebody played it, which is the worst place to find out. The handler has
+    always raised on it; the effect now says so where a card file can be told.
+    """
+    outer = sorted(
+        (name, key, parameter.kind)
+        for name in vocabulary.effects
+        if vocabulary.shape(name) is not None
+        for key, parameter in vocabulary.shape(name).params.items()
+        if key in vocabulary.shape(name).literal
+        and parameter.kind in ("a list", "a set of named values")
+    )
+
+    assert [(name, key) for name, key, _ in outer] == [
+        ("promise", "changes"),
+        ("promise", "when"),
+        ("watch_for", "effects"),
+    ]
+
+    for name, key, _ in outer:
+        assert complaints(
+            vocabulary, _minimally(vocabulary, name, {key: "gain_coins"})
+        ), f"{name}.{key} took a sentence where a structure belongs"
 
 
 def test_conditions_an_effect_keeps_as_written_are_still_conditions(
@@ -444,25 +479,72 @@ def test_anything_means_not_checked_here_and_not_anything_goes(
     `Any` on a handler means the effect takes a card, a player or a shape that
     only means something once a board exists. The runtime guard stays.
     """
-    open_ones = [
+    from fsme.cards.validator import CONDITION_KEYS
+
+    open_ones = sorted(
         (name, parameter.name)
         for name in vocabulary.effects
         if vocabulary.shape(name)
         for parameter in vocabulary.shape(name).params.values()
+        # Not the ones that name somebody. Those are unjudgeable as *values*
+        # and perfectly judgeable as sentences, and there is a test below for
+        # what they accept. Nor the ones holding conditions, which are
+        # conditions and checked as conditions.
         if parameter.kind == UNCHECKED
-    ]
+        and not parameter.written_as
+        and parameter.name not in CONDITION_KEYS
+    )
 
     assert open_ones, "some parameters are judged only during a game"
 
-    name, parameter = open_ones[0]
-
-    assert complaints(
-        vocabulary, _minimally(vocabulary, name, {parameter: "anything at all"})
-    ) == []
+    for name, parameter in open_ones:
+        assert complaints(
+            vocabulary,
+            _minimally(vocabulary, name, {parameter: "anything at all"}),
+        ) == [], f"{name}.{parameter}"
 
     from fsme.effects.builtin.decks import DECKS
 
     assert "spaghetti" not in DECKS, "the runtime guard still knows the decks"
+
+
+def test_naming_somebody_is_checked_even_though_the_value_is_not(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    A parameter that names a player takes a name, not a sentence.
+
+    "Unjudgeable" was doing two jobs. A card the engine hands over cannot be
+    checked before a game exists — but *how a card names one* can, and the
+    engine says how. Written down, ``{"who": "the loser"}`` used to load and
+    then fail the moment somebody played the card, which is the worst place to
+    find out.
+    """
+    naming = sorted(
+        (name, parameter.name, parameter.written_as)
+        for name in vocabulary.effects
+        if vocabulary.shape(name)
+        for parameter in vocabulary.shape(name).params.values()
+        if parameter.written_as
+    )
+
+    assert naming, "some effects take somebody the ability picked out"
+
+    for name, parameter, _ in naming:
+        said = complaints(
+            vocabulary, _minimally(vocabulary, name, {parameter: "the loser"})
+        )
+
+        assert said, f"{name}.{parameter} took a sentence where a name belongs"
+
+    for name, parameter, written in naming:
+        if written != BY_PLAYER_OF:
+            continue
+
+        assert complaints(
+            vocabulary,
+            _minimally(vocabulary, name, {parameter: {BY_PLAYER_OF: "chosen"}}),
+        ) == [], f"{name}.{parameter}"
 
 
 def test_a_domain_named_for_a_parameter_that_does_not_exist_is_refused() -> None:

@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from fsme.content.vocabulary import WHOM
+from fsme.content.vocabulary import PLAYERS
 from fsme.events import EventType
 from fsme.state import (
     CardModifier,
@@ -468,6 +468,8 @@ def register(registry: EffectRegistry) -> None:
         asks={
             "amount": "how many counters",
             "counter": "what the counter is called",
+            "clear": "take every one of them off instead",
+            "silences": "the counter takes the card's abilities away",
         },
         needs=("counter",),
         unless={"amount": "clear"},
@@ -484,6 +486,9 @@ def register(registry: EffectRegistry) -> None:
         primary="area",
         description="Add a monster slot or a shop slot.",
         values={"area": AREAS},
+        asks={
+            "area": "which row to add a slot to",
+        },
     )
     registry.register(
         "skip_next_turn",
@@ -497,7 +502,12 @@ def register(registry: EffectRegistry) -> None:
         primary="times",
         description="Make a player owe an attack this turn.",
         values={"what": (MONSTER_DECK,)},
-        roles={"who": WHOM},
+        picks={"who": PLAYERS},
+        asks={
+            "times": "how many attacks they owe",
+            "who": "who owes the attack",
+            "what": "something to attack that is not on the table",
+        },
     )
     registry.register(
         "hold_tapped",
@@ -518,6 +528,9 @@ def register(registry: EffectRegistry) -> None:
         primary="what",
         description="Let a player act as often as they like this turn.",
         values={"what": LIMITS},
+        asks={
+            "what": "which limit to lift",
+        },
     )
     registry.register(
         "add_modifier",

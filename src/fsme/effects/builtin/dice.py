@@ -235,6 +235,9 @@ def register(registry: EffectRegistry) -> None:
         set_roll,
         primary="value",
         description="Change an open roll to a chosen number.",
+        asks={
+            "value": "what the die now shows",
+        },
     )
     registry.register(
         "flip_roll",

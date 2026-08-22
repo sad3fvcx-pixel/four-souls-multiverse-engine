@@ -65,8 +65,10 @@ _COMPARISONS: dict[str, Callable[[int, int], bool]] = {
 
 
 COMPARISON = {
-    "operator": ParamShape("operator", TEXT, values=tuple(_COMPARISONS)),
-    "value": ParamShape("value", WHOLE),
+    "operator": ParamShape(
+        "operator", TEXT, values=tuple(_COMPARISONS), describes="how to compare"
+    ),
+    "value": ParamShape("value", WHOLE, describes="what to compare against"),
 }
 """
 What ``_compare`` reads: how to compare, and what to compare against.
@@ -481,7 +483,14 @@ ABOUT_A_MONSTER = _shape(SUBJECT_MONSTER, COMPARISON)
 COUNTERS = _shape(COMPARISON, {"counter": ParamShape("counter", TEXT)})
 PLAYER_COUNTERS = _shape(SUBJECT_PLAYER, COUNTERS)
 IN_ZONE = {"zone": ParamShape("zone", TEXT)}
-NAMED_VALUES = {"of": ParamShape("of", UNCHECKED, refers_to=VALUES)}
+NAMED_VALUES = {
+    "of": ParamShape(
+        "of",
+        UNCHECKED,
+        refers_to=VALUES,
+        describes="the name an earlier step stored the value under",
+    )
+}
 """
 What ``values_equal`` reads, and the one place ``of`` means the other thing.
 
@@ -493,8 +502,12 @@ as one thing would be wrong about the other.
 EVENT_VALUE = _shape(
     COMPARISON,
     {
-        "key": ParamShape("key", TEXT, required=True),
-        "value": ParamShape("value", UNCHECKED, role=OPEN),
+        "key": ParamShape(
+            "key", TEXT, required=True, describes="which of the event's values"
+        ),
+        "value": ParamShape(
+            "value", UNCHECKED, role=OPEN, describes="what it should be"
+        ),
     },
 )
 """
@@ -680,7 +693,7 @@ def _nth_time_this_turn(
     return _compare(number, dict(params) or {"operator": "==", "value": 1})
 
 
-DICE = {"value": ParamShape("value", WHOLE)}
+DICE = {"value": ParamShape("value", WHOLE, describes="the number on the face")}
 """
 What the four ``dice_`` comparisons read: the number on the face.
 

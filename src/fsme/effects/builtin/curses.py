@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from fsme.content.vocabulary import WHOM
+from fsme.content.vocabulary import CARDS
 from fsme.events import EventType
 from fsme.state import PlayerState
 
@@ -108,7 +108,10 @@ def register(registry: EffectRegistry) -> None:
         attach_curse,
         needs_target=True,
         description="Put a curse on a player.",
-        roles={"card": WHOM},
+        picks={"card": CARDS},
+        asks={
+            "card": "the curse card itself",
+        },
     )
     registry.register(
         "remove_curse",

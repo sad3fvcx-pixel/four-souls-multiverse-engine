@@ -14,7 +14,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from fsme.content.vocabulary import WHOM
+from fsme.content.vocabulary import PLAYERS
 from fsme.events import EventType
 from fsme.state import PlayerState
 
@@ -399,6 +399,9 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="slot",
         description="Stand a monster in a slot of the monster area.",
+        asks={
+            "slot": "which monster slot",
+        },
     )
     registry.register(
         "deal_damage",
@@ -410,8 +413,9 @@ def register(registry: EffectRegistry) -> None:
         least={"amount": 0},
         asks={
             "amount": "how much damage",
+            "dealt_by": "who is dealing it, if not the card's controller",
         },
-        roles={"dealt_by": WHOM},
+        picks={"dealt_by": PLAYERS},
     )
     registry.register(
         "divide_damage",
@@ -419,7 +423,10 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="each",
         description="Deal damage split among the things chosen.",
-        roles={"dealt_by": WHOM},
+        picks={"dealt_by": PLAYERS},
+        asks={
+            "dealt_by": "who is dealing it, if not the card's controller",
+        },
     )
     registry.register(
         "heal",
@@ -430,6 +437,7 @@ def register(registry: EffectRegistry) -> None:
         least={"amount": 0},
         asks={
             "amount": "how much health",
+            "full": "restore every hit point instead",
         },
         unless={"amount": "full"},
     )

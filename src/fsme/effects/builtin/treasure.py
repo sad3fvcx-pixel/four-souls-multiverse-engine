@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from fsme.content.vocabulary import WHOM
+from fsme.content.vocabulary import PLAYERS
 from fsme.events import EventType
 from fsme.state import PlayerState
 
@@ -395,7 +395,10 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="to",
         description="Hand an item to another player.",
-        roles={"to": WHOM},
+        picks={"to": PLAYERS},
+        asks={
+            "to": "who receives it",
+        },
     )
     registry.register(
         "swap_cards",

@@ -215,4 +215,7 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="amount",
         description="Move coins between players.",
+        asks={
+            "source_player": "who pays",
+        },
     )

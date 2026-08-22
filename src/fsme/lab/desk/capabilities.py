@@ -20,7 +20,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from fsme.content.vocabulary import STRUCTURE, WHOM
+from fsme.content.vocabulary import (
+    A_LIST,
+    BY_ENGINE,
+    BY_NAME,
+    BY_PLAYER_OF,
+    STRUCTURE,
+)
 from fsme.events.types import WHEN_IT_HAPPENS, EventType
 from fsme.runtime.vocabulary import engine_vocabulary
 
@@ -186,15 +192,19 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
     """
     One entry per thing a person may be asked, and how to ask it.
 
-    Every parameter appears, with the role that says how. Nothing is dropped
-    for being hard to render: a role the page cannot draw yet is marked and
-    shown in the advanced view, because a parameter the engine understands and
-    the interface omits is a capability quietly taken away.
+    Every parameter appears with everything the engine says about it, and
+    nothing is dropped for being hard to render: a parameter the engine
+    understands and the interface omits is a capability quietly taken away.
 
-    Two are not text boxes and never were. A ``whom`` is a card or player the
-    ability picks out — an author says that by aiming the effect, which is a
-    question the form already asks — and a ``structure`` is the effect's own
-    nested data, which needs a form of its own.
+    ``shown`` is the one thing decided here rather than read, and it is decided
+    from the metadata alone — never from which effect the parameter belongs to.
+    Four answers, because there are four different questions:
+
+    - ``form`` — a value somebody gives. ``role`` says which control.
+    - ``group`` — the name of something the ability picks out. Not a box: the
+      page offers the engine's own targets and writes the name behind it.
+    - ``advanced`` — the effect's own nested data. Shown as what it is.
+    - ``engine`` — not asked at all, because no card can answer it.
     """
     found = []
 
@@ -206,20 +216,25 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             "kind": parameter.kind,
             "choices": [str(value) for value in parameter.values],
             "least": parameter.least,
+            "otherwise": parameter.default,
             "required": parameter.required,
             "unless": parameter.unless,
+            "unless_when": [str(value) for value in parameter.unless_when],
+            "written": parameter.written_as,
+            "picks": parameter.refers_to,
+            # Several answers out of a known set — which is a control the
+            # page has. A list with nothing to choose from is the effect's own
+            # data and goes to the advanced view instead.
+            "many": parameter.kind == A_LIST and bool(parameter.values),
         }
 
-        if parameter.refers_to:
-            entry["picks"] = parameter.refers_to
-
-        # Where the page must send it. `aim` and `advanced` are the two the
-        # ordinary form does not draw; everything else it does.
         entry["shown"] = (
-            "aim"
-            if parameter.role == WHOM
+            "engine"
+            if parameter.written_as == BY_ENGINE
+            else "group"
+            if parameter.written_as in (BY_NAME, BY_PLAYER_OF)
             else "advanced"
-            if parameter.role == STRUCTURE or parameter.refers_to
+            if parameter.role == STRUCTURE
             else "form"
         )
 

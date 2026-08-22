@@ -13,6 +13,8 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Any
 
+from fsme.content.vocabulary import A_LIST, A_MAPPING
+
 from .context import EffectContext
 from .errors import EffectRegistrationError, UnknownEffectError
 
@@ -31,15 +33,28 @@ class ParamKind(StrEnum):
     """
     What a card may write for one parameter.
 
-    Four kinds, deliberately coarse. This is not a type system; it is the
-    handful of distinctions somebody writing a card can actually get wrong, and
-    each one has to be sayable in a sentence to a person who has never read any
-    Python.
+    Deliberately coarse. This is not a type system; it is the handful of
+    distinctions somebody writing a card can actually get wrong, and each one
+    has to be sayable in a sentence to a person who has never read any Python.
     """
 
     WHOLE = "a whole number"
     TEXT = "text"
     FLAG = "true or false"
+
+    LIST = A_LIST
+    """
+    Several values rather than one.
+
+    Never read off a signature — an effect keeping its own structured data
+    annotates it ``Any``, because what is inside needs a game. This is the
+    outer shape, said at registration beside the guard that enforces it.
+    """
+
+    MAPPING = A_MAPPING
+    """
+    Named values rather than one value. Said the same way and for the reason.
+    """
 
     OPEN = "anything the engine can only judge during a game"
     """
@@ -75,6 +90,16 @@ class ParamSpec:
     """
     Whether a card has to give this one. Nearly none are: `gain_coins` with no
     amount gains one.
+    """
+
+    default: Any = None
+    """
+    What the effect does when a card leaves this out.
+
+    Read off the signature like everything else here, and meaningful only when
+    ``required`` is false. A form that cannot say what a blank box means is a
+    form that makes people guess: "how many cents" left empty is one cent, not
+    none, and nothing but the handler knows that.
     """
 
     nullable: bool = False
@@ -119,6 +144,25 @@ class ParamSpec:
     unless: str = ""
     """
     Another parameter that makes this one meaningless.
+    """
+
+    unless_when: tuple[Any, ...] = ()
+    """
+    The values of ``unless`` that actually make this one meaningless.
+
+    Empty means any value at all. Named where the handler reads one particular
+    value, because a form that greys out a field the effect would have read is
+    as wrong as one that offers a field it will not.
+    """
+
+    refers_to: str = ""
+    """
+    What this parameter names, when it names a player or a card rather than
+    carrying a value — ``players`` or ``cards``.
+
+    Declared because nothing else can tell: a handler taking ``to: Any`` and
+    one taking ``card: Any`` look the same, and one is a seat number a card
+    writes and the other is a card the engine hands over.
     """
 
     def wants(self) -> str:
@@ -168,6 +212,11 @@ def parameters_of(handler: EffectHandler) -> dict[str, ParamSpec]:
             name=name,
             kind=_KINDS.get(written.removesuffix(" | None"), ParamKind.OPEN),
             required=parameter.default is inspect.Parameter.empty,
+            default=(
+                None
+                if parameter.default is inspect.Parameter.empty
+                else parameter.default
+            ),
             nullable=written.endswith("| None"),
         )
 
@@ -294,7 +343,10 @@ class EffectRegistry:
         asks: Mapping[str, str] | None = None,
         needs: Sequence[str] = (),
         roles: Mapping[str, str] | None = None,
+        picks: Mapping[str, str] | None = None,
+        holds: Mapping[str, str] | None = None,
         unless: Mapping[str, str] | None = None,
+        unless_when: Mapping[str, Sequence[Any]] | None = None,
     ) -> EffectSpec:
         """
         Register an effect implementation.
@@ -340,9 +392,31 @@ class EffectRegistry:
                 described, parameter, name, role=role
             )
 
+        for parameter, shaped in (holds or {}).items():
+            # The outer shape of a parameter the effect keeps as written. What
+            # is inside it needs a game; that it is a list, or a set of named
+            # values, does not — and the handler raises on anything else, which
+            # makes load time the right place to say so.
+            described[parameter] = _narrow(
+                described, parameter, name, kind=shaped
+            )
+
+        for parameter, names in (picks or {}).items():
+            # What a parameter naming somebody names. The role follows from it
+            # — a parameter that names a player is not a box anybody types in —
+            # so this is said once and `role` is left to work itself out.
+            described[parameter] = _narrow(
+                described, parameter, name, refers_to=names
+            )
+
         for parameter, other in (unless or {}).items():
             described[parameter] = _narrow(
                 described, parameter, name, unless=other
+            )
+
+        for parameter, moot in (unless_when or {}).items():
+            described[parameter] = _narrow(
+                described, parameter, name, unless_when=tuple(moot)
             )
 
         for parameter, question in (asks or {}).items():
@@ -441,8 +515,11 @@ def _narrow(
     least: int | None = None,
     asks: str | None = None,
     required: bool | None = None,
+    kind: str | None = None,
     role: str | None = None,
     unless: str | None = None,
+    unless_when: tuple[Any, ...] | None = None,
+    refers_to: str | None = None,
 ) -> ParamSpec:
     """
     Add a domain, a floor or a label to a parameter the handler declares.
@@ -464,12 +541,17 @@ def _narrow(
 
     return replace(
         known,
+        kind=ParamKind(kind) if kind is not None else known.kind,
         values=tuple(values) if values is not None else known.values,
         least=least if least is not None else known.least,
         asks=asks if asks is not None else known.asks,
         required=required if required is not None else known.required,
         role=role if role is not None else known.role,
         unless=unless if unless is not None else known.unless,
+        unless_when=(
+            unless_when if unless_when is not None else known.unless_when
+        ),
+        refers_to=refers_to if refers_to is not None else known.refers_to,
     )
 
 

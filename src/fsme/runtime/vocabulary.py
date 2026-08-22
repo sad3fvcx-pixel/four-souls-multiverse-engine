@@ -17,6 +17,10 @@ from types import MappingProxyType
 from fsme.cards.definition import Ability, Static
 from fsme.content import Vocabulary
 from fsme.content.vocabulary import (
+    BY_ENGINE,
+    BY_PLAYER_OF,
+    CARDS,
+    PLAYERS,
     STRUCTURE,
     UNCHECKED,
     EffectShape,
@@ -122,6 +126,26 @@ def _node_shapes() -> Mapping[str, NodeShape]:
     )
 
 
+def _written_as(refers_to: str) -> str:
+    """
+    How a card names a player or a card for an *effect*.
+
+    The split is real and belongs here, where both sides are in view. A target
+    is resolved inside the ability and reads a bound group by its bare name; an
+    effect is handed players as seat numbers, so a card naming one writes the
+    single dynamic head that answers with a seat — and there is no head at all
+    that answers with a card, which is why an effect taking a card is taking
+    one the engine already has.
+    """
+    if refers_to == PLAYERS:
+        return BY_PLAYER_OF
+
+    if refers_to == CARDS:
+        return BY_ENGINE
+
+    return ""
+
+
 def _shape_of(spec: EffectSpec) -> EffectShape:
     """
     An effect, flattened to what a card file may say about it.
@@ -145,9 +169,13 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
                     nullable=param.nullable,
                     values=param.values,
                     least=param.least,
+                    default=param.default,
                     describes=param.asks,
                     role=param.role or (STRUCTURE if name in spec.literal else ""),
                     unless=param.unless,
+                    unless_when=param.unless_when,
+                    refers_to=param.refers_to,
+                    written_as=_written_as(param.refers_to),
                 )
                 for name, param in spec.params.items()
             }
