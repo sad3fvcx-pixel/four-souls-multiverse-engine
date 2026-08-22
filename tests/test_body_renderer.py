@@ -1,0 +1,416 @@
+"""
+The renderer learning the language the metadata now describes.
+
+Three primitives arrived: a body (a list of nodes of a known kind), a nested
+shape (one node of a named one), and the ability skeleton drawn from the
+ability's own shape. None of them knows the name of an effect, a condition, a
+target or a control node — what they know is the four kinds the metadata says
+a list may be of, and where each kind is described.
+
+The page is JavaScript, so what is tested is the two halves it sits between:
+the metadata it reads, and the card it produces.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from fsme.lab.desk.author import build_card, check_card
+from fsme.lab.desk.capabilities import catalogue
+from fsme.runtime.interpreter import CONTROL_NAMES
+
+PAGE = (
+    Path(__file__).resolve().parents[1]
+    / "src/fsme/lab/desk/static/author.html"
+)
+
+
+@pytest.fixture(scope="module")
+def can() -> dict[str, Any]:
+    return catalogue()
+
+
+@pytest.fixture(scope="module")
+def page() -> str:
+    return PAGE.read_text("utf-8")
+
+
+def a_card(ability: dict[str, Any]) -> dict[str, Any]:
+    return build_card(
+        {"set": "demo", "name": "Under Test", "kind": "loot", "ability": ability}
+    )
+
+
+def written(ability: dict[str, Any]) -> dict[str, Any]:
+    card = a_card(ability)
+
+    assert check_card(card) == [], check_card(card)
+
+    return card["abilities"][0]
+
+
+COIN = {"id": "gain_coins", "fields": {"amount": 1}}
+
+
+# ----------------------------------------------------------------------
+# 1. An ability is a structure the renderer can draw
+# ----------------------------------------------------------------------
+
+
+def test_the_ability_shape_reaches_the_page(can: dict[str, Any]) -> None:
+    shape = next(one for one in can["abilities"] if one["id"] == "ability")
+    fields = {f["id"]: f for f in shape["fields"]}
+
+    assert set(fields) == {
+        "trigger", "scope", "zone", "optional", "replacement",
+        "cost", "conditions", "targets", "effects", "description",
+    }
+
+
+def test_every_ability_field_lands_on_a_control_the_page_has(
+    can: dict[str, Any], page: str
+) -> None:
+    """
+    The skeleton is drawn by the ordinary field renderer, so every one of its
+    fields has to be somewhere that renderer dispatches to.
+    """
+    drawn = {"form", "group", "advanced", "given", "spelling", "body", "nested"}
+    shape = next(one for one in can["abilities"] if one["id"] == "ability")
+
+    for field in shape["fields"]:
+        assert field["shown"] in drawn, field["id"]
+
+    for where in ("body", "nested"):
+        assert f'f.shown === "{where}"' in page
+
+
+def test_the_page_draws_the_skeleton_from_the_shape_and_not_from_a_list(
+    page: str,
+) -> None:
+    assert "function abilityHtml()" in page
+    assert 'named(can.abilities, "ability")' in page
+    # The only field names the page mentions are the two the form above
+    # already asks for in its own words.
+    assert 'const FEATURED = ["trigger", "effects"]' in page
+
+
+def test_an_ability_with_the_rest_of_itself_filled_in() -> None:
+    ability = written(
+        {
+            "trigger": "on_activate",
+            "scope": "controller",
+            "optional": True,
+            "cost": {"coins": 2, "tap": True},
+            "conditions": [{"id": "player_alive", "fields": {}}],
+            "effects": [COIN],
+        }
+    )
+
+    assert ability["scope"] == "controller"
+    assert ability["optional"] is True
+    assert ability["cost"] == {"tap": True, "coins": 2}
+    assert ability["conditions"] == ["player_alive"]
+
+
+# ----------------------------------------------------------------------
+# 2. A body is a list, and a list keeps its order
+# ----------------------------------------------------------------------
+
+
+def test_the_page_has_one_body_renderer_and_it_is_generic(page: str) -> None:
+    assert "function bodyHtml(kind, list, path)" in page
+    assert "function nodeHtml(kind, node, path)" in page
+    # The four kinds, read off the metadata rather than off any node's name.
+    for kind in ("step", "condition", "target", "mode"):
+        assert f"{kind}:" in page.split("const KINDS = {")[1][:400]
+
+
+def test_a_body_keeps_the_order_it_was_given() -> None:
+    ability = written(
+        {
+            "trigger": "on_play",
+            "effects": [
+                {"id": "roll_dice", "fields": {"sides": 6}},
+                {"id": "gain_coins", "fields": {"amount": 1}},
+                {"id": "lose_coins", "fields": {"amount": 2}},
+            ],
+        }
+    )
+
+    assert [one["effect"] for one in ability["effects"]] == [
+        "roll_dice",
+        "gain_coins",
+        "lose_coins",
+    ]
+
+
+def test_the_page_can_add_remove_and_reorder(page: str) -> None:
+    for name in ("addNode", "dropNode", "moveNode", "setNode"):
+        assert f"function {name}(" in page
+
+
+def test_a_body_inside_a_body_is_the_same_body() -> None:
+    """
+    A branch's `then` is a list of things that happen, and so is the ability's
+    own list. One component draws both, which is what makes depth free.
+    """
+    ability = written(
+        {
+            "trigger": "on_play",
+            "effects": [
+                {
+                    "id": "if",
+                    "fields": {
+                        "if": [{"id": "player_alive", "fields": {}}],
+                        "then": [
+                            {
+                                "id": "if",
+                                "fields": {
+                                    "if": [{"id": "dice_even", "fields": {}}],
+                                    "then": [COIN],
+                                },
+                            }
+                        ],
+                    },
+                }
+            ],
+        }
+    )
+    outer = ability["effects"][0]
+
+    assert outer["if"] == ["player_alive"]
+    assert outer["then"][0]["if"] == ["dice_even"]
+    assert outer["then"][0]["then"] == [{"effect": "gain_coins", "amount": 1}]
+
+
+def test_a_body_of_conditions_and_a_body_of_targets_are_the_same_component(
+    page: str,
+) -> None:
+    assert page.count("function bodyHtml(") == 1
+
+
+# ----------------------------------------------------------------------
+# 3. A nested shape is drawn by asking the metadata what is in it
+# ----------------------------------------------------------------------
+
+
+def test_the_page_asks_the_metadata_what_a_cost_holds(page: str) -> None:
+    assert "function nestedHtml(field, values, path)" in page
+    assert "field.shaped_like" in page
+    assert "cost" not in page.split("function nestedHtml")[1][:400]
+
+
+def test_a_cost_is_written_out_of_its_own_shape() -> None:
+    ability = written(
+        {
+            "trigger": "on_activate",
+            "cost": {"counters": {"counter": "egg", "amount": 2}},
+            "effects": [COIN],
+        }
+    )
+
+    assert ability["cost"] == {"counters": {"counter": "egg", "amount": 2}}
+
+
+def test_a_mode_is_a_nested_shape_inside_a_body() -> None:
+    ability = written(
+        {
+            "trigger": "on_play",
+            "effects": [
+                {
+                    "id": "choose",
+                    "fields": {
+                        "modes": [
+                            {"fields": {"description": "A cent", "effects": [COIN]}},
+                            {
+                                "fields": {
+                                    "description": "Two cents",
+                                    "effects": [
+                                        {"id": "gain_coins", "fields": {"amount": 2}}
+                                    ],
+                                }
+                            },
+                        ]
+                    },
+                }
+            ],
+        }
+    )
+    modes = ability["effects"][0]["modes"]
+
+    assert [one["description"] for one in modes] == ["A cent", "Two cents"]
+    assert modes[1]["effects"] == [{"effect": "gain_coins", "amount": 2}]
+
+
+# ----------------------------------------------------------------------
+# 4. What was already there is unchanged
+# ----------------------------------------------------------------------
+
+
+def test_an_ordinary_effect_still_writes_what_it_always_did() -> None:
+    ability = written({"trigger": "on_play", "effects": [COIN]})
+
+    assert ability == {
+        "trigger": "on_play",
+        "effects": [{"effect": "gain_coins", "amount": 1}],
+    }
+
+
+def test_aiming_still_binds_a_group_and_points_at_it() -> None:
+    ability = written(
+        {
+            "trigger": "on_play",
+            "effects": [
+                {
+                    "id": "deal_damage",
+                    "fields": {"amount": 1},
+                    "aim": "target_player",
+                    "aim_fields": {"exclude_controller": True},
+                }
+            ],
+        }
+    )
+
+    assert ability["effects"][0]["target"] == "chosen_1"
+    assert ability["targets"] == [
+        {"target_player": {"exclude_controller": True, "as": "chosen_1"}}
+    ]
+
+
+def test_the_field_renderer_still_dispatches_the_way_it_did(page: str) -> None:
+    for where in ("spelling", "given", "group", "advanced"):
+        assert f'f.shown === "{where}"' in page
+
+    assert "function valueHtml(f, values, siblings, path)" in page
+
+
+def test_the_page_still_names_no_effect_of_its_own() -> None:
+    text = PAGE.read_text("utf-8")
+    can = catalogue()
+    allowed = {"self", "group", "player", "value", "card", "kind", "kinds",
+               "step", "mode", "cost", "ability", "static"}
+
+    named = sorted(
+        one["id"]
+        for group in ("effects", "conditions", "targets")
+        for one in can[group]
+        if one["id"] not in allowed and f'"{one["id"]}"' in text
+    )
+
+    assert named == []
+
+
+# ----------------------------------------------------------------------
+# 5. What cannot be drawn is said, not dropped
+# ----------------------------------------------------------------------
+
+
+def test_the_page_says_when_it_cannot_build_something(page: str) -> None:
+    assert "function unsupportedHtml(field)" in page
+    assert "the engine can do this" in page
+    assert "and this editor cannot build it yet" in page
+
+
+def test_a_body_of_a_kind_the_page_has_no_component_for_says_so(page: str) -> None:
+    assert "if (!KINDS[kind])" in page
+    assert "cannot build one yet" in page
+
+
+def test_whether_a_node_can_be_drawn_is_asked_of_the_metadata(page: str) -> None:
+    """
+    Not a list of names: a structure the page can draw is one whose every own
+    field lands somewhere this renderer has a control for.
+    """
+    assert "function drawable(node)" in page
+    assert "node.fields.every(f => DRAWS.includes(f.shown))" in page
+
+
+def test_the_metadata_says_which_shapes_are_things_that_happen(
+    can: dict[str, Any],
+) -> None:
+    """
+    A cost and a mode are described beside the control nodes and are not steps.
+    The page filters on the fact rather than on the names.
+    """
+    steps = {one["id"] for one in can["structures"] if one["a_step"]}
+
+    assert steps == set(CONTROL_NAMES)
+    assert {one["id"] for one in can["structures"] if not one["a_step"]} == {
+        "mode",
+        "worked_out",
+        "named_count",
+    }
+
+
+def test_every_control_node_is_offered_and_none_is_half_offered(
+    can: dict[str, Any],
+) -> None:
+    drawn = {"form", "group", "advanced", "given", "spelling", "body", "nested"}
+
+    for one in can["structures"]:
+        if not one["a_step"]:
+            continue
+
+        for field in one["fields"]:
+            assert field["shown"] in drawn, f"{one['id']}.{field['id']}"
+
+
+# ----------------------------------------------------------------------
+# 6. The card that comes out is the card that always came out
+# ----------------------------------------------------------------------
+
+
+def test_an_unfinished_control_node_is_refused_and_not_saved() -> None:
+    for node in ("if", "may", "choose", "repeat", "sequence"):
+        card = a_card({"trigger": "on_play", "effects": [{"id": node, "fields": {}}]})
+
+        assert check_card(card), node
+        assert "nothing to do" in check_card(card)[0], node
+
+
+def test_a_control_node_keeps_the_key_that_makes_it_one() -> None:
+    """
+    A card being built may be unfinished; it may not be a node the engine
+    cannot recognise.
+    """
+    for node, empty in (("if", []), ("may", []), ("repeat", 0),
+                        ("for_each", ""), ("stop", True)):
+        card = a_card({"trigger": "on_play", "effects": [{"id": node, "fields": {}}]})
+        written_node = card["abilities"][0]["effects"][0]
+
+        assert written_node[node] == empty, node
+
+
+def test_the_card_is_still_ordinary_content(tmp_path: Path) -> None:
+    import json
+
+    from fsme.api import load_content
+
+    card = a_card(
+        {
+            "trigger": "on_play",
+            "effects": [
+                {
+                    "id": "if",
+                    "fields": {
+                        "if": [{"id": "player_alive", "fields": {}}],
+                        "then": [COIN],
+                    },
+                }
+            ],
+        }
+    )
+    where = tmp_path / "demo"
+    (where / "cards").mkdir(parents=True)
+    (where / "manifest.json").write_text(
+        json.dumps({"id": "demo", "name": "Demo", "version": "1.0.0",
+                    "schema_version": "1"})
+    )
+    (where / "cards" / "one.json").write_text(json.dumps({"cards": [card]}))
+
+    library = load_content([tmp_path])
+
+    assert library.registry().get(card["id"]) is not None

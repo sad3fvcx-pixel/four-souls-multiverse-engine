@@ -850,13 +850,13 @@ def test_a_second_spelling_is_still_read_from_a_card_that_writes_it() -> None:
     card = a_card(
         [
             {
-                "branch": {
-                    "condition": {
-                        "id": "player_has_coins",
-                        "fields": {"amount": 3},
-                    },
+                "id": "if",
+                "fields": {
+                    "if": [
+                        {"id": "player_has_coins", "fields": {"amount": 3}}
+                    ],
                     "then": [{"id": "gain_coins", "fields": {"amount": 1}}],
-                }
+                },
             }
         ]
     )
@@ -877,11 +877,12 @@ def test_a_branch_with_nothing_in_it_is_refused() -> None:
     empty = a_card(
         [
             {
-                "branch": {
-                    "condition": {"id": "player_alive", "fields": {}},
+                "id": "if",
+                "fields": {
+                    "if": [{"id": "player_alive", "fields": {}}],
                     "then": [],
                     "else": [],
-                }
+                },
             }
         ]
     )
@@ -893,10 +894,11 @@ def test_a_branch_with_nothing_in_it_is_refused() -> None:
     filled = a_card(
         [
             {
-                "branch": {
-                    "condition": {"id": "player_alive", "fields": {}},
+                "id": "if",
+                "fields": {
+                    "if": [{"id": "player_alive", "fields": {}}],
                     "then": [{"id": "gain_coins", "fields": {"amount": 1}}],
-                }
+                },
             }
         ]
     )

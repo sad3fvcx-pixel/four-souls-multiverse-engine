@@ -22,7 +22,16 @@ from pathlib import Path
 from typing import Any
 
 from fsme.cards import validate_card
-from fsme.content.vocabulary import BY_BINDING, BY_PLAYER_OF
+from fsme.content.vocabulary import (
+    BY_BINDING,
+    BY_PLAYER_OF,
+    CONDITION,
+    COST,
+    MODE,
+    NAMED_COUNT,
+    TARGET,
+    WORKED_OUT,
+)
 from fsme.content.workspace import (
     card_identifier,
     identifier_for,
@@ -414,63 +423,230 @@ def build_card(described: Any) -> dict[str, Any]:
 
 def _ability(described: Any) -> dict[str, Any] | None:
     """
-    One ability, from a trigger and a list of things that happen.
+    One ability, written out of the shape the engine describes it with.
 
-    An effect that says what it acts on gets that written twice: once as a
-    thing the ability picks out, and once as the effect pointing at it. The
-    author says it once — "to a player somebody picks" — and never sees the
-    name in between.
+    Every field the ability node has, filled from whatever the page collected
+    under the same name — nothing here knows that an ability has a trigger, a
+    scope or a cost, because the shape says so and this reads the shape.
+
+    The one thing added on top is the pair of halves an aim becomes. An effect
+    that says what it acts on gets that written twice: once as a thing the
+    ability picks out, and once as the effect pointing at it. The author says
+    it once and never sees the name in between.
     """
     if not isinstance(described, dict):
         return None
 
     aimed: list[dict[str, Any]] = []
-    effects = _effects(described.get("effects", ()), aimed)
+    shape = engine_vocabulary().node_shape("ability")
+    ability = _written_node(shape, described, aimed)
 
-    if not effects:
+    if not ability.get("effects"):
         return None
 
-    ability: dict[str, Any] = {
-        "trigger": str(described.get("trigger", "on_play")),
-        "effects": effects,
-    }
+    ability.setdefault("trigger", "on_play")
 
-    targets = _targets(described.get("targets", ())) + aimed
-
-    if targets:
-        ability["targets"] = targets
+    if aimed:
+        ability["targets"] = list(ability.get("targets", ())) + aimed
 
     return ability
 
 
-def _targets(described: Any) -> list[dict[str, Any]]:
+def _written_node(
+    shape: Any,
+    described: Any,
+    aimed: list[dict[str, Any]] | None,
+) -> dict[str, Any]:
     """
-    The things an ability picks out before it does anything.
+    One node of the language, written out of the shape describing it.
 
-    Each gets a name so that effects can point at it. The author never types
-    that name — the page shows them "the player chosen above" and this writes
-    the `as` behind it.
+    Three sorts of field, and the shape says which each one is: a list of more
+    of the language, one nested node, or a value. Nothing below is about
+    abilities, or about ``if``, or about any effect — the same function writes
+    an ability, a branch, a mode and a cost, because they are the same kind of
+    thing described four times.
+    """
+    if not isinstance(described, dict) or shape is None:
+        return {}
+
+    given = described.get("fields", described)
+    picked = described.get("groups", {})
+    written: dict[str, Any] = {}
+
+    for name, parameter in shape.params.items():
+        if parameter.instead_of or parameter.written_as == BY_BINDING:
+            # A second spelling of a question asked elsewhere, or a name this
+            # writes for itself further down.
+            continue
+
+        if parameter.a_list_of:
+            body = _written_body(parameter.a_list_of, given.get(name), aimed)
+
+            if body or parameter.names_the_node:
+                written[name] = body
+
+            continue
+
+        if parameter.shaped_like in _NESTED_SHAPES:
+            inside = _written_node(
+                engine_vocabulary().node_shape(parameter.shaped_like),
+                {"fields": given.get(name) or {}},
+                aimed,
+            )
+
+            if inside:
+                written[name] = inside
+
+            continue
+
+        value = given.get(name)
+
+        if value not in (None, "", [], {}):
+            written[name] = value
+
+    written.update(_given(shape, {"fields": {}, "groups": picked}, aimed))
+
+    return written
+
+
+_NESTED_SHAPES = (COST, NAMED_COUNT, WORKED_OUT, MODE)
+"""
+The named shapes a field may hold one of, as opposed to a target.
+
+A target is nested too and is written quite differently — it is bound by the
+ability and pointed at — so it goes through `_pick_out` and not through here.
+"""
+
+
+def _written_body(
+    kind: str,
+    described: Any,
+    aimed: list[dict[str, Any]] | None,
+) -> list[Any]:
+    """
+    A list of nodes of one kind, written out.
+
+    Four kinds, and each of them is a thing the catalogue already describes,
+    so the only thing decided here is which description to look the node up in.
     """
     if not isinstance(described, (list, tuple)):
         return []
 
-    written: list[dict[str, Any]] = []
+    written: list[Any] = []
 
-    for index, one in enumerate(described):
-        if not isinstance(one, dict):
-            continue
+    for one in described:
+        node = _written_one(kind, one, aimed)
 
-        target = str(one.get("id", ""))
-
-        if not target:
-            continue
-
-        body: dict[str, Any] = dict(one.get("fields", {}) or {})
-        body["as"] = str(one.get("as") or f"chosen_{index + 1}")
-
-        written.append({target: body})
+        if node is not None:
+            written.append(node)
 
     return written
+
+
+def _written_one(kind: str, described: Any, aimed: Any) -> Any:
+    """
+    One node of one kind.
+    """
+    if not isinstance(described, dict):
+        return described if isinstance(described, str) else None
+
+    if kind == MODE:
+        return _written_node(engine_vocabulary().node_shape(MODE), described, aimed)
+
+    name = str(described.get("id", ""))
+
+    if not name:
+        return None
+
+    vocabulary = engine_vocabulary()
+
+    if kind == CONDITION:
+        body = _given(vocabulary.condition_shape(name), described, aimed)
+
+        return {name: body} if body else name
+
+    if kind == TARGET:
+        body = _given(vocabulary.target_shape(name), described, aimed)
+        body["as"] = str(described.get("as") or f"chosen_{id(described) % 997}")
+
+        return {name: body}
+
+    return _written_step(name, described, aimed)
+
+
+def _written_step(name: str, described: Any, aimed: Any) -> Any:
+    """
+    One thing that happens: an effect, or a control node holding more of them.
+
+    Which it is comes from whether the engine describes it as an effect or as a
+    node — the same question the interpreter asks when it reads the card.
+    """
+    vocabulary = engine_vocabulary()
+    control = vocabulary.node_shape(name)
+
+    if control is not None:
+        inside = _written_node(control, described, aimed)
+        head = next(
+            (
+                parameter
+                for parameter in control.params.values()
+                if parameter.names_the_node
+            ),
+            None,
+        )
+
+        if head is not None:
+            # The key that makes this node what it is has to be there, whether
+            # or not anybody filled it in. What "nothing yet" looks like is the
+            # head's own kind: an empty body, a nought, a name not yet given.
+            inside.setdefault(head.name, _nothing_yet(head))
+
+        return inside
+
+    node: dict[str, Any] = {"effect": name}
+    node.update(_given(vocabulary.shape(name), described, aimed))
+
+    pointed = str(described.get("target", "") or "")
+    aim = str(described.get("aim", "") or "")
+
+    if aim and aimed is not None:
+        pointed = _pick_out(
+            aim,
+            _given(
+                vocabulary.target_shape(aim),
+                {
+                    "fields": described.get("aim_fields", {}),
+                    "groups": described.get("aim_groups", {}),
+                },
+                aimed,
+            ),
+            aimed,
+        )
+
+    if pointed:
+        node["target"] = pointed
+
+    return node
+
+
+def _nothing_yet(parameter: Any) -> Any:
+    """
+    What an unanswered key of this kind looks like written down.
+
+    A card being built is allowed to be unfinished; what it may not be is a
+    node the engine cannot recognise. So the key goes in with the emptiest
+    value its own kind admits, and the checker says what is still missing.
+    """
+    if parameter.a_list_of:
+        return []
+
+    if parameter.kind == "a whole number":
+        return 0
+
+    if parameter.shaped_like or parameter.kind == "text":
+        return ""
+
+    return True
 
 
 def _given(
@@ -594,66 +770,6 @@ def _settled(parameter: Any, shape: Any, written: Mapping[str, Any]) -> bool:
     return now not in (None, "", False)
 
 
-def _effects(described: Any, aimed: list[dict[str, Any]] | None = None) -> list[Any]:
-    """
-    The list of things that happen, in order.
-
-    A branch is one of them — "depending on the roll" is a thing that happens
-    as much as "gain 3 cents" is, and a person building a card thinks of it
-    that way even though the engine calls it a control node.
-
-    ``aimed`` collects the things this ability has to pick out before any of it
-    runs. An effect saying it acts on "a player somebody picks" needs the
-    ability to choose one first, and the two halves are written here so that
-    the author writes neither.
-    """
-    if not isinstance(described, (list, tuple)):
-        return []
-
-    written: list[Any] = []
-
-    for one in described:
-        if not isinstance(one, dict):
-            continue
-
-        if "branch" in one:
-            written.append(_branch(one["branch"], aimed))
-
-            continue
-
-        effect = str(one.get("id", ""))
-
-        if not effect:
-            continue
-
-        node: dict[str, Any] = {"effect": effect}
-        node.update(_given(engine_vocabulary().shape(effect), one, aimed))
-
-        pointed = str(one.get("target", "") or "")
-        aim = str(one.get("aim", "") or "")
-
-        if aim and aimed is not None:
-            pointed = _pick_out(
-                aim,
-                _given(
-                    engine_vocabulary().target_shape(aim),
-                    {
-                        "fields": one.get("aim_fields", {}),
-                        "groups": one.get("aim_groups", {}),
-                    },
-                    aimed,
-                ),
-                aimed,
-            )
-
-        if pointed:
-            node["target"] = pointed
-
-        written.append(node)
-
-    return written
-
-
 def _pick_out(
     target: str,
     fields: Any,
@@ -684,36 +800,6 @@ def _pick_out(
 
 def _without_name(body: Any) -> dict[str, Any]:
     return {k: v for k, v in dict(body).items() if k != "as"}
-
-
-def _branch(described: Any, aimed: list[dict[str, Any]] | None = None) -> dict[str, Any]:
-    """
-    "Depending on …" — one condition, and what happens either way.
-    """
-    if not isinstance(described, dict):
-        raise AuthorError("A branch needs something to depend on.")
-
-    condition = described.get("condition")
-
-    if not isinstance(condition, dict) or not condition.get("id"):
-        raise AuthorError("Say what the branch depends on.")
-
-    asked = str(condition["id"])
-    fields = _given(
-        engine_vocabulary().condition_shape(asked), condition, aimed
-    )
-
-    node: dict[str, Any] = {
-        "if": [{asked: fields} if fields else asked],
-        "then": _effects(described.get("then", ()), aimed),
-    }
-
-    otherwise = _effects(described.get("else", ()), aimed)
-
-    if otherwise:
-        node["else"] = otherwise
-
-    return node
 
 
 def _written_fields(fields: Any) -> dict[str, Any]:

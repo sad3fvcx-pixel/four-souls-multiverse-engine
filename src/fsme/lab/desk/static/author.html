@@ -51,6 +51,11 @@
  select[multiple] { height:auto; }
  :disabled { opacity:.45; }
  p.problem:empty { display:none; }
+ .body { border-left:2px solid var(--line); padding-left:.7rem; margin:.3rem 0 .6rem; }
+ .node { border:1px solid var(--line); border-radius:8px; padding:.6rem .7rem;
+         margin:.5rem 0; }
+ .node > .head { display:flex; gap:.4rem; align-items:center; }
+ .node > .head select { flex:1; }
 </style>
 
 <div id="page"></div>
@@ -178,11 +183,13 @@ function editor(problems = [], moments = []) {
     </select>
 
     <h2>What happens?</h2>
-    <div id="steps">${state.ability.effects.map(stepHtml).join("")}</div>
-    <p class="row">
-      <button onclick="addStep()">＋ something happens</button>
-      <button onclick="addBranch()">＋ depending on something</button>
-    </p>
+    <div id="steps">${bodyHtml("step", state.ability.effects,
+                               "state.ability.effects")}</div>
+
+    <h2>More about this ability</h2>
+    <p class="lead">Everything else an ability may say. Most cards say none of
+      it, and the engine fills in whatever nobody writes.</p>
+    <div id="ability">${abilityHtml()}</div>
 
     <hr>
     <div class="row">
@@ -199,45 +206,124 @@ function editor(problems = [], moments = []) {
   face();
 }
 
-function stepHtml(step, index) {
-  if (step.branch) {
-    const c = step.branch.condition || {};
-    return `<div class="step">
-      <div class="head"><b>Depending on…</b>
-        <button onclick="dropStep(${index})">remove</button></div>
-      <select onchange="setCondition(${index}, this.value)">
-        <option value="">— choose —</option>
-        ${can.conditions.map(x => `<option value="${x.id}"
-          ${x.id === c.id ? "selected" : ""}>${esc(x.about)}</option>`).join("")}
-      </select>
-      ${fieldsHtml(conditionFields(c.id), c.fields, c.groups,
-                   `state.ability.effects[${index}].branch.condition.fields`,
-                   `state.ability.effects[${index}].branch.condition.groups`)}
-      <p class="muted">if it is true</p>
-      ${innerHtml(index, "then")}
-      <p class="muted">otherwise</p>
-      ${innerHtml(index, "else")}
-    </div>`;
+// The rest of the ability, drawn from the shape the engine describes it with.
+// Nothing here names a field: what an ability may say is what the metadata
+// says it may say, and the two below are only the ones the form above already
+// asks for in its own words.
+const FEATURED = ["trigger", "effects"];
+
+function abilityHtml() {
+  const shape = named(can.abilities, "ability");
+  if (!shape) return "";
+  const rest = shape.fields.filter(f => !FEATURED.includes(f.id));
+  return fieldsHtml(rest, state.ability, state.ability.groups,
+                    "state.ability", "state.ability.groups");
+}
+
+
+// ------------------------------------------------------- more of the language
+//
+// Three primitives, and between them they draw everything the metadata
+// describes that is not a single answer.
+//
+//   a body    — a list of nodes of a known kind. Add, remove, keep the order.
+//   a node    — one of those, whatever kind it is.
+//   a nested  — one node of a named shape, drawn by the ordinary field renderer.
+//
+// None of them knows the name of an effect, a condition, a target or a control
+// node. What they know is the four kinds the metadata says a list may be of,
+// and where to look each kind up.
+
+// Where a node of each kind is described, and what it is called on the page.
+const KINDS = {
+  step:      { of: () => can.effects.concat(
+                 can.structures.filter(x => x.a_step && drawable(x))),
+               says: "＋ something happens" },
+  condition: { of: () => can.conditions, says: "＋ something must be true" },
+  target:    { of: () => can.targets,    says: "＋ something to pick out" },
+  mode:      { of: () => null,           says: "＋ another option" },
+};
+
+// A structure the page can draw is one whose every own field lands somewhere
+// this renderer has a control for. Nothing is listed by name.
+function drawable(node) {
+  return node.fields.every(f => DRAWS.includes(f.shown));
+}
+const DRAWS = ["form", "group", "advanced", "given", "spelling", "body", "nested"];
+
+function bodyHtml(kind, list, path) {
+  // A kind this renderer has no component for is said, never drawn as a box.
+  if (!KINDS[kind]) {
+    return `<p class="muted">The engine describes this as a list of
+      ${esc(kind)} nodes, and this editor cannot build one yet.</p>`;
   }
-  const chosen = can.effects.find(e => e.id === step.id);
-  return `<div class="step">
-    <div class="head">
-      <select onchange="setEffect(${index}, this.value)">
-        <option value="">— choose what happens —</option>
-        ${can.effects.filter(e => e.common).map(e => `<option value="${e.id}"
-          ${e.id === step.id ? "selected" : ""}>${esc(e.about)}</option>`).join("")}
-        <optgroup label="everything else">
-        ${can.effects.filter(e => !e.common).map(e => `<option value="${e.id}"
-          ${e.id === step.id ? "selected" : ""}>${esc(e.about)}</option>`).join("")}
-        </optgroup>
-      </select>
-      <button onclick="dropStep(${index})">remove</button>
-    </div>
-    ${fieldsHtml(chosen ? chosen.fields : [], step.fields, step.groups,
-                 `state.ability.effects[${index}].fields`,
-                 `state.ability.effects[${index}].groups`)}
-    ${aimHtml(chosen, step, `state.ability.effects[${index}]`)}
+  const rows = (list || []).map((node, i) =>
+    `<div class="node">
+       <div class="head">
+         ${chooserHtml(kind, node, path, i)}
+         <button onclick="dropNode('${path}',${i})">remove</button>
+         ${i ? `<button onclick="moveNode('${path}',${i},-1)">↑</button>` : ""}
+       </div>
+       ${nodeHtml(kind, node, `${path}[${i}]`)}
+     </div>`).join("");
+  return `<div class="body">${rows}
+    <button onclick="addNode('${kind}','${path}')">${esc(KINDS[kind].says)}</button>
   </div>`;
+}
+
+// The list a node of this kind is chosen from — the engine's own, in its own
+// words. A mode is not chosen from anything: a mode is a mode.
+function chooserHtml(kind, node, path, index) {
+  const offered = KINDS[kind].of();
+  if (!offered) return "";
+  const one = (x) => `<option value="${x.id}" ${x.id === node.id ? "selected" : ""}
+      >${esc(x.about)}</option>`;
+  const common = offered.filter(x => x.common);
+  const rest = offered.filter(x => !x.common);
+  return `<select onchange="setNode('${kind}','${path}',${index},this.value)">
+      <option value="">— choose —</option>
+      ${common.map(one).join("")}
+      ${common.length
+        ? `<optgroup label="everything else">${rest.map(one).join("")}</optgroup>`
+        : rest.map(one).join("")}
+    </select>`;
+}
+
+function nodeHtml(kind, node, path) {
+  if (kind === "mode") return shapeHtml(named(can.structures, "mode"), node, path);
+  const shape = named(KINDS[kind].of() || [], node.id);
+  if (!shape) return "";
+  return shapeHtml(shape, node, path)
+       + (kind === "step" ? aimHtml(shape, node, path) : "");
+}
+
+// One shape's fields, wherever they are being drawn.
+function shapeHtml(shape, holder, path) {
+  return fieldsHtml(shape.fields, holder.fields, holder.groups,
+                    `${path}.fields`, `${path}.groups`);
+}
+
+// One node of a named shape — a cost, a mode, a way of working a number out.
+// The renderer does not know what is in one: it asks the metadata.
+function nestedHtml(field, values, path) {
+  const shape = named(can.structures.concat(can.abilities), field.shaped_like);
+  if (!shape) return unsupportedHtml(field);
+  const inside = values[field.id] || {};
+  return `<details class="deep" open>
+    <summary>${esc(field.about)}${needed(field)}</summary>
+    <div class="nested">${fieldsHtml(shape.fields, inside, inside.groups,
+        `${path}.${field.id}`, `${path}.${field.id}.groups`)}</div>
+  </details>`;
+}
+
+const named = (list, id) => list.find(x => x.id === id);
+
+// Said, never drawn as a box. A capability the engine has and this editor
+// cannot yet build is a sentence saying so — an empty field pretending to be
+// the answer is worse than no field at all.
+function unsupportedHtml(field) {
+  return `<p class="muted"><b>${esc(field.about)}</b> — the engine can do this
+    and this editor cannot build it yet.</p>`;
 }
 
 // "Who does this happen to?" — offered only for effects that act on
@@ -265,33 +351,6 @@ function aimHtml(chosen, step, path) {
         `${path}.aim_fields`, `${path}.aim_groups`) : ""}`;
 }
 
-function innerHtml(index, branch) {
-  const list = state.ability.effects[index].branch[branch] || [];
-  return `<div>${list.map((step, i) => {
-    const chosen = can.effects.find(e => e.id === step.id);
-    return `<div class="step">
-      <div class="head">
-        <select onchange="setInner(${index},'${branch}',${i},this.value)">
-          <option value="">— choose —</option>
-          ${can.effects.filter(e => e.common).map(e => `<option value="${e.id}"
-            ${e.id === step.id ? "selected" : ""}>${esc(e.about)}</option>`).join("")}
-          <optgroup label="everything else">
-          ${can.effects.filter(e => !e.common).map(e => `<option value="${e.id}"
-            ${e.id === step.id ? "selected" : ""}>${esc(e.about)}</option>`).join("")}
-          </optgroup>
-        </select>
-        <button onclick="dropInner(${index},'${branch}',${i})">remove</button>
-      </div>
-      ${fieldsHtml(chosen ? chosen.fields : [], step.fields, step.groups,
-        `state.ability.effects[${index}].branch.${branch}[${i}].fields`,
-        `state.ability.effects[${index}].branch.${branch}[${i}].groups`)}
-      ${aimHtml(chosen, step,
-        `state.ability.effects[${index}].branch.${branch}[${i}]`)}
-    </div>`;
-  }).join("")}
-  <button onclick="addInner(${index},'${branch}')">＋ add</button></div>`;
-}
-
 // ------------------------------------------------------------- the fields
 //
 // One renderer for every parameter the engine has, driven entirely by what
@@ -315,6 +374,10 @@ function fieldsHtml(fields, values, groups, path, groupPath) {
     if (f.shown === "spelling") return "";
     if (f.shown === "given") return givenHtml(f);
     if (f.shown === "group") return groupHtml(f, groups, groupPath);
+    // More of the language: a list of nodes, or one node of a named shape.
+    if (f.shown === "body") return `<label>${esc(f.about)}${needed(f)}</label>`
+      + bodyHtml(f.a_list_of, values[f.id], `${path}.${f.id}`);
+    if (f.shown === "nested") return nestedHtml(f, values, path);
     if (f.shown === "advanced") return structureHtml(f, values, path);
     return valueHtml(f, values, list, path);
   }).join("");
@@ -468,7 +531,8 @@ function blank(f, value) {
 // What the effect does when the box is left empty, in the engine's own words.
 function fallback(f) {
   if (f.required) return "— nothing yet —";
-  if (f.otherwise === null || f.otherwise === undefined) return "— leave it out —";
+  if (f.otherwise === null || f.otherwise === undefined || f.otherwise === "")
+    return "— leave it out —";
   return `— ${f.otherwise} —`;
 }
 function note(path, id) {
@@ -492,10 +556,13 @@ function conditionFields(id) {
 // script-scoped binding and not a property of anything, so starting at the
 // window used to reach a second object of the same name — every answer landed
 // in it, and the card kept none of them.
-const at = (path) => {
+const at = (path, empty) => {
   const steps = path.split(/[.\[\]]+/).filter(Boolean);
   if (steps.shift() !== "state") throw new Error("not a path into the card: " + path);
-  return steps.reduce((o, k) => (o[k] ??= {}), state);
+  const last = steps.pop();
+  const holder = steps.reduce((o, k) => (o[k] ??= {}), state);
+  holder[last] ??= empty === undefined ? {} : empty;
+  return holder[last];
 };
 
 function setField(path, key, value, redraw) {
@@ -553,39 +620,31 @@ function told(path, key, value) {
   said.textContent = empty && said.dataset.needed ? "This one has to be filled in." : "";
 }
 
-function setEffect(i, id) {
-  state.ability.effects[i] = { id, fields: {}, groups: {} }; editor();
-}
+// What an effect acts on. Chosen once and written twice — the ability binds a
+// group and the effect points at it — so choosing again starts the pair over.
 function setAim(path, id) {
   const step = at(path);
   if (id) { step.aim = id; step.aim_fields = {}; step.aim_groups = {}; }
   else { delete step.aim; delete step.aim_fields; delete step.aim_groups; }
   editor();
 }
-function setInner(i, branch, j, id) {
-  state.ability.effects[i].branch[branch][j] = { id, fields: {}, groups: {} };
+
+// A node of a known kind, made empty and filled in afterwards.
+function addNode(kind, path) {
+  const list = at(path, []);
+  list.push(kind === "mode" ? { fields: {}, groups: {} }
+                            : { id: "", fields: {}, groups: {} });
   editor();
 }
-function setCondition(i, id) {
-  state.ability.effects[i].branch.condition = { id, fields: {}, groups: {} };
+function dropNode(path, index) { at(path, []).splice(index, 1); editor(); }
+function moveNode(path, index, by) {
+  const list = at(path, []);
+  list.splice(index + by, 0, list.splice(index, 1)[0]);
   editor();
 }
-function addStep() {
-  state.ability.effects.push({ id: "", fields: {}, groups: {} }); editor();
-}
-function addBranch() {
-  state.ability.effects.push(
-    { branch: {
-        condition: { id: "", fields: {}, groups: {} }, then: [], else: [] } });
+function setNode(kind, path, index, id) {
+  at(path, [])[index] = { id, fields: {}, groups: {} };
   editor();
-}
-function addInner(i, branch) {
-  state.ability.effects[i].branch[branch].push({ id: "", fields: {}, groups: {} });
-  editor();
-}
-function dropStep(i) { state.ability.effects.splice(i, 1); editor(); }
-function dropInner(i, branch, j) {
-  state.ability.effects[i].branch[branch].splice(j, 1); editor();
 }
 
 // ------------------------------------------------------- the card's face

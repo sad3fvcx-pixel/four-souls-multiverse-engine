@@ -276,11 +276,12 @@ def test_the_harder_card_works_too(address: str) -> None:
             "effects": [
                 {"id": "roll_dice", "fields": {"sides": 6}},
                 {
-                    "branch": {
-                        "condition": {"id": "dice_greater", "fields": {"value": 3}},
+                    "id": "if",
+                    "fields": {
+                        "if": [{"id": "dice_greater", "fields": {"value": 3}}],
                         "then": [{"id": "gain_coins", "fields": {"amount": 4}}],
                         "else": [{"id": "lose_coins", "fields": {"amount": 1}}],
-                    }
+                    },
                 },
             ],
         },

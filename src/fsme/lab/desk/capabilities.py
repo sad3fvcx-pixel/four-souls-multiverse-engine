@@ -186,6 +186,11 @@ def _nodes(vocabulary: Any, names: Any) -> list[dict[str, Any]]:
                 "id": name,
                 "about": ABOUT_NODES.get(name, name.replace("_", " ")),
                 "bodies": list(shape.bodies),
+                # Whether a card may write this among the things that happen.
+                # A control node may; a cost, a mode and a way of working a
+                # number out are described here too and are not steps, and
+                # anything offering a list of steps has to be able to tell.
+                "a_step": name in CONTROL_NAMES,
                 "fields": _fields(shape),
             }
         )
