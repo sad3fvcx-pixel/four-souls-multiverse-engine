@@ -115,6 +115,38 @@ play loot cards, or pass. Everything else waits until the stack is empty.
 """
 
 
+def _zones_of(state_type: type) -> tuple[str, ...]:
+    """
+    The zones an ability may say it works from, read off the state it looks in.
+
+    ``_where_it_stands`` finds the zone by building nothing — it takes the word
+    the card wrote and asks the state for it — so the words that work are the
+    attributes that exist. Reading them here is the same fact rather than a
+    second copy of it, which is what stops a list from drifting away from the
+    lookup it describes. A zone the state does not have is an ability that
+    quietly never works.
+    """
+    from dataclasses import fields
+
+    from fsme.state import Zone
+
+    return tuple(
+        sorted(
+            field.name
+            for field in fields(state_type)
+            if Zone.__name__ in str(field.type)
+        )
+    )
+
+
+ABILITY_ZONES = _zones_of(GameState)
+"""
+Where an ability may say its card has to be standing.
+
+Empty means in play, which is not a zone and is why it is not in this list.
+"""
+
+
 ABILITY_SCOPES = ("self", "controller", "any")
 """
 The three answers ``in_scope`` gives, in the words a card writes them.

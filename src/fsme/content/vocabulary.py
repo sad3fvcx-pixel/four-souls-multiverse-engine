@@ -26,9 +26,11 @@ SWITCH = "switch"
 NAMES = "names"
 WHOM = "whom"
 STRUCTURE = "structure"
+BODY = "body"
+NESTED = "nested"
 OPEN = "open"
 
-ROLES = (AMOUNT, WHICH, SWITCH, NAMES, WHOM, STRUCTURE, OPEN)
+ROLES = (AMOUNT, WHICH, SWITCH, NAMES, WHOM, STRUCTURE, BODY, NESTED, OPEN)
 """
 What a parameter is *for*, as distinct from what it accepts.
 
@@ -45,7 +47,14 @@ is a card the engine hands over and the other is a word an author types.
 - ``whom`` — a card or a player the *ability* picks out. **Not a field**: an
   author says this by aiming the effect, which is a question the form already
   asks.
-- ``structure`` — the effect's own nested data. A form of its own, never a box.
+- ``structure`` — nested data whose inside this layer does not describe. The
+  only honest way to show one is as what it is; never a box.
+- ``body`` — a list of nodes of a kind that *is* described: effects,
+  conditions, targets, modes. The difference from ``structure`` is the whole
+  point: whatever draws a list of effects at the top of an ability draws the
+  one inside a branch, because they are the same list.
+- ``nested`` — exactly one node of a described kind. An ability's cost is a
+  small group of related answers, not a value and not a list.
 - ``open`` — genuinely any value, and the last resort.
 
 A role is one word rather than a sentence, which is what makes it possible to
@@ -95,6 +104,30 @@ Named because the difference between ``"loot"`` and ``["loot"]`` is invisible
 in a form and fatal in a card: a parameter that takes a list and is given one
 value has been given a mistake, not a shorthand.
 """
+
+EFFECT = "effect"
+CONDITION = "condition"
+TARGET = "target"
+MODE = "mode"
+COST = "cost"
+
+NODES = (EFFECT, CONDITION, TARGET, MODE, COST)
+"""
+The kinds of node one part of the language may be built out of another.
+
+Not a new idea in the DSL — every one of these is already written inside cards
+today. What is new is saying so: an ability's ``effects`` is a list of effect
+nodes, a branch's ``then`` is the same list, ``choose`` holds a list of modes,
+and an ability's ``cost`` is one node of its own kind.
+
+Three of the five are described by registries a card already reads —
+``effect``, ``condition`` and ``target``. Two are described by node shapes of
+their own, because nothing else describes them: ``mode`` and ``cost``.
+
+Named here so that ``a_list_of`` and ``shaped_like`` can only say something the
+rest of this layer can answer.
+"""
+
 
 A_MAPPING = "a set of named values"
 """
@@ -186,6 +219,26 @@ class ParamShape:
 
     A switch is moot-making when it is on, whatever this says: ``false`` is
     what a card that left it out means.
+    """
+
+    a_list_of: str = ""
+    """
+    This parameter holds a list of nodes of one of the kinds in ``NODES``.
+
+    Different from ``kind == A_LIST``, which says only that several values go
+    here, and different again from ``STRUCTURE``, which says the inside is not
+    described. This says the inside *is* described, and by what — so whatever
+    can draw a list of effects can draw every list of effects in the language,
+    at any depth, because they are all this.
+    """
+
+    shaped_like: str = ""
+    """
+    This parameter holds exactly one node of one of the kinds in ``NODES``.
+
+    ``for_each`` is given one target specification, and an ability is given
+    one cost. Neither is a value and neither is a list, and calling either of
+    them text is how a form comes to ask for a structure in a box.
     """
 
     instead_of: str = ""
@@ -327,6 +380,14 @@ def _role_for(parameter: ParamShape) -> str:
     """
     What kind of question a parameter is, read off the rest of it.
     """
+    if parameter.a_list_of:
+        # More of the language, listed. Whatever draws one draws them all.
+        return BODY
+
+    if parameter.shaped_like:
+        # More of the language, once.
+        return NESTED
+
     if parameter.refers_to:
         # It names something the ability chose, which is a question about the
         # card's own shape rather than a value anybody types.
@@ -514,6 +575,22 @@ class Vocabulary:
     What an ability, a static and each control node may be written with.
     """
 
+    trigger_scopes: Mapping[str, str] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    """
+    What an ability listening for each trigger listens to, when it does not say.
+
+    An ability leaving its scope out does not get "no scope": it gets one the
+    engine works out from the trigger, and for all but a handful of triggers
+    that answer is the whole table. A card meaning "when *you* take damage" and
+    written without a scope means "when anybody does", and nothing says so.
+
+    So the derivation is published rather than left to be rediscovered. This is
+    the engine's own answer for each trigger, not a second table — whoever
+    builds a vocabulary asks the engine once and writes down what it said.
+    """
+
     shapes: Mapping[str, EffectShape] = field(
         default_factory=lambda: MappingProxyType({})
     )
@@ -539,6 +616,7 @@ class Vocabulary:
         condition_shapes: Mapping[str, ConditionShape] | None = None,
         target_shapes: Mapping[str, TargetShape] | None = None,
         node_shapes: Mapping[str, NodeShape] | None = None,
+        trigger_scopes: Mapping[str, str] | None = None,
     ) -> Vocabulary:
         """
         Build a vocabulary from any collections of names.
@@ -552,6 +630,7 @@ class Vocabulary:
             condition_shapes=MappingProxyType(dict(condition_shapes or {})),
             target_shapes=MappingProxyType(dict(target_shapes or {})),
             node_shapes=MappingProxyType(dict(node_shapes or {})),
+            trigger_scopes=MappingProxyType(dict(trigger_scopes or {})),
         )
 
     def shape(self, effect: str) -> EffectShape | None:

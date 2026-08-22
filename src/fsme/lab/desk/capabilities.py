@@ -29,6 +29,7 @@ from fsme.content.vocabulary import (
     STRUCTURE,
 )
 from fsme.events.types import WHEN_IT_HAPPENS, EventType
+from fsme.runtime.interpreter import CONTROL_NAMES
 from fsme.runtime.vocabulary import engine_vocabulary
 
 COMMON_EFFECTS = (
@@ -121,19 +122,113 @@ def catalogue() -> dict[str, Any]:
             {"id": kind, "name": name, "about": about}
             for kind, name, about in CARD_KINDS
         ],
-        "triggers": _triggers(),
+        "triggers": _triggers(vocabulary),
         "effects": _effects(vocabulary),
         "conditions": _conditions(vocabulary),
         "targets": _targets(vocabulary),
+        "abilities": _nodes(vocabulary, ABILITY_NODES),
+        "statics": _nodes(vocabulary, STATIC_NODES),
+        "structures": _nodes(vocabulary, STRUCTURE_NODES),
     }
 
 
-def _triggers() -> list[dict[str, Any]]:
+ABILITY_NODES = ("ability", "cost")
+"""
+What describes a card's ability: the ability itself, and the shape of what it
+charges. ``mode`` is not here — it belongs to ``choose``, which is a structure.
+"""
+
+STRUCTURE_NODES = (*sorted(CONTROL_NAMES), "mode")
+"""
+The nodes that shape what happens, and the one small shape they refer to.
+
+``mode`` is published beside them rather than on its own because it is not a
+thing a card writes anywhere else: it is what a ``choose`` is a list of, and a
+name in ``a_list_of`` that nothing describes would be a promise this layer
+cannot keep.
+"""
+
+STATIC_NODES = ("static",)
+"""
+What describes a value a card changes while it is in play.
+
+Separate from an ability on purpose. A static has no trigger, no effects and
+nothing that resolves; sharing a section would suggest a kinship that does not
+exist, and the two words a card writes on both — ``scope`` and ``conditions``
+— do not even mean quite the same thing.
+"""
+
+
+def _nodes(vocabulary: Any, names: Any) -> list[dict[str, Any]]:
+    """
+    The shapes that describe the parts of the language that are not effects.
+
+    An ability, a static, a control node, and the two small shapes those refer
+    to. They are published on exactly the terms an effect is: a list of fields
+    with everything the engine says about each. Whatever draws one draws them
+    all, which is the whole reason for putting them here rather than inventing
+    somewhere else to put them.
+
+    ``bodies`` says where a node keeps the things it does, so that anything
+    reading this can tell a node with nothing in it from one that works.
+    """
+    found = []
+
+    for name in names:
+        shape = vocabulary.node_shape(name)
+
+        if shape is None:
+            continue
+
+        found.append(
+            {
+                "id": name,
+                "about": ABOUT_NODES.get(name, name.replace("_", " ")),
+                "bodies": list(shape.bodies),
+                "fields": _fields(shape),
+            }
+        )
+
+    return found
+
+
+ABOUT_NODES = {
+    "ability": "a rule the card follows",
+    "static": "a number this card changes while it is in play",
+    "cost": "what a player pays to use an ability",
+    "mode": "one option of a choice",
+    "if": "depending on something",
+    "may": "the controller may choose to",
+    "choose": "one of several options",
+    "for_each": "once for each of them",
+    "repeat": "several times over",
+    "sequence": "these, in order",
+    "stop": "nothing further happens",
+}
+"""
+What each part of the language is, in the words a person would use for it.
+
+The parameters inside them describe themselves; this is the sentence for the
+node, which is the one thing a shape read off a dataclass cannot carry.
+"""
+
+
+def _triggers(vocabulary: Any) -> list[dict[str, Any]]:
+    """
+    Every moment a card can react to, and what reacting to it means by default.
+
+    ``scope`` is what an ability listening for this trigger listens to when it
+    does not say — the engine's own answer, not a rule invented here. It is
+    published because leaving it out is not leaving the question open: for all
+    but fourteen triggers the unwritten answer is the whole table, and a card
+    meaning "when *you* take damage" gets "when anybody does" in silence.
+    """
     return [
         {
             "id": str(event),
             "about": WHEN_IT_HAPPENS.get(event, str(event).replace("_", " ")),
             "common": str(event) in COMMON_TRIGGERS,
+            "scope": vocabulary.trigger_scopes.get(str(event), ""),
         }
         for event in EventType
     ]
@@ -214,6 +309,9 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
       about to be overwritten.
     - ``spelling`` — the same question as another parameter, under a second
       name the engine also reads. Asked once, under the first.
+    - ``body`` — more of the language, listed. ``a_list_of`` says of what, and
+      whatever draws one list of effects draws every one of them.
+    - ``nested`` — more of the language, once. ``shaped_like`` says which.
     """
     found = []
 
@@ -232,6 +330,8 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             "written": parameter.written_as,
             "instead_of": parameter.instead_of,
             "picks": parameter.refers_to,
+            "a_list_of": parameter.a_list_of,
+            "shaped_like": parameter.shaped_like,
             # Several answers out of a known set — which is a control the
             # page has. A list with nothing to choose from is the effect's own
             # data and goes to the advanced view instead.
@@ -245,6 +345,10 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             if parameter.written_as in (BY_ENGINE, BY_BINDING)
             else "group"
             if parameter.written_as in (BY_NAME, BY_PLAYER_OF)
+            else "body"
+            if parameter.a_list_of
+            else "nested"
+            if parameter.shaped_like
             else "advanced"
             if parameter.role == STRUCTURE
             else "form"
