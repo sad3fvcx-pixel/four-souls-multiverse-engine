@@ -13,6 +13,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+from fsme.content.vocabulary import CARDS
 from fsme.events import EventType
 from fsme.stack import StackItem, StackItemType
 
@@ -205,6 +206,7 @@ def register(registry: EffectRegistry) -> None:
         "copy_ability",
         copy_ability,
         needs_target=True,
+        hits=CARDS,
         primary="trigger",
         description="Use another card's ability.",
         values={"trigger": _TRIGGER_NAMES},
@@ -216,6 +218,7 @@ def register(registry: EffectRegistry) -> None:
         "copy_card",
         copy_card,
         needs_target=True,
+        hits=CARDS,
         primary="until",
         description="Play by another card's rules until the copy lapses.",
         values={"until": (TILL_END_OF_TURN, INDEFINITELY)},
@@ -227,5 +230,6 @@ def register(registry: EffectRegistry) -> None:
         "duplicate",
         duplicate,
         needs_target=True,
+        hits=CARDS,
         description="Put a copy of a card into play.",
     )

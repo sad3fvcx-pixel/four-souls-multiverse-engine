@@ -13,7 +13,10 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from typing import Any
 
+from fsme.content.vocabulary import CARDS, PLAYERS
 from fsme.effects import EffectOp, EffectRegistry, EffectResult
+from fsme.effects.errors import EffectExecutionError
+from fsme.state import PlayerState
 from fsme.util.errors import EngineError
 
 from .ability_context import AbilityContext
@@ -52,6 +55,8 @@ class EffectExecutor:
         params = _resolve_params(op.params, ability, context, literal=spec.literal)
 
         try:
+            _the_right_kind(spec, targets)
+
             value = spec.handler(context, targets, **params)
         except StabilityError:
             # The engine is stopping itself, not failing an effect. Wrapping it
@@ -223,6 +228,35 @@ def _counted(
         )
 
     return max(int(spec.get("floor", 0)), total)
+
+
+def _the_right_kind(spec: Any, targets: Any) -> None:
+    """
+    Refuse a target of a kind this effect does not act on.
+
+    Every effect that cares already refused, one ``isinstance`` at a time,
+    inside its own handler — which is the right answer given to nobody: no
+    form, no checker and no author could read a guard written in a function
+    body, so all three offered a treasure to an effect that takes players and
+    the game threw when it was played.
+
+    So the fact is declared at registration now and enforced here, once, for
+    whatever declares it. The handlers keep their own guards: they are the
+    ones that know what they meant, and a check that agrees with them is a
+    check that cannot quietly disagree.
+    """
+    wanted = getattr(spec, "hits", "")
+
+    if not wanted or not targets:
+        return
+
+    for target in targets:
+        gives = PLAYERS if isinstance(target, PlayerState) else CARDS
+
+        if gives != wanted:
+            raise EffectExecutionError(
+                f"'{spec.name}' acts on {wanted} and was given {gives}"
+            )
 
 
 WORKING_OUT = {

@@ -61,6 +61,15 @@ shipped card already obeys.
 
 PLAYERS = "players"
 CARDS = "cards"
+VALUES = "values"
+
+_NOT_A_VALUE = ("targets", "target", "for_each", "store", "effect")
+"""
+Keys of an effect node that are not one of its parameters.
+
+The interpreter takes these off the node before the effect sees it, so nothing
+inside them is a value being worked out.
+"""
 MIXED = "mixed"
 PASSTHROUGH = "passthrough"
 
@@ -81,6 +90,7 @@ def validate_references(
     known_targets: Collection[str] | None,
     card_id: str,
     effects: Mapping[str, Any] | None = None,
+    worked_out: Any = None,
 ) -> list[str]:
     """
     Check every name an ability uses against the names it binds.
@@ -97,6 +107,7 @@ def validate_references(
                 effects=effects or {},
                 targets=frozenset(known_targets or ()),
                 card_id=card_id,
+                worked_out=worked_out,
             ).check(ability, where)
         )
 
@@ -138,9 +149,18 @@ class _Ability:
         targets: frozenset[str],
         card_id: str,
         effects: Mapping[str, Any] | None = None,
+        worked_out: Any = None,
     ) -> None:
         self._shapes = shapes
         self._effects = effects or {}
+        # Which keys of a worked-out value name something, and what kind of
+        # thing each names. Read off the shape rather than listed here: the
+        # executor resolves exactly these, and a list would be a second copy.
+        self._heads = {
+            name: parameter
+            for name, parameter in getattr(worked_out, "params", {}).items()
+            if parameter.refers_to
+        }
         self._targets = targets
         self._card = card_id
         self._errors: list[str] = []
@@ -272,8 +292,16 @@ class _Ability:
         for index, spec in enumerate(node.get("targets", ()) or ()):
             self._one_target(spec, groups, f"{path}.targets[{index}]")
 
-        self._aimed(node.get("target"), groups, f"{path}.target")
+        # What this effect acts on, so that a card aiming it at the wrong kind
+        # of thing is refused here rather than when somebody plays it.
+        wanted = str(getattr(self._effects.get(_head(node)), "hits", "") or "")
+
+        self._aimed(node.get("target"), groups, f"{path}.target", wanted)
         self._aimed(node.get("for_each"), groups, f"{path}.for_each")
+
+        # Before anything this node stores, because a value is worked out
+        # before the effect runs and so cannot read what that effect keeps.
+        self._worked_out(node, groups, values, path)
 
         stored = node.get("store")
 
@@ -302,6 +330,60 @@ class _Ability:
             elif isinstance(value, (list, tuple, Mapping)):
                 self._walk(value, groups, values, f"{path}.{key}")
 
+    def _worked_out(
+        self,
+        node: Mapping[str, Any],
+        groups: dict[str, str],
+        values: set[str],
+        path: str,
+    ) -> None:
+        """
+        The names hidden inside a value the ability works out while it runs.
+
+        ``{"amount": {"from": "dice"}}`` is a card saying "as much as the
+        roll", and the name in it is a reference exactly as the one in
+        ``values_equal`` is — the same two namespaces, the same ordering rule,
+        the same ability boundary. It was the only place a reference was never
+        looked at, so a misspelling read as nothing at all and the card said so
+        to nobody.
+
+        Which keys are references and what each one names is the ``worked_out``
+        shape's own answer. Which parameters may hold one is the effect's:
+        ``literal`` marks the ones handed over exactly as written, and those
+        are the effect's own data rather than a value to resolve — the same
+        line the executor draws.
+        """
+        if not self._heads:
+            return
+
+        shape = self._effects.get(_head(node))
+        literal: frozenset[str] = getattr(shape, "literal", frozenset())
+
+        for key, value in node.items():
+            if key in _NOT_A_VALUE or key in literal:
+                continue
+
+            if not isinstance(value, Mapping):
+                continue
+
+            for head, parameter in self._heads.items():
+                if head not in value:
+                    continue
+
+                where = f"{path}.{key}.{head}"
+
+                for named in _names(value[head]):
+                    if parameter.refers_to == VALUES:
+                        if named not in values:
+                            self._say(
+                                f"{where}: '{named}' is not a value this "
+                                f"ability stores{did_you_mean(named, values)}"
+                            )
+                    else:
+                        self._read_group(
+                            named, groups, parameter.refers_to, where
+                        )
+
     def _keeps(self, node: Mapping[str, Any]) -> list[str]:
         """
         The names an effect keeps its own result under.
@@ -322,7 +404,13 @@ class _Ability:
             if (kept := getattr(self._effects.get(name), "stores", ""))
         ]
 
-    def _aimed(self, spec: Any, groups: dict[str, str], path: str) -> None:
+    def _aimed(
+        self,
+        spec: Any,
+        groups: dict[str, str],
+        path: str,
+        wanted: str = "",
+    ) -> None:
         """
         An effect pointing at something, by name or by specification.
         """
@@ -334,10 +422,45 @@ class _Ability:
             if spec not in self._targets and spec not in groups:
                 self._say(f"{path}: {self._unknown(spec, groups)}")
 
+                return
+
+            self._acts_on(spec, groups, path, wanted)
+
             return
 
         if isinstance(spec, Mapping):
             self._one_target(spec, groups, path)
+
+            named, _ = _call(spec)
+
+            if isinstance(named, str):
+                self._acts_on(named, groups, path, wanted)
+
+    def _acts_on(
+        self,
+        named: str,
+        groups: Mapping[str, str],
+        path: str,
+        wanted: str,
+    ) -> None:
+        """
+        Whether what an effect is aimed at is the kind of thing it acts on.
+
+        Both halves were already here and never put together: a target says
+        what it hands back and an effect now says what it takes. Nothing is
+        refused where either is silent — a target that hands back both kinds,
+        or whatever it was given, is a question only a game can answer.
+        """
+        if not wanted:
+            return
+
+        shape = self._shapes.get(named)
+        gives = shape.yields if shape is not None else groups.get(named, "")
+
+        if gives in UNPROVABLE or gives == wanted:
+            return
+
+        self._say(f"{path}: this acts on {wanted} and is aimed at {gives}")
 
     # ------------------------------------------------------------------
 

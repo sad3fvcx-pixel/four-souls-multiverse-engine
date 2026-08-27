@@ -486,6 +486,7 @@ def register(registry: EffectRegistry) -> None:
         "reveal_hand",
         reveal_hand,
         needs_target=True,
+        hits=PLAYERS,
         description="Show a player's hand.",
     )
     registry.register(

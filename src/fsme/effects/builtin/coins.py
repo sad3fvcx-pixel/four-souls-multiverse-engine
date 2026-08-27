@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+from fsme.content.vocabulary import PLAYERS
 from fsme.events import EventType
 from fsme.state import PlayerState
 
@@ -183,6 +184,7 @@ def register(registry: EffectRegistry) -> None:
         "gain_coins",
         gain_coins,
         needs_target=True,
+        hits=PLAYERS,
         primary="amount",
         description="Add coins to a player.",
         least={"amount": 0},
@@ -194,6 +196,7 @@ def register(registry: EffectRegistry) -> None:
         "lose_coins",
         lose_coins,
         needs_target=True,
+        hits=PLAYERS,
         primary="amount",
         description="Remove coins from a player.",
         least={"amount": 0},
@@ -205,6 +208,7 @@ def register(registry: EffectRegistry) -> None:
         "set_coins",
         set_coins,
         needs_target=True,
+        hits=PLAYERS,
         primary="amount",
         description="Set a player's coins.",
         least={"amount": 0},

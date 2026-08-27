@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from fsme.content.vocabulary import CARDS
+from fsme.content.vocabulary import CARDS, PLAYERS
 from fsme.events import EventType
 from fsme.state import PlayerState
 
@@ -107,6 +107,7 @@ def register(registry: EffectRegistry) -> None:
         "attach_curse",
         attach_curse,
         needs_target=True,
+        hits=PLAYERS,
         description="Put a curse on a player.",
         picks={"card": CARDS},
         asks={

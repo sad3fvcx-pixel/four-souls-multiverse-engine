@@ -492,6 +492,15 @@ class EffectShape:
     which names there were to read.
     """
 
+    hits: str = ""
+    """
+    The kind of thing this effect's targets must be — see ``EffectSpec.hits``.
+
+    Empty for an effect that acts on anything it is handed. Otherwise one of
+    the two words a reference is described with, and a card aiming this effect
+    at anything else is a card the engine will refuse when it is played.
+    """
+
     primary: str | None = None
     """
     The parameter the shorthand form fills.

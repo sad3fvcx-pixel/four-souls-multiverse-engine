@@ -265,6 +265,23 @@ class EffectSpec:
     uses_stack: bool = False
     needs_target: bool = False
 
+    hits: str = ""
+    """
+    The kind of thing this effect's targets must be.
+
+    ``needs_target`` says an effect acts on something; this says on *what*.
+    ``'steal_soul'`` takes a soul from a player and cannot take one from a
+    treasure, and until this existed the only statement of that fact was the
+    ``isinstance`` check inside the handler — where no form, no checker and no
+    author could read it, so all three offered the treasure and the game threw.
+
+    One of the words the reference vocabulary already uses — ``players`` or
+    ``cards`` — or empty for an effect that acts on anything handed to it.
+    Conservative on purpose: an effect narrower than either word (only stack
+    objects, only things with hit points) says the wider one it belongs to, so
+    that nothing correct is ever refused.
+    """
+
     primary: str | None = None
     """
     Parameter filled by the DSL shorthand form.
@@ -334,6 +351,7 @@ class EffectRegistry:
         *,
         uses_stack: bool = False,
         needs_target: bool = False,
+        hits: str = "",
         primary: str | None = None,
         stores: str | None = None,
         literal: frozenset[str] | tuple[str, ...] = (),
@@ -432,6 +450,7 @@ class EffectRegistry:
             handler=handler,
             uses_stack=uses_stack,
             needs_target=needs_target,
+            hits=hits,
             primary=primary,
             stores=stores,
             literal=frozenset(literal),

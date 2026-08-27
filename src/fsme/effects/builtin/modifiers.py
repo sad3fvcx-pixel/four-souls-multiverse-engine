@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from fsme.content.vocabulary import PLAYERS
+from fsme.content.vocabulary import CARDS, PLAYERS
 from fsme.events import EventType
 from fsme.state import (
     CardModifier,
@@ -454,10 +454,18 @@ def register(registry: EffectRegistry) -> None:
     Register every card modifier effect.
     """
     registry.register(
-        "recharge", recharge, needs_target=True, description="Untap an item."
+        "recharge",
+        recharge,
+        needs_target=True,
+        hits=CARDS,
+        description="Untap an item.",
     )
     registry.register(
-        "deactivate", deactivate, needs_target=True, description="Tap an item."
+        "deactivate",
+        deactivate,
+        needs_target=True,
+        hits=CARDS,
+        description="Tap an item.",
     )
     registry.register(
         "add_counter",
@@ -478,6 +486,7 @@ def register(registry: EffectRegistry) -> None:
         "take_extra_turn",
         take_extra_turn,
         needs_target=True,
+        hits=PLAYERS,
         description="Give a player another turn after this one.",
     )
     registry.register(
@@ -495,6 +504,7 @@ def register(registry: EffectRegistry) -> None:
         "skip_next_turn",
         skip_next_turn,
         needs_target=True,
+        hits=PLAYERS,
         description="Take away a player's next turn.",
     )
     registry.register(
@@ -514,18 +524,21 @@ def register(registry: EffectRegistry) -> None:
         "hold_tapped",
         hold_tapped,
         needs_target=True,
+        hits=CARDS,
         description="Keep an item from recharging at its next turn.",
     )
     registry.register(
         "make_eternal",
         make_eternal,
         needs_target=True,
+        hits=CARDS,
         description="Make a card in play eternal.",
     )
     registry.register(
         "lift_limit",
         lift_limit,
         needs_target=True,
+        hits=PLAYERS,
         primary="what",
         description="Let a player act as often as they like this turn.",
         values={"what": LIMITS},

@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from fsme.content.vocabulary import A_LIST, A_MAPPING, OPEN
+from fsme.content.vocabulary import A_LIST, A_MAPPING, OPEN, PLAYERS
 from fsme.events import EventType
 from fsme.state import DamageShield, Duration, Promise, Watcher
 from fsme.state.promises import CHANGES
@@ -295,6 +295,7 @@ def register(registry: EffectRegistry) -> None:
         "prevent_next_damage",
         prevent_next_damage,
         needs_target=True,
+        hits=PLAYERS,
         primary="amount",
         description="Promise to reduce the next damage a player takes.",
         asks={

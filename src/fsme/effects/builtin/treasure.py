@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from fsme.content.vocabulary import PLAYERS
+from fsme.content.vocabulary import CARDS, PLAYERS
 from fsme.events import EventType
 from fsme.state import PlayerState
 
@@ -371,6 +371,7 @@ def register(registry: EffectRegistry) -> None:
         "gain_treasure",
         gain_treasure,
         needs_target=True,
+        hits=PLAYERS,
         primary="count",
         description="Take treasures from the top of the deck.",
         asks={
@@ -410,5 +411,6 @@ def register(registry: EffectRegistry) -> None:
         "put_into_play",
         put_into_play,
         needs_target=True,
+        hits=CARDS,
         description="Put a card into play as an item under your control.",
     )

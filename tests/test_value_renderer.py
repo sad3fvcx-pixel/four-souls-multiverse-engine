@@ -185,10 +185,15 @@ def test_two_ways_at_once_is_refused(vocabulary) -> None:
         vocabulary,
         raw(
             effects=[
+                # The roll is there so that `from` names something real: this
+                # is about writing two ways at once, and a card that also
+                # reads a value nothing stored would be refused twice for two
+                # different reasons.
+                {"effect": "roll_dice"},
                 {
                     "effect": "deal_damage",
                     "amount": {"from": "dice", "from_event": "amount"},
-                }
+                },
             ]
         ),
     )

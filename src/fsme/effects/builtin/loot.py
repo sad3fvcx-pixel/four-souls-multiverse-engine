@@ -10,7 +10,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from fsme.cards import SoulToken
-from fsme.content.vocabulary import CARDS
+from fsme.content.vocabulary import CARDS, PLAYERS
 from fsme.events import EventType
 from fsme.state import GameState, PlayerState
 
@@ -402,6 +402,7 @@ def register(registry: EffectRegistry) -> None:
         "draw_loot",
         draw_loot,
         needs_target=True,
+        hits=PLAYERS,
         primary="count",
         description="Draw loot cards.",
         least={"count": 0},
@@ -423,6 +424,7 @@ def register(registry: EffectRegistry) -> None:
         "discard_loot",
         discard_loot,
         needs_target=True,
+        hits=PLAYERS,
         primary="count",
         description="Discard loot cards.",
         least={"count": 0},
@@ -440,6 +442,7 @@ def register(registry: EffectRegistry) -> None:
         "gain_soul",
         gain_soul,
         needs_target=True,
+        hits=PLAYERS,
         primary="count",
         description="Gain souls.",
         least={"count": 0},
@@ -453,6 +456,7 @@ def register(registry: EffectRegistry) -> None:
         "claim_soul",
         claim_soul,
         needs_target=True,
+        hits=PLAYERS,
         description="Give a bonus soul card itself to a player.",
         picks={"card": CARDS},
         asks={
@@ -463,12 +467,14 @@ def register(registry: EffectRegistry) -> None:
         "steal_soul",
         steal_soul,
         needs_target=True,
+        hits=PLAYERS,
         description="Take a soul from another player.",
     )
     registry.register(
         "lose_soul",
         lose_soul,
         needs_target=True,
+        hits=PLAYERS,
         primary="count",
         description="Lose souls."
     )

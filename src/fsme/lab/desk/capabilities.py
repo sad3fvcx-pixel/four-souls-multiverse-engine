@@ -280,6 +280,10 @@ def _effects(vocabulary: Any) -> list[dict[str, Any]]:
                 "common": name in COMMON_EFFECTS,
                 # The name it keeps its result under, for a later step to read.
                 "stores": getattr(shape, "stores", ""),
+                # The kind of thing it acts on. Anything offering it a target
+                # has to offer one of these, because the engine refuses the
+                # rest when the card is played.
+                "hits": getattr(shape, "hits", ""),
                 "fields": _fields(shape),
             }
         )

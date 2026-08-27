@@ -115,6 +115,10 @@ def validate_card(
             effects=shapes,
             known_targets=known_targets,
             card_id=str(card_id),
+            # What a value worked out while the ability runs may be written
+            # with. The names inside one are references like any other, and
+            # this is what says which of its keys name what.
+            worked_out=(node_shapes or {}).get("worked_out"),
         )
     )
 

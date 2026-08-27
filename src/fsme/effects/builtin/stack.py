@@ -14,6 +14,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+from fsme.content.vocabulary import CARDS
 from fsme.events import EventType
 from fsme.stack import (
     ADVANCE_TURN,
@@ -144,6 +145,7 @@ def register(registry: EffectRegistry) -> None:
         "cancel_stack",
         cancel_stack,
         needs_target=True,
+        hits=CARDS,
         description="Cancel an ability or card waiting on the stack.",
     )
     registry.register(

@@ -372,7 +372,9 @@ function unsupportedHtml(field) {
 function aimHtml(chosen, step, path) {
   if (!chosen || !chosen.needs_target) return "";
   if (!canChoose(path)) return cannotChooseHtml({ about: "what it happens to" });
-  const options = can.targets.filter(t => t.aimable);
+  // Only what this effect acts on. Offering the rest offered a card the engine
+  // refuses the moment somebody plays it.
+  const options = can.targets.filter(t => t.aimable && fits(t, chosen.hits));
   const common = options.filter(t => t.common && !t.after);
   const rest = options.filter(t => !t.common && !t.after);
   // Ones that mean nothing on their own. Offered, because the engine resolves
@@ -641,12 +643,18 @@ function cannotChooseHtml(f) {
     card picks anything out, so there is no name for this to be given.</p>`;
 }
 
-// Which of the engine's targets can answer a parameter that names players,
+// Which of the engine's targets can answer a question that names players,
 // cards, or anything the ability has already chosen.
+//
+// The three the checker will not judge answer either: a target that hands back
+// both kinds, and one that hands back whatever it was given, cannot be told
+// apart before a game exists. Refusing them here would hide "destroy what you
+// just damaged", which is a card the engine plays perfectly well.
+const EITHER = ["mixed", "passthrough", ""];
+
 function fits(target, picks) {
-  if (picks === "players") return target.gives === "players" || target.gives === "mixed";
-  if (picks === "cards") return target.gives === "cards" || target.gives === "mixed";
-  return true;
+  if (!picks) return true;
+  return EITHER.includes(target.gives) || target.gives === picks;
 }
 
 function nobody(f) {

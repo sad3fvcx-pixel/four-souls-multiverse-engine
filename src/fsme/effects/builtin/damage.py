@@ -14,7 +14,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from fsme.content.vocabulary import PLAYERS
+from fsme.content.vocabulary import CARDS, PLAYERS
 from fsme.events import EventType
 from fsme.state import PlayerState
 
@@ -49,14 +49,31 @@ def _kind_of(target: Any) -> str:
 
 
 def _hit_points(target: Any) -> int:
+    """
+    What a target has left, when it is the sort of thing that has any.
+
+    Named rather than shown whole. A `CardInstance` repr is eight hundred
+    characters of the card's own definition, and whatever passes the message on
+    to a person has to guess where the sentence in it starts — so the message
+    said nothing and said it at length.
+    """
     hp = getattr(target, "hp", None)
 
     if hp is None:
         raise EffectExecutionError(
-            f"target {target!r} has no hit points"
+            f"{_named(target)} has no hit points"
         )
 
     return int(hp)
+
+
+def _named(target: Any) -> str:
+    """
+    What to call a target in a message somebody reads.
+    """
+    name = getattr(target, "name", "")
+
+    return f"'{name}'" if name else f"a {type(target).__name__}"
 
 
 def deal_damage(
@@ -397,6 +414,7 @@ def register(registry: EffectRegistry) -> None:
         "place_monster",
         place_monster,
         needs_target=True,
+        hits=CARDS,
         primary="slot",
         description="Stand a monster in a slot of the monster area.",
         asks={
@@ -457,6 +475,7 @@ def register(registry: EffectRegistry) -> None:
         "revive",
         revive,
         needs_target=True,
+        hits=PLAYERS,
         primary="hp",
         description="Return a dead player to play.",
         asks={

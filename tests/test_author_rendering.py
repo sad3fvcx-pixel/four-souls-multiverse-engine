@@ -130,11 +130,15 @@ def test_a_list_domain_is_marked_as_taking_more_than_one(
 
 
 def test_several_values_reach_the_card_as_several() -> None:
+    # `cancel_stack` because this is about a list of values arriving as a
+    # list. It is the effect that really acts on a thing waiting on the
+    # stack, and a card that aimed something else there would now be refused
+    # for that instead — which is a different test.
     card = a_card(
         [
             {
-                "id": "gain_coins",
-                "fields": {"amount": 1},
+                "id": "cancel_stack",
+                "fields": {},
                 "aim": "target_stack_item",
                 "aim_fields": {"kinds": ["loot", "dice"]},
             }

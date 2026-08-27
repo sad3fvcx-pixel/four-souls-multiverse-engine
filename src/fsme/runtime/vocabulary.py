@@ -815,6 +815,7 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
             }
         ),
         stores=spec.stores or "",
+        hits=spec.hits,
         primary=spec.primary,
         open_ended=spec.open_ended,
         literal=spec.literal,
