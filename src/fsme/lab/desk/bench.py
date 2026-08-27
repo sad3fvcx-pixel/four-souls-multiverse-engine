@@ -366,12 +366,25 @@ class Workbench:
         def run() -> None:
             job.state = RUNNING
 
+            # Whatever a state promises is written before the state is.
+            #
+            # Nothing waits for this thread: a page — and the tests — poll the
+            # job and stop the moment its state says it is over. So a field
+            # filled in after the state that promises it is a field nobody
+            # reads, and the job that said it failed cannot say why. Setting
+            # the reason first costs nothing and closes the window entirely.
+            #
+            # `done` is why this is an ordering and not a lock: the workers
+            # count progress into the job while it runs and the page draws it
+            # as it goes, which is the whole point of running the work here.
             try:
                 work(job)
             except Exception:
-                job.state = FAILED
                 job.error = traceback.format_exc(limit=3)
+                job.state = FAILED
             else:
+                # The work fills `text` and `saved` before it returns, so
+                # these are already written by the time this line runs.
                 job.state = DONE
 
         threading.Thread(target=run, daemon=True).start()

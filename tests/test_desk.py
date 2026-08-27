@@ -25,6 +25,7 @@ import pytest
 from fsme.api import Session, load_content
 from fsme.content import ContentLibrary
 from fsme.lab.desk import Workbench, desk
+from fsme.lab.desk.bench import Job
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
@@ -211,6 +212,71 @@ def test_a_job_that_fails_says_so(address: str) -> None:
 
     assert job["state"] == "failed"
     assert job["error"]
+
+
+def test_a_job_says_why_it_failed_before_it_says_it_failed(
+    bench: Workbench, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """
+    The ordering, pinned — because the outcome alone does not pin it.
+
+    Nothing waits for a job's thread. A page, and `finished` above, poll the
+    job and stop the instant its state says it is over, so a reason written
+    after the state that promises it is a reason nobody ever reads: the job
+    says it failed and cannot say why. The window is small enough that the
+    test above crossed it once in fourteen hundred runs and passed the rest,
+    which is the kind of bug a release gate should not have to catch by luck.
+
+    So this asks the ordering itself. The reason is worked out inside
+    `traceback.format_exc`, and what the job says at that moment is the whole
+    question: `running` means the reason is ready before anybody could see the
+    state that needs it, and `failed` means it is not.
+    """
+    from fsme.lab.desk import bench as workbench
+
+    said: list[str] = []
+    formatting = workbench.traceback.format_exc
+
+    class Watching:
+        """
+        What `traceback` does, with a note of what the job says while it does it.
+        """
+
+        @staticmethod
+        def format_exc(*args: Any, **named: Any) -> str:
+            latest = bench.jobs()
+            said.append(latest[0].state if latest else "no job at all")
+
+            return str(formatting(*args, **named))
+
+    monkeypatch.setattr(workbench, "traceback", Watching)
+
+    started = bench.test_card("no-such-card", games=1, players=2, jobs=1)
+    job = waited_for(bench, started.id)
+
+    assert job.state == "failed"
+    assert job.error, "a job that failed and cannot say why"
+    assert said == ["running"], (
+        "the reason was worked out after the state was published, so a page "
+        f"polling this job could see it fail with nothing to show: {said}"
+    )
+
+
+def waited_for(bench: Workbench, number: int) -> Job:
+    """
+    Wait for one job, straight off the workbench rather than through a server.
+    """
+    until = time.monotonic() + PATIENCE
+
+    while time.monotonic() < until:
+        job = bench.job(number)
+
+        if job is not None and job.state in ("done", "failed"):
+            return job
+
+        time.sleep(0.02)
+
+    raise AssertionError(f"job {number} never finished")
 
 
 def test_a_name_cannot_reach_outside_the_work_directory(
