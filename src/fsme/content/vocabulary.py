@@ -129,8 +129,23 @@ COST = "cost"
 STEP = "step"
 WORKED_OUT = "worked_out"
 NAMED_COUNT = "named_count"
+ABILITY = "ability"
+STATIC = "static"
+CARD = "card"
 
-NODES = (EFFECT, CONDITION, TARGET, MODE, COST, STEP, WORKED_OUT, NAMED_COUNT)
+NODES = (
+    EFFECT,
+    CONDITION,
+    TARGET,
+    MODE,
+    COST,
+    STEP,
+    WORKED_OUT,
+    NAMED_COUNT,
+    ABILITY,
+    STATIC,
+    CARD,
+)
 """
 The kinds of node one part of the language may be built out of another.
 
@@ -145,6 +160,12 @@ that happen really holds: an effect node, or a control node, and a list whose
 elements may be either is not a list of effects however it is usually written.
 The rest are described by node shapes of their own, because nothing else
 describes them: ``mode``, ``cost``, ``worked_out`` and ``named_count``.
+
+The last three are the card itself and the two lists it is made of. A card is
+not one rule with some numbers beside it — it is a composition, and ``abilities``
+and ``statics`` are lists of nodes exactly the way ``effects`` is. Saying so is
+what lets one renderer draw a card with four abilities and a static without
+learning a second word for "list".
 
 Named here so that ``a_list_of`` and ``shaped_like`` can only say something the
 rest of this layer can answer.
@@ -213,6 +234,23 @@ class ParamShape:
 
     values: tuple[Any, ...] = ()
     least: int | None = None
+
+    values_mean: Mapping[str, str] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    """
+    What each of the allowed values means, in a person's words.
+
+    ``values`` is what a card may write; this is what a card is *saying* by
+    writing it. The two are not the same and the difference is the whole gap
+    between a list somebody can use and a list they have to look up:
+    ``monster_killed`` is an identifier, "a monster is killed" is the question
+    being asked.
+
+    Empty where the values speak for themselves — a stat called ``attack``
+    needs no gloss — and never a second list of what is allowed: a value
+    described here that ``values`` does not contain describes nothing.
+    """
 
     default: Any = None
     """
@@ -664,6 +702,21 @@ class NodeShape:
     Empty for a node with no body — an ability, a static, `stop`. Otherwise a
     node with every one of these empty expands to nothing at all, which reads
     exactly like one that works and is not a card anybody meant to write.
+    """
+
+    own_names: bool = False
+    """
+    Whether this node keeps the names it makes to itself.
+
+    An ability stores a die roll under a name and binds the players it chose
+    under another, and the next ability on the same card sees neither: the
+    engine builds one context per ability and contexts share nothing. So the
+    names a card makes are not a card-wide list, and anything offering them —
+    a form, a checker — has to ask *which* part of the card is asking.
+
+    False for everything inside such a part. A branch, a mode and a cost all
+    run in the context of the ability that holds them, which is why a name
+    bound before a branch is readable inside it.
     """
 
 

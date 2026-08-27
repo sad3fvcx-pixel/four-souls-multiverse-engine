@@ -15,15 +15,18 @@ from dataclasses import Field, fields
 from types import MappingProxyType
 from typing import Any
 
-from fsme.cards.definition import Ability, Static
+from fsme.cards.definition import Ability, CardDefinition, Static
+from fsme.cards.types import PRINTED_NUMBERS, CardType
 from fsme.content import Vocabulary
 from fsme.content.vocabulary import (
     A_LIST,
     A_MAPPING,
+    ABILITY,
     ANY_GROUP,
     BY_BINDING,
     BY_ENGINE,
     BY_PLAYER_OF,
+    CARD,
     CARDS,
     CONDITION,
     COST,
@@ -31,6 +34,7 @@ from fsme.content.vocabulary import (
     NAMED_COUNT,
     OPEN,
     PLAYERS,
+    STATIC,
     STEP,
     STRUCTURE,
     TARGET,
@@ -45,6 +49,7 @@ from fsme.content.vocabulary import (
 from fsme.effects import EffectRegistry, builtin_registry
 from fsme.effects.registry import EffectSpec, ParamKind
 from fsme.events import EventType
+from fsme.events.types import WHEN_IT_HAPPENS
 from fsme.rules.costs import COINS, COUNTERS, DISCARD, HP, TAP
 from fsme.rules.restrictions import ACTIONS
 from fsme.rules.statics import MONSTER_SCOPES, STATIC_SCOPES
@@ -116,9 +121,9 @@ FLAG = "true or false"
 
 def _node_shapes() -> Mapping[str, NodeShape]:
     """
-    What an ability, a static and each control node may be written with.
+    What a card, an ability, a static and each control node may be written with.
 
-    The two card structures are read off their own dataclasses: ``from_data``
+    The three card structures are read off their own dataclasses: ``from_data``
     reads exactly the fields, so the fields are what a card may write, and
     adding one to the language widens this the moment it exists. The control
     nodes are read off the table beside the expanders that consume them.
@@ -136,25 +141,45 @@ def _node_shapes() -> Mapping[str, NodeShape]:
     wrong: ``optional`` is a flag, ``cost`` is a small node of its own, and
     ``effects`` is a list of the same effect nodes an ability holds at the top.
     Anything drawing a form from this would have drawn four boxes.
+
+    ``card`` is the one of these the checker does not hold a card to. Inside the
+    DSL an unknown key is a mistake, because the interpreter reads these keys
+    and hands nothing else on; at the top of a card file an unknown field is
+    kept, because a set may carry an artist credit or a schema version this
+    engine has never heard of. So the card shape says what a card *may* write
+    and never what it may not, which is exactly what something drawing a form
+    needs and is not a rule to refuse a file by.
     """
     return MappingProxyType(
         {
-            "ability": NodeShape(
-                name="ability",
+            CARD: NodeShape(
+                name=CARD,
+                params=MappingProxyType(
+                    {
+                        field.name: _card_field(field)
+                        for field in fields(CardDefinition)
+                    }
+                ),
+                bodies=CARD_BODIES,
+            ),
+            ABILITY: NodeShape(
+                name=ABILITY,
                 params=MappingProxyType(
                     {field.name: _ability_field(field) for field in fields(Ability)}
                 ),
+                own_names=ABILITY in OWN_NAMES,
             ),
-            "static": NodeShape(
-                name="static",
+            STATIC: NodeShape(
+                name=STATIC,
                 params=MappingProxyType(
                     {field.name: _static_field(field) for field in fields(Static)}
                 ),
+                own_names=STATIC in OWN_NAMES,
             ),
-            "cost": _COST,
-            "mode": _MODE,
-            "worked_out": _WORKED_OUT,
-            "named_count": _NAMED_COUNT,
+            COST: _COST,
+            MODE: _MODE,
+            WORKED_OUT: _WORKED_OUT,
+            NAMED_COUNT: _NAMED_COUNT,
             **{
                 name: NodeShape(
                     name=name,
@@ -179,6 +204,12 @@ _ANNOTATIONS = {
     "tuple[Any, ...]": A_LIST,
     "Mapping[str, Any]": A_MAPPING,
     "str | None": TEXT,
+    "int | None": WHOLE,
+    "CardType": TEXT,
+    "frozenset[str]": A_LIST,
+    "Mapping[str, int]": A_MAPPING,
+    "tuple[Ability, ...]": A_LIST,
+    "tuple[Static, ...]": A_LIST,
 }
 """
 What a dataclass field holds, read off how it was written down.
@@ -194,6 +225,118 @@ def _kind_of(field: Field[Any]) -> str:
     The kind a dataclass field's annotation names.
     """
     return _ANNOTATIONS.get(str(field.type), UNCHECKED)
+
+
+OWN_NAMES = (ABILITY, STATIC)
+"""
+The parts of a card that keep the names they make to themselves.
+
+``Runtime`` builds a fresh ``AbilityContext`` every time it resolves an ability
+and the statics are asked one at a time with a context of their own, so nothing
+one part of a card stores or binds is there for another to read. A card is a
+composition of independent rules, not one rule written down in pieces, and this
+is the sentence that says so to anything reading the metadata.
+"""
+
+CARD_BODIES = ("abilities", "statics")
+"""
+Where a card keeps the parts it is composed of.
+
+The same thing ``bodies`` says about a branch, said about the whole card: these
+are lists of more of the language, and a card with both of them empty does
+nothing at all whatever else it says.
+"""
+
+CARD_WORDS = {
+    "id": "what the engine calls it",
+    "name": "what it is called",
+    "type": "which kind of card it is",
+    "expansion": "which set it belongs to",
+    "abilities": "the rules it follows",
+    "statics": "what it changes while it is in play",
+    "health": "hit points",
+    "attack": "attack",
+    "roll": "the roll needed to hit it",
+    "cost": "what it costs to buy",
+    "souls": "souls it is worth",
+    "tags": "families it belongs to",
+    "rewards": "what defeating it pays out",
+    "metadata": "notes that are not rules — its printed text, and anything else",
+}
+
+
+def _printed_on(number: str) -> tuple[Any, ...]:
+    """
+    The kinds of card that do *not* carry this printed number.
+
+    Said as an absence because that is the shape ``unless_when`` has: a
+    parameter is moot while another answer holds one of these. A kind nobody
+    has described is not in the list, so nothing is refused to it — silence
+    about ``starting_item`` is silence, not a claim that it has no cost.
+    """
+    return tuple(
+        str(kind)
+        for kind, numbers in PRINTED_NUMBERS.items()
+        if number not in numbers
+    )
+
+
+def _card_field(field: Field[Any]) -> ParamShape:
+    """
+    One field of a card, as a card file may write it.
+
+    The composition falls straight out of the dataclass: ``abilities`` and
+    ``statics`` are annotated as tuples of the two things this module already
+    describes, so they are lists of those nodes and anything that can draw a
+    list of effects can draw them.
+
+    The printed numbers are the one place a card asks a question that depends
+    on another answer. A loot card has no hit points, and ``unless`` is already
+    the language's word for a question another answer has settled — so it is
+    said with that rather than with a rule of its own.
+    """
+    lists = {"abilities": ABILITY, "statics": STATIC}
+    # Written by whatever makes the card, from the set it is going into and the
+    # name somebody gave it. A form offering either takes an answer it is about
+    # to overwrite.
+    ours = ("id", "expansion")
+    # Free-form data the engine keeps and does not read: a list of family names
+    # with no closed set, what a monster pays out, and the card's own notes.
+    # None of them is a value anybody types into a box.
+    theirs = ("tags", "rewards", "metadata")
+
+    return ParamShape(
+        field.name,
+        _kind_of(field),
+        nullable="None" in str(field.type),
+        required=field.name in ("id", "name", "type", "expansion"),
+        values=(
+            tuple(str(kind) for kind in CardType) if field.name == "type" else ()
+        ),
+        a_list_of=lists.get(field.name, ""),
+        role=STRUCTURE if field.name in theirs else "",
+        written_as=BY_BINDING if field.name in ours else "",
+        unless="type" if field.name in _EVERY_PRINTED_NUMBER else "",
+        unless_when=(
+            _printed_on(field.name)
+            if field.name in _EVERY_PRINTED_NUMBER
+            else ()
+        ),
+        describes=CARD_WORDS.get(field.name, ""),
+        default=_default_of(field),
+    )
+
+
+_EVERY_PRINTED_NUMBER = frozenset(
+    number for numbers in PRINTED_NUMBERS.values() for number in numbers
+)
+"""
+Every number some kind of card carries printed on it.
+
+Derived rather than listed: a number nobody has said any card prints is a
+number no kind of card can be said to be missing, so it is asked of all of
+them.
+"""
 
 
 ABILITY_WORDS = {
@@ -235,11 +378,24 @@ def _ability_field(field: Field[Any]) -> ParamShape:
         field.name,
         _kind_of(field),
         values=values.get(field.name, ()),
+        values_mean=TRIGGER_WORDS if field.name == "trigger" else MappingProxyType({}),
         a_list_of=lists.get(field.name, ""),
         shaped_like=COST if field.name == "cost" else "",
         describes=ABILITY_WORDS.get(field.name, ""),
         default=None if field.name == "scope" else _default_of(field),
     )
+
+
+TRIGGER_WORDS = MappingProxyType(
+    {str(event): said for event, said in WHEN_IT_HAPPENS.items()}
+)
+"""
+What each moment a card can react to is, in a person's words.
+
+The engine's own sentence for every event, keyed by the name a card writes.
+A list of sixty-six identifiers is a list somebody has to look up; the same
+list with these on it is a question they can answer.
+"""
 
 
 STAT_BY_SCOPE = MappingProxyType(

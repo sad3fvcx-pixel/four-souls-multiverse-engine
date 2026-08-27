@@ -90,11 +90,14 @@ def test_every_ability_field_lands_on_a_control_the_page_has(
 def test_the_page_draws_the_skeleton_from_the_shape_and_not_from_a_list(
     page: str,
 ) -> None:
-    assert "function abilityHtml()" in page
-    assert 'named(can.abilities, "ability")' in page
-    # The only field names the page mentions are the two the form above
-    # already asks for in its own words.
-    assert 'const FEATURED = ["trigger", "effects"]' in page
+    assert "function cardHtml(wanted)" in page
+    assert 'named(can.cards, "card")' in page
+    # An ability is drawn wherever a list of abilities is drawn, which is the
+    # same list renderer everything else goes through — so the page names it
+    # nowhere. The only field name it mentions is the one the form above asks
+    # in its own words.
+    assert 'const FEATURED = ["name"];' in page
+    assert '"ability"' not in page.split("<script>")[1]
 
 
 def test_an_ability_with_the_rest_of_itself_filled_in() -> None:
@@ -123,9 +126,14 @@ def test_an_ability_with_the_rest_of_itself_filled_in() -> None:
 def test_the_page_has_one_body_renderer_and_it_is_generic(page: str) -> None:
     assert "function bodyHtml(kind, list, path)" in page
     assert "function nodeHtml(kind, node, path)" in page
-    # The four kinds, read off the metadata rather than off any node's name.
-    for kind in ("step", "condition", "target", "mode"):
+    # The three kinds a node is *chosen* from a list for. Anything else the
+    # metadata says a list may be of is one named shape, found by that name —
+    # which is what a mode always was and what an ability and a static are too.
+    for kind in ("step", "condition", "target"):
         assert f"{kind}:" in page.split("const KINDS = {")[1][:400]
+
+    assert "function kindOf(kind)" in page
+    assert "shapeNamed(kind)" in page
 
 
 def test_a_body_keeps_the_order_it_was_given() -> None:
@@ -315,7 +323,7 @@ def test_the_page_says_when_it_cannot_build_something(page: str) -> None:
 
 
 def test_a_body_of_a_kind_the_page_has_no_component_for_says_so(page: str) -> None:
-    assert "if (!KINDS[kind])" in page
+    assert "const of = kindOf(kind);\n  if (!of) {" in page
     assert "cannot build one yet" in page
 
 

@@ -127,7 +127,7 @@ def test_a_parameter_offers_its_ways(can: dict[str, Any]) -> None:
 
 
 def test_the_page_asks_which_way_and_draws_that_way(page: str) -> None:
-    assert "function waysHtml(f, values, siblings, path)" in page
+    assert "function waysHtml(f, values, siblings, path, owner)" in page
     assert "function writtenThisWay(way, value)" in page
     assert "if (f.also.length) return waysHtml" in page
     # The way is read off the value's own shape, so nothing is remembered
@@ -198,8 +198,8 @@ def test_two_ways_at_once_is_refused(vocabulary) -> None:
 
 
 def test_the_page_offers_one_of_a_group_as_one_question(page: str) -> None:
-    assert "function oneOfHtml(group, siblings, values, path)" in page
-    assert "function setOneOf(path, group, id)" in page
+    assert "function oneOfHtml(group, siblings, values, path, owner)" in page
+    assert "function setOneOf(path, group, id, owner)" in page
     assert "if (f.one_of)" in page
 
 
@@ -254,7 +254,9 @@ def test_the_page_offers_the_names_it_can_find_rather_than_a_box(
     page: str,
 ) -> None:
     assert "function referenceHtml(f, values, path)" in page
-    assert "function definedNames(kind)" in page
+    # Which names there are is a question about one part of a card, not about
+    # the card: the engine gives every ability a context of its own.
+    assert "function definedNames(kind, path)" in page
     # Found by asking each node's own shape what it defines and what it keeps.
     assert "shape.stores" in page
     assert "f.defines === kind" in page

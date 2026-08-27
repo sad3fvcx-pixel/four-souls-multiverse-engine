@@ -32,7 +32,7 @@ from fsme.lab.desk.capabilities import catalogue
 from fsme.runtime.interpreter import CONTROL_BODIES, CONTROL_KEYS, CONTROL_NAMES
 from fsme.runtime.vocabulary import engine_vocabulary
 
-SECTIONS = ("abilities", "statics", "structures")
+SECTIONS = ("cards", "abilities", "statics", "structures")
 
 
 @pytest.fixture(scope="module")
@@ -232,6 +232,11 @@ def test_a_list_of_nodes_says_what_it_is_a_list_of(can: dict[str, Any]) -> None:
     }
 
     assert listed == {
+        # A card is a composition: several rules, and several numbers it
+        # changes while it is in play. Both are lists of nodes exactly the way
+        # an ability's effects are.
+        "card.abilities": "ability",
+        "card.statics": "static",
         "ability.conditions": "condition",
         "ability.targets": "target",
         # A list of things that happen holds effect nodes and control nodes

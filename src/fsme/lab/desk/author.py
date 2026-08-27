@@ -25,6 +25,7 @@ from fsme.cards import validate_card
 from fsme.content.vocabulary import (
     BY_BINDING,
     BY_PLAYER_OF,
+    CARD,
     CONDITION,
     COST,
     MODE,
@@ -42,22 +43,6 @@ from fsme.runtime.vocabulary import engine_vocabulary
 CARDS = "cards"
 MANIFEST = "manifest.json"
 SCHEMA = "1"
-
-NUMBERS = {
-    "monster": ("health", "attack", "roll"),
-    "treasure": ("cost",),
-    "room": (),
-    "character": ("health",),
-    "loot": (),
-    "curse": (),
-}
-"""
-The printed numbers each kind of card carries.
-
-A monster has hit points and a difficulty; a loot card has neither, and asking
-somebody for one would be asking them to invent a fact about their card.
-"""
-
 
 __all__ = [
     "AuthorError",
@@ -376,80 +361,87 @@ def build_card(described: Any) -> dict[str, Any]:
     """
     The card a person described, written the way the loader expects.
 
-    Everything an author never sees is added here: the identifier, the
-    expansion, the schema version, the shape of an ability. What they typed is
-    a name, some numbers and a list of things that happen.
+    What a card is made of is the card's own shape — the rules it follows, the
+    numbers it changes while it is in play, the numbers printed on it — so this
+    reads that shape and writes whatever the shape says a card may have.
+    Nothing below knows that a card has abilities: a part added to a card is a
+    field added to ``CardDefinition``, and this widens the moment it is.
+
+    Four things are added on top, because none of them is anybody's answer: the
+    identifier, the set, the schema version, and the empty list that says a
+    card without rules is an unfinished card rather than a broken file.
     """
     if not isinstance(described, dict):
         raise AuthorError("Nothing was sent.")
 
     set_id = identifier_for(str(described.get("set", "")))
-    name = str(described.get("name", "")).strip()
-    kind = str(described.get("kind", "loot"))
 
     if not set_id:
         raise AuthorError("Which set is this card for?")
 
+    shape = engine_vocabulary().node_shape(CARD)
+    written = _written_node(shape, _as_a_card(described), None)
+
+    name = str(written.get("name", "")).strip()
+
     if not name:
         raise AuthorError("Give the card a name.")
 
+    kind = str(written.get("type") or "loot")
     card: dict[str, Any] = {
         "id": card_identifier(set_id, kind, name),
         "name": name,
         "type": kind,
         "expansion": set_id,
         "schema_version": SCHEMA,
-        "abilities": [],
     }
-
-    for number in NUMBERS.get(kind, ()):
-        written = described.get("numbers", {}).get(number)
-
-        if written not in (None, ""):
-            card[number] = int(written)
-
-    text = str(described.get("text", "")).strip()
-
-    if text:
-        card["metadata"] = {"text": text}
-
-    ability = _ability(described.get("ability"))
-
-    if ability is not None:
-        card["abilities"] = [ability]
+    card.update({key: value for key, value in written.items() if key not in card})
+    card.setdefault("abilities", [])
 
     return card
 
 
-def _ability(described: Any) -> dict[str, Any] | None:
+def _as_a_card(described: Mapping[str, Any]) -> dict[str, Any]:
     """
-    One ability, written out of the shape the engine describes it with.
+    What somebody filled in, as the one node the card shape describes.
 
-    Every field the ability node has, filled from whatever the page collected
-    under the same name — nothing here knows that an ability has a trigger, a
-    scope or a cost, because the shape says so and this reads the shape.
-
-    The one thing added on top is the pair of halves an aim becomes. An effect
-    that says what it acts on gets that written twice: once as a thing the
-    ability picks out, and once as the effect pointing at it. The author says
-    it once and never sees the name in between.
+    A page sends a card the way it sends everything else — what was typed under
+    ``fields``, what was pointed at under ``groups``. The older form sent one
+    ability with the card's few facts beside it at the top, and is still read
+    here: a page that has not been reloaded is not a mistake, and neither is a
+    card somebody saved out of one yesterday.
     """
-    if not isinstance(described, dict):
-        return None
+    given = described.get("card")
 
-    aimed: list[dict[str, Any]] = []
-    shape = engine_vocabulary().node_shape("ability")
-    ability = _written_node(shape, described, aimed)
+    if isinstance(given, dict):
+        return dict(given)
 
-    if not ability.get("effects"):
-        return None
+    fields: dict[str, Any] = {
+        "name": described.get("name", ""),
+        "type": described.get("kind", "loot"),
+        **(described.get("numbers") or {}),
+    }
 
-    ability.setdefault("trigger", "on_play")
+    text = str(described.get("text", "")).strip()
 
-    if aimed:
-        ability["targets"] = list(ability.get("targets", ())) + aimed
+    if text:
+        fields["metadata"] = {"text": text}
 
-    return ability
+    ability = described.get("ability")
+
+    # A page that sends one ability sends it before anything has been put in
+    # it, so an empty one is a card nobody has started rather than a rule that
+    # does nothing. A page that sends a list says the difference itself: an
+    # ability somebody added and left empty is one they can be told about.
+    if isinstance(ability, dict) and ability.get("effects"):
+        fields["abilities"] = [
+            {
+                "fields": {"trigger": "on_play", **ability},
+                "groups": ability.get("groups", {}),
+            }
+        ]
+
+    return {"fields": fields, "groups": {}}
 
 
 def _written_node(
@@ -501,6 +493,12 @@ def _written_node(
 
         value = given.get(name)
 
+        # A question another answer has already settled is a question this card
+        # must not answer twice. A page keeps what was typed so that changing
+        # the other answer gives it back; the card is where it may not appear.
+        if _settled(parameter, shape, given):
+            continue
+
         if value not in (None, "", [], {}):
             written[name] = value
 
@@ -546,19 +544,25 @@ def _written_body(
 def _written_one(kind: str, described: Any, aimed: Any) -> Any:
     """
     One node of one kind.
+
+    Four kinds of answer and the metadata says which each is. A kind the engine
+    describes with a shape of its own — a mode, an ability, a static — has no
+    name inside it to look up and is simply written out of that shape. The
+    other three carry a name and are written the way their registry reads them.
     """
     if not isinstance(described, dict):
         return described if isinstance(described, str) else None
 
-    if kind == MODE:
-        return _written_node(engine_vocabulary().node_shape(MODE), described, aimed)
+    vocabulary = engine_vocabulary()
+    shape = vocabulary.node_shape(kind)
+
+    if shape is not None:
+        return _written_part(shape, described, aimed)
 
     name = str(described.get("id", ""))
 
     if not name:
         return None
-
-    vocabulary = engine_vocabulary()
 
     if kind == CONDITION:
         body = _given(vocabulary.condition_shape(name), described, aimed)
@@ -572,6 +576,56 @@ def _written_one(kind: str, described: Any, aimed: Any) -> Any:
         return {name: body}
 
     return _written_step(name, described, aimed)
+
+
+def _written_part(
+    shape: Any,
+    described: Any,
+    aimed: list[dict[str, Any]] | None,
+) -> dict[str, Any]:
+    """
+    One node of a named shape, given the names it is allowed to make.
+
+    A mode belongs to the ability that holds it and shares everything with it —
+    a group bound before a choice is there to be pointed at inside one. An
+    ability and a static do not: the engine builds a context per ability and
+    shares nothing between them, so each starts with no names and keeps the
+    ones it makes. ``own_names`` is where that is said, and this reads it
+    rather than knowing which is which.
+
+    Where the names go is read off the shape too. Whatever a part of a card
+    keeps its chosen groups under is the field the shape describes as a list of
+    targets; a part with no such field cannot choose anything, and whatever is
+    drawing it has to say so rather than take an answer nowhere can hold.
+    """
+    if not shape.own_names:
+        return _written_node(shape, described, aimed)
+
+    kept = _chooses(shape)
+    ours: list[dict[str, Any]] = []
+    node = _written_node(shape, described, ours if kept else None)
+
+    if ours:
+        node[kept] = list(node.get(kept, ())) + ours
+
+    return node
+
+
+def _chooses(shape: Any) -> str:
+    """
+    Where this part of a card keeps the things it picks out, if it picks any.
+
+    Empty for a static: nothing in one chooses anybody, which is why a static's
+    conditions can only ask about the table and never about "them".
+    """
+    return next(
+        (
+            parameter.name
+            for parameter in shape.params.values()
+            if parameter.a_list_of == TARGET
+        ),
+        "",
+    )
 
 
 def _written_step(name: str, described: Any, aimed: Any) -> Any:

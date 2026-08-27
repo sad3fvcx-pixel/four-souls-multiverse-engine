@@ -18,6 +18,7 @@ changing first. There is no second list.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
 from fsme.content.vocabulary import (
@@ -126,11 +127,22 @@ def catalogue() -> dict[str, Any]:
         "effects": _effects(vocabulary),
         "conditions": _conditions(vocabulary),
         "targets": _targets(vocabulary),
+        "cards": _nodes(vocabulary, CARD_NODES),
         "abilities": _nodes(vocabulary, ABILITY_NODES),
         "statics": _nodes(vocabulary, STATIC_NODES),
         "structures": _nodes(vocabulary, STRUCTURE_NODES),
     }
 
+
+CARD_NODES = ("card",)
+"""
+What a whole card is made of.
+
+The top of a card is a composition — several rules, several things it changes
+while it is in play, and the printed numbers beside them — and until this was
+published nothing could find that out except by assuming it. An interface that
+assumes gets one ability and no statics, which is what happened.
+"""
 
 ABILITY_NODES = ("ability", "cost")
 """
@@ -186,6 +198,10 @@ def _nodes(vocabulary: Any, names: Any) -> list[dict[str, Any]]:
                 "id": name,
                 "about": ABOUT_NODES.get(name, name.replace("_", " ")),
                 "bodies": list(shape.bodies),
+                # Whether the names written inside this node stay inside it.
+                # An ability's stored roll is not there for the next ability to
+                # read, so nothing may offer it one.
+                "own_names": shape.own_names,
                 # Whether a card may write this among the things that happen.
                 # A control node may; a cost, a mode and a way of working a
                 # number out are described here too and are not steps, and
@@ -199,6 +215,7 @@ def _nodes(vocabulary: Any, names: Any) -> list[dict[str, Any]]:
 
 
 ABOUT_NODES = {
+    "card": "everything one card is made of",
     "ability": "a rule the card follows",
     "static": "a number this card changes while it is in play",
     "cost": "what a player pays to use an ability",
@@ -337,8 +354,11 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             "role": parameter.role,
             "kind": parameter.kind,
             "choices": [str(value) for value in parameter.values],
+            # What each of those choices means, where anything has said. A list
+            # of identifiers is a list somebody has to look up.
+            "means": dict(parameter.values_mean),
             "least": parameter.least,
-            "otherwise": parameter.default,
+            "otherwise": _plainly(parameter.default),
             "required": parameter.required,
             "unless": parameter.unless,
             "unless_when": [str(value) for value in parameter.unless_when],
@@ -391,6 +411,27 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
         found.append(entry)
 
     return found
+
+
+def _plainly(value: Any) -> Any:
+    """
+    A default, in something a page can be sent.
+
+    A card's ``tags`` default to an empty set of family names, which is a
+    perfectly good answer and not a thing JSON has. Nothing is lost saying it
+    as a list: what a set means is its members, and what an unordered one means
+    is any order at all.
+    """
+    if isinstance(value, (frozenset, set)):
+        return sorted(str(one) for one in value)
+
+    if isinstance(value, (tuple, list)):
+        return list(value)
+
+    if isinstance(value, Mapping):
+        return dict(value)
+
+    return value
 
 
 def _wants_target(shape: Any) -> bool:

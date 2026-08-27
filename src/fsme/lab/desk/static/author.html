@@ -119,8 +119,10 @@ async function mine() {
 async function startCard() {
   if (!can) can = await api("/api/capabilities");
   const { sets } = await api("/api/sets");
-  state = { set: sets[0]?.id || "", name: "", kind: "", text: "",
-            numbers: {}, ability: { trigger: "on_play", effects: [], targets: [] } };
+  // A card is a node like every one inside it: what was typed under `fields`,
+  // what was pointed at under `groups`, and its own name so that anything
+  // asking what shape describes it can be told.
+  state = { set: sets[0]?.id || "", card: { id: "card", fields: {}, groups: {} } };
   if (!sets.length) return newSet();
   chooseKind();
 }
@@ -154,43 +156,35 @@ function chooseKind() {
           <b>${esc(k.name)}</b><span>${esc(k.about)}</span></button>`).join("")}</div>`);
 }
 
-function pickKind(kind) { state.kind = kind; editor(); }
+function pickKind(kind) { state.card.fields.type = kind; editor(); }
 
 // ------------------------------------------------------------- the editor
 
 function editor(problems = [], moments = []) {
-  const kindName = can.kinds.find(k => k.id === state.kind)?.name || state.kind;
+  const kind = state.card.fields.type;
+  const kindName = can.kinds.find(k => k.id === kind)?.name || kind || "card";
   el(`<button class="back" onclick="home()">← back</button>
-    <h1>Your ${esc(kindName.toLowerCase())}</h1>
+    <h1>Your ${esc(String(kindName).toLowerCase())}</h1>
 
     <label for="name">What is it called?</label>
-    <input id="name" value="${esc(state.name)}" placeholder="Lucky Penny"
-           oninput="state.name=this.value; face()">
+    <input id="name" value="${esc(state.card.fields.name || "")}"
+           placeholder="Lucky Penny"
+           oninput="setField('state.card.fields','name',this.value,false)">
 
     <label for="text">What does the card say?</label>
     <textarea id="text" placeholder="Gain 3¢."
-      oninput="state.text=this.value; face()">${esc(state.text)}</textarea>
+      oninput="setNote(this.value,false)"
+      onchange="setNote(this.value,true)">${esc(printed())}</textarea>
 
-    <h2>When does it happen?</h2>
-    <select id="trigger" onchange="state.ability.trigger=this.value">
-      ${can.triggers.filter(t => t.common).map(t =>
-        `<option value="${t.id}" ${t.id === state.ability.trigger ? "selected" : ""}>
-           ${esc(t.about)}</option>`).join("")}
-      <optgroup label="less common">
-      ${can.triggers.filter(t => !t.common).map(t =>
-        `<option value="${t.id}" ${t.id === state.ability.trigger ? "selected" : ""}>
-           ${esc(t.about)}</option>`).join("")}
-      </optgroup>
-    </select>
+    <h2>What it does</h2>
+    <p class="lead">A card is a composition. Everything it does is one of
+      these, and each one stands on its own.</p>
+    <div id="parts">${cardHtml(f => f.shown === "body")}</div>
 
-    <h2>What happens?</h2>
-    <div id="steps">${bodyHtml("step", state.ability.effects,
-                               "state.ability.effects")}</div>
-
-    <h2>More about this ability</h2>
-    <p class="lead">Everything else an ability may say. Most cards say none of
-      it, and the engine fills in whatever nobody writes.</p>
-    <div id="ability">${abilityHtml()}</div>
+    <h2>More about this card</h2>
+    <p class="lead">Everything else a card may say. Most cards say none of it,
+      and the engine fills in whatever nobody writes.</p>
+    <div id="rest">${cardHtml(f => f.shown !== "body")}</div>
 
     <hr>
     <div class="row">
@@ -207,18 +201,34 @@ function editor(problems = [], moments = []) {
   face();
 }
 
-// The rest of the ability, drawn from the shape the engine describes it with.
-// Nothing here names a field: what an ability may say is what the metadata
-// says it may say, and the two below are only the ones the form above already
-// asks for in its own words.
-const FEATURED = ["trigger", "effects"];
+// The card itself, drawn from the shape the engine describes it with. Nothing
+// here names a part: what a card contains is what the metadata says it
+// contains, so a card that grows a third kind of part grows a third section
+// without this changing. The one below is the only question the form above
+// asks whole, in a person's own words.
+const FEATURED = ["name"];
 
-function abilityHtml() {
-  const shape = named(can.abilities, "ability");
+function cardHtml(wanted) {
+  const shape = named(can.cards, "card");
   if (!shape) return "";
-  const rest = shape.fields.filter(f => !FEATURED.includes(f.id));
-  return fieldsHtml(rest, state.ability, state.ability.groups,
-                    "state.ability", "state.ability.groups");
+  const fields = shape.fields.filter(f => !FEATURED.includes(f.id) && wanted(f));
+  return fieldsHtml(fields, state.card.fields, state.card.groups,
+                    "state.card.fields", "state.card.groups", shape.id);
+}
+
+// What is printed on the card. The engine keeps it among the card's own notes,
+// which is a set of named values a card may put anything in; a person types a
+// sentence. Both ways of saying it are offered — the sentence here, the notes
+// in full below — so the box up top is a shortcut into one of them and never
+// the only way in. It redraws when it is finished with so that the two cannot
+// come to disagree.
+function printed() { return (state.card.fields.metadata || {}).text || ""; }
+
+function setNote(text, redraw) {
+  const notes = at("state.card.fields.metadata");
+  if (text.trim()) notes.text = text; else delete notes.text;
+  if (redraw) return editor();
+  face();
 }
 
 
@@ -236,14 +246,33 @@ function abilityHtml() {
 // and where to look each kind up.
 
 // Where a node of each kind is described, and what it is called on the page.
+// Three of them are chosen out of a list of the engine's own; anything else a
+// list may be of is one named shape, and is found by that name.
 const KINDS = {
   step:      { of: () => can.effects.concat(
                  can.structures.filter(x => x.a_step && drawable(x))),
                says: "＋ something happens" },
   condition: { of: () => can.conditions, says: "＋ something must be true" },
   target:    { of: () => can.targets,    says: "＋ something to pick out" },
-  mode:      { of: () => null,           says: "＋ another option" },
 };
+
+// A mode, an ability, a static: a node of exactly one shape, which is why
+// there is nothing to choose. Its own words are what the metadata calls it,
+// so a kind the language gains draws itself without being listed here.
+function kindOf(kind) {
+  if (KINDS[kind]) return KINDS[kind];
+  const shape = shapeNamed(kind);
+  return shape ? { of: () => null, says: "＋ " + shape.about, shape } : null;
+}
+
+// Every shape the catalogue publishes, wherever it publishes it. A section is
+// a list of things with fields; the two that are not — the kinds of card, and
+// the moments a card may react to — describe no node.
+function catalogues() {
+  return Object.values(can).filter(list =>
+    Array.isArray(list) && list.length && list.every(one => one && one.fields));
+}
+const shapeNamed = (id) => catalogues().flat().find(x => x.id === id);
 
 // A structure the page can draw is one whose every own field lands somewhere
 // this renderer has a control for. Nothing is listed by name.
@@ -254,28 +283,32 @@ const DRAWS = ["form", "group", "advanced", "given", "spelling", "body", "nested
 
 function bodyHtml(kind, list, path) {
   // A kind this renderer has no component for is said, never drawn as a box.
-  if (!KINDS[kind]) {
+  const of = kindOf(kind);
+  if (!of) {
     return `<p class="muted">The engine describes this as a list of
       ${esc(kind)} nodes, and this editor cannot build one yet.</p>`;
   }
-  const rows = (list || []).map((node, i) =>
+  const held = list || [];
+  const rows = held.map((node, i) =>
     `<div class="node">
        <div class="head">
          ${chooserHtml(kind, node, path, i)}
          <button onclick="dropNode('${path}',${i})">remove</button>
          ${i ? `<button onclick="moveNode('${path}',${i},-1)">↑</button>` : ""}
+         ${i < held.length - 1
+             ? `<button onclick="moveNode('${path}',${i},1)">↓</button>` : ""}
        </div>
        ${nodeHtml(kind, node, `${path}[${i}]`)}
      </div>`).join("");
   return `<div class="body">${rows}
-    <button onclick="addNode('${kind}','${path}')">${esc(KINDS[kind].says)}</button>
+    <button onclick="addNode('${kind}','${path}')">${esc(of.says)}</button>
   </div>`;
 }
 
 // The list a node of this kind is chosen from — the engine's own, in its own
 // words. A mode is not chosen from anything: a mode is a mode.
 function chooserHtml(kind, node, path, index) {
-  const offered = KINDS[kind].of();
+  const offered = kindOf(kind).of();
   if (!offered) return "";
   const one = (x) => `<option value="${x.id}" ${x.id === node.id ? "selected" : ""}
       >${esc(x.about)}</option>`;
@@ -291,29 +324,31 @@ function chooserHtml(kind, node, path, index) {
 }
 
 function nodeHtml(kind, node, path) {
-  if (kind === "mode") return shapeHtml(named(can.structures, "mode"), node, path);
-  const shape = named(KINDS[kind].of() || [], node.id);
+  const of = kindOf(kind);
+  const offered = of.of();
+  const shape = offered ? named(offered, node.id) : of.shape;
   if (!shape) return "";
-  return shapeHtml(shape, node, path)
-       + (kind === "step" ? aimHtml(shape, node, path) : "");
+  // Whether anything is aimed is the shape's own answer, not the kind's: an
+  // effect says it acts on something and nothing else does.
+  return shapeHtml(shape, node, path) + aimHtml(shape, node, path);
 }
 
 // One shape's fields, wherever they are being drawn.
 function shapeHtml(shape, holder, path) {
   return fieldsHtml(shape.fields, holder.fields, holder.groups,
-                    `${path}.fields`, `${path}.groups`);
+                    `${path}.fields`, `${path}.groups`, shape.id);
 }
 
 // One node of a named shape — a cost, a mode, a way of working a number out.
 // The renderer does not know what is in one: it asks the metadata.
 function nestedHtml(field, values, path) {
-  const shape = named(can.structures.concat(can.abilities), field.shaped_like);
+  const shape = shapeNamed(field.shaped_like);
   if (!shape) return unsupportedHtml(field);
   const inside = values[field.id] || {};
   return `<details class="deep" open>
     <summary>${esc(field.about)}${needed(field)}</summary>
     <div class="nested">${fieldsHtml(shape.fields, inside, inside.groups,
-        `${path}.${field.id}`, `${path}.${field.id}.groups`)}</div>
+        `${path}.${field.id}`, `${path}.${field.id}.groups`, shape.id)}</div>
   </details>`;
 }
 
@@ -336,6 +371,7 @@ function unsupportedHtml(field) {
 // something, with the engine's own words for each choice.
 function aimHtml(chosen, step, path) {
   if (!chosen || !chosen.needs_target) return "";
+  if (!canChoose(path)) return cannotChooseHtml({ about: "what it happens to" });
   const options = can.targets.filter(t => t.aimable);
   const common = options.filter(t => t.common && !t.after);
   const rest = options.filter(t => !t.common && !t.after);
@@ -354,7 +390,7 @@ function aimHtml(chosen, step, path) {
       <optgroup label="what an earlier step chose">${after.map(one).join("")}</optgroup>
     </select>
     ${picked ? fieldsHtml(picked.fields, step.aim_fields, step.aim_groups,
-        `${path}.aim_fields`, `${path}.aim_groups`) : ""}`;
+        `${path}.aim_fields`, `${path}.aim_groups`, picked.id) : ""}`;
 }
 
 // ------------------------------------------------------------- the values
@@ -366,23 +402,25 @@ function aimHtml(chosen, step, path) {
 // Parameters of which a card may write exactly one. Asked as one choice and
 // then the chosen one's own control — offering all of them would be offering
 // a card that says two things and gets one, which is what the engine refuses.
-function oneOfHtml(group, siblings, values, path) {
+function oneOfHtml(group, siblings, values, path, owner) {
   const ways = siblings.filter(f => f.one_of === group);
   const chosen = ways.find(f => values[f.id] !== undefined) || {};
   const one = (f) => `<option value="${f.id}" ${f.id === chosen.id ? "selected" : ""}
       >${esc(f.about)}</option>`;
   return `<label>${esc(group)}</label>
-    <select onchange="setOneOf('${path}','${group}',this.value)">
+    <select onchange="setOneOf('${path}','${group}',this.value,'${owner}')">
       <option value="">— choose —</option>
       ${ways.map(one).join("")}
     </select>
-    ${chosen.id ? fieldsHtml([{ ...chosen, one_of: "" }], values, {}, path, path) : ""}`;
+    ${chosen.id
+        ? fieldsHtml([{ ...chosen, one_of: "" }], values, {}, path, path, owner)
+        : ""}`;
 }
 
 // A parameter with more than one way of being written asks which way first,
 // and then draws that way with the ordinary controls. Nothing here knows what
 // the ways are — `also` says.
-function waysHtml(f, values, siblings, path) {
+function waysHtml(f, values, siblings, path, owner) {
   const ways = [f, ...f.also];
   const chosen = ways.findIndex(way => writtenThisWay(way, values[f.id]));
   const one = (way, i) => `<option value="${i}" ${i === chosen ? "selected" : ""}
@@ -397,7 +435,8 @@ function waysHtml(f, values, siblings, path) {
                 values, siblings, path);
   return `<label>${esc(f.about)}${needed(f)}</label>
     ${drawn}
-    <select class="way" onchange="setWay('${path}','${f.id}',this.value)">
+    <select class="way"
+      onchange="setWay('${path}','${f.id}',this.value,'${owner}')">
       ${ways.map(one).join("")}
     </select>`;
 }
@@ -429,7 +468,7 @@ function only(way) {
 // is read off the card: every field the metadata says *defines* one, and every
 // effect the metadata says keeps its result under one.
 function referenceHtml(f, values, path) {
-  const known = definedNames(f.picks);
+  const known = definedNames(f.picks, path);
   const value = values[f.id] ?? "";
   if (!known.length) {
     return `<label>${esc(f.about)}${needed(f)}</label>
@@ -443,17 +482,19 @@ function referenceHtml(f, values, path) {
     </select>`;
 }
 
-// Every name this card has made of one kind, found by walking what has been
-// filled in and asking the metadata of each node what it defines.
-function definedNames(kind) {
+// Every name one part of a card has made of one kind, found by walking what
+// has been filled in and asking the metadata of each node what it defines.
+//
+// One part, never the whole card. The engine builds a context per ability and
+// contexts share nothing, so a roll stored in one ability is not there for the
+// next one to read; offering it would offer a name that reads as nothing. The
+// parts that work that way are the ones the metadata calls `own_names`.
+function definedNames(kind, path) {
   const found = new Set();
   const walk = (node) => {
     if (Array.isArray(node)) return node.forEach(walk);
     if (!node || typeof node !== "object") return;
-    const shape = named(can.effects, node.id)
-               || named(can.structures, node.id)
-               || named(can.conditions, node.id)
-               || named(can.targets, node.id);
+    const shape = shapeNamed(node.id);
     if (shape) {
       if (shape.stores && kind === "values") found.add(shape.stores);
       for (const f of shape.fields) {
@@ -464,8 +505,33 @@ function definedNames(kind) {
     }
     Object.values(node).forEach(walk);
   };
-  walk(state.ability);
+  walk(partAt(path).node);
   return [...found].sort();
+}
+
+// The part of the card a path is inside: the nearest thing that keeps the
+// names it makes to itself, and the shape describing it. Read off the card's
+// own fields rather than named here — a card that grows a third kind of part
+// scopes it the same way without this changing.
+function partAt(path) {
+  const card = named(can.cards, "card") || { fields: [] };
+  for (const f of card.fields) {
+    const shape = f.a_list_of && shapeNamed(f.a_list_of);
+    if (!shape || !shape.own_names) continue;
+    const found = path.match(
+      new RegExp("^state\\.card\\.fields\\." + f.id + "\\[\\d+\\]"));
+    if (found) return { node: at(found[0]), shape };
+  }
+  return { node: state.card, shape: null };
+}
+
+// Whether the part of the card being drawn can pick anything out at all.
+// An ability chooses things and binds them under names; a static chooses
+// nothing — there is nowhere in one to put a chosen group — so a question
+// naming something chosen has, there, no answer it could be given.
+function canChoose(path) {
+  const part = partAt(path).shape;
+  return !part || part.fields.some(f => f.a_list_of === "target");
 }
 
 // A choice whose list waits on another answer in the same node.
@@ -497,17 +563,22 @@ function dependentHtml(f, values, siblings, path) {
 // `values` is what the author filled in and `groups` is what they pointed at;
 // the two are kept apart because they become different things in the card.
 
-function fieldsHtml(fields, values, groups, path, groupPath) {
-  const list = fields || [];
+function fieldsHtml(fields, values, groups, path, groupPath, owner) {
+  const drawn = fields || [];
+  // What the neighbours are is the whole shape, not the part being drawn. A
+  // question another answer has settled is settled by that answer wherever it
+  // is asked — a card's hit points are not a loot card's question even when
+  // the kind of card is asked on a different screen.
+  const list = fieldsOf(owner).length ? fieldsOf(owner) : drawn;
   values = values || {};
   groups = groups || {};
   // Parameters a card may write exactly one of are asked as one question.
   const grouped = new Set();
-  return list.map(f => {
+  return drawn.map(f => {
     if (f.one_of) {
       if (grouped.has(f.one_of)) return "";
       grouped.add(f.one_of);
-      return oneOfHtml(f.one_of, list, values, path);
+      return oneOfHtml(f.one_of, list, values, path, owner);
     }
     // A second name the engine also reads for a question already asked. Asking
     // it again would be asking the same thing twice and saying nothing about
@@ -522,7 +593,7 @@ function fieldsHtml(fields, values, groups, path, groupPath) {
     if (f.shown === "advanced") return structureHtml(f, values, path);
     // More than one way of being written, a name an earlier step made, or a
     // list of choices that waits on another answer.
-    if (f.also.length) return waysHtml(f, values, list, path);
+    if (f.also.length) return waysHtml(f, values, list, path, owner);
     if (f.picks && f.written === STORED) return referenceHtml(f, values, path);
     if (f.domain_from) return dependentHtml(f, values, list, path);
     return valueHtml(f, values, list, path);
@@ -542,6 +613,7 @@ function givenHtml(f) {
 // the author chooses from the engine's own targets and the name is written
 // behind them, which is the machinery the aim already uses.
 function groupHtml(f, groups, groupPath) {
+  if (!canChoose(groupPath)) return cannotChooseHtml(f);
   const pick = groups[f.id] || {};
   const options = can.targets.filter(t => t.aimable && fits(t, f.picks));
   const one = (t) => `<option value="${t.id}" ${
@@ -558,7 +630,15 @@ function groupHtml(f, groups, groupPath) {
         >${options.filter(t => t.after).map(one).join("")}</optgroup>
     </select>
     ${picked ? `<div class="nested">${fieldsHtml(picked.fields, pick.fields,
-        pick.groups, `${mine}.fields`, `${mine}.groups`)}</div>` : ""}`;
+        pick.groups, `${mine}.fields`, `${mine}.groups`, picked.id)}</div>` : ""}`;
+}
+
+// Said, never drawn as a box, and not the same sentence as "not built yet":
+// this is a question the engine has no answer to here either, so offering one
+// would be offering an answer that goes nowhere.
+function cannotChooseHtml(f) {
+  return `<p class="muted"><b>${esc(f.about)}</b> — nothing in this part of the
+    card picks anything out, so there is no name for this to be given.</p>`;
 }
 
 // Which of the engine's targets can answer a parameter that names players,
@@ -629,8 +709,8 @@ function valueHtml(f, values, siblings, path) {
     return `${says}${why}
     <select ${dead} onchange="setField('${path}','${f.id}',this.value,${seen})">
       <option value="">${esc(fallback(f))}</option>
-      ${f.choices.map(c => `<option ${c === value ? "selected" : ""}
-        >${esc(c)}</option>`).join("")}
+      ${f.choices.map(c => `<option value="${esc(c)}" ${c === value ? "selected" : ""}
+        >${esc(meant(f, c))}</option>`).join("")}
     </select>
     <p class="problem" ${f.required ? 'data-needed="1"' : ""}
        id="${note(path, f.id)}">${blank(f, value)}</p>`;
@@ -668,6 +748,11 @@ function moot(f, values, siblings) {
   return now !== undefined && now !== null && now !== "" && now !== false;
 }
 
+// What a value says, where the engine has words for it. Sixty-six event names
+// are a list somebody has to look up; the same list with these on it is a
+// question they can answer.
+function meant(f, choice) { return (f.means || {})[choice] || choice; }
+
 function labelOf(fields, id) {
   const f = fields.find(o => o.id === id);
   return f ? f.about : id;
@@ -691,10 +776,6 @@ function note(path, id) {
 // typed is read the way a card file would read it and kept as words otherwise.
 function guess(written) {
   try { return JSON.parse(written); } catch (e) { return written; }
-}
-
-function conditionFields(id) {
-  return (can.conditions.find(c => c.id === id) || {}).fields || [];
 }
 
 // -------------------------------------------------------------- editing
@@ -779,24 +860,22 @@ function setAim(path, id) {
 }
 
 // One of a group, and only one: choosing another puts the last one away.
-function setOneOf(path, group, id) {
+// Which parameters are in the group is asked of the shape being drawn, which
+// is the one thing that knows — the same key means different things in
+// different nodes.
+function setOneOf(path, group, id, owner) {
   const here = at(path);
-  for (const one of everyField()) {
+  for (const one of fieldsOf(owner)) {
     if (one.one_of === group && one.id !== id) delete here[one.id];
   }
   if (id) here[id] ??= "";
   editor();
 }
 
-const everyField = () => ["effects", "conditions", "targets", "abilities",
-                          "statics", "structures"]
-  .flatMap(g => can[g]).flatMap(one => one.fields);
-
-
 // Choosing a different way of giving a value starts that way empty, because
 // what was written for one way is not an answer to another.
-function setWay(path, key, which) {
-  const f = wayOwner(path, key);
+function setWay(path, key, which, owner) {
+  const f = fieldsOf(owner).find(one => one.id === key) || { id: key, also: [] };
   const way = [f, ...f.also][Number(which)];
   const here = at(path);
   if (way.shaped_like) here[key] = {};
@@ -805,31 +884,17 @@ function setWay(path, key, which) {
   editor();
 }
 
-// The metadata of the field a path and a name point at.
-function wayOwner(path, key) {
-  for (const group of ["effects", "conditions", "targets", "abilities",
-                       "statics", "structures"]) {
-    for (const one of can[group]) {
-      for (const f of one.fields) {
-        if (f.id === key && f.also.length && drawnAt(path, one)) return f;
-      }
-    }
-  }
-  return { id: key, also: [] };
-}
+// What the shape being drawn says its fields are. The shape is carried down
+// from wherever the drawing started rather than guessed back out of the path,
+// because a path says where a value lives and not what describes it.
+const fieldsOf = (owner) => (shapeNamed(owner) || { fields: [] }).fields;
 
-// Whether the node at this path is the one this shape describes.
-function drawnAt(path, shape) {
-  const owner = path.replace(/\.(fields|groups)$/, "");
-  const node = owner === "state.ability" ? state.ability : at(owner);
-  return node && (node.id === shape.id || owner === "state.ability");
-}
-
-// A node of a known kind, made empty and filled in afterwards.
+// A node of a known kind, made empty and filled in afterwards. A kind chosen
+// out of a list starts with nothing chosen; a kind that is one shape is
+// already the thing it is.
 function addNode(kind, path) {
   const list = at(path, []);
-  list.push(kind === "mode" ? { fields: {}, groups: {} }
-                            : { id: "", fields: {}, groups: {} });
+  list.push({ id: kindOf(kind).of() ? "" : kind, fields: {}, groups: {} });
   editor();
 }
 function dropNode(path, index) { at(path, []).splice(index, 1); editor(); }
@@ -846,13 +911,14 @@ function setNode(kind, path, index, id) {
 // ------------------------------------------------------- the card's face
 
 async function face() {
-  const kindName = can.kinds.find(k => k.id === state.kind)?.name || state.kind;
+  const kind = state.card.fields.type;
+  const kindName = can.kinds.find(k => k.id === kind)?.name || kind || "card";
   const holder = document.getElementById("face");
   if (holder) {
     holder.innerHTML = `<div class="card">
       <div class="kind">${esc(kindName)}</div>
-      <b>${esc(state.name || "Untitled")}</b>
-      <div class="text">${esc(state.text || "")}</div>
+      <b>${esc(state.card.fields.name || "Untitled")}</b>
+      <div class="text">${esc(printed())}</div>
       <div class="muted" id="reads"></div></div>`;
   }
   const said = await api("/api/cards/check", state);
@@ -879,7 +945,8 @@ async function save() {
   const said = await api("/api/cards/save", state);
   if (said.error) return editor([said.error]);
   editor(said.problems.map(plain),
-         said.saved ? [{ what: `Saved. ${state.name} is in your set.` }] : []);
+         said.saved
+           ? [{ what: `Saved. ${state.card.fields.name} is in your set.` }] : []);
 }
 
 async function tryIt() {
