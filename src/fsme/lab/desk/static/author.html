@@ -51,6 +51,7 @@
  select[multiple] { height:auto; }
  :disabled { opacity:.45; }
  p.problem:empty { display:none; }
+ select.way { font-size:.82rem; color:var(--dim); margin-top:-.25rem; }
  .body { border-left:2px solid var(--line); padding-left:.7rem; margin:.3rem 0 .6rem; }
  .node { border:1px solid var(--line); border-radius:8px; padding:.6rem .7rem;
          margin:.5rem 0; }
@@ -318,6 +319,11 @@ function nestedHtml(field, values, path) {
 
 const named = (list, id) => list.find(x => x.id === id);
 
+// How the metadata spells "the name of a value an earlier step stored". The
+// page compares against it rather than deciding for itself which fields are
+// references.
+const STORED = "the name of a value an earlier step stored";
+
 // Said, never drawn as a box. A capability the engine has and this editor
 // cannot yet build is a sentence saying so — an empty field pretending to be
 // the answer is worse than no field at all.
@@ -351,6 +357,134 @@ function aimHtml(chosen, step, path) {
         `${path}.aim_fields`, `${path}.aim_groups`) : ""}`;
 }
 
+// ------------------------------------------------------------- the values
+//
+// Three things the metadata says about a value that the controls above could
+// not draw: that it may be given more than one way, that it may be the name of
+// something an earlier step made, and that its choices wait on another answer.
+
+// Parameters of which a card may write exactly one. Asked as one choice and
+// then the chosen one's own control — offering all of them would be offering
+// a card that says two things and gets one, which is what the engine refuses.
+function oneOfHtml(group, siblings, values, path) {
+  const ways = siblings.filter(f => f.one_of === group);
+  const chosen = ways.find(f => values[f.id] !== undefined) || {};
+  const one = (f) => `<option value="${f.id}" ${f.id === chosen.id ? "selected" : ""}
+      >${esc(f.about)}</option>`;
+  return `<label>${esc(group)}</label>
+    <select onchange="setOneOf('${path}','${group}',this.value)">
+      <option value="">— choose —</option>
+      ${ways.map(one).join("")}
+    </select>
+    ${chosen.id ? fieldsHtml([{ ...chosen, one_of: "" }], values, {}, path, path) : ""}`;
+}
+
+// A parameter with more than one way of being written asks which way first,
+// and then draws that way with the ordinary controls. Nothing here knows what
+// the ways are — `also` says.
+function waysHtml(f, values, siblings, path) {
+  const ways = [f, ...f.also];
+  const chosen = ways.findIndex(way => writtenThisWay(way, values[f.id]));
+  const one = (way, i) => `<option value="${i}" ${i === chosen ? "selected" : ""}
+      >${esc(wayNamed(way))}</option>`;
+  const way = ways[chosen] || ways[0];
+  const drawn = way.shaped_like
+    ? nestedHtml({ ...f, about: wayNamed(way), shaped_like: way.shaped_like },
+                 values, path)
+    : way.a_list_of
+    ? bodyHtml(way.a_list_of, values[f.id], `${path}.${f.id}`)
+    : valueHtml({ ...f, ...only(way), also: [], bare: true },
+                values, siblings, path);
+  return `<label>${esc(f.about)}${needed(f)}</label>
+    ${drawn}
+    <select class="way" onchange="setWay('${path}','${f.id}',this.value)">
+      ${ways.map(one).join("")}
+    </select>`;
+}
+
+// Which way a value already written is written in. Read off the value's own
+// shape, so nothing has to be remembered beside the card.
+function writtenThisWay(way, value) {
+  if (way.shaped_like) return value !== null && typeof value === "object"
+                              && !Array.isArray(value);
+  if (way.a_list_of) return Array.isArray(value);
+  return value === undefined || typeof value !== "object";
+}
+
+function wayNamed(way) {
+  return way.about || way.kind || way.shaped_like || way.a_list_of;
+}
+
+// What a way says about itself, over what the parameter said first.
+function only(way) {
+  const said = {};
+  if (way.kind) said.kind = way.kind;
+  if (way.choices && way.choices.length) said.choices = way.choices;
+  if (way.least !== null && way.least !== undefined) said.least = way.least;
+  said.shaped_like = ""; said.a_list_of = "";
+  return said;
+}
+
+// A name an earlier step made, chosen rather than typed. What names there are
+// is read off the card: every field the metadata says *defines* one, and every
+// effect the metadata says keeps its result under one.
+function referenceHtml(f, values, path) {
+  const known = definedNames(f.picks);
+  const value = values[f.id] ?? "";
+  if (!known.length) {
+    return `<label>${esc(f.about)}${needed(f)}</label>
+      <p class="muted">Nothing earlier in this card has made one yet.</p>`;
+  }
+  return `<label>${esc(f.about)}${needed(f)}</label>
+    <select onchange="setField('${path}','${f.id}',this.value,false)">
+      <option value="">${esc(fallback(f))}</option>
+      ${known.map(n => `<option ${n === value ? "selected" : ""}>${esc(n)}</option>`)
+             .join("")}
+    </select>`;
+}
+
+// Every name this card has made of one kind, found by walking what has been
+// filled in and asking the metadata of each node what it defines.
+function definedNames(kind) {
+  const found = new Set();
+  const walk = (node) => {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== "object") return;
+    const shape = named(can.effects, node.id)
+               || named(can.structures, node.id)
+               || named(can.conditions, node.id)
+               || named(can.targets, node.id);
+    if (shape) {
+      if (shape.stores && kind === "values") found.add(shape.stores);
+      for (const f of shape.fields) {
+        if (f.defines === kind && (node.fields || {})[f.id]) {
+          found.add(String(node.fields[f.id]));
+        }
+      }
+    }
+    Object.values(node).forEach(walk);
+  };
+  walk(state.ability);
+  return [...found].sort();
+}
+
+// A choice whose list waits on another answer in the same node.
+function dependentHtml(f, values, siblings, path) {
+  const other = siblings.find(o => o.id === f.domain_from);
+  const answer = values[f.domain_from] ?? (other ? other.otherwise : "");
+  const allowed = f.domains[String(answer)];
+  if (!allowed) {
+    return `<label>${esc(f.about)}${needed(f)}</label>
+      <p class="muted">Which of these are allowed depends on
+        <b>${esc(other ? other.about : f.domain_from)}</b>, and this editor
+        cannot work it out from the card alone.</p>
+      ${valueHtml({ ...f, domain_from: "" }, values, siblings, path)}`;
+  }
+  return valueHtml({ ...f, domain_from: "", choices: allowed, role: "which" },
+                   values, siblings, path);
+}
+
+
 // ------------------------------------------------------------- the fields
 //
 // One renderer for every parameter the engine has, driven entirely by what
@@ -367,7 +501,14 @@ function fieldsHtml(fields, values, groups, path, groupPath) {
   const list = fields || [];
   values = values || {};
   groups = groups || {};
+  // Parameters a card may write exactly one of are asked as one question.
+  const grouped = new Set();
   return list.map(f => {
+    if (f.one_of) {
+      if (grouped.has(f.one_of)) return "";
+      grouped.add(f.one_of);
+      return oneOfHtml(f.one_of, list, values, path);
+    }
     // A second name the engine also reads for a question already asked. Asking
     // it again would be asking the same thing twice and saying nothing about
     // which answer wins.
@@ -379,6 +520,11 @@ function fieldsHtml(fields, values, groups, path, groupPath) {
       + bodyHtml(f.a_list_of, values[f.id], `${path}.${f.id}`);
     if (f.shown === "nested") return nestedHtml(f, values, path);
     if (f.shown === "advanced") return structureHtml(f, values, path);
+    // More than one way of being written, a name an earlier step made, or a
+    // list of choices that waits on another answer.
+    if (f.also.length) return waysHtml(f, values, list, path);
+    if (f.picks && f.written === STORED) return referenceHtml(f, values, path);
+    if (f.domain_from) return dependentHtml(f, values, list, path);
     return valueHtml(f, values, list, path);
   }).join("");
 }
@@ -450,6 +596,9 @@ function structureHtml(f, values, path) {
 // question is worth asking at all.
 function valueHtml(f, values, siblings, path) {
   const value = values[f.id];
+  // Something above may have asked the question already — a way chooser, or a
+  // group of which this is the one chosen.
+  const says = f.bare ? "" : `<label>${esc(f.about)}${needed(f)}</label>`;
   const off = moot(f, values, siblings);
   const why = off ? `<p class="muted">Not used while
       <b>${esc(labelOf(siblings, f.unless))}</b> says what it says.</p>` : "";
@@ -460,7 +609,7 @@ function valueHtml(f, values, siblings, path) {
   const put = (what) => `${seen ? "onchange" : "oninput"}="setField('${path}','${
       f.id}',${what},${seen})"`;
 
-  if (f.many) return `<label>${esc(f.about)}${needed(f)}</label>${why}
+  if (f.many) return `${says}${why}
     <select multiple size="${Math.min(8, Math.max(2, f.choices.length))}" ${dead}
       onchange="setMany('${path}','${f.id}',this)">
       ${f.choices.map(c => `<option ${
@@ -474,10 +623,10 @@ function valueHtml(f, values, siblings, path) {
   if (f.role === "switch") return `${why}<label class="flag"><input type="checkbox"
       style="width:auto" ${value === true ? "checked" : ""} ${dead}
       onchange="setField('${path}','${f.id}',this.checked,${seen})">
-      ${esc(f.about)}</label>`;
+      ${f.bare ? "yes" : esc(f.about)}</label>`;
 
   if (f.role === "which" && f.choices.length)
-    return `<label>${esc(f.about)}${needed(f)}</label>${why}
+    return `${says}${why}
     <select ${dead} onchange="setField('${path}','${f.id}',this.value,${seen})">
       <option value="">${esc(fallback(f))}</option>
       ${f.choices.map(c => `<option ${c === value ? "selected" : ""}
@@ -490,7 +639,7 @@ function valueHtml(f, values, siblings, path) {
   const kept = value === undefined || value === null ? "" : value;
   const read = number ? "this.valueAsNumber"
     : f.role === "open" ? "guess(this.value)" : "this.value";
-  return `<label>${esc(f.about)}${needed(f)}</label>${why}
+  return `${says}${why}
     <input ${dead} ${number
       ? `type="number" ${f.least != null ? `min="${f.least}"` : ""}` : ""}
       placeholder="${esc(fallback(f))}" value="${esc(kept)}" ${put(read)}>
@@ -627,6 +776,53 @@ function setAim(path, id) {
   if (id) { step.aim = id; step.aim_fields = {}; step.aim_groups = {}; }
   else { delete step.aim; delete step.aim_fields; delete step.aim_groups; }
   editor();
+}
+
+// One of a group, and only one: choosing another puts the last one away.
+function setOneOf(path, group, id) {
+  const here = at(path);
+  for (const one of everyField()) {
+    if (one.one_of === group && one.id !== id) delete here[one.id];
+  }
+  if (id) here[id] ??= "";
+  editor();
+}
+
+const everyField = () => ["effects", "conditions", "targets", "abilities",
+                          "statics", "structures"]
+  .flatMap(g => can[g]).flatMap(one => one.fields);
+
+
+// Choosing a different way of giving a value starts that way empty, because
+// what was written for one way is not an answer to another.
+function setWay(path, key, which) {
+  const f = wayOwner(path, key);
+  const way = [f, ...f.also][Number(which)];
+  const here = at(path);
+  if (way.shaped_like) here[key] = {};
+  else if (way.a_list_of) here[key] = [];
+  else delete here[key];
+  editor();
+}
+
+// The metadata of the field a path and a name point at.
+function wayOwner(path, key) {
+  for (const group of ["effects", "conditions", "targets", "abilities",
+                       "statics", "structures"]) {
+    for (const one of can[group]) {
+      for (const f of one.fields) {
+        if (f.id === key && f.also.length && drawnAt(path, one)) return f;
+      }
+    }
+  }
+  return { id: key, also: [] };
+}
+
+// Whether the node at this path is the one this shape describes.
+function drawnAt(path, shape) {
+  const owner = path.replace(/\.(fields|groups)$/, "");
+  const node = owner === "state.ability" ? state.ability : at(owner);
+  return node && (node.id === shape.id || owner === "state.ability");
 }
 
 // A node of a known kind, made empty and filled in afterwards.

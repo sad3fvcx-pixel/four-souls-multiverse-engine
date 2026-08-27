@@ -47,7 +47,8 @@ from fsme.effects.registry import EffectSpec, ParamKind
 from fsme.events import EventType
 from fsme.rules.costs import COINS, COUNTERS, DISCARD, HP, TAP
 from fsme.rules.restrictions import ACTIONS
-from fsme.rules.statics import STATIC_SCOPES
+from fsme.rules.statics import MONSTER_SCOPES, STATIC_SCOPES
+from fsme.state.modifiers import MONSTER_STATS, STATS
 
 from .condition_evaluator import ConditionEvaluator
 from .effect_executor import COUNTABLE, WORKING_OUT
@@ -241,6 +242,25 @@ def _ability_field(field: Field[Any]) -> ParamShape:
     )
 
 
+STAT_BY_SCOPE = MappingProxyType(
+    {
+        scope: MONSTER_STATS if scope in MONSTER_SCOPES else STATS
+        for scope in STATIC_SCOPES
+        if scope != "self"
+    }
+)
+"""
+Which numbers a static may change, for each answer but one.
+
+`_static_stat` reads ``scope in MONSTER_SCOPES or (monster and scope ==
+"self")``, so five of the six scopes settle it on their own and ``self``
+settles it only together with the kind of card the static is written on —
+which is not one of the static's own answers, and so is not something this can
+say. Leaving it out is the whole point of saying where a domain comes from:
+an answer missing here is an answer nobody can resolve from the node alone.
+"""
+
+
 def _static_field(field: Field[Any]) -> ParamShape:
     """
     One field of a static, as a card may write it.
@@ -262,6 +282,7 @@ def _static_field(field: Field[Any]) -> ParamShape:
         ),
         a_list_of=CONDITION if field.name == "conditions" else "",
         domain_from="scope" if field.name == "stat" else "",
+        domains=STAT_BY_SCOPE if field.name == "stat" else MappingProxyType({}),
         describes=STATIC_WORDS.get(field.name, ""),
         default=_default_of(field),
     )
@@ -333,25 +354,40 @@ about the effects behind it.
 """
 
 
+A_HEAD = "the way it is worked out"
+"""
+The group the five heads belong to: a specification names exactly one.
+
+`_resolve_params` tries them in the order it lists them and takes the first it
+finds, so a card writing two has written one and a sentence nobody reads.
+"""
+
+
 _WORKED_OUT = NodeShape(
     name="worked_out",
     params=MappingProxyType(
         {
             "from": ParamShape(
-                "from", TEXT, refers_to=VALUES, describes=WORKING_OUT["from"]
+                "from",
+                TEXT,
+                refers_to=VALUES,
+                one_of=A_HEAD,
+                describes=WORKING_OUT["from"],
             ),
             "from_event": ParamShape(
-                "from_event", TEXT, describes=WORKING_OUT["from_event"]
+                "from_event", TEXT, one_of=A_HEAD,
+                describes=WORKING_OUT["from_event"],
             ),
             "last_result": ParamShape(
-                "last_result", UNCHECKED, role=OPEN,
+                "last_result", UNCHECKED, role=OPEN, one_of=A_HEAD,
                 describes=WORKING_OUT["last_result"],
             ),
             "count": ParamShape(
-                "count", TEXT, values=COUNTABLE, describes=WORKING_OUT["count"]
+                "count", TEXT, values=COUNTABLE, one_of=A_HEAD,
+                describes=WORKING_OUT["count"],
             ),
             "player_of": ParamShape(
-                "player_of", TEXT, refers_to=PLAYERS,
+                "player_of", TEXT, refers_to=PLAYERS, one_of=A_HEAD,
                 describes=WORKING_OUT["player_of"],
             ),
             "of": ParamShape(
@@ -622,6 +658,7 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
                 for name, param in spec.params.items()
             }
         ),
+        stores=spec.stores or "",
         primary=spec.primary,
         open_ended=spec.open_ended,
         literal=spec.literal,

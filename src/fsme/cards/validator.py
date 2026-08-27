@@ -112,6 +112,7 @@ def validate_card(
         validate_references(
             data,
             shapes=target_shapes,
+            effects=shapes,
             known_targets=known_targets,
             card_id=str(card_id),
         )
@@ -131,6 +132,7 @@ def validate_card(
                 known_triggers=known_triggers,
                 known_targets=known_targets,
                 shapes=shapes,
+                node_shapes=node_shapes,
             )
         )
 
@@ -146,6 +148,7 @@ def _validate_ability(
     known_triggers: Collection[str] | None,
     known_targets: Collection[str] | None = None,
     shapes: Mapping[str, Any] | None = None,
+    node_shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     location = f"{card_id}: ability {index}"
 
@@ -182,7 +185,12 @@ def _validate_ability(
 
     if shapes and isinstance(effects, (list, tuple)):
         errors.extend(
-            _validate_arguments(effects, shapes=shapes, location=location)
+            _validate_arguments(
+                effects,
+                shapes=shapes,
+                node_shapes=node_shapes,
+                location=location,
+            )
         )
 
     if known_targets is not None:
@@ -233,6 +241,7 @@ def _validate_arguments(
     shapes: Mapping[str, Any],
     location: str,
     path: str = "effects",
+    node_shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Check what a card gives each effect against what that effect takes.
@@ -253,7 +262,9 @@ def _validate_arguments(
 
         if name is not None:
             errors.extend(
-                _validate_call(name, params, shapes[name], location, here)
+                _validate_call(
+                    name, params, shapes[name], location, here, node_shapes
+                )
             )
 
         for branch in _BRANCH_KEYS:
@@ -262,7 +273,8 @@ def _validate_arguments(
             if isinstance(inside, (list, tuple)):
                 errors.extend(
                     _validate_arguments(
-                        inside, shapes=shapes, location=location,
+                        inside, shapes=shapes, node_shapes=node_shapes,
+                        location=location,
                         path=f"{here}.{branch}",
                     )
                 )
@@ -273,7 +285,8 @@ def _validate_arguments(
             if isinstance(inside, (list, tuple)):
                 errors.extend(
                     _validate_arguments(
-                        inside, shapes=shapes, location=location,
+                        inside, shapes=shapes, node_shapes=node_shapes,
+                        location=location,
                         path=f"{here}.modes[{number}].effects",
                     )
                 )
@@ -340,6 +353,7 @@ def _validate_call(
     shape: Any,
     location: str,
     path: str,
+    node_shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     One effect call, against what that effect takes.
@@ -369,7 +383,9 @@ def _validate_call(
 
             continue
 
-        errors.extend(_validate_value(name, parameter, value, location, path))
+        errors.extend(
+            _validate_value(name, parameter, value, location, path, node_shapes)
+        )
 
     for key, parameter in shape.params.items():
         if parameter.required and key not in params:
@@ -387,6 +403,7 @@ def _validate_value(
     value: Any,
     location: str,
     path: str,
+    node_shapes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     One value, against the one parameter it was written for.
@@ -408,6 +425,24 @@ def _validate_value(
         ]
 
     if isinstance(value, Mapping):
+        worked_out = next(
+            (
+                way
+                for way in getattr(parameter, "also", ())
+                if way.shaped_like and way.shaped_like in (node_shapes or {})
+            ),
+            None,
+        )
+
+        if worked_out is not None:
+            # The parameter says there is another way it may be written and
+            # names the shape of it, so the shape is what this is checked
+            # against — the same description a form would be drawn from.
+            return _written_this_way(
+                worked_out, value, location, f"{path}.{parameter.name}",
+                node_shapes,
+            )
+
         head = DYNAMIC_HEADS & set(value)
 
         if not head:
@@ -582,6 +617,82 @@ def _one_node(
 
         errors.extend(
             _one_value(parameter, value, card_id, f"{path}.{key}", nodes)
+        )
+
+    errors.extend(_only_one(node, shape, card_id, path))
+    errors.extend(_the_right_domain(node, shape, card_id, path))
+
+    return errors
+
+
+def _only_one(
+    node: Mapping[str, Any],
+    shape: Any,
+    card_id: str,
+    path: str,
+) -> list[str]:
+    """
+    Groups of keys a card may write exactly one of.
+
+    A value worked out while the ability runs names one way of working it out.
+    Writing two is not writing two: the executor tries them in the order it
+    lists them and takes the first, so the second is a sentence nobody reads,
+    and a card saying two things quietly gets one.
+    """
+    groups: dict[str, list[str]] = {}
+
+    for key in node:
+        parameter = shape.params.get(key)
+
+        group = str(getattr(parameter, "one_of", "") or "")
+
+        if group:
+            groups.setdefault(group, []).append(str(key))
+
+    return [
+        f"{card_id}: {path}: only one of "
+        + " or ".join(f"'{one}'" for one in sorted(written))
+        + f" may be given as {group}, and the card gives "
+        + str(len(written))
+        for group, written in groups.items()
+        if len(written) > 1
+    ]
+
+
+def _the_right_domain(
+    node: Mapping[str, Any],
+    shape: Any,
+    card_id: str,
+    path: str,
+) -> list[str]:
+    """
+    Choices whose list depends on another answer in the same node.
+
+    Which numbers a static may change depends on what its scope reaches. Where
+    the metadata knows the branch, this is the ordinary domain check with the
+    right list; where it does not, nothing is refused, because a list that is
+    right half the time refuses correct cards half the time.
+    """
+    errors: list[str] = []
+
+    for key, value in node.items():
+        parameter = shape.params.get(key)
+        depends = getattr(parameter, "domain_from", "") if parameter else ""
+
+        if not depends:
+            continue
+
+        answer = node.get(depends, getattr(shape.params.get(depends), "default", None))
+        allowed = getattr(parameter, "domains", {}).get(str(answer))
+
+        if not allowed or not isinstance(value, str) or value in allowed:
+            continue
+
+        errors.append(
+            f"{card_id}: {path}.{key}: '{value}' is not one of the ones "
+            f"'{depends}' allows here — "
+            + " or ".join(f"'{one}'" for one in allowed)
+            + did_you_mean(value, [str(one) for one in allowed])
         )
 
     return errors
@@ -797,7 +908,6 @@ def _static_stat(
     monster's. A monster has no controller, so the split is automatic — and a
     player statistic written on a monster's static is read by nobody.
     """
-    from fsme.rules.statics import MONSTER_SCOPES
     from fsme.state.modifiers import MONSTER_STATS, STATS
 
     stat = static.get("stat")
@@ -806,7 +916,14 @@ def _static_stat(
         return []
 
     scope = str(static.get("scope", "controller"))
-    reaches_monsters = scope in MONSTER_SCOPES or (monster and scope == "self")
+
+    if scope != "self":
+        # Which stats this scope reaches is a fact the static's own shape
+        # carries, and `_the_right_domain` reads it there. Saying it twice is
+        # two complaints about one mistake.
+        return []
+
+    reaches_monsters = monster
     allowed = MONSTER_STATS if reaches_monsters else STATS
 
     if stat in allowed:

@@ -154,7 +154,9 @@ def test_a_misspelled_stat_is_refused(vocabulary: Vocabulary) -> None:
         a_card(statics=[{"stat": "atack", "amount": 1, "scope": "controller"}]),
     )
 
-    assert "'atack' is not something a player has" in message
+    # Which stats are on offer depends on the scope beside it, and the
+    # message says so rather than naming a list out of nowhere.
+    assert "'atack' is not one of the ones 'scope' allows here" in message
     assert "did you mean 'attack'" in message
 
 
@@ -168,7 +170,7 @@ def test_a_player_stat_on_a_monster_scope_is_refused(vocabulary: Vocabulary) -> 
         a_card(statics=[{"stat": "max_hp", "amount": 1, "scope": "all_monsters"}]),
     )
 
-    assert "'max_hp' is not something a monster has" in message
+    assert "'max_hp' is not one of the ones 'scope' allows here" in message
     assert "'difficulty'" in message
 
 
@@ -178,7 +180,7 @@ def test_a_monster_stat_on_a_player_scope_is_refused(vocabulary: Vocabulary) -> 
         a_card(statics=[{"stat": "difficulty", "amount": 1, "scope": "controller"}]),
     )
 
-    assert "'difficulty' is not something a player has" in message
+    assert "'difficulty' is not one of the ones 'scope' allows here" in message
 
 
 def test_a_monsters_own_static_may_change_its_difficulty(

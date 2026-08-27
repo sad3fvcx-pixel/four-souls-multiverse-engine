@@ -285,6 +285,29 @@ class ParamShape:
     nothing offers a box for reading a name that nothing can create.
     """
 
+    one_of: str = ""
+    """
+    A group of parameters of which a card may write exactly one.
+
+    A value worked out while the ability runs names *one* way of working it
+    out: from a stored roll, or from the event, or by counting. Writing two is
+    not writing two — the executor tries them in order and takes the first, so
+    the second is a sentence nobody reads. Named here so that whatever asks
+    offers a choice rather than five boxes, and whatever checks can say a card
+    has asked for two things and will get one.
+    """
+
+    domains: Mapping[str, tuple[Any, ...]] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    """
+    The values allowed for each answer ``domain_from`` may have.
+
+    Empty where the dependency is known and its branches are not. An answer
+    missing from here is an answer this layer cannot resolve — which is worth
+    saying, and much better than a list that is right half the time.
+    """
+
     domain_from: str = ""
     """
     Another answer in this node that decides which values are allowed.
@@ -420,6 +443,16 @@ class EffectShape:
     params: Mapping[str, ParamShape] = field(
         default_factory=lambda: MappingProxyType({})
     )
+
+    stores: str = ""
+    """
+    The name this effect keeps its result under, when it keeps one.
+
+    ``roll_dice`` puts the number rolled into the ability's values as ``dice``,
+    and a later step reads it back with ``{"from": "dice"}``. The reading end
+    was described and the writing end was not, so nothing could tell an author
+    which names there were to read.
+    """
 
     primary: str | None = None
     """

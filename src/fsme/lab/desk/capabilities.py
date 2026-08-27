@@ -261,6 +261,8 @@ def _effects(vocabulary: Any) -> list[dict[str, Any]]:
                 "needs_target": bool(getattr(shape, "primary", None) is not None)
                 or _wants_target(shape),
                 "common": name in COMMON_EFFECTS,
+                # The name it keeps its result under, for a later step to read.
+                "stores": getattr(shape, "stores", ""),
                 "fields": _fields(shape),
             }
         )
@@ -346,7 +348,12 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             "a_list_of": parameter.a_list_of,
             "shaped_like": parameter.shaped_like,
             "defines": parameter.defines,
+            "one_of": parameter.one_of,
             "domain_from": parameter.domain_from,
+            "domains": {
+                answer: [str(one) for one in allowed]
+                for answer, allowed in parameter.domains.items()
+            },
             "names_the_node": parameter.names_the_node,
             "also": [
                 {

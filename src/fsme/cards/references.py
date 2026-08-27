@@ -80,6 +80,7 @@ def validate_references(
     shapes: Mapping[str, Any] | None,
     known_targets: Collection[str] | None,
     card_id: str,
+    effects: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Check every name an ability uses against the names it binds.
@@ -93,6 +94,7 @@ def validate_references(
         errors.extend(
             _Ability(
                 shapes=shapes,
+                effects=effects or {},
                 targets=frozenset(known_targets or ()),
                 card_id=card_id,
             ).check(ability, where)
@@ -135,8 +137,10 @@ class _Ability:
         shapes: Mapping[str, Any],
         targets: frozenset[str],
         card_id: str,
+        effects: Mapping[str, Any] | None = None,
     ) -> None:
         self._shapes = shapes
+        self._effects = effects or {}
         self._targets = targets
         self._card = card_id
         self._errors: list[str] = []
@@ -276,6 +280,13 @@ class _Ability:
         if isinstance(stored, str):
             values.add(stored)
 
+        # And the name an effect keeps its own result under. `roll_dice` puts
+        # the number rolled into the ability's values without being asked to,
+        # which is how "if the roll was a 6" reads it back — and the effect is
+        # the only thing that knows, so the effect is what is asked.
+        for kept in self._keeps(node):
+            values.add(kept)
+
         for key, value in node.items():
             if key in ("targets", "target", "for_each", "store"):
                 continue
@@ -290,6 +301,26 @@ class _Ability:
                 self._walk(value, dict(groups), set(values), f"{path}.{key}")
             elif isinstance(value, (list, tuple, Mapping)):
                 self._walk(value, groups, values, f"{path}.{key}")
+
+    def _keeps(self, node: Mapping[str, Any]) -> list[str]:
+        """
+        The names an effect keeps its own result under.
+
+        `roll_dice` puts the number rolled into the ability's values without
+        being asked to, which is how "if the roll was a 6" reads it back. The
+        effect is the only thing that knows, so the effect is what is asked —
+        under either spelling a card may call it by.
+        """
+        called = node.get("effect")
+        names = [str(called)] if isinstance(called, str) else [
+            str(key) for key in node if key in self._effects
+        ]
+
+        return [
+            str(kept)
+            for name in names
+            if (kept := getattr(self._effects.get(name), "stores", ""))
+        ]
 
     def _aimed(self, spec: Any, groups: dict[str, str], path: str) -> None:
         """
