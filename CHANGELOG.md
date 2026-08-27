@@ -27,6 +27,17 @@ that cannot be read says so) and the **card schema**.
 - Added persistence of author-created sets across application restarts.
 - Added an end-to-end authoring workflow and comprehensive Author UI tests.
 
+## 0.5.0 - card composition and generic authoring
+
+- Added metadata-driven card composition for the Author UI.
+- Added support for multiple abilities per card, including independent target bindings.
+- Added support for static card components.
+- Added a generic renderer for card, ability, static, and nested language structures.
+- Added metadata for dynamic values, stored-value references, and mutually exclusive value forms.
+- Added metadata-driven rendering and validation for control structures and nested bodies.
+- Preserved the existing card JSON format and compatibility with existing cards.
+- Verified 1014 shipped cards load unchanged and 1000 recorded games replay without changes.
+
 ## Unreleased
 
 ## 0.2.0 — author preview
