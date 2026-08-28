@@ -25,6 +25,7 @@ from typing import Any
 from fsme.api import Session
 from fsme.journal import Journal, JournalFormatError, suggested_name, unwrap, wrap
 from fsme.narration import told
+from fsme.util.errors import EngineError
 
 STATIC = Path(__file__).resolve().parent / "static"
 
@@ -90,6 +91,28 @@ class GameHandler(BaseHTTPRequestHandler):
 
             return
 
+        if path == "/api/content":
+            # Which sets this game can be dealt from, and which of them it is
+            # being dealt from now. A set somebody wrote is here on exactly the
+            # same terms as one FSME ships, because both were loaded by the
+            # same loader into the same library.
+            with self.lock:
+                self._json(
+                    {
+                        "sets": [
+                            {
+                                "id": one.id,
+                                "name": one.manifest.name,
+                                "cards": len(one),
+                            }
+                            for one in self.session.sets
+                        ],
+                        "chosen": list(self.session.chosen),
+                    }
+                )
+
+            return
+
         if path == "/api/save":
             with self.lock:
                 self._json(self.session.save())
@@ -137,7 +160,11 @@ class GameHandler(BaseHTTPRequestHandler):
             with self.lock:
                 try:
                     outcome = self.session.submit(body)
-                except ValueError as error:
+                except (ValueError, EngineError) as error:
+                    # A set that was never loaded, a number of players nobody
+                    # can deal, or a choice of sets no game can be made from.
+                    # All three are answers to what was asked rather than
+                    # faults, and the session is left as it was.
                     self._json({"error": str(error)}, status=400)
 
                     return
@@ -179,7 +206,9 @@ class GameHandler(BaseHTTPRequestHandler):
             with self.lock:
                 try:
                     self.session.restart(
-                        seed=body.get("seed"), players=body.get("players")
+                        seed=body.get("seed"),
+                        players=body.get("players"),
+                        sets=body.get("sets"),
                     )
                 except ValueError as error:
                     self._json({"error": str(error)}, status=400)

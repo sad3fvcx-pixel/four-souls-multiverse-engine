@@ -199,8 +199,14 @@ def front(args: argparse.Namespace) -> int:
     from fsme.lab.desk import Workbench
     from fsme.lab.desk import desk as build
 
+    # Every place cards come from, not just the ones we ship. The desk is the
+    # one door an author uses — they make a set on this page and then press
+    # "watch a game" on the same page — and it was the one command still
+    # loading a single root, so the game they watched could not contain the
+    # cards they had just written. `library` is what every other command
+    # already calls; nothing here needed a loader of its own.
     root = content_root(args.content)
-    loaded = load_content(root)
+    loaded = library(args)
 
     bench = Workbench(loaded, root, Path(args.work).expanduser().resolve())
 

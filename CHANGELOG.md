@@ -27,6 +27,23 @@ that cannot be read says so) and the **card schema**.
 - Added persistence of author-created sets across application restarts.
 - Added an end-to-end authoring workflow and comprehensive Author UI tests.
 
+## 0.5.1 - custom cards in watch mode
+
+- Fixed watch mode dealing only the cards FSME ships: an author could make a
+  set, save it, open the watch page and never see it.
+- Watch mode now reads the author's sets through the existing content loading
+  pipeline, the same one every other command already used — no second loader
+  and no format of its own.
+- Added a choice of which sets a game is dealt from, using the library's
+  existing narrowing.
+- Added a clear refusal for a set that was never loaded, for one no game can be
+  dealt from, and for an author's set that fails to load; a refused choice
+  leaves the session as it was.
+- Added regression tests covering shipped content, author-written content, the
+  failure messages, and that both kinds of card arrive by the same pipeline.
+- Verified 1045 shipped definitions load unchanged and 1000 recorded games
+  replay without changes.
+
 ## 0.5.0 - card composition and generic authoring
 
 - Added metadata-driven card composition for the Author UI.

@@ -226,6 +226,9 @@ body.viewing aside { border-left: 0; }
     <button id="roll-seed" title="A seed you did not have to invent. Keep it and the same game deals again.">Random seed</button>
     <button id="copy-seed" title="Copy the seed, so this exact game can be dealt again or reported in an issue.">Copy</button>
     <label class="tag">players <input id="player-count" type="number" min="2" max="4" value="2"></label>
+    <label class="tag" id="sets-tag" hidden>sets
+      <select id="sets" multiple size="1"
+        title="Which sets this game is dealt from. Nothing picked means all of them — including any you made yourself."></select></label>
     <button id="restart">Deal again</button>
     <button id="autoplay" hidden title="The bots take every seat and play it out while you watch.">Let the bots play</button>
   </div>
@@ -912,10 +915,13 @@ document.addEventListener("click", async (occasion) => {
     forgetSteps();
     el("story").innerHTML = "";
     seen = 0;
+    const chosen = Array.from(el("sets").selectedOptions).map(o => o.value);
     const answer = await post("/api/restart", {
       seed: Number(el("seed").value),
       players: Number(el("player-count").value),
+      sets: chosen,
     });
+    if (answer.error) { alert(answer.error); return; }
     if (answer.view) draw(answer.view);
     return;
   }
@@ -951,6 +957,24 @@ el("journal-file").addEventListener("change", async (occasion) => {
 });
 
 get("/api/view?since=0").then(draw);
+
+// Which sets this game can be dealt from. Offered only when there is a choice
+// to make: with one set loaded, picking it is the same as picking nothing, and
+// a control that cannot change anything is a control in the way.
+get("/api/content").then((content) => {
+  const sets = (content && content.sets) || [];
+
+  if (sets.length < 2) return;
+
+  const chosen = new Set(content.chosen || []);
+  const box = el("sets");
+
+  box.innerHTML = sets.map((one) =>
+    `<option value="${one.id}"${chosen.has(one.id) ? " selected" : ""}>` +
+    `${one.name} (${one.cards})</option>`).join("");
+  box.size = Math.min(6, sets.length);
+  el("sets-tag").hidden = false;
+}).catch(() => {});
 </script>
 </body>
 </html>
