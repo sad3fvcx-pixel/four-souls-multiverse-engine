@@ -14,6 +14,14 @@ on:
     # silently, because the release page looks finished either way.
     tags: ["*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: >-
+          Cut a release at this tag, e.g. v0.5.2. Leave it empty to build and
+          check without releasing anything, which is what this button did
+          before.
+        required: false
+        default: ""
 
 jobs:
   test:
@@ -147,13 +155,32 @@ jobs:
   # and uploading happen once, here, after every platform has built something.
   release:
     needs: executable
-    if: startsWith(github.ref, 'refs/tags/')
+
+    # Two ways in, and the second is why this exists. Pushing a tag still cuts
+    # a release exactly as it always did. Asking for one by hand does the same
+    # thing without a tag having to be pushed first — which matters because a
+    # tag cannot always be pushed: an environment may allow branches and refuse
+    # tags, and then there is no way to release at all without somebody's own
+    # machine.
+    #
+    # The tag is made *in this run*, by the job that publishes. It cannot be
+    # made in an earlier one: a tag pushed with GITHUB_TOKEN starts no workflow,
+    # so a run that only tagged would leave a tag with nothing built on it.
+    if: >-
+      startsWith(github.ref, 'refs/tags/')
+      || (github.event_name == 'workflow_dispatch' && inputs.version != '')
 
     runs-on: ubuntu-latest
 
     # The only job that writes anything.
     permissions:
       contents: write
+
+    env:
+      # Where the tag comes from, once, so that nothing below has to know which
+      # of the two ways it was asked for. On a tag push `ref_name` is the tag;
+      # on a hand-run it is the branch, and the version typed in is the answer.
+      TAG: ${{ inputs.version || github.ref_name }}
 
     steps:
       - uses: actions/checkout@v5
@@ -182,7 +209,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="${GITHUB_REF_NAME}"
+          tag="${TAG}"
+
+          if [ -z "${tag}" ]; then
+            echo "no tag to release — nothing said which version this is"
+            exit 1
+          fi
 
           if gh release view "${tag}" >/dev/null 2>&1; then
             echo "release ${tag} already exists — using it, and leaving its notes alone"
@@ -196,9 +228,26 @@ jobs:
             written=(--notes-file "${notes}")
           fi
 
-          # --verify-tag so a typo makes a release for a tag that does not
-          # exist impossible, rather than making an empty one nobody notices.
-          if ! gh release create "${tag}" --title "${tag}" --verify-tag "${written[@]}"; then
+          # Where the tag comes from decides which of these is right, and
+          # getting it the wrong way round is how a release ends up on the
+          # wrong commit or on nothing at all.
+          #
+          # A tag push: the tag is already there and --verify-tag makes a
+          # release for one that is not there impossible, which is what stops
+          # a typo becoming an empty release nobody notices.
+          #
+          # A hand-run: there is no tag yet, and --target is what makes one, at
+          # the commit this run built and checked. Asking to verify a tag we
+          # are about to create would refuse every release this path exists to
+          # make.
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            at=(--verify-tag)
+          else
+            at=(--target "${GITHUB_SHA}")
+            echo "tagging ${GITHUB_SHA} as ${tag}"
+          fi
+
+          if ! gh release create "${tag}" --title "${tag}" "${at[@]}" "${written[@]}"; then
             # Creating can fail because somebody published by hand between the
             # check above and this line. That is a fine outcome. Every other
             # reason it can fail is not, so the difference is asked for rather
@@ -217,7 +266,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "${GITHUB_REF_NAME}" \
+          gh release upload "${TAG}" \
             assets/fsme-linux \
             assets/fsme-windows.exe \
             assets/fsme-macos \
@@ -231,7 +280,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          on_it=$(gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name')
+          on_it=$(gh release view "${TAG}" --json assets --jq '.assets[].name')
 
           echo "on the release:"
           echo "${on_it}"
