@@ -263,10 +263,33 @@ def test_the_workflow_checks_the_release_really_got_them(
         )
 
 
-def test_a_tag_is_still_the_thing_that_starts_it(workflow: dict[str, Any]) -> None:
+def ways_in(job: dict[str, Any]) -> list[str]:
     """
-    And any tag, not only ``v``-prefixed ones: 0.1.0 was cut without the ``v``,
-    matched ``tags: ["v*"]``, and produced no build at all.
+    The separate ways a job's condition can be true.
+
+    A GitHub `if` is one expression, and what matters about a publishing job is
+    how many doors it has and what each one asks for — so the top-level `||` is
+    split and each alternative judged on its own.
+    """
+    return [one.strip() for one in " ".join(job.get("if", "").split()).split("||")]
+
+
+def test_a_release_is_never_cut_by_accident(workflow: dict[str, Any]) -> None:
+    """
+    Publishing has two doors and each one has to be knocked on deliberately.
+
+    A tag: the way it always worked, and any tag, not only ``v``-prefixed ones —
+    0.1.0 was cut without the ``v``, matched ``tags: ["v*"]``, and produced no
+    build at all.
+
+    A hand-run that names a version: the way that exists because a tag cannot
+    always be pushed. It has to name a version, and that is the whole safety of
+    it — pressing the button with the box empty must build and release nothing.
+
+    What must never open a door is an ordinary push. This used to be checked by
+    comparing the condition to one exact sentence, which said the same thing
+    while there was only one way in and would have to be rewritten for every
+    way added. What it was really protecting is checked instead.
     """
     on = workflow["on"]
 
@@ -274,9 +297,66 @@ def test_a_tag_is_still_the_thing_that_starts_it(workflow: dict[str, Any]) -> No
     assert "workflow_dispatch" in on, "the workflow can no longer be run by hand"
 
     for name, job in publishing(workflow).items():
-        assert job.get("if") == "startsWith(github.ref, 'refs/tags/')", (
-            f"job '{name}' publishes on something other than a tag"
+        doors = ways_in(job)
+
+        assert doors, f"job '{name}' publishes on every event there is"
+
+        for door in doors:
+            if door == "startsWith(github.ref, 'refs/tags/')":
+                continue
+
+            assert "github.event_name == 'workflow_dispatch'" in door, (
+                f"job '{name}' can publish without a tag and without being "
+                f"asked by hand: {door}"
+            )
+            assert "inputs.version != ''" in door, (
+                f"job '{name}' can publish from a hand-run that named no "
+                f"version: {door}"
+            )
+
+        assert not any("refs/heads" in door for door in doors), (
+            f"job '{name}' publishes on a branch"
         )
+
+
+def test_a_hand_run_makes_the_tag_and_a_tag_push_still_verifies_one(
+    workflow: dict[str, Any],
+) -> None:
+    """
+    The two doors need two different answers, and swapping them is how a
+    release lands on the wrong commit or on nothing at all.
+
+    A tag push has a tag already, and ``--verify-tag`` is what stops a typo
+    becoming a release for a tag that is not there. A hand-run has no tag yet,
+    so it cannot verify one — it says which commit to make it at instead.
+    """
+    for name, job in publishing(workflow).items():
+        after = "\n".join(scripts(job))
+
+        assert "--verify-tag" in after, (
+            f"job '{name}' no longer refuses a release for a tag that is not "
+            f"there"
+        )
+        assert "--target" in after, (
+            f"job '{name}' cannot make the tag, so a hand-run cannot release"
+        )
+        assert 'GITHUB_REF_TYPE" = "tag"' in after or "GITHUB_REF_TYPE" in after, (
+            f"job '{name}' does not tell the two ways in apart"
+        )
+
+
+def test_the_version_a_hand_run_asks_for_is_optional(
+    workflow: dict[str, Any],
+) -> None:
+    """
+    Because the button did something useful before this existed — build the
+    project and run every check — and it still has to.
+    """
+    asked = workflow["on"]["workflow_dispatch"]["inputs"]["version"]
+
+    assert asked.get("required") is not True
+    assert asked.get("default", "") == ""
+    assert asked.get("description"), "nobody is told what to type in it"
 
 
 def test_the_build_still_covers_the_three_platforms(
