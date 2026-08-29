@@ -6,6 +6,30 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## 0.6.1 - Simple Card Constructor flow
+
+- A simple card can now be finished in the constructor, without going on to
+  the editor: pick a kind, pick an action, answer that action's own questions,
+  and the card is checked and playable from the last screen.
+- Questions are put one at a time and drawn by the controls the editor already
+  draws them with. Which are worth asking, in what order, and what may be
+  answered are the metadata's answers throughout — the order of the first two
+  is read off the ability's own field order, so an ability that names what it
+  picks out before what it does is asked in that order without this being
+  written down anywhere.
+- Preserved one card pipeline: the constructor produces an ordinary ability
+  node in the ordinary place, built by the same builder, checked by the same
+  checker and run by the same runtime. Moving to the editor converts nothing.
+- Added an equivalence check over both ways in: all 58 actions a walk offers
+  are built each way and compared byte for byte.
+- Added the fact three effects had never stated — that they only work inside a
+  replacement ability. It was enforced by raising when the card was played,
+  which is far too late for somebody who has already written and saved it; it
+  is declared beside that guard now and refused when the card is written.
+- Preserved compatibility with existing cards: 352 of 1045 shipped definitions
+  load unchanged, none is newly refused, and 1000 recorded games replay
+  identically.
+
 ## 0.6.0 - Card Constructor foundation
 
 - Added a second way into a card: pick what kind of card it is, then pick what
