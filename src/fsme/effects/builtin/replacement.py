@@ -22,6 +22,16 @@ from ..context import EffectContext
 from ..errors import EffectExecutionError
 from ..registry import EffectRegistry
 
+REPLACING = True
+"""
+What an effect that reaches for the event being replaced declares.
+
+The guard below is the rule, and until this existed it was the only statement
+of it: a form offered these three like any other, a checker passed them, and
+the game threw the moment somebody played the card. Registered effects say it
+now, so the same fact reaches the author before the card is written.
+"""
+
 
 def _open_event(ctx: EffectContext, effect: str) -> Any:
     event = ctx.event
@@ -288,6 +298,7 @@ def register(registry: EffectRegistry) -> None:
     registry.register(
         "prevent_damage",
         prevent_damage,
+        replacing=REPLACING,
         primary="amount",
         description="Reduce incoming damage before it lands.",
     )
@@ -343,11 +354,13 @@ def register(registry: EffectRegistry) -> None:
     registry.register(
         "cancel_event",
         cancel_event,
+        replacing=REPLACING,
         description="Stop the event being replaced from happening.",
     )
     registry.register(
         "modify_event",
         modify_event,
+        replacing=REPLACING,
         primary="key",
         description="Change a value carried by the event being replaced.",
         needs=("key",),

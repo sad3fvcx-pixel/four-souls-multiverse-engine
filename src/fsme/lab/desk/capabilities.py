@@ -293,6 +293,9 @@ def _effects(vocabulary: Any) -> list[dict[str, Any]]:
                 # has to offer one of these, because the engine refuses the
                 # rest when the card is played.
                 "hits": getattr(shape, "hits", ""),
+                # Whether it only works inside a replacement ability. A walk
+                # that does not ask that question has no business offering it.
+                "replacing": bool(getattr(shape, "replacing", False)),
                 "fields": _fields(shape),
             }
         )

@@ -282,6 +282,18 @@ class EffectSpec:
     that nothing correct is ever refused.
     """
 
+    replacing: bool = False
+    """
+    Whether this effect only works inside a replacement ability.
+
+    The sibling of ``hits``. An ability marked ``replacement`` is handed the
+    event that is about to happen so it can edit it; three effects reach for
+    that event and have nothing to reach for anywhere else. The handlers say so
+    by raising, which is the right answer given too late — the form offered
+    them on an ordinary ability and the checker agreed, so a card that could
+    never work was written, saved and only refused when somebody played it.
+    """
+
     primary: str | None = None
     """
     Parameter filled by the DSL shorthand form.
@@ -352,6 +364,7 @@ class EffectRegistry:
         uses_stack: bool = False,
         needs_target: bool = False,
         hits: str = "",
+        replacing: bool = False,
         primary: str | None = None,
         stores: str | None = None,
         literal: frozenset[str] | tuple[str, ...] = (),
@@ -451,6 +464,7 @@ class EffectRegistry:
             uses_stack=uses_stack,
             needs_target=needs_target,
             hits=hits,
+            replacing=replacing,
             primary=primary,
             stores=stores,
             literal=frozenset(literal),

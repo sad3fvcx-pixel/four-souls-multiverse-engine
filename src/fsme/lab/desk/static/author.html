@@ -72,6 +72,10 @@ const api = async (path, body) => {
 
 let can = null;          // what the engine can do
 let state = {};          // the card being made
+// Where a walk has got to, or null while the editor is open. Deliberately not
+// part of `state`: it is how somebody is being asked, not anything about the
+// card, and the card is what gets sent.
+let walk = null;
 const page = document.getElementById("page");
 const el = (html) => { page.innerHTML = html; };
 const esc = (s) => String(s ?? "").replace(/[<>&"]/g, c =>
@@ -80,6 +84,7 @@ const esc = (s) => String(s ?? "").replace(/[<>&"]/g, c =>
 // ---------------------------------------------------------------- home
 
 async function home() {
+  walk = null;
   const { sets, where } = await api("/api/sets");
   const cards = sets.reduce((n, s) => n + s.cards.length, 0);
   el(`
@@ -117,6 +122,7 @@ async function mine() {
 // ------------------------------------------------------- making a card
 
 async function startCard() {
+  walk = null;
   if (!can) can = await api("/api/capabilities");
   const { sets } = await api("/api/sets");
   // A card is a node like every one inside it: what was typed under `fields`,
@@ -177,7 +183,10 @@ function pickKind(kind) {
 // same catalogue the editor offers — every action here is an effect the engine
 // already has, shown by the sentence the effect already carries about itself.
 function chooseAction(how) {
-  const doing = can.effects.filter(e => !e.a_step);
+  // Not the ones that edit an event an ability was handed: this walk does not
+  // ask whether the ability is a replacement, so offering them would offer a
+  // card the checker refuses. The editor still offers them, where it does ask.
+  const doing = can.effects.filter(e => !e.a_step && !e.replacing && finishable(e));
   const one = (e) => `<button class="task" onclick="pickAction('${e.id}','${how}')">
       <b>${esc(sentence(e.about))}</b></button>`;
   const common = doing.filter(e => e.common);
@@ -227,10 +236,124 @@ function pickAction(effect, how) {
   part.fields[where.then.id] = [{ id: effect, fields: {}, groups: {} }];
   state.card.fields[where.list.id] = [part];
   state.mode = "simple";
-  editor();
+  walk = {
+    at: 0,
+    part: where.part,
+    step: `state.card.fields.${where.list.id}[0].fields.${where.then.id}[0]`,
+  };
+  ask(0);
 }
 
-function startBlank() { state.mode = "expert"; editor(); }
+// ------------------------------------------------- answering the action
+//
+// One question on screen at a time, every one of them drawn by the controls
+// the editor draws and written into the same card. What is asked, in what
+// order, and what may be answered are the shapes' answers throughout; the only
+// thing decided here is how many are put at once.
+
+// The questions this walk puts.
+//
+// An ability says what it picks out before it says what happens, so the aim
+// comes before the action's own values — read off the ability's own field
+// order rather than settled here. Which values are worth putting to somebody
+// is `asked`, which is the metadata's answer and not a list kept here.
+function questions() {
+  const step = at(walk.step);
+  const doing = named(can.effects, step.id);
+  if (!doing) return [];
+  const values = doing.fields.filter(f => f.asked === "first" && putable(f));
+  const aim = doing.needs_target ? [{ aim: true }] : [];
+  return picksFirst(walk.part) ? aim.concat(values.map(f => ({ f })))
+                               : values.map(f => ({ f })).concat(aim);
+}
+
+// Whether an ability names what it picks out before what it does. The two
+// lists are found by what they are lists of, the way everything else here
+// finds them, so the order follows the language.
+function picksFirst(part) {
+  const where = (kind) => part.fields.findIndex(f => f.a_list_of === kind);
+  const picks = where("target");
+  const does = where("step");
+  return picks >= 0 && does >= 0 ? picks < does : true;
+}
+
+// A question this walk can put: one whose answer is a single value, which is
+// what `shown` already says. A list of steps, a set of named values, a name an
+// earlier step bound — those are more of the language, and the language is the
+// editor's business. Read off the same routing the editor draws by, so a field
+// that changes how it is written changes which walk can ask it.
+function putable(f) {
+  return f.asked !== "never" && f.shown === "form";
+}
+
+// An action a walk can finish: everything the engine insists on is something
+// this walk can put. Offering the rest would be putting a question with no box
+// to answer it in, and then saving a card the checker refuses.
+function finishable(e) {
+  return e.fields.every(f => !f.required || putable(f));
+}
+
+function ask(n, problems = [], moments = []) {
+  const all = questions();
+  if (n >= all.length) return done(problems, moments);
+  walk.at = n;
+  const step = at(walk.step);
+  const doing = named(can.effects, step.id);
+  const one = all[n];
+  const asked = one.aim
+    ? aimHtml(doing, step, walk.step)
+    : oneByOne([one.f], step.fields, step.groups,
+               `${walk.step}.fields`, `${walk.step}.groups`, doing.id);
+  el(`<button class="back" onclick="${n ? `ask(${n - 1})` : "chooseKind()"}">
+        ← back</button>
+    <p class="muted">${esc(sentence(doing.about))}</p>
+    <h1>Question ${n + 1} of ${all.length}</h1>
+    <div class="nested">${asked}</div>
+    <hr>
+    <div class="row">
+      <button class="go" onclick="ask(${n + 1})">Next</button>
+      <button onclick="startBlank()">Fill the rest in myself</button>
+    </div>
+    ${saidHtml(problems, moments)}`);
+}
+
+// What the engine said about the card, wherever it is being said.
+function saidHtml(problems, moments) {
+  return `<div id="says">
+    ${(problems || []).map(p => `<p class="problem">${esc(p)}</p>`).join("")}
+    ${(moments || []).map(m => `<p class="moment">${esc(m.what)}</p>`).join("")}
+  </div>`;
+}
+
+// The card, finished. It is checked and played by the same two endpoints the
+// editor uses, so what is said about it here is what the engine says about it.
+async function done(problems = [], moments = []) {
+  walk.at = questions().length;
+  el(`<button class="back" onclick="ask(${Math.max(0, walk.at - 1)})">← back</button>
+    <h1>Your card</h1>
+    <label for="name">What is it called?</label>
+    <input id="name" value="${esc(state.card.fields.name || "")}"
+           placeholder="Lucky Penny"
+           oninput="setField('state.card.fields','name',this.value,false)">
+    <hr>
+    <div class="row">
+      <button class="go" onclick="save()">Save this card</button>
+      <button onclick="tryIt()">Try it in a game</button>
+      <button onclick="startBlank()">Change anything else</button>
+    </div>
+    ${saidHtml(problems, moments)}
+    <h2>The card</h2>
+    <div id="face"></div>`);
+  face();
+}
+
+function startBlank() { walk = null; state.mode = "expert"; editor(); }
+
+// What "draw it again" means depends on which way in is open. Every setter
+// calls this one thing, so neither screen has to know about the other.
+function drawn(problems = [], moments = []) {
+  return walk ? ask(walk.at, problems, moments) : editor(problems, moments);
+}
 
 // ------------------------------------------------------------- the editor
 
@@ -300,7 +423,7 @@ function cardHtml() {
 
 // The same card, looked at differently. Nothing is converted and nothing is
 // kept twice: the card being built does not know which view made it.
-function setMode(which) { state.mode = which; editor(); }
+function setMode(which) { walk = null; state.mode = which; editor(); }
 
 // What is printed on the card. The engine keeps it among the card's own notes,
 // which is a set of named values a card may put anything in; a person types a
@@ -313,7 +436,7 @@ function printed() { return (state.card.fields.metadata || {}).text || ""; }
 function setNote(text, redraw) {
   const notes = at("state.card.fields.metadata");
   if (text.trim()) notes.text = text; else delete notes.text;
-  if (redraw) return editor();
+  if (redraw) return drawn();
   face();
 }
 
@@ -980,7 +1103,7 @@ const at = (path, empty) => {
 
 function setField(path, key, value, redraw) {
   at(path)[key] = value;
-  if (redraw) return editor();
+  if (redraw) return drawn();
   told(path, key, value);
   face();
 }
@@ -1000,7 +1123,7 @@ function setPick(groupPath, key, target) {
   const groups = at(groupPath);
   if (target) groups[key] = { id: target, fields: {}, groups: {} };
   else delete groups[key];
-  editor();
+  drawn();
 }
 
 // The effect's own nested data, kept as the structure it is. Text that is not
@@ -1041,7 +1164,7 @@ function setAim(path, id) {
   const step = at(path);
   if (id) { step.aim = id; step.aim_fields = {}; step.aim_groups = {}; }
   else { delete step.aim; delete step.aim_fields; delete step.aim_groups; }
-  editor();
+  drawn();
 }
 
 // One of a group, and only one: choosing another puts the last one away.
@@ -1054,7 +1177,7 @@ function setOneOf(path, group, id, owner) {
     if (one.one_of === group && one.id !== id) delete here[one.id];
   }
   if (id) here[id] ??= "";
-  editor();
+  drawn();
 }
 
 // Choosing a different way of giving a value starts that way empty, because
@@ -1066,7 +1189,7 @@ function setWay(path, key, which, owner) {
   if (way.shaped_like) here[key] = {};
   else if (way.a_list_of) here[key] = [];
   else delete here[key];
-  editor();
+  drawn();
 }
 
 // What the shape being drawn says its fields are. The shape is carried down
@@ -1080,17 +1203,17 @@ const fieldsOf = (owner) => (shapeNamed(owner) || { fields: [] }).fields;
 function addNode(kind, path) {
   const list = at(path, []);
   list.push({ id: kindOf(kind).of() ? "" : kind, fields: {}, groups: {} });
-  editor();
+  drawn();
 }
-function dropNode(path, index) { at(path, []).splice(index, 1); editor(); }
+function dropNode(path, index) { at(path, []).splice(index, 1); drawn(); }
 function moveNode(path, index, by) {
   const list = at(path, []);
   list.splice(index + by, 0, list.splice(index, 1)[0]);
-  editor();
+  drawn();
 }
 function setNode(kind, path, index, id) {
   at(path, [])[index] = { id, fields: {}, groups: {} };
-  editor();
+  drawn();
 }
 
 // ------------------------------------------------------- the card's face
@@ -1128,16 +1251,16 @@ function plain(message) {
 
 async function save() {
   const said = await api("/api/cards/save", state);
-  if (said.error) return editor([said.error]);
-  editor(said.problems.map(plain),
-         said.saved
-           ? [{ what: `Saved. ${state.card.fields.name} is in your set.` }] : []);
+  if (said.error) return drawn([said.error]);
+  drawn(said.problems.map(plain),
+        said.saved
+          ? [{ what: `Saved. ${state.card.fields.name} is in your set.` }] : []);
 }
 
 async function tryIt() {
   const said = await api("/api/cards/try", state);
-  if (said.error) return editor([said.error]);
-  editor((said.problems || []).map(plain), said.moments || []);
+  if (said.error) return drawn([said.error]);
+  drawn((said.problems || []).map(plain), said.moments || []);
 }
 
 home();

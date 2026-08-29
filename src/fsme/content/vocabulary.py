@@ -559,6 +559,17 @@ class EffectShape:
     at anything else is a card the engine will refuse when it is played.
     """
 
+    replacing: bool = False
+    """
+    Whether this effect only works inside a replacement ability — see
+    ``EffectSpec.replacing``.
+
+    The sibling of ``hits``, and travels beside it for the same reason: an
+    author choosing what a card does is choosing from these shapes, and a fact
+    left on the runtime's side of the boundary is a fact the author never
+    hears until the game refuses the card.
+    """
+
     primary: str | None = None
     """
     The parameter the shorthand form fills.

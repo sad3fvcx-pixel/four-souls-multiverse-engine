@@ -165,6 +165,7 @@ class _Ability:
         self._card = card_id
         self._errors: list[str] = []
         self._somewhere: frozenset[str] = frozenset()
+        self._replacing = False
 
     # ------------------------------------------------------------------
 
@@ -178,6 +179,10 @@ class _Ability:
         # difference between "you have not bound that" and "you have bound
         # that, further down", which are different mistakes to go and fix.
         self._somewhere = _bound_anywhere(ability)
+        # Whether this ability is handed the event that is about to happen.
+        # Read off the card, because it is the card that says so, and kept for
+        # the whole walk: an effect nested three deep is in the same ability.
+        self._replacing = ability.get("replacement") is True
 
         # An ability's own conditions are asked before its effects run, so
         # they cannot see anything those effects store. Checking them first,
@@ -295,6 +300,8 @@ class _Ability:
         # What this effect acts on, so that a card aiming it at the wrong kind
         # of thing is refused here rather than when somebody plays it.
         wanted = str(getattr(self._effects.get(_head(node)), "hits", "") or "")
+
+        self._only_replacing(_head(node), path)
 
         self._aimed(node.get("target"), groups, f"{path}.target", wanted)
         self._aimed(node.get("for_each"), groups, f"{path}.for_each")
@@ -435,6 +442,26 @@ class _Ability:
 
             if isinstance(named, str):
                 self._acts_on(named, groups, path, wanted)
+
+    def _only_replacing(self, named: Any, path: str) -> None:
+        """
+        Whether an effect that edits an event is somewhere there is one.
+
+        The sibling of ``_acts_on``. Three effects reach for the event an
+        ability was handed, and outside a replacement ability there is nothing
+        to reach for — which the handlers said by raising, to somebody who had
+        already written and saved the card.
+        """
+        if self._replacing:
+            return
+
+        if not getattr(self._effects.get(named), "replacing", False):
+            return
+
+        self._say(
+            f"{path}: '{named}' edits the event an ability is handed, and this"
+            " ability is not a replacement"
+        )
 
     def _acts_on(
         self,
