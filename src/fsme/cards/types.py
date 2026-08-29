@@ -67,7 +67,7 @@ PRINTED_NUMBERS: Mapping[CardType, tuple[str, ...]] = MappingProxyType(
     {
         CardType.MONSTER: ("health", "attack", "roll"),
         CardType.TREASURE: ("cost",),
-        CardType.CHARACTER: ("health",),
+        CardType.CHARACTER: ("health", "attack"),
         CardType.ROOM: (),
         CardType.LOOT: (),
         CardType.CURSE: (),
@@ -84,4 +84,10 @@ loads, and nothing in a game would ever read them. It is what the printed card
 says, which is a different question from what the engine will accept, and the
 only one worth putting to an author. The kinds missing from here are the ones
 nobody has said anything about; silence is not a claim that they have none.
+
+Being wrong here is not harmless, which is why a test checks it against the
+content. A number left out of a kind that has one is a number the form greys
+out and the builder then leaves off the card — so an author who opens such a
+card and saves it loses it, silently. That is what happened to a character's
+attack, which 93 of the 97 shipped characters carry and the card face prints.
 """

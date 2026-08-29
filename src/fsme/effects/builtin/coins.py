@@ -222,6 +222,12 @@ def register(registry: EffectRegistry) -> None:
         needs_target=True,
         primary="amount",
         description="Move coins between players.",
+        # A seat, not a number. The handler says so by resolving it with
+        # `state.player`, and said it nowhere else: a form offered a box for
+        # typing a whole number into, the checker had nothing to check the
+        # name against, and anything reading the card back could not tell that
+        # `{"player_of": "victim"}` was a player at all.
+        picks={"source_player": PLAYERS},
         asks={
             "source_player": "who pays",
             "amount": "how many cents",

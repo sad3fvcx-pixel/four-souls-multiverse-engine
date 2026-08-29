@@ -32,6 +32,17 @@ CONTROL_NAMES = frozenset(
     {"sequence", "if", "repeat", "for_each", "stop", "may", "choose"}
 )
 
+SHORTHAND = "__value__"
+"""
+Where ``normalise`` puts a value written the short way.
+
+``{"gain_coins": 3}`` says three of something without saying three of what, and
+only the effect registry knows — so the answer is handed back under a key that
+is not a parameter name, and whoever has the registry puts it where it goes.
+Named here rather than spelled twice, because anything reading a card back has
+to look for the same key this writes.
+"""
+
 YES = "yes"
 NO = "no"
 
@@ -401,7 +412,7 @@ class Interpreter:
         resolved = dict(params)
         asks = resolved.pop("targets", ())
         store = str(resolved.pop("store", ""))
-        shorthand = resolved.pop("__value__", None)
+        shorthand = resolved.pop(SHORTHAND, None)
 
         if shorthand is not None:
             if spec.primary is None:
@@ -494,7 +505,7 @@ def normalise(node: Any) -> tuple[str, Mapping[str, Any], Any | None]:
 
     # A modifier written beside the shorthand still belongs to the effect:
     # {"roll_dice": 6, "store": "first"} is one roll kept under a name.
-    params = dict(value) if isinstance(value, Mapping) else {"__value__": value}
+    params = dict(value) if isinstance(value, Mapping) else {SHORTHAND: value}
 
     if "store" in node:
         params["store"] = node["store"]

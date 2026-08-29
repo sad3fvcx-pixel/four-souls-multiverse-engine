@@ -197,9 +197,18 @@ def test_nothing_that_names_somebody_is_a_text_box(can: dict[str, Any]) -> None:
         assert field["picks"] in ("players", "cards")
 
 
-def test_the_five_that_name_a_player_are_picked_not_typed(
+def test_the_ones_that_name_a_player_are_picked_not_typed(
     can: dict[str, Any],
 ) -> None:
+    """
+    Every effect parameter that is handed a seat rather than a number.
+
+    Listed rather than counted, so that one arriving or leaving is looked at
+    rather than passing as a number that changed. `transfer_coins.source_player`
+    is here because its handler resolves it with `state.player` and said so
+    nowhere — a form offered a box for typing a whole number into, and reading
+    a card back could not tell the naming from an amount.
+    """
     named = {
         f"{owner}.{field['id']}"
         for group, owner, field in every_field(can)
@@ -212,6 +221,7 @@ def test_the_five_that_name_a_player_are_picked_not_typed(
         "give_treasure.to",
         "require_attack.who",
         "take_card.player",
+        "transfer_coins.source_player",
     }
 
 

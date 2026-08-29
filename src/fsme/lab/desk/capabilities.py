@@ -296,6 +296,11 @@ def _effects(vocabulary: Any) -> list[dict[str, Any]]:
                 # Whether it only works inside a replacement ability. A walk
                 # that does not ask that question has no business offering it.
                 "replacing": bool(getattr(shape, "replacing", False)),
+                # The parameter the short spelling fills. A card file may say
+                # `{"gain_coins": 3}`, and without this nothing outside the
+                # engine can tell what the 3 was an answer to — which is what
+                # reading a card back needs before anything else.
+                "primary": getattr(shape, "primary", None) or "",
                 "fields": _fields(shape),
             }
         )
