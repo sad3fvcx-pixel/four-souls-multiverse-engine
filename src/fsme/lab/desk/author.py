@@ -56,6 +56,7 @@ __all__ = [
     "delete_card",
     "delete_set",
     "make_set",
+    "open_card",
     "save_card",
     "said_by_the_engine",
     "read_card",
@@ -98,7 +99,13 @@ def sets() -> list[dict[str, Any]]:
             {
                 "id": str(described.get("id", directory.name)),
                 "name": str(described.get("name", directory.name)),
-                "cards": [card["name"] for card in cards_in(directory)],
+                # Name and identifier both. A person reads the one and
+                # opening a card needs the other, and a list that carried only
+                # the name could be looked at and not opened.
+                "cards": [
+                    {"id": str(card.get("id", "")), "name": str(card.get("name", ""))}
+                    for card in cards_in(directory)
+                ],
                 "where": str(directory),
             }
         )
@@ -189,6 +196,27 @@ def cards_in(directory: Path) -> list[dict[str, Any]]:
             found.append(card)
 
     return found
+
+
+def open_card(set_id: str, card_id: str) -> dict[str, Any]:
+    """
+    A card the author already has, as the thing they filled in to make it.
+
+    Read rather than converted: what comes back is the same author state a
+    card being made carries, so whatever draws one draws this. A card that
+    cannot be read faithfully raises instead of arriving half-read.
+    """
+    directory = _set_directory(set_id)
+    wanted = str(card_id)
+    found = next(
+        (card for card in cards_in(directory) if str(card.get("id", "")) == wanted),
+        None,
+    )
+
+    if found is None:
+        raise AuthorError(f"There is no card called {wanted!r} in that set.")
+
+    return {"set": identifier_for(set_id), "card": read_card(found)["card"]}
 
 
 def save_card(described: Any) -> dict[str, Any]:

@@ -39,6 +39,9 @@
  .list { list-style:none; padding:0; margin:0; }
  .list li { border-bottom:1px solid var(--line); padding:.55rem 0; display:flex;
             justify-content:space-between; gap:.6rem; align-items:center; }
+ button.plain { background:none; border:none; padding:0; width:auto;
+                color:inherit; font:inherit; text-align:left;
+                text-decoration:underline; cursor:pointer; }
  .moment { margin:.3rem 0; }
  hr { border:none; border-top:1px solid var(--line); margin:2rem 0 1rem; }
  .need { color:var(--dim); font-size:.82rem; font-style:italic;
@@ -76,6 +79,10 @@ let state = {};          // the card being made
 // part of `state`: it is how somebody is being asked, not anything about the
 // card, and the card is what gets sent.
 let walk = null;
+// True while a card that already exists is being looked at. Reading only, so
+// nothing writes into the card — but "Try it in a game" answers back, and the
+// answer belongs on the screen that asked for it.
+let looking = false;
 const page = document.getElementById("page");
 const el = (html) => { page.innerHTML = html; };
 const esc = (s) => String(s ?? "").replace(/[<>&"]/g, c =>
@@ -85,6 +92,7 @@ const esc = (s) => String(s ?? "").replace(/[<>&"]/g, c =>
 
 async function home() {
   walk = null;
+  looking = false;
   const { sets, where } = await api("/api/sets");
   const cards = sets.reduce((n, s) => n + s.cards.length, 0);
   el(`
@@ -107,22 +115,119 @@ async function home() {
 // ------------------------------------------------------------- my cards
 
 async function mine() {
+  walk = null;
+  looking = false;
   const { sets } = await api("/api/sets");
+  const one = (set, card) => `<li><button class="plain"
+      onclick="openCard('${esc(set.id)}','${esc(card.id)}')"
+      >${esc(card.name)}</button></li>`;
   el(`<button class="back" onclick="home()">← back</button>
       <h1>My cards</h1>` +
     (sets.length ? sets.map(s => `
       <h2>${esc(s.name)}</h2>
       <ul class="list">${s.cards.length
-        ? s.cards.map(c => `<li><span>${esc(c)}</span></li>`).join("")
+        ? s.cards.map(c => one(s, c)).join("")
         : '<li><span class="muted">No cards yet.</span></li>'}</ul>`).join("")
       : `<p class="muted">You have not made a set yet.</p>`) +
     `<p><button class="go" onclick="startCard()">Make a card</button></p>`);
+}
+
+// ------------------------------------------------------- looking at a card
+//
+// A card that already exists, read back into the same thing a card being made
+// carries — so it is shown by the same words a card being made is shown by,
+// and nothing here knows what any effect is.
+//
+// Reading only. A card the reader cannot take faithfully is not opened at all:
+// half of a card, shown as if it were the card, is how somebody saves away the
+// half that was not read.
+
+async function openCard(set, card) {
+  if (!can) can = await api("/api/capabilities");
+  const said = await api("/api/cards/open", { set, card });
+  if (said.error) return cannotOpen("", said.error);
+  if (said.unreadable) return cannotOpen(card, said.unreadable);
+  walk = null;
+  looking = true;
+  state = { set: said.set, mode: "simple", card: said.card };
+  viewing();
+}
+
+function cannotOpen(card, why) {
+  looking = false;
+  el(`<button class="back" onclick="mine()">← back</button>
+    <h1>This card needs the full editor</h1>
+    <p class="lead">${esc(card ? card : "That card")} says something this way
+      of looking at a card cannot show, so it is not being shown at all —
+      half a card looks like a whole one.</p>
+    <p class="problem">${esc(why)}</p>
+    <p class="muted">Nothing has been changed. The card is exactly as it was.</p>`);
+}
+
+// What the card says, in the words the metadata already carries about it.
+// The same `saidAs` a walk reads its own actions back with, over whichever
+// part of the card holds things that happen.
+function readingHtml() {
+  const shape = named(can.cards, "card") || { fields: [] };
+  return shape.fields.filter(f => f.a_list_of && shapeNamed(f.a_list_of))
+    .map(f => {
+      const parts = state.card.fields[f.id] || [];
+      if (!parts.length) return "";
+      const rows = parts.map(part => {
+        // A part that does things says them; one that only changes a number
+        // has none, and saying so with a dash would be answering a question
+        // nobody asked of it.
+        const does = doneBy(part).map(step => saidAs(step)).join("<br>");
+        return `<li>${does}${saidOf(part)}</li>`;
+      }).join("");
+      return `<h2>${esc(sentence(asksOf(f)))}</h2><ol class="list">${rows}</ol>`;
+    }).join("");
+}
+
+// Where a part keeps the things it does, and when it does them. Both read off
+// the part's own shape, so a part the language gains reads without this
+// changing.
+function doneBy(part) {
+  const shape = shapeNamed(part.id);
+  if (!shape) return [];
+  const holds = shape.fields.find(f => f.a_list_of === "step");
+  return holds ? (part.fields[holds.id] || []) : [];
+}
+
+// What a part says about itself, apart from the things it does: when an
+// ability happens, which number a static changes and by how much. One
+// function for both, because both are answers to the part's own first
+// questions — which of them those are is the shape's answer.
+function saidOf(part) {
+  const shape = shapeNamed(part.id);
+  if (!shape) return "";
+  const said = shape.fields
+    .filter(f => f.asked === "first" && f.shown === "form" && part.fields[f.id])
+    .map(f => `${trimmed(asksOf(f)).toLowerCase()}: ${esc(meant(f, String(part.fields[f.id])))}`);
+  return said.length ? `<div class="muted">${said.join("; ")}</div>` : "";
+}
+
+function viewing(problems = [], moments = []) {
+  const kind = state.card.fields.type;
+  const kindName = can.kinds.find(k => k.id === kind)?.name || kind || "card";
+  el(`<button class="back" onclick="mine()">← back</button>
+    <h1>${esc(state.card.fields.name || "Untitled")}</h1>
+    <p class="lead">${esc(String(kindName))}. Looking only — nothing here
+      changes the card.</p>
+    ${readingHtml()}
+    <hr>
+    <div class="row"><button onclick="tryIt()">Try it in a game</button></div>
+    ${saidHtml(problems, moments)}
+    <h2>The card</h2>
+    <div id="face"></div>`);
+  face();
 }
 
 // ------------------------------------------------------- making a card
 
 async function startCard() {
   walk = null;
+  looking = false;
   if (!can) can = await api("/api/capabilities");
   const { sets } = await api("/api/sets");
   // A card is a node like every one inside it: what was typed under `fields`,
@@ -430,6 +535,7 @@ function startBlank() { walk = null; state.mode = "expert"; editor(); }
 // What "draw it again" means depends on which way in is open. Every setter
 // calls this one thing, so neither screen has to know about the other.
 function drawn(problems = [], moments = []) {
+  if (looking) return viewing(problems, moments);
   if (!walk) return editor(problems, moments);
   if (walk.on === "sofar") return sofar(problems, moments);
   if (walk.on === "done") return done(problems, moments);

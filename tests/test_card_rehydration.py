@@ -514,3 +514,374 @@ def test_a_step_that_picks_for_itself_says_why_it_is_refused(
 
     assert said, "no shipped card is refused for picking something out itself"
     assert "become one" in said[0]
+
+
+# ----------------------------------------------------------------------
+# 6. Opening one, the way a person does
+# ----------------------------------------------------------------------
+
+PAGE = CONTENT.parent / "src/fsme/lab/desk/static/author.html"
+
+
+@pytest.fixture
+def workspace(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """
+    A set of the author's own, so nothing here touches a real one.
+    """
+    where = tmp_path / "FSME"
+    monkeypatch.setenv("FSME_HOME", str(where))
+
+    return where
+
+
+def a_saved_card(fields: dict[str, Any]) -> tuple[str, str]:
+    """
+    One card in a set of its own, saved the way the page saves it.
+    """
+    from fsme.lab.desk.author import make_set, save_card
+
+    made = make_set("Looking")
+    saved = save_card({"set": made["id"], "card": {"fields": fields, "groups": {}}})
+
+    assert saved["saved"], saved["problems"]
+
+    return made["id"], saved["card"]["id"]
+
+
+A_TWO_STEP_CARD = {
+    "name": "Thumbtack",
+    "type": "loot",
+    "abilities": [
+        {
+            "fields": {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "id": "deal_damage",
+                        "fields": {"amount": 2},
+                        "groups": {},
+                        "aim": "target_player",
+                        "aim_fields": {},
+                        "aim_groups": {},
+                    },
+                    {
+                        "id": "gain_coins",
+                        "fields": {"amount": 3},
+                        "groups": {},
+                        "aim": "controller",
+                        "aim_fields": {},
+                        "aim_groups": {},
+                    },
+                ],
+            },
+            "groups": {},
+        }
+    ],
+}
+
+
+def test_a_card_can_be_found_by_name_and_opened_by_identifier(
+    workspace: Path,
+) -> None:
+    """
+    The list a person reads carries both, because they are different jobs.
+    """
+    from fsme.lab.desk.author import sets
+
+    set_id, card_id = a_saved_card(A_TWO_STEP_CARD)
+    listed = sets()[0]["cards"]
+
+    assert [one["name"] for one in listed] == ["Thumbtack"]
+    assert [one["id"] for one in listed] == [card_id]
+    assert set_id
+
+
+def test_opening_a_card_gives_back_what_was_filled_in(workspace: Path) -> None:
+    """
+    A card is opened as the thing somebody filled in to make it — the same
+    author state, so whatever draws a card being made draws this.
+    """
+    from fsme.lab.desk.author import open_card
+
+    set_id, card_id = a_saved_card(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)["card"]
+
+    assert opened["fields"]["name"] == "Thumbtack"
+    assert opened["fields"]["type"] == "loot"
+
+    steps = opened["fields"]["abilities"][0]["fields"]["effects"]
+
+    assert [one["id"] for one in steps] == ["deal_damage", "gain_coins"]
+    assert steps[0]["fields"]["amount"] == 2
+    assert steps[0]["aim"] == "target_player"
+    assert steps[1]["aim"] == "controller"
+
+
+def test_opening_a_card_does_not_change_it(workspace: Path) -> None:
+    """
+    Read only, and checked on the file rather than on a promise.
+    """
+    from fsme.lab.desk.author import open_card, sets
+
+    set_id, card_id = a_saved_card(A_TWO_STEP_CARD)
+    where = Path(sets()[0]["where"]) / "cards" / f"{card_id}.json"
+    before = where.read_text("utf-8")
+
+    for _ in range(3):
+        open_card(set_id, card_id)
+
+    assert where.read_text("utf-8") == before
+
+
+def test_what_is_opened_rebuilds_the_card_it_came_from(workspace: Path) -> None:
+    """
+    The round-trip contract, reached the way a person reaches it.
+    """
+    from fsme.lab.desk.author import open_card, sets
+
+    set_id, card_id = a_saved_card(A_TWO_STEP_CARD)
+    where = Path(sets()[0]["where"]) / "cards" / f"{card_id}.json"
+    written = json.loads(where.read_text("utf-8"))["cards"][0]
+    opened = open_card(set_id, card_id)
+
+    assert build_card(opened) == written
+
+
+def test_a_card_it_cannot_read_is_refused_with_the_reason(
+    workspace: Path,
+) -> None:
+    """
+    Not opened half way. A control node is the commonest reason by far, so it
+    is the one checked here.
+    """
+    from fsme.lab.desk.author import make_set, sets
+
+    made = make_set("Hard")
+    where = Path(sets()[0]["where"]) / "cards" / "hard-loot-branching.json"
+    where.write_text(
+        json.dumps(
+            {
+                "cards": [
+                    {
+                        "id": "hard-loot-branching",
+                        "name": "Branching",
+                        "type": "loot",
+                        "expansion": made["id"],
+                        "abilities": [
+                            {
+                                "trigger": "on_play",
+                                "effects": [
+                                    {
+                                        "if": ["dice_equals"],
+                                        "then": [{"gain_coins": 1}],
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    from fsme.lab.desk.author import open_card
+
+    with pytest.raises(UnreadableCard) as refused:
+        open_card(made["id"], "hard-loot-branching")
+
+    said = str(refused.value)
+
+    assert "'if'" in said
+    assert "in full" in said
+
+
+def test_asking_for_a_card_that_is_not_there_says_so(workspace: Path) -> None:
+    from fsme.lab.desk.author import AuthorError, open_card
+
+    set_id, _ = a_saved_card(A_TWO_STEP_CARD)
+
+    with pytest.raises(AuthorError) as refused:
+        open_card(set_id, "no-such-card")
+
+    assert "no-such-card" in str(refused.value)
+
+
+# ----------------------------------------------------------------------
+# 7. The screen that shows it
+# ----------------------------------------------------------------------
+
+
+def script() -> str:
+    return PAGE.read_text("utf-8").split("<script>")[1]
+
+
+def body_of(name: str) -> str:
+    """
+    One function out of the page, from its opening line to the `}` that ends
+    it. Sliced on the closing brace at the start of a line, because the next
+    thing after a function is not always another `function`.
+    """
+    said = script()
+    start = said.index(f"function {name}(")
+    end = said.index("\n}\n", start)
+
+    return said[start:end]
+
+
+def test_the_page_can_open_a_card_and_shows_it_read_only() -> None:
+    """
+    Looking is its own screen, and it draws no control a card is typed into.
+    """
+    said = script()
+
+    assert "function openCard(" in said
+    assert "function viewing(" in said
+    assert '"/api/cards/open"' in said
+
+    looking = body_of("viewing") + body_of("readingHtml")
+
+    for typed in ("<input", "<select", "<textarea", "setField", "setAim"):
+        assert typed not in looking, f"the reading screen draws {typed}"
+
+
+def test_the_page_reads_a_card_back_with_the_words_it_already_had() -> None:
+    """
+    The same `saidAs` a walk reads its own actions back with, and no effect
+    named anywhere.
+    """
+    said = script()
+
+    assert "saidAs(" in body_of("readingHtml")
+
+    from fsme.lab.desk.capabilities import catalogue
+
+    named = [one["id"] for one in catalogue()["effects"] if f'"{one["id"]}"' in said]
+
+    assert named == [], named
+
+
+def test_the_page_refuses_a_card_rather_than_showing_half_of_it() -> None:
+    said = script()
+
+    assert "function cannotOpen(" in said
+    assert "said.unreadable" in said
+
+    # It says the reason it was given rather than one of its own.
+    assert "esc(why)" in body_of("cannotOpen")
+
+
+# ----------------------------------------------------------------------
+# 8. A card that changes a number rather than doing something
+# ----------------------------------------------------------------------
+
+
+def a_shipped_card(ends_with: str) -> dict[str, Any]:
+    for path in sorted(CONTENT.rglob("*.json")):
+        body = json.loads(path.read_text("utf-8"))
+
+        for card in body.get("cards", ()) if isinstance(body, dict) else ():
+            if str(card.get("id", "")).endswith(ends_with):
+                return card
+
+    raise AssertionError(f"no shipped card ending in {ends_with!r}")
+
+
+def test_a_card_whose_rules_are_statics_is_read(workspace: Path) -> None:
+    """
+    `breakfast` does nothing and gives its holder a hit point.
+
+    A part of a card need not do anything, and one that does not is still the
+    whole card — most of a passive item is exactly this.
+    """
+    from fsme.lab.desk.author import make_set, open_card, save_card, sets
+
+    breakfast = a_shipped_card("base_game-breakfast")
+    made = make_set("Statics")
+    saved = save_card(read_card(breakfast, set_id=made["id"]))
+
+    assert saved["saved"], saved["problems"]
+
+    opened = open_card(made["id"], saved["card"]["id"])["card"]
+    statics = opened["fields"]["statics"]
+
+    assert opened["fields"]["abilities"] == []
+    assert len(statics) == 1
+    assert statics[0]["fields"]["stat"] == "max_hp"
+    assert statics[0]["fields"]["amount"] == 1
+    assert sets()
+
+
+def test_a_card_with_both_keeps_both(workspace: Path) -> None:
+    """
+    `curved_horn` does something when played *and* changes a number after.
+    """
+    from fsme.lab.desk.author import make_set, open_card, save_card
+
+    horn = a_shipped_card("base_game-curved_horn")
+    made = make_set("Both")
+    saved = save_card(read_card(horn, set_id=made["id"]))
+
+    assert saved["saved"], saved["problems"]
+
+    opened = open_card(made["id"], saved["card"]["id"])["card"]
+
+    assert opened["fields"]["abilities"], "the ability was dropped"
+    assert opened["fields"]["statics"], "the static was dropped"
+    assert opened["fields"]["statics"][0]["fields"]["stat"] == "attack"
+    # And a condition inside the static came back as a condition, not as text.
+    inside = opened["fields"]["statics"][0]["fields"]["conditions"]
+
+    assert [one["id"] for one in inside] == ["first_attack_roll"]
+
+
+def test_every_shipped_card_with_statics_reads_or_says_why() -> None:
+    """
+    Over all of them, not the two picked out above.
+    """
+    holding = [
+        card
+        for path in sorted(CONTENT.rglob("*.json"))
+        for card in (
+            json.loads(path.read_text("utf-8")).get("cards", ())
+            if isinstance(json.loads(path.read_text("utf-8")), dict)
+            else ()
+        )
+        if card.get("statics")
+    ]
+
+    assert len(holding) > 20, len(holding)
+
+    silent = []
+    opened = 0
+
+    for card in holding:
+        state, why = read(card)
+
+        if state is not None:
+            opened += 1
+        elif not why.strip():
+            silent.append(card.get("id"))
+
+    assert silent == [], silent
+    # Measured at 29 of 32 when this was written; the three refused are
+    # refused for reasons that have nothing to do with statics.
+    assert opened >= 25, f"only {opened} of {len(holding)} read"
+
+
+def test_a_part_that_does_nothing_is_not_shown_as_a_dash() -> None:
+    """
+    A static has no things that happen, and the reading screen used to print a
+    dash where they would go — an answer to a question nobody asked of it.
+    """
+    reading = body_of("readingHtml")
+
+    assert "&mdash;" not in reading
+    assert "saidOf(part)" in reading
+
+    # The words a part says about itself are its own first questions, whichever
+    # kind of part it is, so there is one function and not one per kind.
+    about = body_of("saidOf")
+
+    assert 'f.asked === "first"' in about
+    assert "ability" not in about and "static" not in about

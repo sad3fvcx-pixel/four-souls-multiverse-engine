@@ -186,7 +186,8 @@ class DeskHandler(GameHandler):
 
         if path in ("/api/sets/new", "/api/sets/delete",
                     "/api/cards/save", "/api/cards/check",
-                    "/api/cards/delete", "/api/cards/try"):
+                    "/api/cards/delete", "/api/cards/open",
+                    "/api/cards/try"):
             try:
                 body = self._body()
             except ValueError as error:
@@ -391,6 +392,17 @@ class DeskHandler(GameHandler):
             author.delete_card(str(body.get("set", "")), str(body.get("card", "")))
 
             return {"deleted": True}
+
+        if path == "/api/cards/open":
+            # A card that cannot be read faithfully is not opened at all. The
+            # reason travels as itself rather than as a failure, because it is
+            # something to show a person and not something that went wrong.
+            try:
+                return author.open_card(
+                    str(body.get("set", "")), str(body.get("card", ""))
+                )
+            except author.UnreadableCard as why:
+                return {"unreadable": str(why)}
 
         card = author.build_card(body)
         problems = author.check_card(card)

@@ -197,7 +197,10 @@ def test_a_person_can_make_a_card_from_nothing(address: str, home: Path) -> None
     mine = get(address, "/api/sets")["sets"]
 
     assert [one["name"] for one in mine] == ["My First Set"]
-    assert mine[0]["cards"] == ["Lucky Penny"]
+    # Name and identifier: a person reads the one and opening a card needs
+    # the other.
+    assert [one["name"] for one in mine[0]["cards"]] == ["Lucky Penny"]
+    assert mine[0]["cards"][0]["id"] == "my_first_set-loot-lucky_penny"
 
 
 def test_a_card_that_is_wrong_is_not_saved(address: str) -> None:
@@ -220,6 +223,7 @@ def test_a_card_that_is_wrong_is_not_saved(address: str) -> None:
     assert not said["saved"]
     assert said["problems"]
     assert get(address, "/api/sets")["sets"][0]["cards"] == [], "and nothing was kept"
+
 
 
 def test_a_card_is_checked_while_it_is_being_written(address: str) -> None:
