@@ -122,7 +122,8 @@ async function startCard() {
   // A card is a node like every one inside it: what was typed under `fields`,
   // what was pointed at under `groups`, and its own name so that anything
   // asking what shape describes it can be told.
-  state = { set: sets[0]?.id || "", card: { id: "card", fields: {}, groups: {} } };
+  state = { set: sets[0]?.id || "", mode: "simple",
+            card: { id: "card", fields: {}, groups: {} } };
   if (!sets.length) return newSet();
   chooseKind();
 }
@@ -156,7 +157,80 @@ function chooseKind() {
           <b>${esc(k.name)}</b><span>${esc(k.about)}</span></button>`).join("")}</div>`);
 }
 
-function pickKind(kind) { state.card.fields.type = kind; editor(); }
+// Choosing a kind is choosing how the card is used, where the engine settles
+// it — so a person who has said "loot card" has already answered the question
+// the editor used to ask them first.
+function pickKind(kind) {
+  state.card.fields.type = kind;
+  const how = (can.kinds.find(k => k.id === kind) || {}).used_by;
+  if (how) return chooseAction(how);
+  // No single moment makes this kind of card act, so there is nothing to fill
+  // in and the question has to be put. That is the editor's job, not a guess.
+  state.mode = "expert";
+  editor();
+}
+
+// ------------------------------------------------- what should it do?
+//
+// The constructor's whole difference is this screen. It asks what somebody
+// came to make rather than what a card is made of, and it is built from the
+// same catalogue the editor offers — every action here is an effect the engine
+// already has, shown by the sentence the effect already carries about itself.
+function chooseAction(how) {
+  const doing = can.effects.filter(e => !e.a_step);
+  const one = (e) => `<button class="task" onclick="pickAction('${e.id}','${how}')">
+      <b>${esc(sentence(e.about))}</b></button>`;
+  const common = doing.filter(e => e.common);
+  const rest = doing.filter(e => !e.common);
+  el(`<button class="back" onclick="chooseKind()">← back</button>
+    <h1>What should this card do?</h1>
+    <p class="lead">Pick the main thing. You can add more, and change
+      everything about it, once it exists.</p>
+    ${common.map(one).join("")}
+    <details class="deep"><summary>Everything else it could do</summary>
+      <div class="nested">${rest.map(one).join("")}</div></details>
+    <hr>
+    <p><button onclick="startBlank()">I would rather start from an empty
+      card</button></p>`);
+}
+
+// Where on a card a moment is reacted to, and where inside that the things
+// that happen go. Both are read off the shapes: the list of parts one of whose
+// fields offers this moment, and inside such a part the list whose catalogue
+// holds this action. Nothing here is named, so a card that grows another kind
+// of part, or a part that moves its lists about, still lands in the right box.
+function reactingTo(how, action) {
+  const card = named(can.cards, "card") || { fields: [] };
+  const holds = (f) => f.a_list_of
+    && ((kindOf(f.a_list_of) || { of: () => null }).of() || [])
+         .some(one => one.id === action);
+  for (const list of card.fields) {
+    const part = list.a_list_of && shapeNamed(list.a_list_of);
+    if (!part) continue;
+    const when = part.fields.find(f => (f.choices || []).includes(how));
+    const then = part.fields.find(holds);
+    if (when && then) return { list, part, when, then };
+  }
+  return null;
+}
+
+// The action becomes an ordinary effect node inside an ordinary ability, in
+// the place the editor keeps them. Nothing about this node says it was made
+// here, which is the point: the two ways in produce one card.
+function pickAction(effect, how) {
+  const where = reactingTo(how, effect);
+  // The shapes do not say where this would go. Rather than guess a place for
+  // it, hand the person the editor with the kind they picked already set.
+  if (!where) return startBlank();
+  const part = { id: where.part.id, fields: {}, groups: {} };
+  part.fields[where.when.id] = how;
+  part.fields[where.then.id] = [{ id: effect, fields: {}, groups: {} }];
+  state.card.fields[where.list.id] = [part];
+  state.mode = "simple";
+  editor();
+}
+
+function startBlank() { state.mode = "expert"; editor(); }
 
 // ------------------------------------------------------------- the editor
 
@@ -178,6 +252,12 @@ function editor(problems = [], moments = []) {
 
     <h2>What it does</h2>
     <div id="parts">${cardHtml()}</div>
+
+    <p class="muted">${state.mode === "simple"
+      ? `Showing what this card does. <button onclick="setMode('expert')">Show
+         everything a card may say</button>`
+      : `Showing everything a card may say. <button onclick="setMode('simple')">
+         Show just what it does</button>`}</p>
 
     <hr>
     <div class="row">
@@ -207,10 +287,20 @@ const FEATURED = ["name", "metadata"];
 function cardHtml() {
   const shape = named(can.cards, "card");
   if (!shape) return "";
-  const fields = shape.fields.filter(f => !FEATURED.includes(f.id));
+  // Two views of one card. The simple one asks what a card is mostly about;
+  // the expert one asks everything a card may say. Which fields those are is
+  // the metadata's answer — `asked` — and not a list kept here, so a field the
+  // engine gains appears in whichever view its own shape puts it in.
+  const fields = shape.fields
+    .filter(f => !FEATURED.includes(f.id))
+    .filter(f => state.mode !== "simple" || f.asked === "first");
   return fieldsHtml(fields, state.card.fields, state.card.groups,
                     "state.card.fields", "state.card.groups", shape.id);
 }
+
+// The same card, looked at differently. Nothing is converted and nothing is
+// kept twice: the card being built does not know which view made it.
+function setMode(which) { state.mode = which; editor(); }
 
 // What is printed on the card. The engine keeps it among the card's own notes,
 // which is a set of named values a card may put anything in; a person types a

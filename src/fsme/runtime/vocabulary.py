@@ -54,7 +54,9 @@ from fsme.effects import EffectRegistry, builtin_registry
 from fsme.effects.registry import EffectSpec, ParamKind
 from fsme.events import EventType
 from fsme.events.types import WHEN_IT_HAPPENS
+from fsme.rules.activation import ACTIVATED_BY
 from fsme.rules.costs import COINS, COUNTERS, DISCARD, HP, TAP
+from fsme.rules.loot import PLAYED_BY
 from fsme.rules.restrictions import ACTION_WORDS, ACTIONS
 from fsme.rules.statics import MONSTER_SCOPES, SCOPE_WORDS, STATIC_SCOPES
 from fsme.state.modifiers import MONSTER_STATS, STAT_WORDS, STATS
@@ -104,6 +106,7 @@ def engine_vocabulary(effects: EffectRegistry | None = None) -> Vocabulary:
         target_shapes=targets.shapes(),
         node_shapes=_node_shapes(),
         trigger_scopes=_trigger_scopes(),
+        used_by=USED_BY,
     )
 
 
@@ -273,6 +276,31 @@ CARD_WORDS = {
     "rewards": "what defeating it pays out",
     "metadata": "notes that are not rules — its printed text, and anything else",
 }
+
+
+USED_BY = MappingProxyType(
+    {
+        str(CardType.LOOT): str(PLAYED_BY),
+        str(CardType.TREASURE): str(ACTIVATED_BY),
+        str(CardType.STARTING_ITEM): str(ACTIVATED_BY),
+    }
+)
+"""
+How a card of each kind does the thing it is for, where the engine settles it.
+
+Somebody who has just said "this card should deal damage" has not been asked
+when, and should not have to be: playing a loot card is what a loot card is
+for, and an item nobody can activate is an item that does nothing. Both are
+the engine's own answers — `play_loot` emits one and `_activatable` refuses an
+item without the other — so both are read from beside those rules rather than
+written down a second time here.
+
+The kinds missing from this are missing on purpose. A monster, a room, a
+character and a curse each react to several moments and no single one of them
+is *the* moment, so there is nothing to fill in and whatever is asking has to
+ask. Silence is not a claim that such a card cannot act; it is the absence of
+one right answer, and guessing would put a trigger on a card that never fires.
+"""
 
 
 CARD_ASKS = {

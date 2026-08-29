@@ -888,6 +888,18 @@ class Vocabulary:
     builds a vocabulary asks the engine once and writes down what it said.
     """
 
+    used_by: Mapping[str, str] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    """
+    How a card of each kind does the thing it is for, where the engine says.
+
+    ``{"loot": "on_play"}`` — playing a loot card is what a loot card is for.
+    Empty for the kinds where no single moment is *the* moment, and an absence
+    here is an absence of one right answer rather than a claim that such a card
+    cannot act.
+    """
+
     shapes: Mapping[str, EffectShape] = field(
         default_factory=lambda: MappingProxyType({})
     )
@@ -914,6 +926,7 @@ class Vocabulary:
         target_shapes: Mapping[str, TargetShape] | None = None,
         node_shapes: Mapping[str, NodeShape] | None = None,
         trigger_scopes: Mapping[str, str] | None = None,
+        used_by: Mapping[str, str] | None = None,
     ) -> Vocabulary:
         """
         Build a vocabulary from any collections of names.
@@ -928,6 +941,7 @@ class Vocabulary:
             target_shapes=MappingProxyType(dict(target_shapes or {})),
             node_shapes=MappingProxyType(dict(node_shapes or {})),
             trigger_scopes=MappingProxyType(dict(trigger_scopes or {})),
+            used_by=MappingProxyType(dict(used_by or {})),
         )
 
     def shape(self, effect: str) -> EffectShape | None:

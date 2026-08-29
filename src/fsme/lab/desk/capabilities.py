@@ -120,7 +120,16 @@ def catalogue() -> dict[str, Any]:
 
     return {
         "kinds": [
-            {"id": kind, "name": name, "about": about}
+            {
+                "id": kind,
+                "name": name,
+                "about": about,
+                # What a card of this kind does to do its thing, where the
+                # engine settles it. Anything putting an action on a card can
+                # then stop asking about triggers; where it is empty there is
+                # no single answer and the question has to be put.
+                "used_by": vocabulary.used_by.get(kind, ""),
+            }
             for kind, name, about in CARD_KINDS
         ],
         "triggers": _triggers(vocabulary),

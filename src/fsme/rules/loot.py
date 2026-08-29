@@ -16,6 +16,15 @@ from .constants import LOOT_PLAYS_PER_TURN
 from .restrictions import PLAY_LOOT, refuse
 from .statics import cards_in_play
 
+PLAYED_BY = EventType.ON_PLAY
+"""
+What playing a loot card announces, and so what a loot card reacts to.
+
+`play_loot` emits this and nothing else on the way past, which is why a loot
+card written against any other moment is a card that does nothing when it is
+played. Named for the same reason as `ACTIVATED_BY`.
+"""
+
 
 class PlayLootHandler:
     """
@@ -91,7 +100,7 @@ class PlayLootHandler:
         )
 
         context.emit(
-            EventType.ON_PLAY,
+            PLAYED_BY,
             source=card,
             controller=player.player_id,
         )

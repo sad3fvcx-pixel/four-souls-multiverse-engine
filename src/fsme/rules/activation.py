@@ -36,6 +36,16 @@ activated by the active player. A room belongs to the table rather than to
 anybody at it, and this is the rule that says whose turn it is to use one.
 """
 
+ACTIVATED_BY = EventType.ON_ACTIVATE
+"""
+The ability an item has to have before anybody can use it.
+
+`_activatable` looks for exactly this and refuses an item without one, so it is
+what "a treasure does something" means. Named because something has to tell an
+author which ability to write, and a second copy of the answer somewhere else
+would be free to disagree with this one.
+"""
+
 
 def _zone_of(command: Command) -> str:
     return str(command.get("zone", TREASURES))
@@ -107,7 +117,7 @@ class ActivateTreasureHandler:
         face = getattr(card, "face", None)
 
         abilities = (
-            face.abilities_for(str(EventType.ON_ACTIVATE)) if face is not None else ()
+            face.abilities_for(str(ACTIVATED_BY)) if face is not None else ()
         )
 
         if not abilities:
@@ -136,7 +146,7 @@ class ActivateTreasureHandler:
 
         which = int(command.get("ability", 0))
 
-        ability = card.face.abilities_for(str(EventType.ON_ACTIVATE))[which]
+        ability = card.face.abilities_for(str(ACTIVATED_BY))[which]
 
         context.emit(
             EventType.BEFORE_ACTIVATE,
