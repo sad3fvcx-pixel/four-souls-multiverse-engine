@@ -6,6 +6,32 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## 0.7.0 - Multiple Actions Constructor
+
+- A card made in the constructor can now do several things in turn. When an
+  action's questions run out, the card is read back — what it does, in order,
+  in words — and another can be added, changed or removed from there.
+- The order actions were answered in is the order the engine runs them, and
+  swapping two of them makes a different card. Each action binds and points at
+  its own target, so a second action never quietly happens to whatever the
+  first one chose.
+- Preserved one card pipeline. Nothing outside the page changed: an ability
+  already held a *list* of steps, the builder already gave each step's aim its
+  own binding, the checker already accepted it and the runtime already ran them
+  in order. No new metadata either — `effects` is declared a list, and a list
+  is how this language says more than one is allowed.
+- The screen between actions reads the card back rather than offering it for
+  editing. It draws no controls and names no effect: what each action says is
+  built from the sentence the effect carries and the questions that were
+  answered.
+- Preserved compatibility with the expert editor, which is untouched and one
+  click away in both directions. Moving between the two converts nothing.
+- Added equivalence tests over sequences: both ways in are compared byte for
+  byte across 129 ordered pairs of actions, and a card of one action is byte
+  for byte the card the previous release made.
+- Verified 352 of 1045 shipped definitions load unchanged and 1000 recorded
+  games replay without changes.
+
 ## 0.6.1 - Simple Card Constructor flow
 
 - A simple card can now be finished in the constructor, without going on to
