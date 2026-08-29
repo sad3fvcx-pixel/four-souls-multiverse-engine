@@ -191,16 +191,23 @@ function chooseAction(how) {
       <b>${esc(sentence(e.about))}</b></button>`;
   const common = doing.filter(e => e.common);
   const rest = doing.filter(e => !e.common);
-  el(`<button class="back" onclick="chooseKind()">← back</button>
-    <h1>What should this card do?</h1>
-    <p class="lead">Pick the main thing. You can add more, and change
-      everything about it, once it exists.</p>
+  // Choosing the first action is one step on from choosing a kind; choosing a
+  // later one is one step on from the list of what the card already does.
+  const back = walk ? "sofar()" : "chooseKind()";
+  const more = walk && at(walk.list, []).length;
+  el(`<button class="back" onclick="${back}">← back</button>
+    <h1>${more ? "What else should it do?" : "What should this card do?"}</h1>
+    <p class="lead">${more
+      ? "It happens after the ones already on the card."
+      : `Pick the main thing. You can add more, and change everything about it,
+         once it exists.`}</p>
     ${common.map(one).join("")}
     <details class="deep"><summary>Everything else it could do</summary>
       <div class="nested">${rest.map(one).join("")}</div></details>
     <hr>
-    <p><button onclick="startBlank()">I would rather start from an empty
-      card</button></p>`);
+    <p><button onclick="${more ? "sofar()" : "startBlank()"}">${more
+      ? "Never mind"
+      : "I would rather start from an empty card"}</button></p>`);
 }
 
 // Where on a card a moment is reacted to, and where inside that the things
@@ -231,16 +238,24 @@ function pickAction(effect, how) {
   // The shapes do not say where this would go. Rather than guess a place for
   // it, hand the person the editor with the kind they picked already set.
   if (!where) return startBlank();
-  const part = { id: where.part.id, fields: {}, groups: {} };
-  part.fields[where.when.id] = how;
-  part.fields[where.then.id] = [{ id: effect, fields: {}, groups: {} }];
-  state.card.fields[where.list.id] = [part];
-  state.mode = "simple";
-  walk = {
-    at: 0,
-    part: where.part,
-    step: `state.card.fields.${where.list.id}[0].fields.${where.then.id}[0]`,
-  };
+  // The first action makes the ability; every one after it is one more item in
+  // the list that ability already holds. There is no second case in the card
+  // for a second action, so there is none here either.
+  if (!walk) {
+    const part = { id: where.part.id, fields: {}, groups: {} };
+    part.fields[where.when.id] = how;
+    part.fields[where.then.id] = [];
+    state.card.fields[where.list.id] = [part];
+    state.mode = "simple";
+    walk = {
+      how,
+      part: where.part,
+      list: `state.card.fields.${where.list.id}[0].fields.${where.then.id}`,
+    };
+  }
+  const doing = at(walk.list, []);
+  walk.doing = doing.length;
+  doing.push({ id: effect, fields: {}, groups: {} });
   ask(0);
 }
 
@@ -257,8 +272,10 @@ function pickAction(effect, how) {
 // comes before the action's own values — read off the ability's own field
 // order rather than settled here. Which values are worth putting to somebody
 // is `asked`, which is the metadata's answer and not a list kept here.
+const stepPath = () => `${walk.list}[${walk.doing}]`;
+
 function questions() {
-  const step = at(walk.step);
+  const step = at(stepPath());
   const doing = named(can.effects, step.id);
   if (!doing) return [];
   const values = doing.fields.filter(f => f.asked === "first" && putable(f));
@@ -295,17 +312,24 @@ function finishable(e) {
 
 function ask(n, problems = [], moments = []) {
   const all = questions();
-  if (n >= all.length) return done(problems, moments);
+  if (n >= all.length) return sofar(problems, moments);
+  walk.on = "ask";
   walk.at = n;
-  const step = at(walk.step);
+  const here = stepPath();
+  const step = at(here);
   const doing = named(can.effects, step.id);
   const one = all[n];
   const asked = one.aim
-    ? aimHtml(doing, step, walk.step)
+    ? aimHtml(doing, step, here)
     : oneByOne([one.f], step.fields, step.groups,
-               `${walk.step}.fields`, `${walk.step}.groups`, doing.id);
-  el(`<button class="back" onclick="${n ? `ask(${n - 1})` : "chooseKind()"}">
-        ← back</button>
+               `${here}.fields`, `${here}.groups`, doing.id);
+  // Back from a question is the question before it. Back from the first one is
+  // out of the walk while the card still holds only the action being answered,
+  // and otherwise the list — which is where every later action, and every
+  // action being changed rather than made, was reached from.
+  const only = at(walk.list, []).length < 2 && !walk.doing;
+  const back = n ? `ask(${n - 1})` : only ? "chooseKind()" : "sofar()";
+  el(`<button class="back" onclick="${back}">← back</button>
     <p class="muted">${esc(sentence(doing.about))}</p>
     <h1>Question ${n + 1} of ${all.length}</h1>
     <div class="nested">${asked}</div>
@@ -315,6 +339,60 @@ function ask(n, problems = [], moments = []) {
       <button onclick="startBlank()">Fill the rest in myself</button>
     </div>
     ${saidHtml(problems, moments)}`);
+}
+
+// ------------------------------------------------------ what it does so far
+//
+// Between one action and the next. Deliberately not the editor: no controls,
+// no shapes, no boxes — the card read back as sentences, so somebody can see
+// what they have said before deciding whether it is everything.
+
+// One action in words, built out of what the metadata already says about it:
+// the sentence the effect carries, then each answer under the question that
+// asked for it. Nothing here knows what any effect is.
+function saidAs(step) {
+  const doing = named(can.effects, step.id);
+  if (!doing) return step.id || "something";
+  const answers = doing.fields
+    .filter(f => putable(f))
+    .map(f => [f, (step.fields || {})[f.id]])
+    .filter(([, v]) => v !== undefined && v !== null && v !== "" && v !== false)
+    .map(([f, v]) => `${trimmed(asksOf(f)).toLowerCase()}: ${esc(meant(f, String(v)))}`);
+  const aim = can.targets.find(t => t.id === step.aim);
+  if (aim) answers.push(`to ${esc(aim.about)}`);
+  return esc(sentence(doing.about))
+    + (answers.length ? ` <span class="muted">— ${answers.join("; ")}</span>` : "");
+}
+
+function sofar(problems = [], moments = []) {
+  walk.on = "sofar";
+  const doing = at(walk.list, []);
+  const rows = doing.map((step, i) => `<li>${saidAs(step)}
+      <button onclick="editAction(${i})">change</button>
+      ${doing.length > 1
+          ? `<button onclick="dropAction(${i})">remove</button>` : ""}
+    </li>`).join("");
+  el(`<button class="back" onclick="editAction(${Math.max(0, doing.length - 1)})">
+        ← back</button>
+    <h1>What this card does</h1>
+    <ol class="list">${rows}</ol>
+    <hr>
+    <div class="row">
+      <button class="go" onclick="done()">That is everything</button>
+      <button onclick="addAction()">Add another thing it does</button>
+    </div>
+    ${saidHtml(problems, moments)}`);
+}
+
+// Adding one is choosing one, from the same list, for the same moment. That
+// the ability may hold more than one is the metadata's word — `effects` is
+// declared a list — and not a permission written here.
+function addAction() { chooseAction(walk.how); }
+function editAction(i) { walk.doing = i; ask(0); }
+function dropAction(i) {
+  at(walk.list, []).splice(i, 1);
+  if (walk.doing >= at(walk.list, []).length) walk.doing = 0;
+  sofar();
 }
 
 // What the engine said about the card, wherever it is being said.
@@ -328,8 +406,8 @@ function saidHtml(problems, moments) {
 // The card, finished. It is checked and played by the same two endpoints the
 // editor uses, so what is said about it here is what the engine says about it.
 async function done(problems = [], moments = []) {
-  walk.at = questions().length;
-  el(`<button class="back" onclick="ask(${Math.max(0, walk.at - 1)})">← back</button>
+  walk.on = "done";
+  el(`<button class="back" onclick="sofar()">← back</button>
     <h1>Your card</h1>
     <label for="name">What is it called?</label>
     <input id="name" value="${esc(state.card.fields.name || "")}"
@@ -352,7 +430,10 @@ function startBlank() { walk = null; state.mode = "expert"; editor(); }
 // What "draw it again" means depends on which way in is open. Every setter
 // calls this one thing, so neither screen has to know about the other.
 function drawn(problems = [], moments = []) {
-  return walk ? ask(walk.at, problems, moments) : editor(problems, moments);
+  if (!walk) return editor(problems, moments);
+  if (walk.on === "sofar") return sofar(problems, moments);
+  if (walk.on === "done") return done(problems, moments);
+  return ask(walk.at, problems, moments);
 }
 
 // ------------------------------------------------------------- the editor
