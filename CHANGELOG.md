@@ -6,6 +6,34 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## 0.6.0 - Card Constructor foundation
+
+- Added a second way into a card: pick what kind of card it is, then pick what
+  it should do, and the editor opens with that card already started. The
+  existing editor is untouched and one click away, for a card that does not
+  begin with a single action or for anybody who would rather start empty.
+- Added the fact that made this possible: which moment settles a kind of card.
+  The engine already enforced it in two places — an item without an
+  `on_activate` ability cannot be used, and a loot card reacts to `on_play`
+  because that is what playing one announces — and wrote it down in neither.
+  It is now declared beside each rule, used by that rule so it cannot drift,
+  and published for the page to read.
+- Kinds the engine settles no single moment for — monsters, characters, rooms,
+  curses — say so rather than being given a guessed answer, and go straight to
+  the editor.
+- Actions are the effects the engine already has, offered with the sentences
+  the catalogue already carries about them. Nothing about a specific effect
+  reaches the page.
+- Preserved one pipeline: what the constructor produces is an ordinary ability
+  node in the ordinary place, built by the same builder, checked by the same
+  validator, run by the same runtime. A card says nothing about how it was
+  made.
+- Added an equivalence test that builds all 63 effects both ways and compares
+  the result byte for byte, so a constructor that agreed about one effect and
+  quietly disagreed about the rest would fail.
+- Verified 352 of 1045 shipped definitions load unchanged and 1000 recorded
+  games replay without changes.
+
 ## 0.4.0 — capability metadata
 
 - Added capability metadata for effect parameters.
