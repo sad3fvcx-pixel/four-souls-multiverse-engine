@@ -885,3 +885,156 @@ def test_a_part_that_does_nothing_is_not_shown_as_a_dash() -> None:
 
     assert 'f.asked === "first"' in about
     assert "ability" not in about and "static" not in about
+
+
+# ----------------------------------------------------------------------
+# 9. Changing one that exists, without keeping it
+# ----------------------------------------------------------------------
+
+
+def test_a_card_opened_is_already_what_the_constructor_would_build(
+    workspace: Path,
+) -> None:
+    """
+    The whole reason there is nothing to convert.
+
+    What comes back from opening a card is the same author state a card being
+    made carries, so building it again gives the card back unchanged.
+    """
+    from fsme.lab.desk.author import open_card, sets
+
+    set_id, card_id = a_saved_card(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)
+    where = Path(sets()[0]["where"]) / "cards" / f"{card_id}.json"
+
+    assert build_card(opened) == json.loads(where.read_text("utf-8"))["cards"][0]
+
+
+def test_changing_one_value_changes_one_thing(workspace: Path) -> None:
+    """
+    Two damage becomes three, and nothing else about the card moves.
+    """
+    from fsme.lab.desk.author import open_card
+
+    set_id, card_id = a_saved_card(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)
+    before = build_card(opened)
+
+    steps = opened["card"]["fields"]["abilities"][0]["fields"]["effects"]
+    steps[0]["fields"]["amount"] = 3
+
+    after = build_card(opened)
+    moved = [
+        key
+        for key in set(before) | set(after)
+        if json.dumps(before.get(key), sort_keys=True)
+        != json.dumps(after.get(key), sort_keys=True)
+    ]
+
+    assert moved == ["abilities"], moved
+
+    was = before["abilities"][0]["effects"]
+    now = after["abilities"][0]["effects"]
+
+    assert was[0]["amount"] == 2 and now[0]["amount"] == 3
+    assert was[1] == now[1], "the other action moved"
+    assert (
+        before["abilities"][0]["targets"] == after["abilities"][0]["targets"]
+    ), "what it picks out moved"
+
+
+def test_changing_a_card_does_not_write_it(workspace: Path) -> None:
+    """
+    Opening, changing and building leaves the file exactly as it was. Keeping
+    a change is a later step, and until it exists nothing may write.
+    """
+    from fsme.lab.desk.author import open_card, sets
+
+    set_id, card_id = a_saved_card(A_TWO_STEP_CARD)
+    where = Path(sets()[0]["where"]) / "cards" / f"{card_id}.json"
+    before = where.read_text("utf-8")
+
+    opened = open_card(set_id, card_id)
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 99
+    build_card(opened)
+    check_card(build_card(opened))
+
+    assert where.read_text("utf-8") == before
+
+
+def test_a_changed_card_is_still_a_card_the_engine_takes(workspace: Path) -> None:
+    from fsme.lab.desk.author import open_card
+
+    set_id, card_id = a_saved_card(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 3
+
+    assert check_card(build_card(opened)) == []
+
+
+# ----------------------------------------------------------------------
+# 10. The screens
+# ----------------------------------------------------------------------
+
+
+def test_the_walk_can_be_pointed_at_a_card_that_exists() -> None:
+    """
+    Nothing is converted: the walk is pointed at the parts the card has, and
+    the list it walks is found by what it is a list of.
+    """
+    said = script()
+
+    assert "function startFrom(" in said
+    assert "function whereItActs(" in said
+
+    where = body_of("whereItActs")
+
+    assert 'f.a_list_of === "step"' in where
+    assert "abilities" not in where and "statics" not in where
+
+    # And it does not build a card of its own — it uses the one in hand.
+    made = body_of("startFrom")
+
+    assert "state.card.fields = " not in made
+    assert "sofar()" in made
+
+
+def test_a_card_the_walk_cannot_show_whole_is_not_opened_for_changing() -> None:
+    """
+    It shows one part and what that part does. A card with more than one, or
+    doing something the questions do not offer, would be shown half.
+    """
+    said = script()
+
+    assert "function walkable(" in said
+
+    rule = body_of("walkable")
+
+    assert "busy.length !== 1" in rule
+    assert "finishable(e)" in rule
+    # The reading screen only offers the way in when the rule allows it.
+    assert "walkable()" in body_of("viewing")
+    assert "startFrom()" in body_of("viewing")
+
+
+def test_a_card_that_was_opened_cannot_be_saved_over_yet() -> None:
+    """
+    Everything is offered except keeping it, so nothing is written over a card
+    by accident before there is a step that means to.
+    """
+    finishing = body_of("done")
+
+    assert "${editing" in finishing, "the finishing screen does not ask"
+
+    # The two branches of that question. Keeping the card belongs to one of
+    # them, and it is not the one an opened card takes.
+    asked = finishing.split("${editing")[1]
+    opened, made = asked.split("\n        : ", 1)
+
+    assert "save()" not in opened, "a card that was opened is offered saving"
+    assert "save()" in made, "a card being made here lost its saving"
+    assert "not ready yet" in finishing, "and nobody is told why"

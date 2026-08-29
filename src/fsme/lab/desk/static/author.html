@@ -83,6 +83,10 @@ let walk = null;
 // nothing writes into the card — but "Try it in a game" answers back, and the
 // answer belongs on the screen that asked for it.
 let looking = false;
+// True while the card in hand came off disk rather than being made here.
+// Changing one is a later step than this: everything is offered except
+// keeping it, so nothing can be written over a card by accident.
+let editing = false;
 const page = document.getElementById("page");
 const el = (html) => { page.innerHTML = html; };
 const esc = (s) => String(s ?? "").replace(/[<>&"]/g, c =>
@@ -93,6 +97,7 @@ const esc = (s) => String(s ?? "").replace(/[<>&"]/g, c =>
 async function home() {
   walk = null;
   looking = false;
+  editing = false;
   const { sets, where } = await api("/api/sets");
   const cards = sets.reduce((n, s) => n + s.cards.length, 0);
   el(`
@@ -117,6 +122,7 @@ async function home() {
 async function mine() {
   walk = null;
   looking = false;
+  editing = false;
   const { sets } = await api("/api/sets");
   const one = (set, card) => `<li><button class="plain"
       onclick="openCard('${esc(set.id)}','${esc(card.id)}')"
@@ -149,6 +155,7 @@ async function openCard(set, card) {
   if (said.unreadable) return cannotOpen(card, said.unreadable);
   walk = null;
   looking = true;
+  editing = false;
   state = { set: said.set, mode: "simple", card: said.card };
   viewing();
 }
@@ -216,7 +223,15 @@ function viewing(problems = [], moments = []) {
       changes the card.</p>
     ${readingHtml()}
     <hr>
-    <div class="row"><button onclick="tryIt()">Try it in a game</button></div>
+    <div class="row">
+      ${walkable()
+        ? `<button class="go" onclick="startFrom()">Change it</button>`
+        : ""}
+      <button onclick="tryIt()">Try it in a game</button>
+    </div>
+    ${walkable() ? "" : `<p class="muted">This card says more than the
+      questions can ask about — several parts, or something they do not
+      offer — so it is shown rather than opened for changing.</p>`}
     ${saidHtml(problems, moments)}
     <h2>The card</h2>
     <div id="face"></div>`);
@@ -228,6 +243,7 @@ function viewing(problems = [], moments = []) {
 async function startCard() {
   walk = null;
   looking = false;
+  editing = false;
   if (!can) can = await api("/api/capabilities");
   const { sets } = await api("/api/sets");
   // A card is a node like every one inside it: what was typed under `fields`,
@@ -520,10 +536,15 @@ async function done(problems = [], moments = []) {
            oninput="setField('state.card.fields','name',this.value,false)">
     <hr>
     <div class="row">
-      <button class="go" onclick="save()">Save this card</button>
-      <button onclick="tryIt()">Try it in a game</button>
-      <button onclick="startBlank()">Change anything else</button>
+      ${editing
+        ? `<button onclick="tryIt()">Try it in a game</button>`
+        : `<button class="go" onclick="save()">Save this card</button>
+           <button onclick="tryIt()">Try it in a game</button>
+           <button onclick="startBlank()">Change anything else</button>`}
     </div>
+    ${editing ? `<p class="muted">Changes are yours to look at and play with.
+      Keeping them over the card you opened is not ready yet — the card on
+      disk is exactly as it was.</p>` : ""}
     ${saidHtml(problems, moments)}
     <h2>The card</h2>
     <div id="face"></div>`);
@@ -531,6 +552,65 @@ async function done(problems = [], moments = []) {
 }
 
 function startBlank() { walk = null; state.mode = "expert"; editor(); }
+
+// ------------------------------------------------- changing one that exists
+//
+// A card read off disk is already the thing a card being made is, so there is
+// nothing to convert: the walk is pointed at the parts it already has and
+// every screen works as it does for a card being written now.
+
+// Where this card keeps the things it does — the same question `reactingTo`
+// answers for a card being made, asked of one that exists. Nothing is named:
+// a list of parts is found by what it is a list of, and the things a part
+// does by what that part says holds them.
+function whereItActs() {
+  const card = named(can.cards, "card") || { fields: [] };
+  for (const list of card.fields) {
+    const part = list.a_list_of && shapeNamed(list.a_list_of);
+    if (!part || !part.own_names) continue;
+    const held = state.card.fields[list.id] || [];
+    if (!held.length) continue;
+    const then = part.fields.find(f => f.a_list_of === "step");
+    const when = part.fields.find(f => f.asked === "first" && (f.choices || []).length);
+    if (!then || !(held[0].fields[then.id] || []).length) continue;
+    return { list, part, then, when, held };
+  }
+  return null;
+}
+
+// Whether the walk can show this whole card. It shows one part and the things
+// that part does, so a card with more than one, or with a kind of part it does
+// not draw, or doing something it would not offer, is a card it would show
+// half of — and half a card looks exactly like a whole one.
+function walkable() {
+  const card = named(can.cards, "card") || { fields: [] };
+  const lists = card.fields.filter(f => shapeNamed(f.a_list_of || ""));
+  const busy = lists.filter(f => (state.card.fields[f.id] || []).length);
+  if (busy.length !== 1) return "";
+  const where = whereItActs();
+  if (!where || where.held.length !== 1) return "";
+  const doing = where.held[0].fields[where.then.id] || [];
+  const offered = can.effects.filter(e => !e.a_step && !e.replacing && finishable(e));
+  if (!doing.every(step => offered.some(e => e.id === step.id))) return "";
+  return where.list.id;
+}
+
+// The walk, pointed at a card that already exists. `state.card` is untouched:
+// it was already this shape, which is the whole reason any of this works.
+function startFrom() {
+  const where = whereItActs();
+  if (!where) return startBlank();
+  walk = {
+    how: where.when ? where.held[0].fields[where.when.id] : "",
+    part: where.part,
+    doing: 0,
+    list: `state.card.fields.${where.list.id}[0].fields.${where.then.id}`,
+  };
+  looking = false;
+  editing = true;
+  state.mode = "simple";
+  sofar();
+}
 
 // What "draw it again" means depends on which way in is open. Every setter
 // calls this one thing, so neither screen has to know about the other.
