@@ -37,6 +37,16 @@ PURCHASE = "purchase"
 
 ACTIONS = (PLAY_LOOT, ACTIVATE, ATTACK, PURCHASE)
 
+ACTION_WORDS = {
+    PLAY_LOOT: "playing a loot card",
+    ACTIVATE: "activating an item or a character",
+    ATTACK: "declaring an attack on a monster",
+    PURCHASE: "buying from the shop",
+}
+"""
+What each action is, for a form asking which one a card does not allow.
+"""
+
 
 def forbidden_by(
     state: GameState,

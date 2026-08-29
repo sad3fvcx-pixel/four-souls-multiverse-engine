@@ -148,6 +148,36 @@ Empty means in play, which is not a zone and is why it is not in this list.
 
 
 ABILITY_SCOPES = ("self", "controller", "any")
+
+ABILITY_SCOPE_WORDS = {
+    "self": "only when this very card is involved",
+    "controller": "only when it concerns this card's controller",
+    "any": "whenever it happens to anybody",
+}
+"""
+What each scope listens to, in the words a person would use for it.
+
+Beside the three words themselves, because the branch below is what makes them
+mean anything and a gloss kept elsewhere would drift from it.
+"""
+
+ZONE_WORDS = {
+    "active_monsters": "in a monster slot",
+    "bonus_souls": "among the bonus souls",
+    "loot_deck": "in the loot deck",
+    "loot_discard": "in the loot discard pile",
+    "monster_deck": "in the monster deck",
+    "monster_discard": "in the monster discard pile",
+    "room_area": "in the room area",
+    "room_deck": "in the room deck",
+    "room_discard": "in the room discard pile",
+    "treasure_deck": "in the treasure deck",
+    "treasure_discard": "in the treasure discard pile",
+    "treasure_shop": "in the shop",
+}
+"""
+Where each zone is, for a card whose ability works from somewhere but play.
+"""
 """
 The three answers ``in_scope`` gives, in the words a card writes them.
 

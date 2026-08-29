@@ -90,13 +90,16 @@ def test_every_ability_field_lands_on_a_control_the_page_has(
 def test_the_page_draws_the_skeleton_from_the_shape_and_not_from_a_list(
     page: str,
 ) -> None:
-    assert "function cardHtml(wanted)" in page
+    assert "function cardHtml()" in page
     assert 'named(can.cards, "card")' in page
     # An ability is drawn wherever a list of abilities is drawn, which is the
     # same list renderer everything else goes through — so the page names it
-    # nowhere. The only field name it mentions is the one the form above asks
-    # in its own words.
-    assert 'const FEATURED = ["name"];' in page
+    # nowhere. The only field names it mentions are the ones the form above
+    # asks in its own words, and there are very few of them.
+    featured = page.split("const FEATURED = [")[1].split("]")[0]
+
+    assert featured.count(",") < 3, f"the form is featuring fields by name: {featured}"
+    assert '"name"' in featured
     assert '"ability"' not in page.split("<script>")[1]
 
 
@@ -288,10 +291,34 @@ def test_aiming_still_binds_a_group_and_points_at_it() -> None:
     ]
 
 
-def test_the_field_renderer_still_dispatches_the_way_it_did(page: str) -> None:
-    for where in ("spelling", "given", "group", "advanced"):
-        assert f'f.shown === "{where}"' in page
+def test_every_way_a_field_may_be_shown_still_reaches_something(
+    page: str, can: dict[str, Any]
+) -> None:
+    """
+    Every `shown` the metadata can produce has to land somewhere in the
+    renderer, or a capability disappears without anybody noticing.
 
+    ``given`` is the one that no longer needs a branch of its own: a parameter
+    the engine answers is not asked at all now, which is a wider rule than
+    ``shown`` was and catches the bound names and the second spellings with it.
+    """
+    routed = {"spelling", "group", "advanced", "body", "nested", "form"}
+    possible = {
+        field["shown"]
+        for group in ("effects", "conditions", "targets", "cards",
+                      "abilities", "statics", "structures")
+        for one in can[group]
+        for field in one["fields"]
+    }
+
+    assert possible <= routed | {"given"}, possible - routed - {"given"}
+
+    for where in ("spelling", "group", "advanced"):
+        assert f'f.shown === "{where}"' in page, where
+
+    # And the one that replaced the `given` branch, which is what stops an
+    # engine-supplied field from ever reaching a box.
+    assert 'f.asked === "never"' in page
     assert "function valueHtml(f, values, siblings, path)" in page
 
 

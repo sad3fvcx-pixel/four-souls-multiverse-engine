@@ -103,6 +103,26 @@ because nothing else can carry them: a monster is not a player and has no seat.
 
 MONSTER_STATS = (ATTACK, DIFFICULTY)
 
+STAT_WORDS = {
+    ATTACK: "how much damage an attack does",
+    MAX_HP: "the most hit points it can have",
+    ATTACKS: "how many attacks a turn allows",
+    LOOT_PLAYS: "how many loot cards a turn allows",
+    PURCHASES: "how many items a turn allows buying",
+    ROLL: "what is added to a die rolled",
+    SHOP_COST: "what an item in the shop costs",
+    LOOT_STEP: "how many cards the loot step draws",
+    DIFFICULTY: "the roll needed to hit it",
+}
+"""
+What each statistic is, in the words a person would use for it.
+
+The same sentence each constant above carries, said to an author instead of to
+whoever reads this file. Beside them on purpose: a name and its explanation
+kept in different files drift, and the drift shows up as a dropdown offering
+`loot_step` to somebody who has never read the source.
+"""
+
 
 @dataclass(slots=True)
 class CardModifier:

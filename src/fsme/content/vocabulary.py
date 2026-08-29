@@ -112,6 +112,34 @@ being named.
 """
 
 
+FIRST = "first"
+MORE = "more"
+DEEPER = "deeper"
+NEVER = "never"
+
+ASKED = (FIRST, MORE, DEEPER, NEVER)
+"""
+When a person is asked about a parameter, as distinct from whether they may be.
+
+Every parameter here is a capability the engine has, and none of them is being
+taken away. What this says is *when to put the question* — because showing all
+of them at once is how a card that deals one damage came to be a form with
+thirty-nine boxes on it, and a capability nobody can find among the others is
+not much better than one that is missing.
+
+- ``first`` — asked straight away. What the card does, and when.
+- ``more`` — asked behind one click. Real questions with sensible answers
+  that most cards never change.
+- ``deeper`` — asked behind "advanced". Right for a card that needs it and
+  noise for every card that does not.
+- ``never`` — not a question. The engine answers it, or another parameter
+  already asked it.
+
+This is the one thing here that is not a fact about the engine. It is a fact
+about people writing cards, which is why it is declared rather than derived
+wherever the derivation would be guessing.
+"""
+
 A_LIST = "a list"
 """
 The kind given to a parameter that takes several values rather than one.
@@ -282,11 +310,35 @@ class ParamShape:
 
     describes: str = ""
     """
-    What this parameter is, in the words a person would use for it.
+    What this parameter is, as a noun phrase, for building sentences out of.
 
-    ``amount`` is a name for us; "how many cents" is what a form asks. Empty
-    means nobody has said, and whatever is asking should fall back to the
-    parameter's own name.
+    "the number it changes", "the kind of card it is" — a fragment that reads
+    correctly *inside* something else: "not used because the kind of card it is
+    says loot". It is not a label and must not be used as one, which is exactly
+    the mistake that produced "Not used while which kind of card it is says what
+    it says" on every loot card. ``asks`` is the label.
+    """
+
+    asks: str = ""
+    """
+    The question put to a person, in their words, ending in a question mark.
+
+    "Which number does it change?" — one slot, one job. It was the same string
+    as ``describes`` for a while, and one string cannot be both a heading and a
+    sentence fragment: written to work inside prose it dangles as a label, and
+    written to work as a label it garbles the prose.
+
+    Required of anything somebody has to answer. A test refuses an engine that
+    grows a question nobody worded.
+    """
+
+    asked: str = ""
+    """
+    When to put the question — see ``ASKED``.
+
+    Empty means nobody said, and `_asked_for` works it out. Declared where the
+    working-out would be wrong: a parameter can be optional, ordinary and still
+    the last thing a person wants to be asked about.
     """
 
     unless_when: tuple[Any, ...] = ()
@@ -449,6 +501,12 @@ class ParamShape:
         if not self.written_as:
             object.__setattr__(self, "written_as", _written_as_for(self))
 
+        if not self.asks:
+            object.__setattr__(self, "asks", _a_question(self))
+
+        if not self.asked:
+            object.__setattr__(self, "asked", _asked_for(self))
+
         if self.role:
             return
 
@@ -538,6 +596,59 @@ def _written_as_for(parameter: ParamShape) -> str:
         return ""
 
     return BY_STORED if parameter.refers_to == VALUES else BY_NAME
+
+
+def _a_question(parameter: ParamShape) -> str:
+    """
+    The question to put, where nobody wrote one and the description will do.
+
+    Most parameters were already described in words that *are* the question
+    with its capital and its mark taken off — "how many cents", "which seat at
+    the table". Turning those into questions here means three hundred of them
+    did not have to be written out again, and the ones where the description
+    reads badly as a question are the ones worth wording by hand.
+
+    The parameter's own name is the last resort, and a poor one: it is the
+    thing this layer exists to stop a person being shown.
+    """
+    said = parameter.describes or parameter.name.replace("_", " ")
+
+    if not said:
+        return ""
+
+    return said[:1].upper() + said[1:].rstrip("?") + "?"
+
+
+def _asked_for(parameter: ParamShape) -> str:
+    """
+    When to ask about a parameter, where it follows from the rest of it.
+
+    Three of the four answers are already implied by things the engine says, so
+    requiring anybody to write them down would be requiring them to repeat
+    themselves. What is left — an optional value nobody but an expert wants to
+    be asked about — is not implied by anything, and is declared.
+    """
+    if (
+        parameter.written_as in (BY_ENGINE, BY_BINDING)
+        or parameter.instead_of
+        or parameter.names_the_node
+    ):
+        # The engine answers it, FSME writes it, another parameter already
+        # asked it, or it is the key that makes the node what it is. None of
+        # them is a question, and a box for one takes an answer that is wrong
+        # or about to be overwritten.
+        return NEVER
+
+    if parameter.role == STRUCTURE:
+        # The effect's own data, written the way a card file writes it. Real,
+        # rare, and no use to somebody who has never seen a card file.
+        return DEEPER
+
+    if parameter.required or parameter.a_list_of:
+        # It has to be answered, or it is what the card does.
+        return FIRST
+
+    return MORE
 
 
 def _role_for(parameter: ParamShape) -> str:

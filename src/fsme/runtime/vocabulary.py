@@ -16,7 +16,7 @@ from types import MappingProxyType
 from typing import Any
 
 from fsme.cards.definition import Ability, CardDefinition, Static
-from fsme.cards.types import PRINTED_NUMBERS, CardType
+from fsme.cards.types import PRINTED_NUMBERS, TYPE_WORDS, CardType
 from fsme.content import Vocabulary
 from fsme.content.vocabulary import (
     A_LIST,
@@ -30,8 +30,12 @@ from fsme.content.vocabulary import (
     CARDS,
     CONDITION,
     COST,
+    DEEPER,
+    FIRST,
     MODE,
+    MORE,
     NAMED_COUNT,
+    NEVER,
     OPEN,
     PLAYERS,
     STATIC,
@@ -51,9 +55,9 @@ from fsme.effects.registry import EffectSpec, ParamKind
 from fsme.events import EventType
 from fsme.events.types import WHEN_IT_HAPPENS
 from fsme.rules.costs import COINS, COUNTERS, DISCARD, HP, TAP
-from fsme.rules.restrictions import ACTIONS
-from fsme.rules.statics import MONSTER_SCOPES, STATIC_SCOPES
-from fsme.state.modifiers import MONSTER_STATS, STATS
+from fsme.rules.restrictions import ACTION_WORDS, ACTIONS
+from fsme.rules.statics import MONSTER_SCOPES, SCOPE_WORDS, STATIC_SCOPES
+from fsme.state.modifiers import MONSTER_STATS, STAT_WORDS, STATS
 
 from .condition_evaluator import ConditionEvaluator
 from .effect_executor import COUNTABLE, WORKING_OUT
@@ -64,7 +68,13 @@ from .interpreter import (
     CONTROL_NAMES,
     CONTROL_SPELLINGS,
 )
-from .runtime import ABILITY_SCOPES, ABILITY_ZONES, ability_scope
+from .runtime import (
+    ABILITY_SCOPE_WORDS,
+    ABILITY_SCOPES,
+    ABILITY_ZONES,
+    ZONE_WORDS,
+    ability_scope,
+)
 from .target_resolver import TargetResolver
 
 BOOLEAN_CONDITIONS = frozenset({"and", "or", "not"})
@@ -265,6 +275,41 @@ CARD_WORDS = {
 }
 
 
+CARD_ASKS = {
+    "name": "What is it called?",
+    "type": "What kind of card is it?",
+    "abilities": "What does it do?",
+    "statics": "What does it change while it is in play?",
+    "health": "How many hit points?",
+    "attack": "How much damage does it deal?",
+    "roll": "What roll is needed to hit it?",
+    "cost": "What does it cost to buy?",
+    "souls": "How many souls is it worth?",
+    "tags": "Which families does it belong to?",
+    "rewards": "What does defeating it pay out?",
+    "metadata": "Anything else worth noting?",
+}
+
+CARD_ASKED = {
+    # A card is a name, a kind, and what it does. The printed numbers matter to
+    # the kinds that have them and are noise on the kinds that do not, which
+    # `unless` already knows — so they are one click away rather than in front
+    # of somebody making a loot card.
+    "name": FIRST,
+    "type": FIRST,
+    "abilities": FIRST,
+    "statics": FIRST,
+    "health": MORE,
+    "attack": MORE,
+    "roll": MORE,
+    "cost": MORE,
+    "souls": MORE,
+    "tags": DEEPER,
+    "rewards": DEEPER,
+    "metadata": DEEPER,
+}
+
+
 def _printed_on(number: str) -> tuple[Any, ...]:
     """
     The kinds of card that do *not* carry this printed number.
@@ -322,7 +367,14 @@ def _card_field(field: Field[Any]) -> ParamShape:
             if field.name in _EVERY_PRINTED_NUMBER
             else ()
         ),
+        values_mean=(
+            MappingProxyType({str(k): v for k, v in TYPE_WORDS.items()})
+            if field.name == "type"
+            else MappingProxyType({})
+        ),
         describes=CARD_WORDS.get(field.name, ""),
+        asks=CARD_ASKS.get(field.name, ""),
+        asked=CARD_ASKED.get(field.name, ""),
         default=_default_of(field),
     )
 
@@ -351,6 +403,51 @@ ABILITY_WORDS = {
     "zone": "where the card must be standing, if not in play",
     "description": "what it says, in a person's words",
 }
+"""
+What each field of an ability *is*, for building sentences out of.
+"""
+
+ABILITY_ASKS = {
+    "trigger": "When does this happen?",
+    "conditions": "Only if…?",
+    "targets": "What does it pick out first?",
+    "effects": "What happens?",
+    "optional": "May the player say no?",
+    "cost": "What does the player pay?",
+    "replacement": "Does it change the event instead of reacting to it?",
+    "scope": "Whose actions does it react to?",
+    "zone": "Where must the card be?",
+    "description": "What does the card say, in your own words?",
+}
+"""
+What each field of an ability *asks*, which is a different question.
+"""
+
+ABILITY_ASKED = {
+    # What the card does, and when. Everything else is a refinement of it.
+    "trigger": FIRST,
+    "effects": FIRST,
+    "conditions": MORE,
+    "cost": MORE,
+    "optional": MORE,
+    # An ability binds what it picks out under a name; the question "who does
+    # this happen to" is already asked beside the effect that acts on it, and
+    # asking it twice is how a card comes to choose two different players and
+    # mean one.
+    "targets": NEVER,
+    "scope": DEEPER,
+    "zone": DEEPER,
+    "replacement": DEEPER,
+    "description": DEEPER,
+}
+"""
+When to ask about each field of an ability.
+
+Not derivable: all but two are optional values of ordinary kinds, and being
+optional says nothing about whether somebody writing their first card wants to
+be asked. Scope and zone are the two that decide whether an ability works at
+all, and are still the last two anybody should meet.
+"""
 
 STATIC_WORDS = {
     "stat": "which number it changes",
@@ -360,6 +457,32 @@ STATIC_WORDS = {
     "scope": "who it applies to",
     "conditions": "when it applies, beyond its card being in play",
     "description": "what it says, in a person's words",
+}
+"""
+What each field of a static *is*, for building sentences out of.
+"""
+
+STATIC_ASKS = {
+    "stat": "Which number does it change?",
+    "amount": "By how much?",
+    "forbids": "Or: which action does it stop?",
+    "per_counter": "Count it once per counter of which kind?",
+    "scope": "Who does it affect?",
+    "conditions": "Only while…?",
+    "description": "What does the card say, in your own words?",
+}
+
+STATIC_ASKED = {
+    # Which number, who it reaches, and by how much: the three that make a
+    # static a static. Asking "by how much" before "which number" is what the
+    # alphabet used to do.
+    "stat": FIRST,
+    "scope": FIRST,
+    "amount": FIRST,
+    "forbids": MORE,
+    "conditions": MORE,
+    "per_counter": DEEPER,
+    "description": DEEPER,
 }
 
 
@@ -374,14 +497,25 @@ def _ability_field(field: Field[Any]) -> ParamShape:
         "zone": ABILITY_ZONES,
     }
 
+    glosses = {
+        "trigger": TRIGGER_WORDS,
+        "scope": ABILITY_SCOPE_WORDS,
+        "zone": ZONE_WORDS,
+    }
+
     return ParamShape(
         field.name,
         _kind_of(field),
+        # An ability without one never runs, and the checker says so. Saying it
+        # here too is what lets a form ask for it first and mark it needed.
+        required=field.name == "trigger",
         values=values.get(field.name, ()),
-        values_mean=TRIGGER_WORDS if field.name == "trigger" else MappingProxyType({}),
+        values_mean=glosses.get(field.name, MappingProxyType({})),
         a_list_of=lists.get(field.name, ""),
         shaped_like=COST if field.name == "cost" else "",
         describes=ABILITY_WORDS.get(field.name, ""),
+        asks=ABILITY_ASKS.get(field.name, ""),
+        asked=ABILITY_ASKED.get(field.name, ""),
         default=None if field.name == "scope" else _default_of(field),
     )
 
@@ -426,6 +560,12 @@ def _static_field(field: Field[Any]) -> ParamShape:
     the checker says so in `STATIC_STAT_BY_SCOPE` — and a domain that is right
     half the time is worse than none.
     """
+    glosses = {
+        "scope": SCOPE_WORDS,
+        "forbids": ACTION_WORDS,
+        "stat": STAT_WORDS,
+    }
+
     return ParamShape(
         field.name,
         _kind_of(field),
@@ -436,10 +576,13 @@ def _static_field(field: Field[Any]) -> ParamShape:
             if field.name == "forbids"
             else ()
         ),
+        values_mean=glosses.get(field.name, MappingProxyType({})),
         a_list_of=CONDITION if field.name == "conditions" else "",
         domain_from="scope" if field.name == "stat" else "",
         domains=STAT_BY_SCOPE if field.name == "stat" else MappingProxyType({}),
         describes=STATIC_WORDS.get(field.name, ""),
+        asks=STATIC_ASKS.get(field.name, ""),
+        asked=STATIC_ASKED.get(field.name, ""),
         default=_default_of(field),
     )
 
@@ -803,6 +946,12 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
                     values=param.values,
                     least=param.least,
                     default=param.default,
+                    # The one an effect is mostly about. Thirty-seven effects
+                    # already say which, because it is the one the shorthand
+                    # form fills: `{"gain_coins": 3}` means the amount. That is
+                    # the same parameter a person wants to be asked about
+                    # first, so it is read rather than declared again.
+                    asked=FIRST if name == spec.primary else "",
                     describes=param.asks,
                     role=param.role or (STRUCTURE if name in spec.literal else ""),
                     unless=param.unless,

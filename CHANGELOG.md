@@ -27,6 +27,27 @@ that cannot be read says so) and the **card schema**.
 - Added persistence of author-created sets across application restarts.
 - Added an end-to-end authoring workflow and comprehensive Author UI tests.
 
+## 0.5.2 - an editor that explains itself
+
+- Added a human-facing description layer over the capability metadata: every
+  parameter now carries the question to put to a person, separately from the
+  noun phrase used to build sentences out of.
+- Added an explanation for every value a card writes by hand — scopes, stats,
+  zones, forbidden actions and card kinds are no longer offered as engine
+  identifiers.
+- Added a statement of when each question is worth asking, so the editor opens
+  with what a card does rather than with everything a card may say. Nothing is
+  removed: the rest is one click away.
+- Fixed fields being ordered alphabetically instead of the order they are
+  declared in, which asked a static "by how much" before "which number".
+- Fixed explanations built by putting a description where a value belonged,
+  which read as "Not used while which kind of card it is says what it says".
+- Fixed engine-written fields being shown and disabled rather than not shown.
+- Fixed a required field being announced twice and a value's label being
+  printed twice.
+- Measured on a card that deals one damage to a player: 36 visible controls
+  and 493 words became 8 and 136, with every capability still reachable.
+
 ## 0.5.1 - custom cards in watch mode
 
 - Fixed watch mode dealing only the cards FSME ships: an author could make a

@@ -450,7 +450,23 @@ def test_every_field_a_card_may_carry_reaches_a_control(
     for field in shape["fields"]:
         assert field["shown"] in drawable, field["id"]
 
-    assert 'const FEATURED = ["name"];' in page
+    # Every one of them is still reachable — what changed is *when* it is
+    # asked, which the shape says and the form obeys. A field the engine reads
+    # and the form omits would be a capability quietly taken away; a field
+    # behind one click is not.
+    asked = {field["id"]: field["asked"] for field in shape["fields"]}
+
+    assert asked["abilities"] == "first"
+    assert asked["statics"] == "first"
+    assert asked["health"] == "more"
+    assert asked["tags"] == "deeper"
+    # The two the engine writes for itself are not questions at all.
+    assert asked["id"] == "never"
+    assert asked["expansion"] == "never"
+
+    featured = page.split("const FEATURED = [")[1].split("]")[0]
+
+    assert '"name"' in featured
 
 
 def test_a_kind_of_node_the_page_cannot_draw_is_said_rather_than_boxed(

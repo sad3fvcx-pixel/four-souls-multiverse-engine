@@ -422,12 +422,21 @@ def test_what_the_engine_insists_on_reaches_the_page(
     }
 
 
-def test_the_page_says_so_before_the_server_does() -> None:
+def test_the_page_says_a_field_is_required_and_says_it_once() -> None:
+    """
+    The form saying so before the server does is worth having. Saying it twice
+    is not: it used to shout NEEDED beside the label and then repeat the same
+    fact as a sentence under the box, and neither notice added anything to the
+    other.
+    """
     page = PAGE.read_text("utf-8")
+    script = page.split("<script>")[1]
 
-    assert "function needed(f)" in page
-    assert "This one has to be filled in." in page
-    assert "data-needed" in page
+    assert "function needed(f)" in script
+    assert "f.required" in script
+
+    # One notice. The old second one is gone rather than reworded.
+    assert "This one has to be filled in." not in page
 
 
 def test_an_empty_required_answer_is_still_refused() -> None:

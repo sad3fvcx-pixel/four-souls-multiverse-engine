@@ -201,6 +201,18 @@ fall through it and quietly mean ``controller``.
 
 STATIC_SCOPES = PLAYER_SCOPES + MONSTER_SCOPES
 
+SCOPE_WORDS = {
+    "controller": "the player who controls this card",
+    "opponents": "everybody except this card's controller",
+    "all_players": "every player at the table",
+    "self": "this card's own holder, or the monster it is on",
+    "all_monsters": "every monster in play",
+    "other_monsters": "every monster except this one",
+}
+"""
+Who each scope reaches, in the words a person would use for it.
+"""
+
 
 def monster_value(state: GameState, stat: str, monster: Any, base: int) -> int:
     """

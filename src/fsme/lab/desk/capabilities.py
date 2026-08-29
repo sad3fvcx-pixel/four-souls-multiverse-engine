@@ -351,10 +351,22 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
     """
     found = []
 
-    for name, parameter in sorted(shape.params.items()):
+    # In the order they were declared, which is the order somebody would ask
+    # them in: an ability says trigger, conditions, targets, effects; a static
+    # says which number before by how much. Sorting threw that away and put
+    # `attack` first on every card and "by how much" before "which number",
+    # which is how the form came to read like a dictionary.
+    for name, parameter in shape.params.items():
         entry: dict[str, Any] = {
             "id": name,
             "about": parameter.describes or name.replace("_", " "),
+            # The question a person is put, as against what the parameter is.
+            # Whatever draws a label reads this; `about` is for sentences built
+            # around it and reads as a fragment on its own.
+            "asks": parameter.asks,
+            # And when to put it: straight away, behind one click, behind
+            # "advanced", or not at all.
+            "asked": parameter.asked,
             "role": parameter.role,
             "kind": parameter.kind,
             "choices": [str(value) for value in parameter.values],

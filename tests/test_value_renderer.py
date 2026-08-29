@@ -265,7 +265,12 @@ def test_the_page_offers_the_names_it_can_find_rather_than_a_box(
     # Found by asking each node's own shape what it defines and what it keeps.
     assert "shape.stores" in page
     assert "f.defines === kind" in page
-    assert "Nothing earlier in this card has made one yet." in page
+    # And when there is nothing to point at, it says what would make one
+    # rather than leaving a dead end. Which effects those are is read off the
+    # metadata, so it is the mechanism that is pinned here, not a list.
+    assert "Nothing earlier in this card remembers a value yet." in page
+    assert "function whatWouldMakeOne(kind)" in page
+    assert "can.effects.filter(e => e.stores)" in page
 
 
 def test_a_reference_is_not_free_text(can: dict[str, Any]) -> None:

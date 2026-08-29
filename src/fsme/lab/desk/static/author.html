@@ -41,8 +41,8 @@
             justify-content:space-between; gap:.6rem; align-items:center; }
  .moment { margin:.3rem 0; }
  hr { border:none; border-top:1px solid var(--line); margin:2rem 0 1rem; }
- .need { color:var(--bad); font-size:.78rem; text-transform:uppercase;
-         letter-spacing:.06em; margin-left:.35rem; }
+ .need { color:var(--dim); font-size:.82rem; font-style:italic;
+         margin-left:.4rem; }
  .nested { border-left:2px solid var(--line); padding-left:.8rem; margin:.4rem 0 .4rem .2rem; }
  .deep { margin:.6rem 0; }
  .deep > summary { cursor:pointer; font-size:.92rem; }
@@ -177,14 +177,7 @@ function editor(problems = [], moments = []) {
       onchange="setNote(this.value,true)">${esc(printed())}</textarea>
 
     <h2>What it does</h2>
-    <p class="lead">A card is a composition. Everything it does is one of
-      these, and each one stands on its own.</p>
-    <div id="parts">${cardHtml(f => f.shown === "body")}</div>
-
-    <h2>More about this card</h2>
-    <p class="lead">Everything else a card may say. Most cards say none of it,
-      and the engine fills in whatever nobody writes.</p>
-    <div id="rest">${cardHtml(f => f.shown !== "body")}</div>
+    <div id="parts">${cardHtml()}</div>
 
     <hr>
     <div class="row">
@@ -206,12 +199,15 @@ function editor(problems = [], moments = []) {
 // contains, so a card that grows a third kind of part grows a third section
 // without this changing. The one below is the only question the form above
 // asks whole, in a person's own words.
-const FEATURED = ["name"];
+// The two the form above asks whole, in a person's own words. Everything else
+// a card may say is drawn from the shape, and when it is drawn — straight
+// away, behind "more options", behind "advanced" — is the shape's answer too.
+const FEATURED = ["name", "metadata"];
 
-function cardHtml(wanted) {
+function cardHtml() {
   const shape = named(can.cards, "card");
   if (!shape) return "";
-  const fields = shape.fields.filter(f => !FEATURED.includes(f.id) && wanted(f));
+  const fields = shape.fields.filter(f => !FEATURED.includes(f.id));
   return fieldsHtml(fields, state.card.fields, state.card.groups,
                     "state.card.fields", "state.card.groups", shape.id);
 }
@@ -251,9 +247,9 @@ function setNote(text, redraw) {
 const KINDS = {
   step:      { of: () => can.effects.concat(
                  can.structures.filter(x => x.a_step && drawable(x))),
-               says: "＋ something happens" },
-  condition: { of: () => can.conditions, says: "＋ something must be true" },
-  target:    { of: () => can.targets,    says: "＋ something to pick out" },
+               says: "Add something that happens" },
+  condition: { of: () => can.conditions, says: "Add a condition" },
+  target:    { of: () => can.targets,    says: "Add something to pick out" },
 };
 
 // A mode, an ability, a static: a node of exactly one shape, which is why
@@ -262,7 +258,7 @@ const KINDS = {
 function kindOf(kind) {
   if (KINDS[kind]) return KINDS[kind];
   const shape = shapeNamed(kind);
-  return shape ? { of: () => null, says: "＋ " + shape.about, shape } : null;
+  return shape ? { of: () => null, says: "Add " + shape.about, shape } : null;
 }
 
 // Every shape the catalogue publishes, wherever it publishes it. A section is
@@ -312,14 +308,21 @@ function chooserHtml(kind, node, path, index) {
   if (!offered) return "";
   const one = (x) => `<option value="${x.id}" ${x.id === node.id ? "selected" : ""}
       >${esc(x.about)}</option>`;
-  const common = offered.filter(x => x.common);
-  const rest = offered.filter(x => !x.common);
+  // Three groups, and the third is the one that matters: a branch and a loop
+  // are not things that happen, they are shapes the things that happen go in.
+  // Mixed into one list of seventy-two sentences they read as effects, and an
+  // author looking for "deal damage" scrolls past "depending on something".
+  const shaping = offered.filter(x => x.a_step);
+  const doing = offered.filter(x => !x.a_step);
+  const common = doing.filter(x => x.common);
+  const rest = doing.filter(x => !x.common);
+  const group = (label, list) => list.length
+    ? `<optgroup label="${esc(label)}">${list.map(one).join("")}</optgroup>` : "";
   return `<select onchange="setNode('${kind}','${path}',${index},this.value)">
       <option value="">— choose —</option>
-      ${common.map(one).join("")}
-      ${common.length
-        ? `<optgroup label="everything else">${rest.map(one).join("")}</optgroup>`
-        : rest.map(one).join("")}
+      ${common.length ? group("common", common) + group("everything else", rest)
+                      : rest.map(one).join("")}
+      ${group("ways of shaping what happens", shaping)}
     </select>`;
 }
 
@@ -345,8 +348,8 @@ function nestedHtml(field, values, path) {
   const shape = shapeNamed(field.shaped_like);
   if (!shape) return unsupportedHtml(field);
   const inside = values[field.id] || {};
-  return `<details class="deep" open>
-    <summary>${esc(field.about)}${needed(field)}</summary>
+  return `<details class="deep">
+    <summary>${esc(asksOf(field))}${needed(field)}</summary>
     <div class="nested">${fieldsHtml(shape.fields, inside, inside.groups,
         `${path}.${field.id}`, `${path}.${field.id}.groups`, shape.id)}</div>
   </details>`;
@@ -363,7 +366,7 @@ const STORED = "the name of a value an earlier step stored";
 // cannot yet build is a sentence saying so — an empty field pretending to be
 // the answer is worse than no field at all.
 function unsupportedHtml(field) {
-  return `<p class="muted"><b>${esc(field.about)}</b> — the engine can do this
+  return `<p class="muted"><b>${esc(asksOf(field))}</b> — the engine can do this
     and this editor cannot build it yet.</p>`;
 }
 
@@ -409,7 +412,7 @@ function oneOfHtml(group, siblings, values, path, owner) {
   const chosen = ways.find(f => values[f.id] !== undefined) || {};
   const one = (f) => `<option value="${f.id}" ${f.id === chosen.id ? "selected" : ""}
       >${esc(f.about)}</option>`;
-  return `<label>${esc(group)}</label>
+  return `<label>${esc(sentence(group))}</label>
     <select onchange="setOneOf('${path}','${group}',this.value,'${owner}')">
       <option value="">— choose —</option>
       ${ways.map(one).join("")}
@@ -425,8 +428,12 @@ function oneOfHtml(group, siblings, values, path, owner) {
 function waysHtml(f, values, siblings, path, owner) {
   const ways = [f, ...f.also];
   const chosen = ways.findIndex(way => writtenThisWay(way, values[f.id]));
+  // The first way is the parameter itself, and naming it by its description
+  // prints the question twice — once as the label above and once as an option
+  // underneath. What distinguishes the ways is what each one *is*, so the
+  // first is named by its kind and the rest by what they say about themselves.
   const one = (way, i) => `<option value="${i}" ${i === chosen ? "selected" : ""}
-      >${esc(wayNamed(way))}</option>`;
+      >${esc(i === 0 ? (way.kind || wayNamed(way)) : wayNamed(way))}</option>`;
   const way = ways[chosen] || ways[0];
   const drawn = way.shaped_like
     ? nestedHtml({ ...f, about: wayNamed(way), shaped_like: way.shaped_like },
@@ -435,7 +442,7 @@ function waysHtml(f, values, siblings, path, owner) {
     ? bodyHtml(way.a_list_of, values[f.id], `${path}.${f.id}`)
     : valueHtml({ ...f, ...only(way), also: [], bare: true },
                 values, siblings, path);
-  return `<label>${esc(f.about)}${needed(f)}</label>
+  return `<label>${esc(asksOf(f))}${needed(f)}</label>
     ${drawn}
     <select class="way"
       onchange="setWay('${path}','${f.id}',this.value,'${owner}')">
@@ -473,10 +480,11 @@ function referenceHtml(f, values, path) {
   const known = definedNames(f.picks, path);
   const value = values[f.id] ?? "";
   if (!known.length) {
-    return `<label>${esc(f.about)}${needed(f)}</label>
-      <p class="muted">Nothing earlier in this card has made one yet.</p>`;
+    return `<label>${esc(asksOf(f))}${needed(f)}</label>
+      <p class="muted">Nothing earlier in this card remembers a value yet.
+        ${esc(whatWouldMakeOne(f.picks))}</p>`;
   }
-  return `<label>${esc(f.about)}${needed(f)}</label>
+  return `<label>${esc(asksOf(f))}${needed(f)}</label>
     <select onchange="setField('${path}','${f.id}',this.value,false)">
       <option value="">${esc(fallback(f))}</option>
       ${known.map(n => `<option ${n === value ? "selected" : ""}>${esc(n)}</option>`)
@@ -542,7 +550,7 @@ function dependentHtml(f, values, siblings, path) {
   const answer = values[f.domain_from] ?? (other ? other.otherwise : "");
   const allowed = f.domains[String(answer)];
   if (!allowed) {
-    return `<label>${esc(f.about)}${needed(f)}</label>
+    return `<label>${esc(asksOf(f))}${needed(f)}</label>
       <p class="muted">Which of these are allowed depends on
         <b>${esc(other ? other.about : f.domain_from)}</b>, and this editor
         cannot work it out from the card alone.</p>
@@ -565,7 +573,34 @@ function dependentHtml(f, values, siblings, path) {
 // `values` is what the author filled in and `groups` is what they pointed at;
 // the two are kept apart because they become different things in the card.
 
+// Every parameter, sorted into when it is asked rather than all at once.
+//
+// Nothing is taken away: `more` and `deeper` are one click apart, not gone, and
+// what goes where is the metadata's own answer. A card that deals one damage
+// used to draw thirty-nine boxes because "may be written" and "worth asking
+// about now" were the same question, and only the engine had an opinion.
 function fieldsHtml(fields, values, groups, path, groupPath, owner) {
+  const all = fields || [];
+  const at = (when) => all.filter(f => f.asked === when);
+  const drawnAt = (when) =>
+    oneByOne(at(when), values, groups, path, groupPath, owner);
+
+  const more = drawnAt("more");
+  const deeper = drawnAt("deeper");
+
+  return drawnAt("first")
+    + folded("More options", more)
+    + folded("Advanced", deeper);
+}
+
+// A closed fold, or nothing at all when there is nothing behind it.
+function folded(says, inside) {
+  if (!inside.trim()) return "";
+  return `<details class="deep"><summary>${esc(says)}</summary>
+    <div class="nested">${inside}</div></details>`;
+}
+
+function oneByOne(fields, values, groups, path, groupPath, owner) {
   const drawn = fields || [];
   // What the neighbours are is the whole shape, not the part being drawn. A
   // question another answer has settled is settled by that answer wherever it
@@ -586,10 +621,13 @@ function fieldsHtml(fields, values, groups, path, groupPath, owner) {
     // it again would be asking the same thing twice and saying nothing about
     // which answer wins.
     if (f.shown === "spelling") return "";
-    if (f.shown === "given") return givenHtml(f);
+    // The engine answers it, or another question already did. Not a box, and
+    // not a sentence explaining why there is no box either — a person filling
+    // in a form does not need to be told about the ones that are not for them.
+    if (f.asked === "never") return "";
     if (f.shown === "group") return groupHtml(f, groups, groupPath);
     // More of the language: a list of nodes, or one node of a named shape.
-    if (f.shown === "body") return `<label>${esc(f.about)}${needed(f)}</label>`
+    if (f.shown === "body") return `<label>${esc(asksOf(f))}${needed(f)}</label>`
       + bodyHtml(f.a_list_of, values[f.id], `${path}.${f.id}`);
     if (f.shown === "nested") return nestedHtml(f, values, path);
     if (f.shown === "advanced") return structureHtml(f, values, path);
@@ -602,13 +640,30 @@ function fieldsHtml(fields, values, groups, path, groupPath, owner) {
   }).join("");
 }
 
-// Not a question. Some parameters take a thing the engine already holds — the
-// only way to name a card is to be one — and some are the names FSME writes so
-// that later steps can point back at what was chosen. Either way a box here
-// would take an answer that is wrong or about to be overwritten, so the page
-// says which it is instead. The words come from the metadata, not from here.
-function givenHtml(f) {
-  return `<p class="muted"><b>${esc(f.about)}</b> — ${esc(f.written)}.</p>`;
+// What to put above a control: the question, where anything has worded one.
+//
+// `about` is what the parameter *is* — a noun phrase built to sit inside a
+// sentence — and reads as a dangling clause on its own: "the rules it follows",
+// "which kind of card it is". `asks` is the question. Falling back to `about`
+// keeps anything undescribed drawable, and a test refuses new parameters that
+// need the fallback.
+function asksOf(f) { return f.asks || f.about; }
+
+// A word or phrase used as a heading.
+function sentence(said) {
+  const text = String(said || "");
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+// What an author would have to add for a reference to have something to point
+// at. Read off the metadata — every effect says whether it keeps its result
+// under a name — rather than listed here, so an effect that gains one says so
+// without this changing.
+function whatWouldMakeOne(kind) {
+  if (kind !== "values") return "";
+  const makers = can.effects.filter(e => e.stores).map(e => e.about);
+  if (!makers.length) return "";
+  return "Add one of these first: " + makers.slice(0, 3).join("; ") + ".";
 }
 
 // A parameter that names something the ability picks out. Never a text box:
@@ -622,7 +677,7 @@ function groupHtml(f, groups, groupPath) {
       t.id === pick.id ? "selected" : ""}>${esc(t.about)}</option>`;
   const picked = can.targets.find(t => t.id === pick.id);
   const mine = `${groupPath}.${f.id}`;
-  return `<label>${esc(f.about)}${needed(f)}</label>
+  return `<label>${esc(asksOf(f))}${needed(f)}</label>
     <select onchange="setPick('${groupPath}','${f.id}',this.value)">
       <option value="">${esc(nobody(f))}</option>
       ${options.filter(t => t.common && !t.after).map(one).join("")}
@@ -639,7 +694,7 @@ function groupHtml(f, groups, groupPath) {
 // this is a question the engine has no answer to here either, so offering one
 // would be offering an answer that goes nowhere.
 function cannotChooseHtml(f) {
-  return `<p class="muted"><b>${esc(f.about)}</b> — nothing in this part of the
+  return `<p class="muted"><b>${esc(asksOf(f))}</b> — nothing in this part of the
     card picks anything out, so there is no name for this to be given.</p>`;
 }
 
@@ -670,7 +725,7 @@ function structureHtml(f, values, path) {
   const written = values[f.id];
   const shown = written === undefined ? "" : JSON.stringify(written, null, 1);
   return `<details class="deep">
-    <summary>${esc(f.about)} — written out in full${needed(f)}</summary>
+    <summary>${esc(asksOf(f))}${needed(f)}</summary>
     <p class="muted">Not a single answer: this one is a piece of the card's own
       rules, so it is written the way a card file writes it.</p>
     <textarea spellcheck="false" data-deep="${esc(f.id)}"
@@ -686,10 +741,9 @@ function valueHtml(f, values, siblings, path) {
   const value = values[f.id];
   // Something above may have asked the question already — a way chooser, or a
   // group of which this is the one chosen.
-  const says = f.bare ? "" : `<label>${esc(f.about)}${needed(f)}</label>`;
+  const says = f.bare ? "" : `<label>${esc(asksOf(f))}${needed(f)}</label>`;
   const off = moot(f, values, siblings);
-  const why = off ? `<p class="muted">Not used while
-      <b>${esc(labelOf(siblings, f.unless))}</b> says what it says.</p>` : "";
+  const why = off ? `<p class="muted">${esc(becauseOf(f, values, siblings))}</p>` : "";
   const dead = off ? "disabled" : "";
   // A field others depend on redraws the form, so the questions that no longer
   // apply stop being asked the moment the answer changes.
@@ -711,7 +765,7 @@ function valueHtml(f, values, siblings, path) {
   if (f.role === "switch") return `${why}<label class="flag"><input type="checkbox"
       style="width:auto" ${value === true ? "checked" : ""} ${dead}
       onchange="setField('${path}','${f.id}',this.checked,${seen})">
-      ${f.bare ? "yes" : esc(f.about)}</label>`;
+      ${f.bare ? "yes" : esc(asksOf(f))}</label>`;
 
   if (f.role === "which" && f.choices.length)
     return `${says}${why}
@@ -761,15 +815,46 @@ function moot(f, values, siblings) {
 // question they can answer.
 function meant(f, choice) { return (f.means || {})[choice] || choice; }
 
+// Why a question is not being asked, said with the answer that settled it.
+//
+// The old sentence put the other parameter's *description* where a subject
+// belonged and never named the answer at all, which on every loot card came
+// out as "Not used while which kind of card it is says what it says". A
+// template that needs a value has to be given one: `unless` names the other
+// question and `unless_when` names the answers, and both were already here.
+function becauseOf(f, values, siblings) {
+  const other = siblings.find(o => o.id === f.unless);
+  if (!other) return "Not used, because of another answer.";
+
+  const written = values[other.id];
+  const now = written === undefined || written === "" ? other.otherwise : written;
+  const said = meant(other, String(now));
+  const asked = trimmed(asksOf(other));
+
+  // A switch reads best quoted as the question it is. Anything else reads best
+  // as the noun phrase — which is what `describes` is for, and the reason it
+  // stayed a separate slot when `asks` was split out of it.
+  if (other.role === "switch") return `Not used while “${asked}” is ticked.`;
+  if (now === undefined || now === null || now === "")
+    return `Not used, because of ${other.about}.`;
+
+  return `Not used, because of ${other.about} — ${said}.`;
+}
+
+// A question with its mark taken off, so it can sit inside a sentence.
+function trimmed(asked) { return String(asked || "").replace(/\s*\?\s*$/, ""); }
+
 function labelOf(fields, id) {
   const f = fields.find(o => o.id === id);
-  return f ? f.about : id;
+  return f ? asksOf(f) : id;
 }
-function needed(f) { return f.required ? ' <span class="need">needed</span>' : ""; }
-function blank(f, value) {
-  return f.required && (value === undefined || value === "" || value === null)
-    ? "This one has to be filled in." : "";
+// Said once. It used to be shouted beside the label *and* repeated underneath
+// as a sentence, so a required field carried two notices and neither said more
+// than the other.
+function needed(f) {
+  return f.required ? ' <span class="need">this one is required</span>' : "";
 }
+function blank(f, value) { return ""; }
 // What the effect does when the box is left empty, in the engine's own words.
 function fallback(f) {
   if (f.required) return "— nothing yet —";
@@ -855,7 +940,9 @@ function told(path, key, value) {
   if (!said) return;
   const empty = value === undefined || value === "" || value === null
     || (Array.isArray(value) && !value.length);
-  said.textContent = empty && said.dataset.needed ? "This one has to be filled in." : "";
+  // The label already says it is required; repeating it under the box was two
+  // notices for one fact.
+  said.textContent = "";
 }
 
 // What an effect acts on. Chosen once and written twice — the ability binds a

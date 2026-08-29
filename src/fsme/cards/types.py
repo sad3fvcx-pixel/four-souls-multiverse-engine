@@ -40,6 +40,29 @@ class CardType(StrEnum):
 
     OTHER = "other"
 
+TYPE_WORDS = {
+    CardType.CHARACTER: "a character somebody plays as",
+    CardType.TREASURE: "an item kept in play",
+    CardType.LOOT: "a loot card, played from hand and discarded",
+    CardType.MONSTER: "a monster to fight",
+    CardType.ROOM: "a room that changes the table",
+    CardType.BONUS_SOUL: "a soul earned for doing something",
+    CardType.EVENT: "an event",
+    CardType.CURSE: "a curse that sticks to a player",
+    CardType.STARTING_ITEM: "a character's own starting item",
+    CardType.SOUL: "a soul",
+    CardType.TOKEN: "a token",
+    CardType.OTHER: "something else",
+}
+"""
+What each kind of card is, in the words a person would use for it.
+
+The engine accepts all twelve. Six of them are what an author usually makes,
+and the rest exist because the shipped content has them — so they are described
+rather than hidden, and whatever offers them decides how prominent to be.
+"""
+
+
 PRINTED_NUMBERS: Mapping[CardType, tuple[str, ...]] = MappingProxyType(
     {
         CardType.MONSTER: ("health", "attack", "roll"),
