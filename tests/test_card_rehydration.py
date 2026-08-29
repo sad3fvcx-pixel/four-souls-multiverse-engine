@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -1038,3 +1039,206 @@ def test_a_card_that_was_opened_cannot_be_saved_over_yet() -> None:
     assert "save()" not in opened, "a card that was opened is offered saving"
     assert "save()" in made, "a card being made here lost its saving"
     assert "not ready yet" in finishing, "and nobody is told why"
+
+
+# ----------------------------------------------------------------------
+# 11. The contract for changing a card that has several parts
+# ----------------------------------------------------------------------
+#
+# Written before the screens that would do it, and at the level of the card
+# rather than the page: editing is mutating author state, so whether a card
+# with several parts *can* be edited is a question about the pipeline, and it
+# can be answered now.
+
+
+@lru_cache(maxsize=1)
+def _part_lists() -> tuple[str, ...]:
+    """
+    The card's own lists of parts, in the order it declares them.
+
+    Found by asking the shapes rather than by name, and asked once: building
+    the catalogue is milliseconds and there are hundreds of cards.
+    """
+    can = catalogue()
+    known = {s["id"] for sec in ("abilities", "statics") for s in can[sec]}
+    card = next(s for s in can["cards"] if s["id"] == "card")
+
+    return tuple(f["id"] for f in card["fields"] if f["a_list_of"] in known)
+
+
+def parts_of(state: Mapping[str, Any]) -> list[tuple[str, int, dict[str, Any]]]:
+    """
+    Every part of a card, in the order the card declares its lists.
+    """
+    return [
+        (where, index, part)
+        for where in _part_lists()
+        for index, part in enumerate(state["card"]["fields"].get(where) or ())
+    ]
+
+
+def a_number_in(part: Mapping[str, Any]) -> str:
+    """
+    A field of this part holding a whole number somebody could change.
+    """
+    for key, value in part["fields"].items():
+        if isinstance(value, bool):
+            continue
+
+        if isinstance(value, int):
+            return key
+
+    return ""
+
+
+@pytest.fixture(scope="module")
+def many(walked: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Every shipped card that reads and has more than one part.
+
+    Off the walk that already read them all, rather than reading them again.
+    """
+    return [
+        {"card": one["card"], "state": one["state"]}
+        for one in walked
+        if one["state"] is not None and len(parts_of(one["state"])) > 1
+    ]
+
+
+def test_there_are_cards_with_several_parts_to_talk_about(
+    many: list[dict[str, Any]],
+) -> None:
+    assert len(many) > 20, len(many)
+
+
+def test_a_card_with_several_parts_rebuilds_unchanged(
+    many: list[dict[str, Any]],
+) -> None:
+    """
+    Reading and writing one back leaves it as it was — the same contract as
+    for a card with one part, checked where it is likelier to break.
+    """
+    changed = [
+        one["card"].get("id")
+        for one in many
+        if read_card(build_card(one["state"])) != one["state"]
+    ]
+
+    assert changed == [], changed[:10]
+
+
+def test_changing_one_part_leaves_the_others_alone(
+    many: list[dict[str, Any]],
+) -> None:
+    """
+    The invariant multi-part editing rests on.
+
+    A card is a list of parts, and changing a number inside one of them must
+    move that part and nothing else — not the part beside it, and not what
+    either of them picks out.
+    """
+    spread = []
+
+    for one in many:
+        before = build_card(one["state"])
+        parts = parts_of(one["state"])
+
+        for where, index, part in parts:
+            key = a_number_in(part)
+
+            if not key:
+                continue
+
+            was = part["fields"][key]
+            part["fields"][key] = was + 7
+            after = build_card(one["state"])
+            part["fields"][key] = was
+
+            for other, at_index, _ in parts:
+                if (other, at_index) == (where, index):
+                    continue
+
+                mine = json.dumps(after[other][at_index], sort_keys=True)
+                theirs = json.dumps(before[other][at_index], sort_keys=True)
+
+                if mine != theirs:
+                    spread.append(
+                        f"{one['card'].get('id')}: changing {where}[{index}].{key}"
+                        f" moved {other}[{at_index}]"
+                    )
+
+    assert spread == [], spread[:8]
+
+
+def test_changing_one_part_does_change_that_part(
+    many: list[dict[str, Any]],
+) -> None:
+    """
+    And the change is not quietly dropped, which the test above would not
+    notice on its own.
+    """
+    stuck = []
+
+    for one in many:
+        before = build_card(one["state"])
+
+        for where, index, part in parts_of(one["state"]):
+            key = a_number_in(part)
+
+            if not key:
+                continue
+
+            was = part["fields"][key]
+            part["fields"][key] = was + 7
+            after = build_card(one["state"])
+            part["fields"][key] = was
+
+            if json.dumps(after[where][index], sort_keys=True) == json.dumps(
+                before[where][index], sort_keys=True
+            ):
+                stuck.append(f"{one['card'].get('id')}: {where}[{index}].{key}")
+
+    assert stuck == [], stuck[:8]
+
+
+def test_a_card_with_several_parts_still_passes_the_checker_after_a_change(
+    many: list[dict[str, Any]],
+) -> None:
+    refused = {}
+
+    for one in many[:40]:
+        for where, index, part in parts_of(one["state"]):
+            key = a_number_in(part)
+
+            if not key:
+                continue
+
+            was = part["fields"][key]
+            part["fields"][key] = was + 1
+            said = check_card(build_card(one["state"]))
+            part["fields"][key] = was
+
+            if said:
+                refused[f"{one['card'].get('id')} {where}[{index}].{key}"] = said[0]
+
+    assert refused == {}, dict(list(refused.items())[:5])
+
+
+def test_the_order_of_the_parts_survives(many: list[dict[str, Any]]) -> None:
+    """
+    A card's second ability is its second ability after being read.
+    """
+    wrong = []
+
+    for one in many:
+        built = build_card(one["state"])
+
+        for where, index, part in parts_of(one["state"]):
+            written = built[where][index]
+
+            for key, value in part["fields"].items():
+                if isinstance(value, (int, str)) and not isinstance(value, bool):
+                    if key in written and written[key] != value:
+                        wrong.append(f"{one['card'].get('id')} {where}[{index}].{key}")
+
+    assert wrong == [], wrong[:8]
