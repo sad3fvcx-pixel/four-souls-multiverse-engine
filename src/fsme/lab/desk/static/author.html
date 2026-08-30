@@ -52,7 +52,11 @@
  .held .list li { display:block; border-bottom:none; padding:.2rem 0; }
  button.plain { background:none; border:none; padding:0; width:auto;
                 color:inherit; font:inherit; text-align:left;
-                text-decoration:underline; cursor:pointer; }
+                text-decoration:underline; cursor:pointer;
+                /* An option's own words, and some of them are long: the
+                   longest in the game runs to 98 characters. A line that
+                   cannot wrap either cuts the words or stretches the page. */
+                white-space:normal; }
  .moment { margin:.3rem 0; }
  hr { border:none; border-top:1px solid var(--line); margin:2rem 0 1rem; }
  .need { color:var(--dim); font-size:.82rem; font-style:italic;
@@ -564,6 +568,22 @@ function stepsUnder(node) {
   return found;
 }
 
+// What a thing offered in a list is called.
+//
+// The answer to whichever of its own questions the metadata gives the naming
+// role. A thing offered has a name; it does not need describing, and
+// describing it puts the same sentence in front of every row — six options
+// once read as six copies of what an option is, before the words that
+// differed. Nothing is named here: which field names a node is the shape's
+// answer, so a thing the engine gains later is named by this too.
+function nameOf(node) {
+  const shape = shapeNamed(node.id);
+  const naming = (shape ? shape.fields : []).find(
+    f => f.role === "names" && putable(f));
+  const said = naming && (node.fields || {})[naming.id];
+  return said ? esc(String(said)) : saidAs(node);
+}
+
 // The lists of steps a node holds, each with the words to call it by and the
 // path it lives at. A list of steps is an arm as it stands; a list of
 // anything else holds its steps one level further in, and is named by what it
@@ -575,12 +595,19 @@ function armsOf(node, path) {
       found.push({ asks: trimmed(asksOf(f)), list: `${path}.fields.${f.id}` });
       continue;
     }
+    // A thing offered in a list is offered whether or not it does anything:
+    // it is written on the card either way, and one shipped option means "do
+    // none of the others" by holding nothing at all. So its arms come from
+    // its shape rather than from what it happens to hold — unlike an arm of
+    // the node itself, which exists only when the card writes it, and is why
+    // a branch with no second arm asks nobody which.
     nodes.forEach((one, i) => {
-      for (const inner of heldBy(one)) {
-        if (inner.f.a_list_of !== "step") continue;
+      const shape = shapeNamed(one.id);
+      for (const g of (shape ? shape.fields : [])) {
+        if (g.a_list_of !== "step") continue;
         found.push({
-          asks: saidAs(one),
-          list: `${path}.fields.${f.id}[${i}].fields.${inner.f.id}`,
+          asks: nameOf(one),
+          list: `${path}.fields.${f.id}[${i}].fields.${g.id}`,
         });
       }
     });
@@ -639,7 +666,7 @@ function openStep(i) {
   const arms = armsOf(step, `${walk.list}[${i}]`);
   if (!arms.length) return editAction(i);
   if (arms.length === 1) return intoArm(arms[0]);
-  return whichArm(arms);
+  return whichArm(arms, step);
 }
 
 function intoArm(arm) {
@@ -657,15 +684,18 @@ function outOfArm() {
   return sofar();
 }
 
-function whichArm(arms) {
+function whichArm(arms, step) {
   walk.on = "arms";
-  const rows = arms.map((arm, i) =>
-    `<li><button class="plain" onclick="intoArm(${JSON.stringify(arm)
+  // Said once, at the top, in the node's own words — not repeated in front of
+  // every option, which is what naming an option by describing it did.
+  const within = shapeNamed(step.id);
+  const rows = arms.map(arm =>
+    `<li class="reads"><button class="plain" onclick="intoArm(${JSON.stringify(arm)
       .replace(/"/g, "&quot;")})">${arm.asks}</button></li>`).join("");
   el(`<button class="back" onclick="sofar()">← back</button>
     <h1>Which of these?</h1>
-    <p class="lead">This one does different things depending on how it goes.
-      Pick the one to change.</p>
+    <p class="lead">${esc(sentence(within ? within.about : ""))}. Pick the one
+      to change.</p>
     <ol class="list">${rows}</ol>`);
 }
 

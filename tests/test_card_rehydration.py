@@ -2936,3 +2936,224 @@ def test_changing_a_step_inside_a_branch_moves_only_that_step(
     assert [one.get("effect") or next(iter(one)) for one in effects] == [
         "roll_dice", "if", "gain_coins"], "the order moved"
     assert not check_card(again), check_card(again)
+
+
+# ----------------------------------------------------------------------
+# 19. Choosing between branches
+# ----------------------------------------------------------------------
+#
+# Eighteen nodes in the shipped content have more than one arm, and the walk
+# already asks which. What it says when it asks is the subject here: an option
+# has a name, and naming it with a sentence about what an option *is* puts the
+# same words in front of every row.
+
+
+def test_an_option_is_named_by_the_field_that_names_it() -> None:
+    """
+    Whichever of a node's own questions the metadata gives the naming role.
+    Not a field picked out by hand, and not a description of the node's kind.
+    """
+    naming = body_of("nameOf")
+
+    assert 'role === "names"' in naming, "the name is found some other way"
+    assert "description" not in naming, "a field is named by hand"
+
+
+def test_naming_an_option_names_no_structure() -> None:
+    """
+    The same rule as everywhere else: a structure the engine gains is named
+    by this without it changing.
+    """
+    naming = body_of("nameOf") + body_of("armsOf") + body_of("whichArm")
+
+    for one in ("if", "may", "choose", "for_each", "mode", "then", "else"):
+        assert f'"{one}"' not in naming, one
+        assert f"'{one}'" not in naming, one
+
+
+def test_every_option_of_every_shipped_choice_has_a_name_of_its_own(
+    walked: list[dict[str, Any]],
+    can: dict[str, Any],
+) -> None:
+    """
+    The data behind the screen: every option carries the answer the naming
+    role asks for, and no two options of one choice share it.
+    """
+    shapes = {
+        one["id"]: one
+        for section in can.values()
+        if isinstance(section, list)
+        for one in section
+        if isinstance(one, dict) and "fields" in one
+    }
+
+    def named(node: Mapping[str, Any]) -> str:
+        shape = shapes.get(node.get("id"), {})
+        field = next(
+            (
+                f
+                for f in shape.get("fields", ())
+                if f.get("role") == "names" and f.get("shown") == "form"
+            ),
+            None,
+        )
+        return str((node.get("fields") or {}).get(field["id"], "")) if field else ""
+
+    def options(steps: Any) -> Any:
+        """
+        Every list of two or more things that carry a name of their own.
+        """
+        for step in steps or ():
+            for value in (step.get("fields") or {}).values():
+                if not isinstance(value, list) or not value:
+                    continue
+
+                if not isinstance(value[0], dict) or "id" not in value[0]:
+                    continue
+
+                shape = shapes.get(value[0]["id"], {})
+                # An option is a thing that carries a name and holds steps of
+                # its own. A list of two things that merely have a name is not
+                # a choice — a cost has a name too.
+                offers = any(
+                    f.get("a_list_of") == "step" for f in shape.get("fields", ())
+                )
+                names = any(
+                    f.get("role") == "names" and f.get("shown") == "form"
+                    for f in shape.get("fields", ())
+                )
+
+                if len(value) > 1 and offers and names:
+                    yield value
+
+                yield from options(value)
+
+                for one in value:
+                    for held in (one.get("fields") or {}).values():
+                        if isinstance(held, list) and held:
+                            yield from options(held)
+
+    seen = 0
+
+    for one in walked:
+        if one["state"] is None:
+            continue
+
+        for part in one["state"]["card"]["fields"].get("abilities", ()):
+            for group in options(part["fields"].get("effects") or []):
+                names = [named(o) for o in group]
+
+                if not any(names):
+                    continue
+
+                seen += 1
+
+                assert all(names), (one["card"]["id"], names)
+                assert len(set(names)) == len(names), (one["card"]["id"], names)
+
+    assert seen >= 10, seen
+
+
+def test_the_two_arms_of_a_branch_are_not_the_same_words(
+    can: dict[str, Any],
+) -> None:
+    """
+    A branch offers two things and they must read as two things.
+    """
+    branch = next(one for one in can["structures"] if one["id"] == "if")
+    arms = [
+        f.get("asks")
+        for f in branch["fields"]
+        if f.get("a_list_of") == "step"
+    ]
+
+    assert len(arms) == 2
+    assert all(arms)
+    assert arms[0] != arms[1]
+
+
+def test_what_is_being_chosen_between_is_said_once() -> None:
+    """
+    At the top, in the node's own words, rather than on every row.
+    """
+    screen = body_of("whichArm")
+
+    assert "about" in screen, "the screen never says what it is choosing within"
+
+
+def test_a_long_option_wraps_rather_than_stretching() -> None:
+    """
+    Six of the 49 option labels run past sixty characters and the longest is
+    ninety-eight. A row laid across the page cuts them or stretches it.
+    """
+    page = PAGE.read_text("utf-8")
+    screen = body_of("whichArm")
+
+    assert 'class="reads"' in screen, "the choices are laid across the row"
+    assert ".list li.reads { display:block; }" in page
+
+
+def test_choosing_an_arm_and_changing_it_keeps_the_choice(
+    workspace: Path,
+) -> None:
+    """
+    The whole path: pick an arm, change a step inside it, build the card, read
+    it back. The option chosen is still the option, and it still holds the
+    change.
+    """
+    written = {
+        "id": "probe-loot-picking",
+        "name": "Picking",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "choose": [
+                            {"description": "Take a cent",
+                             "effects": [{"effect": "gain_coins", "amount": 1,
+                                          "target": "controller"}]},
+                            {"description": "Take two",
+                             "effects": [{"effect": "gain_coins", "amount": 2,
+                                          "target": "controller"}]},
+                        ]
+                    }
+                ],
+            }
+        ],
+    }
+
+    state = read_card(written)["card"]
+    modes = state["fields"]["abilities"][0]["fields"]["effects"][0]["fields"]["choose"]
+    modes[1]["fields"]["effects"][0]["fields"]["amount"] = 8
+
+    once = build_card({"set": "probe", "card": state})
+    kept = once["abilities"][0]["effects"][0]["choose"]
+
+    assert [one["description"] for one in kept] == ["Take a cent", "Take two"]
+    assert kept[0]["effects"][0]["amount"] == 1, "the other option moved"
+    assert kept[1]["effects"][0]["amount"] == 8
+    assert not check_card(once), check_card(once)
+    assert read_card(once)["card"] == state
+
+
+def test_an_option_that_does_nothing_is_still_offered() -> None:
+    """
+    One shipped card offers "Put this into discard." — an option that means
+    *do none of the others* and holds no steps at all. It is written on the
+    card, so it is one of the things being chosen between, and a screen
+    showing two of its three options would be describing a different card.
+
+    An arm of the node itself is the opposite case: a branch with no second
+    arm has not written one, and asks nobody which.
+    """
+    arms = body_of("armsOf")
+    before, after = arms.split("nodes.forEach", 1)
+
+    assert "shape ? shape.fields : []" in after, (
+        "an option's arms are still taken from what it holds"
+    )
+    assert "heldBy(node)" in before, "the node's own arms are no longer its own"
