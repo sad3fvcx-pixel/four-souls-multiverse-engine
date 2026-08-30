@@ -1520,3 +1520,214 @@ def test_a_part_with_nothing_that_happens_is_asked_about_itself() -> None:
 
     assert "walk.list" in about
     assert "walk.where" in about
+
+
+# ----------------------------------------------------------------------
+# 14. The contract for keeping a change
+# ----------------------------------------------------------------------
+#
+# Written before the flow that would do it. Saving is the first thing in this
+# whole chain that writes over somebody's file, so what it must and must not do
+# is settled here rather than discovered afterwards.
+
+
+def a_card_in_a_set(fields: dict[str, Any], named: str = "Keeping") -> tuple[str, str, Path]:
+    """
+    One card saved into a set of its own, and the file it went into.
+    """
+    from fsme.lab.desk.author import make_set, save_card
+
+    made = make_set(named)
+    saved = save_card({"set": made["id"], "card": {"fields": fields, "groups": {}}})
+
+    assert saved["saved"], saved["problems"]
+
+    return made["id"], saved["card"]["id"], Path(saved["where"])
+
+
+def test_saving_a_card_nobody_changed_changes_nothing(workspace: Path) -> None:
+    """
+    Scenario A. Opening a card and keeping it must not move a byte.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    before = where.read_text("utf-8")
+
+    said = save_card(open_card(set_id, card_id))
+
+    assert said["saved"]
+    assert where.read_text("utf-8") == before
+
+
+def test_changing_one_value_and_keeping_it_keeps_the_rest(workspace: Path) -> None:
+    """
+    Scenario B. The changed thing changes; nothing else does.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    before = json.loads(where.read_text("utf-8"))["cards"][0]
+
+    opened = open_card(set_id, card_id)
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 5
+
+    assert save_card(opened)["saved"]
+
+    after = json.loads(where.read_text("utf-8"))["cards"][0]
+
+    assert after["abilities"][0]["effects"][0]["amount"] == 5
+    assert after["abilities"][0]["effects"][1] == before["abilities"][0]["effects"][1]
+    assert after["abilities"][0]["targets"] == before["abilities"][0]["targets"]
+
+    for key in ("id", "name", "type", "expansion", "schema_version"):
+        assert after[key] == before[key], key
+
+    # And opening it again gives back what was kept.
+    assert open_card(set_id, card_id)["card"] == read_card(after)["card"]
+
+
+def test_a_change_that_breaks_the_card_is_not_kept(workspace: Path) -> None:
+    """
+    Scenario C. The file stays as it was and the reason is said.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    before = where.read_text("utf-8")
+
+    opened = open_card(set_id, card_id)
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = "lots"
+    said = save_card(opened)
+
+    assert not said["saved"]
+    assert said["problems"]
+    assert where.read_text("utf-8") == before
+
+
+def test_keeping_a_change_to_one_part_keeps_the_others(workspace: Path) -> None:
+    """
+    The multi-part case, written to disk rather than only in hand.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_CARD_WITH_BOTH)
+    before = json.loads(where.read_text("utf-8"))["cards"][0]
+
+    opened = open_card(set_id, card_id)
+    opened["card"]["fields"]["statics"][0]["fields"]["amount"] = 4
+
+    assert save_card(opened)["saved"]
+
+    after = json.loads(where.read_text("utf-8"))["cards"][0]
+
+    assert after["abilities"] == before["abilities"]
+    assert after["statics"][0]["amount"] == 4
+
+
+def test_saving_can_only_ever_write_into_the_author_s_own_sets(
+    workspace: Path,
+) -> None:
+    """
+    The shipped cards cannot be touched by any of this, and not by care —
+    by where the writing goes. A set is a directory under the author's own
+    workspace, and that is the only place a card is written or read from.
+    """
+    from fsme.content.workspace import sets_directory
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+
+    assert sets_directory() in where.parents
+    assert CONTENT not in where.parents
+
+    said = save_card(open_card(set_id, card_id))
+
+    assert sets_directory() in Path(said["where"]).parents
+
+
+def test_the_shipped_cards_are_not_reachable_from_a_set(workspace: Path) -> None:
+    """
+    Nothing in `content/` appears in the author's sets, so nothing there can
+    be opened and therefore nothing there can be written over.
+    """
+    from fsme.lab.desk.author import sets
+
+    a_card_in_a_set(A_TWO_STEP_CARD)
+    mine = {card["id"] for one in sets() for card in one["cards"]}
+    shipped = {
+        card["id"]
+        for path in CONTENT.rglob("*.json")
+        for card in json.loads(path.read_text("utf-8")).get("cards", ())
+        if isinstance(json.loads(path.read_text("utf-8")), dict)
+    }
+
+    assert mine & shipped == set()
+
+
+# --- the two things saving does wrong today ---------------------------------
+#
+# Written as the behaviour that is wanted, and expected to fail until it is
+# built. Strict, so that building it turns these from expected failures into
+# failures — which is the reminder to take the marker off.
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="renaming a card writes a second file and leaves the first",
+)
+def test_renaming_a_card_does_not_leave_the_old_one_behind(
+    workspace: Path,
+) -> None:
+    """
+    A card's identifier is made out of its name, so renaming one makes a new
+    identifier and a new file — and the old file is still there and still
+    loads. The author renamed a card and now has two.
+    """
+    from fsme.lab.desk.author import open_card, save_card, sets
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+
+    opened = open_card(set_id, card_id)
+    opened["card"]["fields"]["name"] = "Drawing Pin"
+
+    assert save_card(opened)["saved"]
+
+    kept = sorted(p.name for p in where.parent.glob("*.json"))
+
+    assert len(kept) == 1, kept
+    assert [one["name"] for one in sets()[0]["cards"]] == ["Drawing Pin"]
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="a card changed on disk after it was opened is overwritten silently",
+)
+def test_a_card_changed_underneath_is_not_overwritten_silently(
+    workspace: Path,
+) -> None:
+    """
+    Somebody opens a card. The file changes — another window, a text editor, a
+    copy pulled from somewhere. Keeping the first one's change throws the
+    other away without saying so.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)
+
+    meanwhile = json.loads(where.read_text("utf-8"))
+    meanwhile["cards"][0]["abilities"][0]["effects"][0]["amount"] = 99
+    where.write_text(json.dumps(meanwhile, indent=2) + "\n", encoding="utf-8")
+
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 3
+    said = save_card(opened)
+
+    assert not said["saved"], "the other change was thrown away"
+    assert "changed" in " ".join(said.get("problems", [])).lower()
