@@ -216,6 +216,30 @@ the whole class.
 
 ---
 
+## 8a. What Stage 1 settled, and what it left
+
+Built, backend only — no button, no screen:
+
+- **a stable identifier.** A card's id is made from its name once, when it has
+  never been saved. After that the card carries it back through `opened`, and
+  renaming changes what the card is called and not which card it is. This is
+  the opposite of what §3 above recommended, and the reason is that a scenario
+  file names cards by identifier, typed by hand: a card that took a new id on
+  being renamed would stop being the card those files mean.
+- **a fingerprint check.** What the file said when it was opened, compared
+  with what it says now. Different, gone, or shared with other cards: refused,
+  nothing written, reason given. No merge.
+- **an atomic write.** Beside the card, fsynced, then `os.replace`. A failure
+  at any point leaves the old card whole and nothing beside it.
+
+Left deliberately, and the next risk to take:
+
+| Risk | Weight | |
+|---|---|---|
+| **new card creation → derived id collision → refuse overwrite** | **high** | a card being made carries no fingerprint, so a new card whose derived id matches one already in the set still overwrites it silently. The same class as D, by the one route the carried identity cannot cover. Its own stage: **Create flow protection**. |
+
+---
+
 ## 9. Deliberately not in this stage
 
 - **Undo, or any history.** Refusing to overwrite is not the same as keeping

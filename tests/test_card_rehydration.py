@@ -1669,24 +1669,70 @@ def test_the_shipped_cards_are_not_reachable_from_a_set(workspace: Path) -> None
     assert mine & shipped == set()
 
 
-# --- the two things saving does wrong today ---------------------------------
+# --- the identity a card is kept under --------------------------------------
 #
-# Written as the behaviour that is wanted, and expected to fail until it is
-# built. Strict, so that building it turns these from expected failures into
-# failures — which is the reminder to take the marker off.
+# A card's identifier is what everything else calls it by — a scenario file
+# names cards by identifier, typed by hand. So the identifier is the card's
+# own, settled when it is first saved, and a card that is opened carries it
+# back. Renaming changes what the card is called, not which card it is.
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="renaming a card writes a second file and leaves the first",
-)
-def test_renaming_a_card_does_not_leave_the_old_one_behind(
+def test_build_card_keeps_the_display_name_apart_from_the_identity() -> None:
+    """
+    Two different things, and a card carries both.
+    """
+    card = build_card({"set": "probe", "card": {"fields": A_TWO_STEP_CARD}})
+
+    assert card["name"] == "Thumbtack"
+    assert card["id"] == "probe-loot-thumbtack"
+
+
+def test_a_new_card_still_takes_its_identity_from_its_name() -> None:
+    """
+    A card nobody has saved has no identity yet, so its name gives it one.
+    That is the only moment the name decides anything.
+    """
+    card = build_card({"set": "probe", "card": {"fields": A_TWO_STEP_CARD}})
+
+    assert card["id"] == "probe-loot-thumbtack"
+
+
+def test_an_opened_card_carries_the_identity_it_was_read_under(
     workspace: Path,
 ) -> None:
     """
-    A card's identifier is made out of its name, so renaming one makes a new
-    identifier and a new file — and the old file is still there and still
-    loads. The author renamed a card and now has two.
+    Nothing else can tell which file a card came out of.
+    """
+    from fsme.lab.desk.author import open_card
+
+    set_id, card_id, _ = a_card_in_a_set(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)
+
+    assert opened["opened"]["card"] == card_id
+
+
+def test_an_opened_card_carries_what_the_file_was(workspace: Path) -> None:
+    """
+    And what the file said at the moment it was read, so a change to it
+    afterwards can be noticed.
+    """
+    from fsme.lab.desk.author import open_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    first = open_card(set_id, card_id)["opened"]["fingerprint"]
+
+    assert first
+
+    where.write_text(where.read_text("utf-8") + "\n", encoding="utf-8")
+
+    assert open_card(set_id, card_id)["opened"]["fingerprint"] != first
+
+
+def test_renaming_a_card_keeps_its_identity(workspace: Path) -> None:
+    """
+    Open it, call it something else, keep it. It is the same card: the same
+    identifier, in the same file, under a new name — and no second copy
+    anywhere, because nothing new was made.
     """
     from fsme.lab.desk.author import open_card, save_card, sets
 
@@ -1694,26 +1740,51 @@ def test_renaming_a_card_does_not_leave_the_old_one_behind(
 
     opened = open_card(set_id, card_id)
     opened["card"]["fields"]["name"] = "Drawing Pin"
+    said = save_card(opened)
 
-    assert save_card(opened)["saved"]
+    assert said["saved"], said["problems"]
+    assert said["card"]["id"] == card_id
+    assert said["card"]["name"] == "Drawing Pin"
+    assert Path(said["where"]) == where
 
     kept = sorted(p.name for p in where.parent.glob("*.json"))
 
-    assert len(kept) == 1, kept
+    assert kept == [where.name], kept
     assert [one["name"] for one in sets()[0]["cards"]] == ["Drawing Pin"]
 
+    # And opening it again gives the new name under the old identifier.
+    again = open_card(set_id, card_id)
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="a card changed on disk after it was opened is overwritten silently",
-)
-def test_a_card_changed_underneath_is_not_overwritten_silently(
+    assert again["card"]["fields"]["name"] == "Drawing Pin"
+    assert again["opened"]["card"] == card_id
+
+
+def test_renaming_a_card_makes_no_file_under_the_new_name(
     workspace: Path,
 ) -> None:
     """
+    The name-shaped path is never written, so there is nothing to clean up
+    and nothing that could be opened as a card of its own.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+
+    opened = open_card(set_id, card_id)
+    opened["card"]["fields"]["name"] = "Drawing Pin"
+
+    assert save_card(opened)["saved"]
+    assert not (where.parent / f"{set_id}-loot-drawing_pin.json").exists()
+
+
+# --- a file that changed while somebody was working on it -------------------
+
+
+def test_a_card_changed_underneath_is_not_overwritten(workspace: Path) -> None:
+    """
     Somebody opens a card. The file changes — another window, a text editor, a
-    copy pulled from somewhere. Keeping the first one's change throws the
-    other away without saying so.
+    copy pulled from somewhere. Keeping the first one's change must not throw
+    the other away.
     """
     from fsme.lab.desk.author import open_card, save_card
 
@@ -1723,6 +1794,7 @@ def test_a_card_changed_underneath_is_not_overwritten_silently(
     meanwhile = json.loads(where.read_text("utf-8"))
     meanwhile["cards"][0]["abilities"][0]["effects"][0]["amount"] = 99
     where.write_text(json.dumps(meanwhile, indent=2) + "\n", encoding="utf-8")
+    outside = where.read_text("utf-8")
 
     opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
         "amount"
@@ -1730,4 +1802,209 @@ def test_a_card_changed_underneath_is_not_overwritten_silently(
     said = save_card(opened)
 
     assert not said["saved"], "the other change was thrown away"
-    assert "changed" in " ".join(said.get("problems", [])).lower()
+    assert said["changed"]
+    assert where.read_text("utf-8") == outside
+
+
+def test_a_card_changed_underneath_says_why(workspace: Path) -> None:
+    """
+    And says it in words, rather than only in a flag.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)
+
+    where.write_text(where.read_text("utf-8") + "\n", encoding="utf-8")
+
+    said = save_card(opened)
+
+    assert not said["saved"]
+    assert said["problems"]
+    assert "changed" in " ".join(said["problems"]).lower()
+
+
+def test_a_card_that_went_away_underneath_is_not_quietly_remade(
+    workspace: Path,
+) -> None:
+    """
+    Deleted somewhere else while it was open. Saving would put it back
+    without anybody asking for it.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)
+    where.unlink()
+
+    said = save_card(opened)
+
+    assert not said["saved"]
+    assert said["changed"]
+    assert not where.exists()
+
+
+def test_a_card_saved_twice_from_one_opening_is_refused_the_second_time(
+    workspace: Path,
+) -> None:
+    """
+    The first keeping is the change; the second is working from a card that
+    is no longer what is on disk, which is the same problem by another route.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, _ = a_card_in_a_set(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 4
+
+    assert save_card(opened)["saved"]
+
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 5
+
+    assert not save_card(opened)["saved"]
+
+
+def test_an_identity_that_is_not_a_card_identifier_is_refused(
+    workspace: Path,
+) -> None:
+    """
+    The identifier names a file, so it may only ever be a name — never a way
+    out of the set it belongs to.
+    """
+    from fsme.lab.desk.author import AuthorError, open_card, save_card
+
+    set_id, card_id, _ = a_card_in_a_set(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)
+
+    for pretending in ("../elsewhere", "a/b", "", "Thumbtack.json"):
+        opened["opened"]["card"] = pretending
+
+        with pytest.raises(AuthorError):
+            save_card(opened)
+
+
+# --- nothing half written ---------------------------------------------------
+
+
+def test_a_save_that_fails_leaves_the_card_exactly_as_it_was(
+    workspace: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """
+    The write goes somewhere else first and only then becomes the card, so a
+    failure at the worst moment leaves the old card whole rather than half of
+    a new one.
+    """
+    import fsme.lab.desk.author as author
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    before = where.read_text("utf-8")
+
+    opened = author.open_card(set_id, card_id)
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 7
+
+    def refuse(*_: Any, **__: Any) -> None:
+        raise OSError("the disk went away")
+
+    monkeypatch.setattr(author.os, "replace", refuse)
+
+    with pytest.raises(OSError):
+        author.save_card(opened)
+
+    assert where.read_text("utf-8") == before
+
+
+def test_a_save_that_fails_leaves_nothing_behind(
+    workspace: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """
+    And no half-written file sitting beside it either.
+    """
+    import fsme.lab.desk.author as author
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+
+    opened = author.open_card(set_id, card_id)
+
+    def refuse(*_: Any, **__: Any) -> None:
+        raise OSError("the disk went away")
+
+    monkeypatch.setattr(author.os, "replace", refuse)
+
+    with pytest.raises(OSError):
+        author.save_card(opened)
+
+    assert [p.name for p in where.parent.iterdir()] == [where.name]
+
+
+def test_a_card_is_never_seen_half_written(
+    workspace: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """
+    A reader that looks at the moment a card is being kept sees the old card
+    or the new one, never part of either. The write happens beside the card
+    and replaces it in one step, so there is no moment to catch.
+    """
+    import fsme.lab.desk.author as author
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    seen: list[Any] = []
+    replace = author.os.replace
+
+    def look(source: Any, target: Any) -> None:
+        # Whatever is at the card's own path while the new one is being
+        # written must still be a whole card.
+        seen.append(json.loads(Path(target).read_text("utf-8")))
+        replace(source, target)
+
+    opened = author.open_card(set_id, card_id)
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 7
+
+    monkeypatch.setattr(author.os, "replace", look)
+
+    assert author.save_card(opened)["saved"]
+
+    assert seen, "the card was written some other way"
+    assert seen[0]["cards"][0]["abilities"][0]["effects"][0]["amount"] == 2
+    assert (
+        json.loads(where.read_text("utf-8"))["cards"][0]["abilities"][0]["effects"][
+            0
+        ]["amount"]
+        == 7
+    )
+
+
+def test_a_card_sharing_a_file_with_others_is_not_kept(workspace: Path) -> None:
+    """
+    A set written by hand may keep several cards in one file. Keeping one of
+    them would write a file named after that card and leave the file it came
+    from — the same card twice, in two places, both loading. So it is refused
+    while nothing here knows how to write one card back into a file of many.
+    """
+    from fsme.lab.desk.author import make_set, open_card, save_card
+
+    made = make_set("Together")
+    both = Path(made["where"]) / "cards" / "a_few.json"
+    first = build_card({"set": made["id"], "card": {"fields": A_TWO_STEP_CARD}})
+    second = build_card({"set": made["id"], "card": {"fields": A_CARD_WITH_BOTH}})
+    both.write_text(
+        json.dumps({"cards": [first, second]}, indent=2) + "\n", encoding="utf-8"
+    )
+
+    opened = open_card(made["id"], first["id"])
+    said = save_card(opened)
+
+    assert not said["saved"]
+    assert said["changed"]
+    assert [p.name for p in both.parent.iterdir()] == [both.name]
+    assert len(json.loads(both.read_text("utf-8"))["cards"]) == 2

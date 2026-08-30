@@ -15,9 +15,12 @@ rules and this is not a second one.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import os
+import re
 import shutil
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any
 
@@ -48,6 +51,25 @@ from fsme.runtime.vocabulary import engine_vocabulary
 CARDS = "cards"
 MANIFEST = "manifest.json"
 SCHEMA = "1"
+
+OPENED = "opened"
+"""
+Where a card that came off disk says which card it is and what it was.
+
+A card being made has nothing here — there is no file it came from. A card
+that was opened carries it back untouched, and it is the only thing that can
+tell one from the other.
+"""
+
+A_PLAIN_NAME = re.compile(r"[a-z0-9][a-z0-9_-]*")
+"""
+What an identifier may look like when it is about to become a file name.
+
+Identifiers are made here, from `card_identifier`, and never typed. But one
+arrives back through `OPENED` from outside, and an identifier is joined to a
+directory to make a path — so it is checked on the way in rather than trusted
+because of where it usually comes from.
+"""
 
 __all__ = [
     "AuthorError",
@@ -184,8 +206,17 @@ def cards_in(directory: Path) -> list[dict[str, Any]]:
     """
     Every card in one set, as it was written.
     """
-    found: list[dict[str, Any]] = []
+    return [card for _, card in _each_card(directory)]
 
+
+def _each_card(directory: Path) -> Iterator[tuple[Path, dict[str, Any]]]:
+    """
+    Every card in one set, with the file it came out of.
+
+    Which file a card is in is not a detail: keeping a card means writing over
+    the one it was read from, and a card read from a file named after
+    something else is a card this cannot keep.
+    """
     for path in sorted((directory / CARDS).glob("*.json")):
         try:
             body = json.loads(path.read_text("utf-8"))
@@ -193,9 +224,7 @@ def cards_in(directory: Path) -> list[dict[str, Any]]:
             continue
 
         for card in body.get("cards", ()) if isinstance(body, dict) else ():
-            found.append(card)
-
-    return found
+            yield path, card
 
 
 def open_card(set_id: str, card_id: str) -> dict[str, Any]:
@@ -208,24 +237,55 @@ def open_card(set_id: str, card_id: str) -> dict[str, Any]:
     """
     directory = _set_directory(set_id)
     wanted = str(card_id)
-    found = next(
-        (card for card in cards_in(directory) if str(card.get("id", "")) == wanted),
-        None,
-    )
 
-    if found is None:
-        raise AuthorError(f"There is no card called {wanted!r} in that set.")
+    for path, card in _each_card(directory):
+        if str(card.get("id", "")) != wanted:
+            continue
 
-    return {"set": identifier_for(set_id), "card": read_card(found)["card"]}
+        return {
+            "set": identifier_for(set_id),
+            "card": read_card(card)["card"],
+            # Which card this is, and what its file said at the moment it was
+            # read. Neither can be worked out again later: the first because a
+            # card may be renamed and is still the same card, the second
+            # because by then the file may be somebody else's.
+            OPENED: {
+                "card": wanted,
+                "file": path.name,
+                "fingerprint": _fingerprint(path),
+            },
+        }
+
+    raise AuthorError(f"There is no card called {wanted!r} in that set.")
+
+
+def _fingerprint(path: Path) -> str:
+    """
+    What a file says, short enough to carry and compare.
+
+    Empty for a file that is not there, which is a difference like any other:
+    a card that was deleted while somebody had it open has changed.
+    """
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return ""
 
 
 def save_card(described: Any) -> dict[str, Any]:
     """
     Build a card from what somebody filled in, check it, and keep it.
 
-    Checked before it is kept: a card that would not load is not written, so
-    the set on disk always loads. The author sees what is wrong and their old
-    card is still there.
+    Three things have to be true before anything is written, and each of them
+    is somebody's work if it is not:
+
+    - the card loads, so the set on disk always loads;
+    - the file is still the one that was opened, so nobody else's change is
+      thrown away;
+    - the write either happens or does not, so a card is never half of itself.
+
+    When one of them fails nothing is written at all, and what is on disk is
+    exactly what was there before.
     """
     card = build_card(described)
     problems = check_card(card)
@@ -234,18 +294,107 @@ def save_card(described: Any) -> dict[str, Any]:
         return {"saved": False, "problems": problems, "card": card}
 
     directory = _set_directory(str(described.get("set", "")))
-    path = directory / CARDS / f"{card['id']}.json"
-    path.write_text(
-        json.dumps({"cards": [card]}, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    path = _card_file(directory, str(card["id"]))
+    changed = _changed_underneath(described, path)
+
+    if changed:
+        return {
+            "saved": False,
+            "problems": [changed],
+            "card": card,
+            "changed": True,
+        }
+
+    _keep(path, json.dumps({"cards": [card]}, indent=2, ensure_ascii=False) + "\n")
 
     return {"saved": True, "problems": [], "card": card, "where": str(path)}
 
 
+def _card_file(directory: Path, identifier: str) -> Path:
+    """
+    The file one card is kept in, which is named after the card.
+    """
+    return directory / CARDS / f"{_a_plain_name(identifier)}.json"
+
+
+def _a_plain_name(identifier: str) -> str:
+    """
+    An identifier, refused unless it can only ever name a file in one place.
+    """
+    if not A_PLAIN_NAME.fullmatch(identifier):
+        raise AuthorError(f"{identifier!r} is not the name of a card.")
+
+    return identifier
+
+
+def _changed_underneath(described: Mapping[str, Any], path: Path) -> str:
+    """
+    Why this card must not be written yet, or nothing.
+
+    A card being made has no file behind it and nothing to disagree with. A
+    card that was opened carries what its file said; if the file says something
+    else now, somebody else wrote it in the meantime, and the two changes
+    cannot both be kept. Refusing loses neither — merging them is not something
+    anything here can do, and overwriting is choosing for a person who is not
+    being asked.
+    """
+    opened = described.get(OPENED)
+
+    if not isinstance(opened, Mapping):
+        return ""
+
+    if str(opened.get("file", "")) != path.name:
+        return (
+            "That card is kept in a file with a different name, so keeping it "
+            "would leave the one it came from behind. Nothing has been "
+            "written."
+        )
+
+    was = str(opened.get("fingerprint", ""))
+    now = _fingerprint(path)
+
+    if now == was:
+        return ""
+
+    if not now:
+        return (
+            "That card is no longer in the set — it was removed after you "
+            "opened it. Nothing has been written, so nothing was put back."
+        )
+
+    return (
+        "That card changed on disk after you opened it. Nothing has been "
+        "written, so neither change is lost — open it again to see what it "
+        "says now."
+    )
+
+
+def _keep(path: Path, body: str) -> None:
+    """
+    Write a card so that it is never half written.
+
+    The card goes to a name beside its own, is pushed all the way to the disk,
+    and only then becomes the card — one step the operating system either does
+    or does not do. Writing over the card directly would empty it first, and a
+    machine that stopped there would leave a set that no longer loads.
+    """
+    beside = path.with_name(f".{path.name}.writing")
+
+    try:
+        with beside.open("w", encoding="utf-8", newline="\n") as file:
+            file.write(body)
+            file.flush()
+            os.fsync(file.fileno())
+
+        os.replace(beside, path)
+    except BaseException:
+        beside.unlink(missing_ok=True)
+        raise
+
+
 def delete_card(set_id: str, card_id: str) -> None:
     directory = _set_directory(set_id)
-    path = directory / CARDS / f"{card_id}.json"
+    path = _card_file(directory, str(card_id))
 
     if path.is_file():
         path.unlink()
@@ -405,6 +554,14 @@ def build_card(described: Any) -> dict[str, Any]:
     Four things are added on top, because none of them is anybody's answer: the
     identifier, the set, the schema version, and the empty list that says a
     card without rules is an unfinished card rather than a broken file.
+
+    The identifier is the card's own and the name is what it is called, and
+    they are not the same thing. A name gives a card its identifier once, when
+    there is nothing else to make one out of. After that the card carries it,
+    and renaming a card changes what it is called and not which card it is —
+    which matters because a scenario file names cards by identifier, written
+    by hand, and a card that quietly took a new one would stop being the card
+    those files mean.
     """
     if not isinstance(described, dict):
         raise AuthorError("Nothing was sent.")
@@ -424,7 +581,7 @@ def build_card(described: Any) -> dict[str, Any]:
 
     kind = str(written.get("type") or "loot")
     card: dict[str, Any] = {
-        "id": card_identifier(set_id, kind, name),
+        "id": _identity_of(described) or card_identifier(set_id, kind, name),
         "name": name,
         "type": kind,
         "expansion": set_id,
@@ -434,6 +591,18 @@ def build_card(described: Any) -> dict[str, Any]:
     card.setdefault("abilities", [])
 
     return card
+
+
+def _identity_of(described: Mapping[str, Any]) -> str:
+    """
+    The identifier a card already has, or nothing if it has never had one.
+    """
+    opened = described.get(OPENED)
+
+    if not isinstance(opened, Mapping):
+        return ""
+
+    return _a_plain_name(str(opened.get("card", "")))
 
 
 def _as_a_card(described: Mapping[str, Any]) -> dict[str, Any]:
