@@ -3157,3 +3157,81 @@ def test_an_option_that_does_nothing_is_still_offered() -> None:
         "an option's arms are still taken from what it holds"
     )
     assert "heldBy(node)" in before, "the node's own arms are no longer its own"
+
+
+# ----------------------------------------------------------------------
+# 20. A branch inside a branch
+# ----------------------------------------------------------------------
+#
+# Three shipped cards read perfectly and could not be changed, because the
+# rule that asks whether a node can be walked flattened everything under it
+# into one list and then asked whether each was an action. A branch nested
+# inside a branch is not an action; it is another thing to walk into, and the
+# rule has to ask about it the same way it asked about its parent.
+
+
+def test_the_rule_asks_about_what_it_holds_the_same_way() -> None:
+    """
+    Recursion rather than flattening. The same question, one level further
+    down, for as many levels as a card has.
+    """
+    rule = body_of("walkable")
+
+    assert "under.every(reachable)" in rule, (
+        "what a node holds is still judged by whether each thing is an action"
+    )
+    assert "under.every(known)" not in rule
+
+
+def test_a_branch_inside_a_branch_survives_the_pipeline(
+    workspace: Path,
+) -> None:
+    """
+    The card side of it, which was never the part that was broken: a branch
+    holding a branch holding an ordinary action reads, rebuilds and reads
+    again to the same thing. The walk is what turned such a card down, and
+    the rule above is what fixes that.
+    """
+    written = {
+        "id": "probe-loot-deeper",
+        "name": "Deeper",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {"roll_dice": 6},
+                    {
+                        "if": [{"dice_less": 4}],
+                        "then": [
+                            {
+                                "may": [
+                                    {"effect": "gain_coins", "amount": 2,
+                                     "target": "controller"}
+                                ],
+                                "prompt": "Take two?",
+                            }
+                        ],
+                    },
+                ],
+            }
+        ],
+    }
+
+    state = read_card(written)["card"]
+    branch = state["fields"]["abilities"][0]["fields"]["effects"][1]
+    inner = branch["fields"]["then"][0]
+
+    assert inner["id"] == "may"
+    assert inner["fields"]["may"][0]["id"] == "gain_coins"
+
+    # And the leaf is still reachable through the pair of them.
+    inner["fields"]["may"][0]["fields"]["amount"] = 5
+    again = build_card({"set": "probe", "card": state})
+    kept = again["abilities"][0]["effects"][1]["then"][0]["may"][0]
+
+    assert kept["amount"] == 5
+    assert not check_card(again), check_card(again)
+    assert read_card(again)["card"] == state

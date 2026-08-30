@@ -787,11 +787,14 @@ function walkable() {
   const offered = can.effects.filter(e => !e.a_step && !e.replacing && finishable(e));
   const known = step => offered.some(e => e.id === step.id);
   // An action the walk can finish, or something holding only such actions.
-  // The rule is the same rule, asked one level further down.
+  // The rule is the same rule, asked one level further down — and asked of
+  // what it holds in the same way, because a branch inside a branch is not an
+  // action either. Asking only whether each held thing is an action turned
+  // down three cards that read perfectly.
   const reachable = step => {
     if (known(step)) return true;
     const under = stepsUnder(step);
-    return under.length > 0 && under.every(known);
+    return under.length > 0 && under.every(reachable);
   };
   return parts.every(part => {
     const does = doesIn(part);
