@@ -2735,3 +2735,204 @@ def test_what_a_step_holds_is_set_in_from_it() -> None:
 
     assert ".held {" in page
     assert "padding-left" in page.split(".held {")[1][:200]
+
+
+# ----------------------------------------------------------------------
+# 18. Walking through a branch
+# ----------------------------------------------------------------------
+#
+# A step inside a branch is a step. So the walk does not need a tree editor to
+# reach one — it needs to follow what a node holds, and then ask the ordinary
+# questions of the ordinary step it finds there.
+#
+# Nothing here creates a branch, removes one, or asks about a condition: the
+# metadata publishes no question for a condition, so nothing can.
+
+
+def offered_actions(can: dict[str, Any]) -> set[str]:
+    """
+    The walk's own rule for an action it can finish, in Python.
+    """
+    return {
+        one["id"]
+        for one in can["effects"]
+        if not one.get("a_step")
+        and not one.get("replacing")
+        and not any(
+            f.get("required") and f.get("asked") == "never"
+            for f in one.get("fields", ())
+        )
+    }
+
+
+def held_by(node: Mapping[str, Any], shapes: Mapping[str, Any]) -> list[Any]:
+    shape = shapes.get(node.get("id"))
+
+    if not shape:
+        return []
+
+    found = []
+
+    for field in shape["fields"]:
+        if not field.get("a_list_of"):
+            continue
+
+        nodes = [
+            one
+            for one in (node.get("fields") or {}).get(field["id"], []) or []
+            if isinstance(one, dict) and one.get("id") in shapes
+        ]
+
+        if nodes:
+            found.append((field, nodes))
+
+    return found
+
+
+def steps_under(node: Mapping[str, Any], shapes: Mapping[str, Any]) -> list[Any]:
+    """
+    Every action that would have to be walked to fill this node in.
+    """
+    found: list[Any] = []
+
+    for field, nodes in held_by(node, shapes):
+        for one in nodes:
+            if field["a_list_of"] == "step":
+                found.append(one)
+            found.extend(steps_under(one, shapes))
+
+    return found
+
+
+def test_a_branch_is_walked_by_following_what_it_holds(
+    walked: list[dict[str, Any]],
+    can: dict[str, Any],
+) -> None:
+    """
+    Every action inside every shipped branch is one the walk already offers,
+    or the card is one it declines — and the rule is the same rule, applied
+    one level further down.
+    """
+    shapes = {
+        one["id"]: one
+        for section in can.values()
+        if isinstance(section, list)
+        for one in section
+        if isinstance(one, dict) and "fields" in one
+    }
+    offered = offered_actions(can)
+    reachable = 0
+
+    for one in walked:
+        if one["state"] is None:
+            continue
+
+        for part in one["state"]["card"]["fields"].get("abilities", ()):
+            for step in part["fields"].get("effects") or ():
+                under = steps_under(step, shapes)
+
+                if under and all(o["id"] in offered for o in under):
+                    reachable += 1
+
+    assert reachable >= 100, reachable
+
+
+def test_the_walk_follows_a_branch_rather_than_stopping_at_it(
+    can: dict[str, Any],
+) -> None:
+    """
+    The rule is the same rule asked one level further down: an action the
+    walk can finish, or something holding only such actions.
+
+    Measured through the page's own rule, before and after: 226 cards could
+    be changed, and 293 can. The count is measured rather than asserted here,
+    because the rule is what this pins and the count moves as the engine
+    grows.
+    """
+    rule = body_of("walkable")
+
+    assert "stepsUnder(" in rule, "the walk still stops at the first branch"
+
+
+def test_following_a_branch_names_no_branch() -> None:
+    """
+    The whole rule. What a node holds is read off `a_list_of`, so a structure
+    the engine gains is followed without this changing.
+    """
+    following = body_of("stepsUnder") + body_of("armsOf")
+
+    assert "a_list_of" in following
+
+    for one in ("if", "may", "choose", "for_each", "mode", "then", "else"):
+        assert f'"{one}"' not in following, one
+        assert f"'{one}'" not in following, one
+
+
+def test_a_branch_with_one_arm_is_not_asked_about(can: dict[str, Any]) -> None:
+    """
+    Fifty-seven of the 74 branching cards have every node with exactly one
+    arm. There is no choice to put to anybody, so none is put: the walk goes
+    straight into the arm.
+    """
+    opening = body_of("openStep")
+
+    assert "length === 1" in opening or "length < 2" in opening, opening[:200]
+    assert "intoArm(" in opening
+
+
+def test_a_step_inside_a_branch_is_reached_by_a_path_like_any_other() -> None:
+    """
+    No new way of saying where something is. An arm is a field of a node, and
+    a node is at a path, so an arm is at a path.
+    """
+    arms = body_of("armsOf")
+
+    assert ".fields." in arms, "an arm is addressed some other way"
+
+
+def test_changing_a_step_inside_a_branch_moves_only_that_step(
+    workspace: Path,
+) -> None:
+    """
+    The parent node, the condition, the other arm and the order are all left
+    exactly as they were.
+    """
+    written = {
+        "id": "probe-loot-forking",
+        "name": "Forking",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {"roll_dice": 6},
+                    {
+                        "if": [{"dice_less": 4}],
+                        "then": [{"effect": "gain_coins", "amount": 2,
+                                  "target": "controller"}],
+                        "else": [{"effect": "deal_damage", "amount": 1,
+                                  "target": "controller"}],
+                    },
+                    {"effect": "gain_coins", "amount": 9, "target": "controller"},
+                ],
+            }
+        ],
+    }
+
+    state = read_card(written)["card"]
+    branch = state["fields"]["abilities"][0]["fields"]["effects"][1]
+    branch["fields"]["then"][0]["fields"]["amount"] = 3
+
+    again = build_card({"set": "probe", "card": state})
+    effects = again["abilities"][0]["effects"]
+
+    assert effects[1]["then"][0]["amount"] == 3
+    assert effects[1]["else"][0]["amount"] == 1, "the other arm moved"
+    assert effects[1]["if"] == [{"dice_less": {"value": 4}}], "the condition moved"
+    assert effects[0] == {"effect": "roll_dice", "sides": 6}, "a neighbour moved"
+    assert effects[2]["amount"] == 9, "a neighbour moved"
+    assert [one.get("effect") or next(iter(one)) for one in effects] == [
+        "roll_dice", "if", "gain_coins"], "the order moved"
+    assert not check_card(again), check_card(again)

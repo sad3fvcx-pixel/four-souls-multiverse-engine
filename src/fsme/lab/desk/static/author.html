@@ -547,6 +547,47 @@ function heldBy(node) {
     .filter(one => one.nodes.length);
 }
 
+// Every action that would have to be walked to fill a node in: the steps it
+// holds, and the steps held by whatever those hold. A mode is a node of its
+// own, so its steps are found under it rather than beside them.
+//
+// Read off `a_list_of`, so a structure the engine gains is followed by this
+// without it changing.
+function stepsUnder(node) {
+  const found = [];
+  for (const { f, nodes } of heldBy(node)) {
+    for (const one of nodes) {
+      if (f.a_list_of === "step") found.push(one);
+      found.push(...stepsUnder(one));
+    }
+  }
+  return found;
+}
+
+// The lists of steps a node holds, each with the words to call it by and the
+// path it lives at. A list of steps is an arm as it stands; a list of
+// anything else holds its steps one level further in, and is named by what it
+// says of itself.
+function armsOf(node, path) {
+  const found = [];
+  for (const { f, nodes } of heldBy(node)) {
+    if (f.a_list_of === "step") {
+      found.push({ asks: trimmed(asksOf(f)), list: `${path}.fields.${f.id}` });
+      continue;
+    }
+    nodes.forEach((one, i) => {
+      for (const inner of heldBy(one)) {
+        if (inner.f.a_list_of !== "step") continue;
+        found.push({
+          asks: saidAs(one),
+          list: `${path}.fields.${f.id}[${i}].fields.${inner.f.id}`,
+        });
+      }
+    });
+  }
+  return found;
+}
+
 // And the same, drawn: each list under the words its own field asks, in the
 // card's language rather than this page's.
 function heldHtml(node) {
@@ -561,11 +602,13 @@ function sofar(problems = [], moments = []) {
   walk.on = "sofar";
   const doing = at(walk.list, []);
   const rows = doing.map((step, i) => `<li>${saidAs(step)}
-      <button onclick="editAction(${i})">change</button>
+      <button onclick="openStep(${i})">change</button>
       ${doing.length > 1
           ? `<button onclick="dropAction(${i})">remove</button>` : ""}
     </li>`).join("");
-  const out = partsOf().length > 1
+  const out = (walk.trail || []).length
+    ? "outOfArm()"
+    : partsOf().length > 1
     ? "chooseWhich()"
     : `editAction(${Math.max(0, doing.length - 1)})`;
   el(`<button class="back" onclick="${out}">← back</button>
@@ -583,6 +626,49 @@ function sofar(problems = [], moments = []) {
 // the ability may hold more than one is the metadata's word — `effects` is
 // declared a list — and not a permission written here.
 function addAction() { chooseAction(walk.how); }
+
+// Changing a step is asking about it, unless it is something that holds other
+// steps — then there is nothing to ask about the thing itself, because every
+// question it has is a list rather than a box. So the walk goes into it.
+//
+// One arm and there is no choice to put to anybody, which is 57 of the 74
+// cards that branch: it goes straight in. More than one, and which of them is
+// a question like any other.
+function openStep(i) {
+  const step = at(walk.list, [])[i];
+  const arms = armsOf(step, `${walk.list}[${i}]`);
+  if (!arms.length) return editAction(i);
+  if (arms.length === 1) return intoArm(arms[0]);
+  return whichArm(arms);
+}
+
+function intoArm(arm) {
+  walk.trail = (walk.trail || []).concat([{ list: walk.list, doing: walk.doing }]);
+  walk.list = arm.list;
+  walk.doing = 0;
+  return sofar();
+}
+
+function outOfArm() {
+  const back = (walk.trail || []).pop();
+  if (!back) return sofar();
+  walk.list = back.list;
+  walk.doing = back.doing;
+  return sofar();
+}
+
+function whichArm(arms) {
+  walk.on = "arms";
+  const rows = arms.map((arm, i) =>
+    `<li><button class="plain" onclick="intoArm(${JSON.stringify(arm)
+      .replace(/"/g, "&quot;")})">${arm.asks}</button></li>`).join("");
+  el(`<button class="back" onclick="sofar()">← back</button>
+    <h1>Which of these?</h1>
+    <p class="lead">This one does different things depending on how it goes.
+      Pick the one to change.</p>
+    <ol class="list">${rows}</ol>`);
+}
+
 function editAction(i) { walk.doing = i; ask(0); }
 function dropAction(i) {
   at(walk.list, []).splice(i, 1);
@@ -669,10 +755,18 @@ function walkable() {
   const parts = partsOf();
   if (!parts.length) return false;
   const offered = can.effects.filter(e => !e.a_step && !e.replacing && finishable(e));
+  const known = step => offered.some(e => e.id === step.id);
+  // An action the walk can finish, or something holding only such actions.
+  // The rule is the same rule, asked one level further down.
+  const reachable = step => {
+    if (known(step)) return true;
+    const under = stepsUnder(step);
+    return under.length > 0 && under.every(known);
+  };
   return parts.every(part => {
     const does = doesIn(part);
     if (!does) return true;
-    return does.steps.every(step => offered.some(e => e.id === step.id));
+    return does.steps.every(reachable);
   });
 }
 
