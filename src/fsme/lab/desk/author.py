@@ -727,9 +727,16 @@ def _written_node(
     written: dict[str, Any] = {}
 
     for name, parameter in shape.params.items():
-        if parameter.instead_of or parameter.written_as == BY_BINDING:
-            # A second spelling of a question asked elsewhere, or a name this
-            # writes for itself further down.
+        if parameter.written_as == BY_BINDING:
+            # A name this writes for itself further down.
+            continue
+
+        if parameter.instead_of and not parameter.names_the_node:
+            # A second spelling of a question asked elsewhere. Unless it is
+            # also the key that names its node: `{"may": [...]}` is the second
+            # spelling of "what happens", and it is also the only thing that
+            # says the node is a `may` at all. Skipping it wrote `{"may": []}`
+            # — a card that asks and then does nothing either way.
             continue
 
         if parameter.a_list_of:
@@ -1326,10 +1333,33 @@ def _read_value(
     kind = parameter.a_list_of
 
     if not kind:
+        if (
+            isinstance(value, Mapping)
+            and not value
+            and parameter.shaped_like in _NESTED_SHAPES
+        ):
+            # An empty nested node written out is the same as one left out,
+            # and the builder leaves it out — `if inside: written[name] = …`.
+            # An ability that says `"cost": {}` costs nothing, which is what
+            # saying nothing says.
+            return _NOT_AN_ANSWER
+
         return value
 
     if not isinstance(value, (list, tuple)):
         raise UnreadableCard(f"{name!r} should be a list and is not.")
+
+    if not value and kind in (STEP, CONDITION, MODE) and not parameter.names_the_node:
+        # An empty body written out is the same as one left out, and the
+        # builder leaves it out — `if body or parameter.names_the_node`. So
+        # this leaves it out too, or a card would read one way, be written
+        # back, and read the other way. A key that names its node is kept
+        # because without it the node has no name.
+        #
+        # Only a body: a card's own lists of parts are kept as they are,
+        # because a card with no abilities says so with an empty list and the
+        # builder writes one.
+        return _NOT_AN_ANSWER
 
     if kind == TARGET:
         # Where a part says what it picks out. Not an answer anybody gave: an
@@ -1345,6 +1375,18 @@ def _read_value(
     if kind in (ABILITY, STATIC):
         return [_read_part(said, one, kind) for one in value]
 
+    if kind == MODE:
+        # One option of a card that says "choose one": what it offers, and
+        # what it does. It is inside an ability and picks nothing out of its
+        # own, so it is read with the names that ability already bound.
+        if bound is None:
+            raise UnreadableCard(
+                f"{name!r} holds options, and nothing here says what they may "
+                "be aimed at."
+            )
+
+        return [_read_inside(said, one, MODE, bound) for one in value]
+
     if kind == STEP:
         if bound is None:
             raise UnreadableCard(
@@ -1355,6 +1397,34 @@ def _read_value(
         return [_read_step(said, one, bound) for one in value]
 
     raise UnreadableCard(f"{name!r} is a list of {kind}, which cannot be read yet.")
+
+
+def _read_inside(
+    said: Any,
+    node: Any,
+    kind: str,
+    bound: Mapping[str, tuple[str, dict[str, Any]]],
+) -> dict[str, Any]:
+    """
+    One node that lives inside a part, read with that part's own bindings.
+
+    A part binds the things its steps point at; anything nested inside it
+    points at the same names. So this is `_read_part` without the binding —
+    the names are the ones already in hand.
+    """
+    if not isinstance(node, Mapping):
+        raise UnreadableCard(f"A {kind} written as {type(node).__name__}.")
+
+    shape = said.node_shape(kind)
+
+    if shape is None:
+        raise UnreadableCard(f"The engine does not describe a {kind}.")
+
+    return {
+        "id": kind,
+        "fields": _read_fields(said, shape, node, kind, bound),
+        "groups": {},
+    }
 
 
 def _read_part(said: Any, node: Any, kind: str) -> dict[str, Any]:
@@ -1422,10 +1492,7 @@ def _read_step(
     name, params, aimed = a_step(_plainly(node))
 
     if name in CONTROL_NAMES:
-        raise UnreadableCard(
-            f"This card uses {name!r}, which chooses between things that "
-            "happen. Cards that do that are edited in full."
-        )
+        return _read_control(said, name, params, aimed, bound)
 
     shape = said.shape(name)
 
@@ -1530,6 +1597,119 @@ def _read_step(
     raise UnreadableCard(
         f"{name!r} is aimed at {aimed!r}, which nothing on this card binds."
     )
+
+
+def _read_control(
+    said: Any,
+    name: str,
+    params: Mapping[str, Any],
+    aimed: Any,
+    bound: Mapping[str, tuple[str, dict[str, Any]]],
+) -> dict[str, Any]:
+    """
+    A step that holds other steps, read as a node like any other.
+
+    `if` and its two branches, `may` and what happens when they say yes,
+    `choose` and its options, `for_each` and what it does for each one. None
+    of them is a special case in the card model: each is a node whose shape
+    says which of its fields hold steps, which hold conditions and which hold
+    options, and reading those is the same descent that reads a card's parts.
+
+    What it may be written with, and which of its keys hold what, are the
+    engine's own answers — the shape is built from the same declarations the
+    interpreter expands the node by, so a structure the engine gains is one
+    this reads without being told.
+    """
+    shape = said.node_shape(name)
+
+    if shape is None:
+        raise UnreadableCard(f"The engine does not describe {name!r}.")
+
+    written = {
+        key: value
+        for key, value in params.items()
+        # The head names the node and is read back from the shape; a target
+        # written on it is the aim, and is put back below.
+        if key != "target"
+    }
+
+    for key, parameter in shape.params.items():
+        other = parameter.instead_of
+
+        if other and key in written and other in written:
+            raise UnreadableCard(
+                f"{name!r} says both {other!r} and {key!r}, which are two "
+                "spellings of one question. The engine reads one of them and "
+                "drops the other, so this card is edited in full."
+            )
+
+    fields: dict[str, Any] = {}
+
+    for key, value in written.items():
+        parameter = shape.params.get(str(key))
+
+        if parameter is None:
+            raise UnreadableCard(
+                f"{name!r} says {key!r}, which the engine does not describe."
+            )
+
+        if parameter.written_as == BY_BINDING:
+            # A name this node keeps its answer under for a later step to
+            # read. The engine writes these, so the builder will not write
+            # this one back, and a card that lost it would quietly stop
+            # meaning what it said. The same reason `store` is refused.
+            raise UnreadableCard(
+                f"{name!r} keeps what it chose under a name for a later step "
+                "to read. Cards that do that are edited in full."
+            )
+
+        if not parameter.a_list_of and _names_one_of(value, bound):
+            # A value that points at something the ability chose. The builder
+            # binds what a card picks out under names of its own making, so a
+            # name written here would be written back pointing at nothing.
+            raise UnreadableCard(
+                f"{name!r} points at something the ability chose. Folding that "
+                "up would leave it pointing at nothing, so this card is edited "
+                "in full."
+            )
+
+        read = (
+            _read_value(said, parameter, value, str(key), bound)
+            if parameter.a_list_of
+            else value
+        )
+
+        if read is not _NOT_AN_ANSWER:
+            fields[str(key)] = read
+
+    step: dict[str, Any] = {"id": name, "fields": fields, "groups": {}}
+
+    if aimed is None:
+        return step
+
+    raise UnreadableCard(
+        f"{name!r} is aimed at something of its own. Folding that up to the "
+        "ability would change which steps it reaches, so this card is edited "
+        "in full."
+    )
+
+
+def _names_one_of(
+    value: Any, bound: Mapping[str, tuple[str, dict[str, Any]]]
+) -> bool:
+    """
+    Whether anything written in this value is a name the part bound.
+    """
+    if isinstance(value, str):
+        return value in bound
+
+    if isinstance(value, Mapping):
+        return any(_names_one_of(one, bound) for one in value.values())
+
+    if isinstance(value, (list, tuple)):
+        return any(_names_one_of(one, bound) for one in value)
+
+    return False
 
 
 def _refuse_a_working(

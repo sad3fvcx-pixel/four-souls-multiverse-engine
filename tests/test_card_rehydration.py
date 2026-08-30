@@ -463,7 +463,7 @@ def test_where_a_short_spelling_lands_is_named_once() -> None:
 @pytest.mark.parametrize(
     "written_as, expect",
     [
-        ({"effect": "sequence"}, "in full"),
+        ({"choose": [{"description": "A"}], "as": "picked"}, "later step"),
         ({"effect": "gain_coins", "target": "nobody_binds_this"}, "binds"),
         ({"effect": "roll_dice", "store": "first"}, "later step"),
     ],
@@ -652,8 +652,9 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
     workspace: Path,
 ) -> None:
     """
-    Not opened half way. A control node is the commonest reason by far, so it
-    is the one checked here.
+    Not opened half way. A control node is read now, so what is checked here
+    is a card that still cannot be: one that keeps what it chose under a name
+    for a later step to read.
     """
     from fsme.lab.desk.author import make_set, sets
 
@@ -675,6 +676,7 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
                                     {
                                         "if": ["dice_equals"],
                                         "then": [{"gain_coins": 1}],
+                                        "as": "how_it_went",
                                     }
                                 ],
                             }
@@ -694,7 +696,7 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
     said = str(refused.value)
 
     assert "'if'" in said
-    assert "in full" in said
+    assert "later step" in said
 
 
 def test_asking_for_a_card_that_is_not_there_says_so(workspace: Path) -> None:
@@ -2250,3 +2252,339 @@ def test_a_new_card_clashing_with_one_in_a_shared_file_is_refused(
 
     assert not said["saved"]
     assert [p.name for p in both.parent.iterdir()] == [both.name]
+
+
+# ----------------------------------------------------------------------
+# 16. Cards that choose between things that happen
+# ----------------------------------------------------------------------
+#
+# A step that holds other steps: `if` and its two branches, `may` and what
+# happens when they say yes, `choose` and its modes, `for_each` and what it
+# does for each one. Ninety shipped cards are written this way, which is 87%
+# of everything the reader used to refuse.
+#
+# A control node is not an exception in the card model. It is a node whose
+# body is a list of steps, which is exactly what an ability is — so it is read
+# by the same descent, and what it holds stays held.
+
+
+CONTROL = ("if", "may", "choose", "for_each")
+
+
+def a_control_node(step: Any) -> str:
+    """
+    Which control node a step is, or nothing.
+    """
+    if not isinstance(step, Mapping):
+        return ""
+
+    return next((one for one in CONTROL if one in step), "")
+
+
+def test_the_engine_says_which_steps_hold_other_steps() -> None:
+    """
+    Read from the runtime rather than listed here. A structure added to the
+    engine is one this reads without being told.
+    """
+    from fsme.runtime.interpreter import CONTROL_BODIES, CONTROL_NAMES
+
+    assert set(CONTROL) <= CONTROL_NAMES
+    assert all(CONTROL_BODIES[one] for one in CONTROL)
+
+
+def test_a_card_that_chooses_between_things_is_read(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    The thing this stage is for.
+    """
+    refused = [
+        one["card"]["id"]
+        for one in walked
+        if one["state"] is None
+        and "chooses between things that happen" in one["why"]
+    ]
+
+    assert refused == [], refused[:5]
+
+
+def test_far_more_cards_are_read_than_before(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    Measured at 322 of 352 when this was written, from 248.
+
+    The plan estimated 338, by counting the cards refused *for* a control
+    node. Fifteen of those have a second reason behind the first, which only
+    became reachable once the reader descended far enough to see it: eight
+    hold a step that picks something out for itself, and seven keep what they
+    chose under a name for a later step to read. 323 is the measured answer
+    and 338 was arithmetic.
+    """
+    opened = sum(1 for one in walked if one["state"] is not None)
+
+    assert opened >= 318, f"only {opened} of {len(walked)} cards can be read"
+
+
+def test_what_is_still_refused_is_no_longer_one_big_thing(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    Thirty, for six reasons — where it was 104 for five, 90 of them one
+    thing. The largest is now 16, not 90, so what is left is no longer one
+    missing idea with a tail.
+    """
+    refused = [one for one in walked if one["state"] is None]
+
+    assert len(refused) <= 35, len(refused)
+
+
+def test_a_branch_keeps_its_branches(workspace: Path) -> None:
+    """
+    What was under `then` is under `then` afterwards, and what was under
+    `else` is under `else`. A branch flattened into a list of steps is a card
+    that does everything instead of choosing.
+    """
+    written = {
+        "id": "probe-loot-branching",
+        "name": "Branching",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {"roll_dice": 6},
+                    {
+                        "if": [{"dice_less": 4}],
+                        "then": [
+                            {"effect": "gain_coins", "amount": 1,
+                             "target": "controller"}
+                        ],
+                        "else": [
+                            {"effect": "deal_damage", "amount": 2,
+                             "target": "controller"}
+                        ],
+                    },
+                ],
+            }
+        ],
+    }
+
+    state = read_card(written)["card"]
+    branch = state["fields"]["abilities"][0]["fields"]["effects"][1]
+
+    assert branch["id"] == "if"
+    assert [one["id"] for one in branch["fields"]["if"]] == ["dice_less"]
+    assert [one["id"] for one in branch["fields"]["then"]] == ["gain_coins"]
+    assert [one["id"] for one in branch["fields"]["else"]] == ["deal_damage"]
+
+    # And it comes back the same way round.
+    again = build_card({"set": "probe", "card": state})
+    back = again["abilities"][0]["effects"][1]
+
+    assert back["then"][0]["effect"] == "gain_coins"
+    assert back["else"][0]["effect"] == "deal_damage"
+
+
+def test_every_branching_card_keeps_its_children_as_children(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    Over every shipped card that chooses: a control node written on the card
+    is a control node in the state, and what it held it still holds.
+    """
+    def controls(steps: Any) -> int:
+        found = 0
+        for step in steps or ():
+            name = a_control_node(step)
+            if name:
+                found += 1
+            if isinstance(step, Mapping):
+                for key, value in step.items():
+                    if key in ("if", "conditions"):
+                        continue
+                    if isinstance(value, list):
+                        found += controls(value)
+        return found
+
+    def in_state(steps: Any) -> int:
+        found = 0
+        for step in steps or ():
+            if step.get("id") in CONTROL:
+                found += 1
+            for value in (step.get("fields") or {}).values():
+                if isinstance(value, list) and value and isinstance(value[0], dict):
+                    if value[0].get("id") == "mode":
+                        for mode in value:
+                            found += in_state(mode["fields"].get("effects") or [])
+                    else:
+                        found += in_state(value)
+        return found
+
+    for one in walked:
+        if one["state"] is None:
+            continue
+
+        card, state = one["card"], one["state"]
+        written = sum(
+            controls(part.get("effects") or [])
+            for part in card.get("abilities", ())
+        )
+        read = sum(
+            in_state(part["fields"].get("effects") or [])
+            for part in state["card"]["fields"].get("abilities", ())
+        )
+
+        assert written == read, f"{card['id']}: {written} written, {read} read"
+
+
+def test_a_card_nested_two_deep_stays_two_deep(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    Measured at five shipped cards. A branch inside a branch is a different
+    shape from two branches side by side, and reading must not confuse them.
+    """
+    def depth(steps: Any, at: int = 0) -> int:
+        deepest = at
+        for step in steps or ():
+            if not isinstance(step, Mapping):
+                continue
+            if step.get("id") in CONTROL:
+                for value in (step.get("fields") or {}).values():
+                    if isinstance(value, list) and value:
+                        if isinstance(value[0], dict) and value[0].get("id") == "mode":
+                            for mode in value:
+                                deepest = max(
+                                    deepest,
+                                    depth(mode["fields"].get("effects") or [], at + 1),
+                                )
+                        elif isinstance(value[0], dict) and "id" in value[0]:
+                            deepest = max(deepest, depth(value, at + 1))
+        return deepest
+
+    deep = [
+        one["card"]["id"]
+        for one in walked
+        if one["state"] is not None
+        and any(
+            depth(part["fields"].get("effects") or []) >= 2
+            for part in one["state"]["card"]["fields"].get("abilities", ())
+        )
+    ]
+
+    assert len(deep) >= 4, deep
+
+
+def test_a_may_keeps_what_happens_when_they_say_yes() -> None:
+    """
+    The one the writer used to drop on the floor: a `may` whose body did not
+    survive being written back is a card that offers a choice and then does
+    nothing whichever way it is answered.
+    """
+    written = {
+        "id": "probe-loot-offering",
+        "name": "Offering",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "may": [
+                            {"effect": "gain_coins", "amount": 3,
+                             "target": "controller"}
+                        ],
+                        "prompt": "Take three cents?",
+                    }
+                ],
+            }
+        ],
+    }
+
+    state = read_card(written)["card"]
+    again = build_card({"set": "probe", "card": state})
+    back = again["abilities"][0]["effects"][0]
+
+    assert back.get("may"), f"the body was dropped: {back!r}"
+    assert back["may"][0]["effect"] == "gain_coins"
+    assert back["prompt"] == "Take three cents?"
+
+
+def test_a_choose_keeps_its_modes() -> None:
+    """
+    And the same for the other one the writer could not name.
+    """
+    written = {
+        "id": "probe-loot-either",
+        "name": "Either",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "choose": [
+                            {"description": "Take a cent",
+                             "effects": [{"effect": "gain_coins", "amount": 1,
+                                          "target": "controller"}]},
+                            {"description": "Take two",
+                             "effects": [{"effect": "gain_coins", "amount": 2,
+                                          "target": "controller"}]},
+                        ]
+                    }
+                ],
+            }
+        ],
+    }
+
+    state = read_card(written)["card"]
+    modes = state["fields"]["abilities"][0]["fields"]["effects"][0]["fields"]["choose"]
+
+    assert [one["id"] for one in modes] == ["mode", "mode"]
+    assert modes[0]["fields"]["description"] == "Take a cent"
+
+    again = build_card({"set": "probe", "card": state})
+    back = again["abilities"][0]["effects"][0]
+
+    assert len(back.get("choose") or []) == 2, f"the modes were dropped: {back!r}"
+    assert back["choose"][1]["description"] == "Take two"
+
+
+def test_a_control_node_written_both_ways_is_refused() -> None:
+    """
+    One question asked twice. The runtime reads one of them and drops the
+    other, so keeping the card would keep only half of what it says — and
+    which half is not something to decide on somebody's behalf.
+    """
+    written = {
+        "id": "probe-loot-twice",
+        "name": "Twice",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "may": [{"effect": "gain_coins", "amount": 1,
+                                 "target": "controller"}],
+                        "effects": [{"effect": "gain_coins", "amount": 2,
+                                     "target": "controller"}],
+                    }
+                ],
+            }
+        ],
+    }
+
+    with pytest.raises(UnreadableCard) as refused:
+        read_card(written)
+
+    assert "twice" in str(refused.value).lower() or "both" in str(refused.value).lower()
