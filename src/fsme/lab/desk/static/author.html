@@ -395,12 +395,25 @@ function pickAction(effect, how) {
 // is `asked`, which is the metadata's answer and not a list kept here.
 const stepPath = () => `${walk.list}[${walk.doing}]`;
 
+// What the questions are about, and what describes it. One of the things a
+// part does, or the part itself — both are nodes with fields, which is why one
+// set of screens serves both and neither is named here.
+function asking() {
+  if (walk.list) {
+    const path = stepPath();
+    const node = at(path);
+    return { path, node, shape: named(can.effects, node.id) };
+  }
+  return { path: walk.where, node: at(walk.where), shape: walk.part };
+}
+
 function questions() {
-  const step = at(stepPath());
-  const doing = named(can.effects, step.id);
-  if (!doing) return [];
-  const values = doing.fields.filter(f => f.asked === "first" && putable(f));
-  const aim = doing.needs_target ? [{ aim: true }] : [];
+  const { shape } = asking();
+  if (!shape) return [];
+  const values = (shape.fields || []).filter(f => f.asked === "first" && putable(f));
+  // Only something that happens is aimed at anything. A part is not, and says
+  // so by not carrying the answer at all.
+  const aim = shape.needs_target ? [{ aim: true }] : [];
   return picksFirst(walk.part) ? aim.concat(values.map(f => ({ f })))
                                : values.map(f => ({ f })).concat(aim);
 }
@@ -409,6 +422,7 @@ function questions() {
 // lists are found by what they are lists of, the way everything else here
 // finds them, so the order follows the language.
 function picksFirst(part) {
+  if (!part || !part.fields) return true;
   const where = (kind) => part.fields.findIndex(f => f.a_list_of === kind);
   const picks = where("target");
   const does = where("step");
@@ -433,25 +447,27 @@ function finishable(e) {
 
 function ask(n, problems = [], moments = []) {
   const all = questions();
-  if (n >= all.length) return sofar(problems, moments);
+  if (n >= all.length) return answered(problems, moments);
   walk.on = "ask";
   walk.at = n;
-  const here = stepPath();
-  const step = at(here);
-  const doing = named(can.effects, step.id);
+  const { path: here, node, shape } = asking();
   const one = all[n];
   const asked = one.aim
-    ? aimHtml(doing, step, here)
-    : oneByOne([one.f], step.fields, step.groups,
-               `${here}.fields`, `${here}.groups`, doing.id);
+    ? aimHtml(shape, node, here)
+    : oneByOne([one.f], node.fields, node.groups,
+               `${here}.fields`, `${here}.groups`, shape.id);
   // Back from a question is the question before it. Back from the first one is
-  // out of the walk while the card still holds only the action being answered,
-  // and otherwise the list — which is where every later action, and every
-  // action being changed rather than made, was reached from.
-  const only = at(walk.list, []).length < 2 && !walk.doing;
-  const back = n ? `ask(${n - 1})` : only ? "chooseKind()" : "sofar()";
+  // wherever this node was reached from: the list of what a part does, the
+  // list of the card's parts, or out of the walk altogether while the card
+  // still holds only the one action being answered.
+  const only = walk.list && at(walk.list, []).length < 2 && !walk.doing;
+  const back = n ? `ask(${n - 1})`
+    : !walk.list ? "chooseWhich()"
+    : only && !editing ? "chooseKind()"
+    : only ? "chooseWhich()"
+    : "sofar()";
   el(`<button class="back" onclick="${back}">← back</button>
-    <p class="muted">${esc(sentence(doing.about))}</p>
+    <p class="muted">${esc(sentence(shape.about))}</p>
     <h1>Question ${n + 1} of ${all.length}</h1>
     <div class="nested">${asked}</div>
     <hr>
@@ -460,6 +476,13 @@ function ask(n, problems = [], moments = []) {
       <button onclick="startBlank()">Fill the rest in myself</button>
     </div>
     ${saidHtml(problems, moments)}`);
+}
+
+// Where a walk goes when the questions about one node run out: to the things
+// a part does, if the node was one of them, and otherwise back out to the part
+// it was.
+function answered(problems = [], moments = []) {
+  return walk.list ? sofar(problems, moments) : chooseWhich(problems, moments);
 }
 
 // ------------------------------------------------------ what it does so far
@@ -493,8 +516,10 @@ function sofar(problems = [], moments = []) {
       ${doing.length > 1
           ? `<button onclick="dropAction(${i})">remove</button>` : ""}
     </li>`).join("");
-  el(`<button class="back" onclick="editAction(${Math.max(0, doing.length - 1)})">
-        ← back</button>
+  const out = partsOf().length > 1
+    ? "chooseWhich()"
+    : `editAction(${Math.max(0, doing.length - 1)})`;
+  el(`<button class="back" onclick="${out}">← back</button>
     <h1>What this card does</h1>
     <ol class="list">${rows}</ol>
     <hr>
@@ -528,7 +553,8 @@ function saidHtml(problems, moments) {
 // editor uses, so what is said about it here is what the engine says about it.
 async function done(problems = [], moments = []) {
   walk.on = "done";
-  el(`<button class="back" onclick="sofar()">← back</button>
+  const out = partsOf().length > 1 || !walk.list ? "chooseWhich()" : "sofar()";
+  el(`<button class="back" onclick="${out}">← back</button>
     <h1>Your card</h1>
     <label for="name">What is it called?</label>
     <input id="name" value="${esc(state.card.fields.name || "")}"
@@ -559,57 +585,114 @@ function startBlank() { walk = null; state.mode = "expert"; editor(); }
 // nothing to convert: the walk is pointed at the parts it already has and
 // every screen works as it does for a card being written now.
 
-// Where this card keeps the things it does — the same question `reactingTo`
-// answers for a card being made, asked of one that exists. Nothing is named:
-// a list of parts is found by what it is a list of, and the things a part
-// does by what that part says holds them.
-function whereItActs() {
+// Every part this card has, wherever the card keeps them. Found by asking the
+// card's shape which of its fields are lists of something the page has a shape
+// for, so a card that grew a third kind of part is walked without this
+// changing — and in the order the card declares them.
+function partsOf() {
   const card = named(can.cards, "card") || { fields: [] };
+  const found = [];
   for (const list of card.fields) {
-    const part = list.a_list_of && shapeNamed(list.a_list_of);
-    if (!part || !part.own_names) continue;
-    const held = state.card.fields[list.id] || [];
-    if (!held.length) continue;
-    const then = part.fields.find(f => f.a_list_of === "step");
-    const when = part.fields.find(f => f.asked === "first" && (f.choices || []).length);
-    if (!then || !(held[0].fields[then.id] || []).length) continue;
-    return { list, part, then, when, held };
+    const shape = shapeNamed(list.a_list_of || "");
+    if (!shape) continue;
+    (state.card.fields[list.id] || []).forEach((node, index) => {
+      found.push({ list, shape, index, node,
+                   path: `state.card.fields.${list.id}[${index}]` });
+    });
   }
-  return null;
+  return found;
 }
 
-// Whether the walk can show this whole card. It shows one part and the things
-// that part does, so a card with more than one, or with a kind of part it does
-// not draw, or doing something it would not offer, is a card it would show
-// half of — and half a card looks exactly like a whole one.
+// What one part holds that happens, if it holds anything. A part says where by
+// calling one of its fields a list of steps; a part with no such field does
+// nothing and only changes a number.
+function doesIn(part) {
+  const holds = part.shape.fields.find(f => f.a_list_of === "step");
+  return holds ? { key: holds.id, steps: part.node.fields[holds.id] || [] } : null;
+}
+
+// Whether the walk can show this whole card. It puts questions about a part
+// and about each thing that part does, so a card doing something it would not
+// offer is one it would show half of — and half a card looks exactly like a
+// whole one. How many parts there are is no longer a reason: it asks about
+// each in turn.
 function walkable() {
-  const card = named(can.cards, "card") || { fields: [] };
-  const lists = card.fields.filter(f => shapeNamed(f.a_list_of || ""));
-  const busy = lists.filter(f => (state.card.fields[f.id] || []).length);
-  if (busy.length !== 1) return "";
-  const where = whereItActs();
-  if (!where || where.held.length !== 1) return "";
-  const doing = where.held[0].fields[where.then.id] || [];
+  const parts = partsOf();
+  if (!parts.length) return false;
   const offered = can.effects.filter(e => !e.a_step && !e.replacing && finishable(e));
-  if (!doing.every(step => offered.some(e => e.id === step.id))) return "";
-  return where.list.id;
+  return parts.every(part => {
+    const does = doesIn(part);
+    if (!does) return true;
+    return does.steps.every(step => offered.some(e => e.id === step.id));
+  });
 }
 
 // The walk, pointed at a card that already exists. `state.card` is untouched:
 // it was already this shape, which is the whole reason any of this works.
 function startFrom() {
-  const where = whereItActs();
-  if (!where) return startBlank();
-  walk = {
-    how: where.when ? where.held[0].fields[where.when.id] : "",
-    part: where.part,
-    doing: 0,
-    list: `state.card.fields.${where.list.id}[0].fields.${where.then.id}`,
-  };
+  const parts = partsOf();
+  if (!parts.length) return startBlank();
   looking = false;
   editing = true;
   state.mode = "simple";
-  sofar();
+  walk = { doing: 0 };
+  // One part is not a choice, so it is not put as one.
+  return parts.length === 1 ? openPart(0) : chooseWhich();
+}
+
+// One part of the card, opened for its questions. Nothing is copied: the walk
+// is given the path to the part the card already holds.
+function openPart(which) {
+  const parts = partsOf();
+  const part = parts[which];
+  if (!part) return chooseWhich();
+  const does = doesIn(part);
+  const when = part.shape.fields.find(f => f.asked === "first" && (f.choices || []).length);
+  walk = {
+    which,
+    where: part.path,
+    part: part.shape,
+    how: when ? part.node.fields[when.id] || "" : "",
+    doing: 0,
+    list: does ? `${part.path}.fields.${does.key}` : "",
+  };
+  // A part that does things is shown as the things it does; one that only
+  // changes a number has none, so its own questions are what there is to ask.
+  return does ? sofar() : ask(0);
+}
+
+// ------------------------------------------------------- which part of it
+//
+// Only for a card that has more than one. The lists are the card's own, under
+// the card's own words for them, and each part is read back by the same two
+// functions the reading screen uses.
+function chooseWhich(problems = [], moments = []) {
+  walk.on = "parts";
+  const card = named(can.cards, "card") || { fields: [] };
+  const parts = partsOf();
+  let at = 0;
+  const sections = card.fields.filter(f => shapeNamed(f.a_list_of || "")).map(list => {
+    const mine = parts.filter(p => p.list.id === list.id);
+    if (!mine.length) return "";
+    const rows = mine.map(part => {
+      const does = doesIn(part);
+      const said = (does ? does.steps.map(step => saidAs(step)).join("<br>") : "")
+        + saidOf(part.node);
+      return `<li><button class="plain" onclick="openPart(${parts.indexOf(part)})"
+        >${said || esc(part.shape.about)}</button></li>`;
+    }).join("");
+    return `<h2>${esc(sentence(asksOf(list)))}</h2><ol class="list">${rows}</ol>`;
+  }).join("");
+  el(`<button class="back" onclick="viewing()">← back</button>
+    <h1>What would you change?</h1>
+    <p class="lead">Pick the part of the card to look at. Everything else stays
+      as it is.</p>
+    ${sections}
+    <hr>
+    <div class="row">
+      <button class="go" onclick="done()">That is everything</button>
+    </div>
+    ${saidHtml(problems, moments)}`);
 }
 
 // What "draw it again" means depends on which way in is open. Every setter
@@ -617,6 +700,7 @@ function startFrom() {
 function drawn(problems = [], moments = []) {
   if (looking) return viewing(problems, moments);
   if (!walk) return editor(problems, moments);
+  if (walk.on === "parts") return chooseWhich(problems, moments);
   if (walk.on === "sofar") return sofar(problems, moments);
   if (walk.on === "done") return done(problems, moments);
   return ask(walk.at, problems, moments);

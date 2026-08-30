@@ -990,9 +990,11 @@ def test_the_walk_can_be_pointed_at_a_card_that_exists() -> None:
     said = script()
 
     assert "function startFrom(" in said
-    assert "function whereItActs(" in said
+    assert "function partsOf(" in said
 
-    where = body_of("whereItActs")
+    # Which lists hold parts, and where a part keeps what it does, are asked of
+    # the shapes rather than named.
+    where = body_of("partsOf") + body_of("doesIn")
 
     assert 'f.a_list_of === "step"' in where
     assert "abilities" not in where and "statics" not in where
@@ -1001,7 +1003,7 @@ def test_the_walk_can_be_pointed_at_a_card_that_exists() -> None:
     made = body_of("startFrom")
 
     assert "state.card.fields = " not in made
-    assert "sofar()" in made
+    assert "openPart(" in made
 
 
 def test_a_card_the_walk_cannot_show_whole_is_not_opened_for_changing() -> None:
@@ -1015,8 +1017,11 @@ def test_a_card_the_walk_cannot_show_whole_is_not_opened_for_changing() -> None:
 
     rule = body_of("walkable")
 
-    assert "busy.length !== 1" in rule
+    # How many parts a card has is no longer a reason to refuse it — the walk
+    # asks about each in turn. What it still refuses is an action it does not
+    # offer, which is the rule it already applies when making a card.
     assert "finishable(e)" in rule
+    assert "length !== 1" not in rule, "the walk still refuses a card by its shape"
     # The reading screen only offers the way in when the rule allows it.
     assert "walkable()" in body_of("viewing")
     assert "startFrom()" in body_of("viewing")
@@ -1242,3 +1247,276 @@ def test_the_order_of_the_parts_survives(many: list[dict[str, Any]]) -> None:
                         wrong.append(f"{one['card'].get('id')} {where}[{index}].{key}")
 
     assert wrong == [], wrong[:8]
+
+
+# ----------------------------------------------------------------------
+# 12. Editing a card that has several parts
+# ----------------------------------------------------------------------
+
+
+A_CARD_WITH_BOTH = {
+    "name": "Curved Thing",
+    "type": "treasure",
+    "abilities": [
+        {
+            "fields": {
+                "trigger": "on_activate",
+                "effects": [
+                    {
+                        "id": "gain_coins",
+                        "fields": {"amount": 1},
+                        "groups": {},
+                        "aim": "controller",
+                        "aim_fields": {},
+                        "aim_groups": {},
+                    }
+                ],
+            },
+            "groups": {},
+        }
+    ],
+    "statics": [
+        {
+            "fields": {"stat": "attack", "amount": 1, "scope": "controller"},
+            "groups": {},
+        }
+    ],
+}
+
+
+def test_a_card_with_an_ability_and_a_static_opens(workspace: Path) -> None:
+    """
+    Both parts come back, each as the node it is.
+    """
+    from fsme.lab.desk.author import open_card
+
+    set_id, card_id = a_saved_card(A_CARD_WITH_BOTH)
+    opened = open_card(set_id, card_id)
+    parts = parts_of(opened)
+
+    assert [(where, index) for where, index, _ in parts] == [
+        ("abilities", 0),
+        ("statics", 0),
+    ]
+    assert parts[0][2]["fields"]["trigger"] == "on_activate"
+    assert parts[1][2]["fields"]["stat"] == "attack"
+
+
+def test_changing_the_ability_leaves_the_static_alone(workspace: Path) -> None:
+    from fsme.lab.desk.author import open_card
+
+    set_id, card_id = a_saved_card(A_CARD_WITH_BOTH)
+    opened = open_card(set_id, card_id)
+    before = build_card(opened)
+
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 6
+    after = build_card(opened)
+
+    assert after["statics"] == before["statics"]
+    assert after["abilities"][0]["effects"][0]["amount"] == 6
+    assert before["abilities"][0]["effects"][0]["amount"] == 1
+
+
+def test_changing_the_static_leaves_the_ability_alone(workspace: Path) -> None:
+    from fsme.lab.desk.author import open_card
+
+    set_id, card_id = a_saved_card(A_CARD_WITH_BOTH)
+    opened = open_card(set_id, card_id)
+    before = build_card(opened)
+
+    opened["card"]["fields"]["statics"][0]["fields"]["amount"] = 4
+    after = build_card(opened)
+
+    assert after["abilities"] == before["abilities"]
+    assert after["statics"][0]["amount"] == 4
+    assert before["statics"][0]["amount"] == 1
+
+
+def test_changing_one_of_two_abilities_leaves_the_other(workspace: Path) -> None:
+    from fsme.lab.desk.author import open_card
+
+    two = dict(A_CARD_WITH_BOTH)
+    two = json.loads(json.dumps(A_CARD_WITH_BOTH))
+    two["name"] = "Two Ways"
+    two.pop("statics")
+    two["abilities"].append(
+        {
+            "fields": {
+                "trigger": "turn_start",
+                "effects": [
+                    {
+                        "id": "heal",
+                        "fields": {"amount": 2},
+                        "groups": {},
+                        "aim": "controller",
+                        "aim_fields": {},
+                        "aim_groups": {},
+                    }
+                ],
+            },
+            "groups": {},
+        }
+    )
+
+    set_id, card_id = a_saved_card(two)
+    opened = open_card(set_id, card_id)
+    before = build_card(opened)
+
+    opened["card"]["fields"]["abilities"][1]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 5
+    after = build_card(opened)
+
+    assert after["abilities"][0] == before["abilities"][0]
+    assert after["abilities"][1]["effects"][0]["amount"] == 5
+
+
+def test_a_changed_multi_part_card_still_passes_the_checker(
+    workspace: Path,
+) -> None:
+    from fsme.lab.desk.author import open_card
+
+    set_id, card_id = a_saved_card(A_CARD_WITH_BOTH)
+    opened = open_card(set_id, card_id)
+    opened["card"]["fields"]["statics"][0]["fields"]["amount"] = 3
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 2
+
+    assert check_card(build_card(opened)) == []
+
+
+def test_an_unchanged_multi_part_card_rebuilds_identically(
+    workspace: Path,
+) -> None:
+    from fsme.lab.desk.author import open_card, sets
+
+    set_id, card_id = a_saved_card(A_CARD_WITH_BOTH)
+    where = Path(sets()[0]["where"]) / "cards" / f"{card_id}.json"
+    written = json.loads(where.read_text("utf-8"))["cards"][0]
+
+    assert build_card(open_card(set_id, card_id)) == written
+
+
+def test_more_cards_can_be_changed_now_than_before(walked: list[dict[str, Any]]) -> None:
+    """
+    The point of the stage, in a number.
+
+    The walk used to open a card only when it had exactly one part. It asks
+    about each part in turn now, so what is left out is what a card *does* —
+    an action the walk does not offer — and never how it is put together.
+    """
+    offers = {
+        one["id"]
+        for one in catalogue()["effects"]
+        if not one.get("a_step") and not one["replacing"] and finishable_here(one)
+    }
+    one_part, any_parts = 0, 0
+
+    for row in walked:
+        if row["state"] is None:
+            continue
+
+        parts = parts_of(row["state"])
+        fine = all(
+            step["id"] in offers
+            for _, _, part in parts
+            for step in steps_in(part)
+        )
+
+        if fine:
+            any_parts += 1
+
+        if fine and len(parts) == 1 and steps_in(parts[0][2]):
+            one_part += 1
+
+    assert one_part >= 180, one_part
+    assert any_parts >= 225, any_parts
+    assert any_parts > one_part
+
+
+def finishable_here(effect: Mapping[str, Any]) -> bool:
+    return all(
+        not f["required"] or (f["asked"] != "never" and f["shown"] == "form")
+        for f in effect["fields"]
+    )
+
+
+@lru_cache(maxsize=1)
+def _where_a_part_keeps_what_it_does() -> Mapping[str, str]:
+    """
+    For each kind of part, the field it calls a list of steps.
+
+    Asked of the shapes once: building the catalogue is milliseconds and there
+    are hundreds of parts.
+    """
+    can = catalogue()
+
+    return {
+        shape["id"]: next(
+            (f["id"] for f in shape["fields"] if f["a_list_of"] == "step"), ""
+        )
+        for section in ("abilities", "statics")
+        for shape in can[section]
+    }
+
+
+def steps_in(part: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """
+    What a part holds that happens, found by asking its shape.
+    """
+    holds = _where_a_part_keeps_what_it_does().get(part["id"], "")
+
+    return part["fields"].get(holds, []) if holds else []
+
+
+# ----------------------------------------------------------------------
+# 13. The screens for it
+# ----------------------------------------------------------------------
+
+
+def test_the_page_asks_which_part_only_when_there_is_a_choice() -> None:
+    said = script()
+
+    assert "function chooseWhich(" in said
+    assert "function openPart(" in said
+
+    # One part is not a choice, so it is not put as one.
+    beginning = body_of("startFrom")
+
+    assert "parts.length === 1" in beginning
+    assert "chooseWhich()" in beginning
+
+
+def test_the_parts_screen_is_drawn_from_the_card_shape() -> None:
+    """
+    The lists are the card's own and so are the words above them.
+    """
+    screen = body_of("chooseWhich")
+
+    assert "asksOf(list)" in screen
+    assert "partsOf()" in screen
+    assert "abilities" not in screen and "statics" not in screen
+    # It reads the parts back rather than offering controls for them.
+    assert "saidAs(" in screen and "saidOf(" in screen
+
+    for typed in ("<input", "<select", "<textarea", "setField"):
+        assert typed not in screen, f"the parts screen draws {typed}"
+
+
+def test_a_part_with_nothing_that_happens_is_asked_about_itself() -> None:
+    """
+    A static holds no actions, so its own questions are what there is to ask —
+    through the same `ask`, because a part's questions are questions.
+    """
+    opening = body_of("openPart")
+
+    assert "does ? sofar() : ask(0)" in opening
+
+    # And what is being asked about is a node either way.
+    about = body_of("asking")
+
+    assert "walk.list" in about
+    assert "walk.where" in about
