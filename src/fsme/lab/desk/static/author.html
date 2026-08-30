@@ -156,7 +156,11 @@ async function openCard(set, card) {
   walk = null;
   looking = true;
   editing = false;
-  state = { set: said.set, mode: "simple", card: said.card };
+  // What the open said this card is, carried untouched. Nothing here reads
+  // it or decides anything from it — it goes back exactly as it came, and it
+  // is the only thing that says a card came off disk rather than being made.
+  state = { set: said.set, mode: "simple", card: said.card,
+            opened: said.opened };
   viewing();
 }
 
@@ -562,15 +566,15 @@ async function done(problems = [], moments = []) {
            oninput="setField('state.card.fields','name',this.value,false)">
     <hr>
     <div class="row">
-      ${editing
-        ? `<button onclick="tryIt()">Try it in a game</button>`
-        : `<button class="go" onclick="save()">Save this card</button>
-           <button onclick="tryIt()">Try it in a game</button>
-           <button onclick="startBlank()">Change anything else</button>`}
+      <button class="go" onclick="save()">${editing
+        ? "Keep this change" : "Save this card"}</button>
+      <button onclick="tryIt()">Try it in a game</button>
+      <button onclick="startBlank()">Change anything else</button>
     </div>
-    ${editing ? `<p class="muted">Changes are yours to look at and play with.
-      Keeping them over the card you opened is not ready yet — the card on
-      disk is exactly as it was.</p>` : ""}
+    ${editing ? `<p class="muted">This writes over the card you opened. Its
+      file is written out again the way this writes every card, so a file
+      somebody laid out by hand comes back laid out this way — the card is
+      the same one either way.</p>` : ""}
     ${saidHtml(problems, moments)}
     <h2>The card</h2>
     <div id="face"></div>`);
@@ -1603,9 +1607,14 @@ function plain(message) {
 async function save() {
   const said = await api("/api/cards/save", state);
   if (said.error) return drawn([said.error]);
-  drawn(said.problems.map(plain),
+  // What the card is now, so keeping it again is not refused for the change
+  // this just made. A refusal says nothing new about the card, so what is
+  // held stays what it was and the person can look again.
+  if (said.saved) state.opened = said.opened;
+  const kept = editing ? "Kept" : "Saved";
+  drawn(said.changed ? said.problems : said.problems.map(plain),
         said.saved
-          ? [{ what: `Saved. ${state.card.fields.name} is in your set.` }] : []);
+          ? [{ what: `${kept}. ${state.card.fields.name} is in your set.` }] : []);
 }
 
 async function tryIt() {

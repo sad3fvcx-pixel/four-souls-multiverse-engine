@@ -1027,23 +1027,74 @@ def test_a_card_the_walk_cannot_show_whole_is_not_opened_for_changing() -> None:
     assert "startFrom()" in body_of("viewing")
 
 
-def test_a_card_that_was_opened_cannot_be_saved_over_yet() -> None:
+def test_a_card_that_was_opened_can_be_kept() -> None:
     """
-    Everything is offered except keeping it, so nothing is written over a card
-    by accident before there is a step that means to.
+    Both a card being made and a card that was opened are offered keeping —
+    said in their own words, because writing a new card and writing over one
+    that is already there are not the same thing to the person doing it.
     """
     finishing = body_of("done")
 
-    assert "${editing" in finishing, "the finishing screen does not ask"
+    assert "save()" in finishing, "the finishing screen cannot keep a card"
 
-    # The two branches of that question. Keeping the card belongs to one of
-    # them, and it is not the one an opened card takes.
-    asked = finishing.split("${editing")[1]
-    opened, made = asked.split("\n        : ", 1)
+    # One button either way, because it does the same thing either way. What
+    # differs is what it is called, because writing a new card and writing
+    # over one that is already there are not the same thing to a person.
+    assert "Keep this change" in finishing
+    assert "Save this card" in finishing
 
-    assert "save()" not in opened, "a card that was opened is offered saving"
-    assert "save()" in made, "a card being made here lost its saving"
-    assert "not ready yet" in finishing, "and nobody is told why"
+
+def test_keeping_a_card_that_was_opened_says_what_it_will_do() -> None:
+    """
+    A file somebody wrote by hand comes back written the one way this writes
+    cards. That is a thing to say before it happens, not after.
+    """
+    finishing = body_of("done")
+
+    assert "editing ?" in finishing or "${editing" in finishing
+    assert "written out again" in finishing, "nobody is told the file is rewritten"
+
+
+def test_an_opened_card_keeps_the_identity_it_was_read_under() -> None:
+    """
+    The page carries back what the open gave it, untouched. Nothing on the
+    page makes it, reads it, or decides anything from it.
+    """
+    opening = body_of("openCard")
+
+    assert "said.opened" in opening, "the page drops which card it opened"
+
+
+def test_a_card_being_made_carries_no_identity() -> None:
+    """
+    Until it has been kept once there is no file behind it, so there is
+    nothing to carry and nothing that could point at somebody else's card.
+    """
+    starting = body_of("startCard")
+
+    assert "opened" not in starting
+
+
+def test_keeping_a_card_carries_what_it_became() -> None:
+    """
+    A save makes the file say something new, so the page takes back what the
+    card is now — otherwise keeping it twice would be refused the second time
+    for a change the person made themselves.
+    """
+    keeping = body_of("save")
+
+    assert "said.opened" in keeping, "the page keeps a stale fingerprint"
+
+
+def test_a_refused_keeping_is_not_reported_as_saved() -> None:
+    """
+    A card refused because its file changed has not been saved, and the
+    reason belongs on the screen rather than a cheerful sentence.
+    """
+    keeping = body_of("save")
+
+    assert "said.saved" in keeping
+    assert "said.changed" in keeping, "the page cannot tell a refusal from a fault"
 
 
 # ----------------------------------------------------------------------
@@ -2008,3 +2059,87 @@ def test_a_card_sharing_a_file_with_others_is_not_kept(workspace: Path) -> None:
     assert said["changed"]
     assert [p.name for p in both.parent.iterdir()] == [both.name]
     assert len(json.loads(both.read_text("utf-8"))["cards"]) == 2
+
+
+# --- keeping a card, and then keeping it again ------------------------------
+
+
+def test_a_card_that_was_kept_comes_back_with_its_identity(
+    workspace: Path,
+) -> None:
+    """
+    Saving a card makes its file say something new, which is exactly what the
+    check before a save looks for. So a save says what the card is now, and
+    whoever kept it can carry on from there rather than being told the card
+    changed underneath them by themselves.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    opened = open_card(set_id, card_id)
+    opened["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+        "amount"
+    ] = 4
+    said = save_card(opened)
+
+    assert said["saved"]
+    assert said["opened"]["card"] == card_id
+    assert said["opened"]["file"] == where.name
+    assert said["opened"]["fingerprint"]
+    assert said["opened"]["fingerprint"] != opened["opened"]["fingerprint"]
+
+
+def test_a_card_can_be_kept_twice_running(workspace: Path) -> None:
+    """
+    Change, keep, change again, keep again — which is what somebody does.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    holding = open_card(set_id, card_id)
+
+    for amount in (4, 5, 6):
+        holding["card"]["fields"]["abilities"][0]["fields"]["effects"][0]["fields"][
+            "amount"
+        ] = amount
+        said = save_card(holding)
+
+        assert said["saved"], said["problems"]
+
+        holding["opened"] = said["opened"]
+
+    written = json.loads(where.read_text("utf-8"))["cards"][0]
+
+    assert written["abilities"][0]["effects"][0]["amount"] == 6
+    assert written["id"] == card_id
+
+
+def test_a_card_that_was_made_here_is_given_an_identity_to_keep(
+    workspace: Path,
+) -> None:
+    """
+    A card being made has no identity until it is first kept. After that it
+    has one, and renaming it will not make a second card.
+    """
+    from fsme.lab.desk.author import make_set, save_card
+
+    made = make_set("Fresh")
+    said = save_card(
+        {"set": made["id"], "card": {"fields": A_TWO_STEP_CARD, "groups": {}}}
+    )
+
+    assert said["saved"]
+    assert said["opened"]["card"] == said["card"]["id"]
+
+    # Renamed and kept again from what the save gave back: still one card.
+    again = {
+        "set": made["id"],
+        "card": {"fields": dict(A_TWO_STEP_CARD, name="Drawing Pin"), "groups": {}},
+        "opened": said["opened"],
+    }
+    kept = save_card(again)
+
+    assert kept["saved"], kept["problems"]
+    assert kept["card"]["id"] == said["card"]["id"]
+    assert kept["card"]["name"] == "Drawing Pin"
+    assert len(list(Path(said["where"]).parent.glob("*.json"))) == 1

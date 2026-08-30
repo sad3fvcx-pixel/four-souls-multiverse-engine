@@ -249,14 +249,21 @@ def open_card(set_id: str, card_id: str) -> dict[str, Any]:
             # read. Neither can be worked out again later: the first because a
             # card may be renamed and is still the same card, the second
             # because by then the file may be somebody else's.
-            OPENED: {
-                "card": wanted,
-                "file": path.name,
-                "fingerprint": _fingerprint(path),
-            },
+            OPENED: _identity(path, wanted),
         }
 
     raise AuthorError(f"There is no card called {wanted!r} in that set.")
+
+
+def _identity(path: Path, card_id: str) -> dict[str, str]:
+    """
+    Which card this is, and what its file says at this moment.
+    """
+    return {
+        "card": card_id,
+        "file": path.name,
+        "fingerprint": _fingerprint(path),
+    }
 
 
 def _fingerprint(path: Path) -> str:
@@ -307,7 +314,18 @@ def save_card(described: Any) -> dict[str, Any]:
 
     _keep(path, json.dumps({"cards": [card]}, indent=2, ensure_ascii=False) + "\n")
 
-    return {"saved": True, "problems": [], "card": card, "where": str(path)}
+    return {
+        "saved": True,
+        "problems": [],
+        "card": card,
+        "where": str(path),
+        # What the card is now. Keeping a card makes its file say something
+        # new, which is the very thing the check above refuses — so whoever
+        # kept it is given what it says now, and can keep it again without
+        # being told it changed underneath them by themselves. It is also
+        # where a card made here first gets an identity to hold on to.
+        OPENED: _identity(path, str(card["id"])),
+    }
 
 
 def _card_file(directory: Path, identifier: str) -> Path:
