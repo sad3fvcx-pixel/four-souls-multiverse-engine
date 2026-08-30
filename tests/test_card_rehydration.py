@@ -2143,3 +2143,110 @@ def test_a_card_that_was_made_here_is_given_an_identity_to_keep(
     assert kept["card"]["id"] == said["card"]["id"]
     assert kept["card"]["name"] == "Drawing Pin"
     assert len(list(Path(said["where"]).parent.glob("*.json"))) == 1
+
+
+# --- a card being made, and one that is already there ------------------------
+#
+# The one route the carried identity cannot cover. A card being made has never
+# been saved, so it has no identity and no fingerprint — there is nothing to
+# compare. Its identifier is made out of its name and type, so two cards named
+# the same in one set want the same identifier, and the second used to take
+# the first one's place without a word.
+
+
+def test_a_new_card_does_not_write_over_one_already_there(
+    workspace: Path,
+) -> None:
+    """
+    Somebody makes a second card and calls it what the first one is called.
+    That is a thing to say, not a thing to do quietly.
+    """
+    from fsme.lab.desk.author import save_card
+
+    set_id, card_id, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    before = where.read_text("utf-8")
+
+    said = save_card(
+        {"set": set_id, "card": {"fields": A_TWO_STEP_CARD, "groups": {}}}
+    )
+
+    assert not said["saved"]
+    assert said["problems"]
+    assert where.read_text("utf-8") == before
+    assert [p.name for p in where.parent.iterdir()] == [where.name]
+
+
+def test_the_card_it_would_have_written_over_is_named(workspace: Path) -> None:
+    """
+    Said in the words the person used, so they know which card they mean.
+    """
+    from fsme.lab.desk.author import save_card
+
+    set_id, _, _ = a_card_in_a_set(A_TWO_STEP_CARD)
+    said = save_card(
+        {"set": set_id, "card": {"fields": A_TWO_STEP_CARD, "groups": {}}}
+    )
+
+    assert "Thumbtack" in " ".join(said["problems"])
+
+
+def test_a_card_that_was_opened_is_not_refused_for_being_itself(
+    workspace: Path,
+) -> None:
+    """
+    The card that is already there is this one. Carrying its identity is what
+    says so, and it is the difference between keeping a card and making a
+    second one with the same name.
+    """
+    from fsme.lab.desk.author import open_card, save_card
+
+    set_id, card_id, _ = a_card_in_a_set(A_TWO_STEP_CARD)
+    said = save_card(open_card(set_id, card_id))
+
+    assert said["saved"], said["problems"]
+    assert said["card"]["id"] == card_id
+
+
+def test_a_new_card_may_take_a_name_nobody_else_has(workspace: Path) -> None:
+    """
+    And the ordinary case still works: a second card, called something else.
+    """
+    from fsme.lab.desk.author import save_card
+
+    set_id, _, where = a_card_in_a_set(A_TWO_STEP_CARD)
+    said = save_card(
+        {
+            "set": set_id,
+            "card": {
+                "fields": dict(A_TWO_STEP_CARD, name="Drawing Pin"),
+                "groups": {},
+            },
+        }
+    )
+
+    assert said["saved"], said["problems"]
+    assert len(list(where.parent.glob("*.json"))) == 2
+
+
+def test_a_new_card_clashing_with_one_in_a_shared_file_is_refused(
+    workspace: Path,
+) -> None:
+    """
+    What clashes is the identifier, not the file name. A set written by hand
+    may keep its cards anywhere, and a card is still already there.
+    """
+    from fsme.lab.desk.author import make_set, save_card
+
+    made = make_set("Elsewhere")
+    already = build_card({"set": made["id"], "card": {"fields": A_TWO_STEP_CARD}})
+    both = Path(made["where"]) / "cards" / "a_few.json"
+    both.write_text(
+        json.dumps({"cards": [already]}, indent=2) + "\n", encoding="utf-8"
+    )
+
+    said = save_card(
+        {"set": made["id"], "card": {"fields": A_TWO_STEP_CARD, "groups": {}}}
+    )
+
+    assert not said["saved"]
+    assert [p.name for p in both.parent.iterdir()] == [both.name]

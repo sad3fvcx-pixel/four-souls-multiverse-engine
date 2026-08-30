@@ -232,11 +232,15 @@ Built, backend only — no button, no screen:
 - **an atomic write.** Beside the card, fsynced, then `os.replace`. A failure
   at any point leaves the old card whole and nothing beside it.
 
-Left deliberately, and the next risk to take:
+Left at the time, and since taken as **Create flow protection**:
 
 | Risk | Weight | |
 |---|---|---|
-| **new card creation → derived id collision → refuse overwrite** | **high** | a card being made carries no fingerprint, so a new card whose derived id matches one already in the set still overwrites it silently. The same class as D, by the one route the carried identity cannot cover. Its own stage: **Create flow protection**. |
+| ~~new card creation → derived id collision → refuse overwrite~~ | **closed** | a card being made carries no fingerprint, so a new card whose derived id matched one already in the set used to overwrite it silently — the one route the carried identity cannot cover. A card being made is now refused when its identifier is already in the set, and told which card it would have written over. What clashes is the identifier, not the file name, because a set written by hand may keep its cards in files named anything. |
+
+So every way a save could lose somebody's work is now refused rather than
+taken: the file changed, the file went away, the card shares a file with
+others, and a new card wanting a name that is already in the set.
 
 ---
 

@@ -312,6 +312,11 @@ def save_card(described: Any) -> dict[str, Any]:
             "changed": True,
         }
 
+    clashes = _already_there(described, directory, card)
+
+    if clashes:
+        return {"saved": False, "problems": [clashes], "card": card}
+
     _keep(path, json.dumps({"cards": [card]}, indent=2, ensure_ascii=False) + "\n")
 
     return {
@@ -343,6 +348,40 @@ def _a_plain_name(identifier: str) -> str:
         raise AuthorError(f"{identifier!r} is not the name of a card.")
 
     return identifier
+
+
+def _already_there(
+    described: Mapping[str, Any],
+    directory: Path,
+    card: Mapping[str, Any],
+) -> str:
+    """
+    Why a card being made must not be written, or nothing.
+
+    A card that was opened is the card that is already there, and says so by
+    carrying its identity — nothing to check. A card being made has never been
+    saved, so it has no identity and nothing to compare a file against, and
+    its identifier is made out of its name and its type. Two cards called the
+    same thing in one set therefore want the same identifier, and the second
+    would take the first one's place with nothing said.
+
+    What clashes is the identifier rather than the file name, because a set
+    written by hand may keep its cards in files named anything at all, and a
+    card is already there wherever it is written.
+    """
+    if isinstance(described.get(OPENED), Mapping):
+        return ""
+
+    wanted = str(card.get("id", ""))
+
+    if not any(str(one.get("id", "")) == wanted for _, one in _each_card(directory)):
+        return ""
+
+    return (
+        f"You already have a card called {card.get('name', '')!s} in that set, "
+        "and this would have been written over it. Nothing has been written. "
+        "Call this one something else, or open the one you have and change it."
+    )
 
 
 def _changed_underneath(described: Mapping[str, Any], path: Path) -> str:
