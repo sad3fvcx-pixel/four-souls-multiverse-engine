@@ -105,7 +105,26 @@ turns both into one, and the reader already writes back through it.
 | | read | editable |
 |---|---|---|
 | today | 248 | 231 |
-| with control nodes | **338** | to be measured |
+| with control nodes, as estimated here | 338 | to be measured |
+| **with control nodes, as measured after** | **322** | to be measured |
+
+> **Measured afterwards: 248 → 322, not 338.**
+>
+> 338 was a forecast, and it was made the only way it could be made before
+> the work: by counting the cards whose *first* refusal was a control node.
+> A card is refused at the first thing the reader cannot take, so that count
+> could never see what stood behind it.
+>
+> Sixteen of the ninety had a second reason, and removing the control node
+> refusal is what uncovered them — eight hold a step that picks something out
+> for itself, seven keep what they chose under a name for a later step to
+> read, one points at something the ability chose. None of them is a new
+> problem: each is a limit that was already there, hidden behind the larger
+> one.
+>
+> The measured answer is **322 cards read stably** — stable meaning read,
+> built and read again to the same author state, and passing the checker
+> afterwards. That is the number to plan from; 338 was arithmetic.
 
 Of the 90, **85 nest one level deep** and 5 nest two. Most use one kind only:
 
@@ -194,7 +213,8 @@ metadata.
 1. **Measure first**: read all 90 with the reader changed, and prove every one
    comes back meaning the same thing — the same contract v0.8 was built on.
 2. **The reader**, descending instead of refusing.
-3. **The count moves 248 → 338**, in a test.
+3. **The count moves 248 → 322**, in a test. (Estimated 338 before the work;
+   see §4 for why the two differ.)
 4. **Decide the screen** (§7) — once branching cards are in author state and
    can be looked at, not before.
 5. **The walk**, into a control node and out.
