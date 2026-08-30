@@ -39,6 +39,17 @@
  .list { list-style:none; padding:0; margin:0; }
  .list li { border-bottom:1px solid var(--line); padding:.55rem 0; display:flex;
             justify-content:space-between; gap:.6rem; align-items:center; }
+ /* A row that reads rather than offers: what a card does stacks down the
+    page. The rows elsewhere put a label beside a button, which is why they
+    are laid across. */
+ .list li.reads { display:block; }
+ /* What a step holds, set in from what holds it. A branch drawn level with
+    the steps around it reads as one more thing that happens, rather than as
+    something that happens instead — so the indent is the meaning, not
+    decoration. */
+ .held { margin:.35rem 0 .1rem .9rem; padding-left:.9rem;
+         border-left:2px solid var(--line); }
+ .held .list li { display:block; border-bottom:none; padding:.2rem 0; }
  button.plain { background:none; border:none; padding:0; width:auto;
                 color:inherit; font:inherit; text-align:left;
                 text-decoration:underline; cursor:pointer; }
@@ -188,8 +199,9 @@ function readingHtml() {
         // A part that does things says them; one that only changes a number
         // has none, and saying so with a dash would be answering a question
         // nobody asked of it.
-        const does = doneBy(part).map(step => saidAs(step)).join("<br>");
-        return `<li>${does}${saidOf(part)}</li>`;
+        const does = doneBy(part)
+          .map(step => `<div>${saidAs(step)}${heldHtml(step)}</div>`).join("");
+        return `<li class="reads">${does}${saidOf(part)}</li>`;
       }).join("");
       return `<h2>${esc(sentence(asksOf(f)))}</h2><ol class="list">${rows}</ol>`;
     }).join("");
@@ -499,7 +511,12 @@ function answered(problems = [], moments = []) {
 // the sentence the effect carries, then each answer under the question that
 // asked for it. Nothing here knows what any effect is.
 function saidAs(step) {
-  const doing = named(can.effects, step.id);
+  // Wherever it is described. A step may be an action, or one of the things
+  // that hold other things, and those are published in different catalogues —
+  // so the lookup that searches all of them is the one to ask. Naming a
+  // catalogue here is how a card came to show a bare identifier and nothing
+  // it holds.
+  const doing = shapeNamed(step.id);
   if (!doing) return step.id || "something";
   const answers = doing.fields
     .filter(f => putable(f))
@@ -510,6 +527,34 @@ function saidAs(step) {
   if (aim) answers.push(`to ${esc(aim.about)}`);
   return esc(sentence(doing.about))
     + (answers.length ? ` <span class="muted">— ${answers.join("; ")}</span>` : "");
+}
+
+// What a step holds, and under which of its own questions.
+//
+// Read off the shape, exactly as a card's parts are: a field that is a list
+// of things, whose things the catalogue describes, is a list of nodes. No
+// node is named here — a structure the engine gains is drawn by this without
+// it changing, which is the whole reason it is written this way.
+function heldBy(node) {
+  const shape = shapeNamed(node.id);
+  if (!shape) return [];
+  return shape.fields
+    .filter(f => f.a_list_of)
+    .map(f => ({
+      f,
+      nodes: ((node.fields || {})[f.id] || []).filter(o => o && shapeNamed(o.id)),
+    }))
+    .filter(one => one.nodes.length);
+}
+
+// And the same, drawn: each list under the words its own field asks, in the
+// card's language rather than this page's.
+function heldHtml(node) {
+  return heldBy(node).map(({ f, nodes }) =>
+    `<div class="held"><span class="muted">${esc(trimmed(asksOf(f)))}</span>
+       <ul class="list">${nodes.map(one =>
+         `<li>${saidAs(one)}${heldHtml(one)}</li>`).join("")}</ul></div>`
+  ).join("");
 }
 
 function sofar(problems = [], moments = []) {

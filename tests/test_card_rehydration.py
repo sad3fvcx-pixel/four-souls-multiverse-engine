@@ -2588,3 +2588,150 @@ def test_a_control_node_written_both_ways_is_refused() -> None:
         read_card(written)
 
     assert "twice" in str(refused.value).lower() or "both" in str(refused.value).lower()
+
+
+# ----------------------------------------------------------------------
+# 17. Showing a card that chooses
+# ----------------------------------------------------------------------
+#
+# Reading only. A card that branches can be opened but not yet seen: what a
+# branch holds is drawn nowhere, so 74 cards show the bare word "if" and
+# nothing under it.
+#
+# The claim this section exists to prove is not that branches can be drawn.
+# It is that they can be drawn *generically* — the page learns what a node
+# holds from the node's own shape, and names none of them.
+
+
+def test_the_page_looks_a_step_up_wherever_it_is_described() -> None:
+    """
+    A step's own words come from whichever catalogue describes it. Control
+    nodes are published under `structures` and effects under `effects`, and
+    the page has one lookup that searches every catalogue there is.
+    """
+    said = body_of("saidAs")
+
+    assert "shapeNamed(" in said, "the page still looks only among effects"
+    assert "can.effects" not in said, "one catalogue is still named"
+
+
+def test_the_page_draws_what_a_step_holds_from_its_shape() -> None:
+    """
+    Which of a node's fields hold other nodes is the shape's answer —
+    `a_list_of` naming something the page has a shape for — exactly as the
+    card's own parts are found.
+    """
+    drawing = body_of("heldBy")
+
+    assert "a_list_of" in drawing
+    assert "shapeNamed(" in drawing
+
+
+def test_nothing_in_the_drawing_names_a_control_node() -> None:
+    """
+    The whole point. If `if`, `may`, `choose` or `for_each` appears in the
+    code that draws a card, then a structure the engine gains later is one
+    the page cannot show, and the renderer has stopped being generic.
+
+    Checked over the drawing itself rather than the whole page, because the
+    words are ordinary English and appear in prose everywhere.
+    """
+    drawing = body_of("saidAs") + body_of("heldBy") + body_of("heldHtml")
+
+    for named_node in ("if", "may", "choose", "for_each", "mode", "then", "else"):
+        assert f'"{named_node}"' not in drawing, named_node
+        assert f"'{named_node}'" not in drawing, named_node
+
+
+def test_every_branching_card_can_be_drawn_without_naming_anything(
+    walked: list[dict[str, Any]],
+    can: dict[str, Any],
+) -> None:
+    """
+    Over every shipped card that branches: everything it holds is something
+    the catalogue describes, so a renderer reading the catalogue can say all
+    of it. Nothing is left as a bare identifier.
+
+    This is the page's drawing rule carried out in Python — walk a node,
+    ask the catalogue what it is, and descend through whichever of its fields
+    are lists of things the catalogue also describes.
+    """
+    shapes = {
+        one["id"]: one
+        for section in can.values()
+        if isinstance(section, list)
+        for one in section
+        if isinstance(one, dict) and "fields" in one
+    }
+
+    def unknown(node: Any) -> list[str]:
+        shape = shapes.get(node.get("id"))
+
+        if shape is None:
+            return [str(node.get("id"))]
+
+        missing: list[str] = []
+
+        for field in shape["fields"]:
+            held = field.get("a_list_of")
+
+            if not held or held not in shapes:
+                continue
+
+            for one in node["fields"].get(field["id"], ()) or ():
+                missing.extend(unknown(one))
+
+        return missing
+
+    nameless = []
+
+    for one in walked:
+        if one["state"] is None:
+            continue
+
+        for part in one["state"]["card"]["fields"].get("abilities", ()):
+            for step in part["fields"].get("effects") or ():
+                nameless.extend(unknown(step))
+
+    assert nameless == [], sorted(set(nameless))[:8]
+
+
+def test_a_branch_is_drawn_under_the_words_the_metadata_carries(
+    can: dict[str, Any],
+) -> None:
+    """
+    An arm is labelled by the question its field asks, in the card's own
+    words — not by a heading written into the page.
+    """
+    branch = next(one for one in can["structures"] if one["id"] == "if")
+    arms = {f["id"]: f.get("asks") for f in branch["fields"] if f.get("a_list_of")}
+
+    assert arms["then"], "the branch's own words are missing"
+    assert arms["else"]
+    assert arms["then"] != arms["else"]
+
+
+def test_what_a_card_does_is_read_down_the_page() -> None:
+    """
+    The rows that offer something put a label beside a button and are laid
+    across. A row that only reads holds what a step does and what it holds,
+    one under the other — laid across, a branch and the step before it sit
+    side by side and the card reads as two things at once.
+    """
+    page = PAGE.read_text("utf-8")
+    drawing = body_of("readingHtml")
+
+    assert 'class="reads"' in drawing, "the reading rows are not marked"
+    assert ".list li.reads { display:block; }" in page, "and nothing stacks them"
+
+
+def test_what_a_step_holds_is_set_in_from_it() -> None:
+    """
+    The indent is the meaning. A branch drawn level with the steps around it
+    reads as one more thing that happens rather than one that happens
+    instead.
+    """
+    page = PAGE.read_text("utf-8")
+
+    assert ".held {" in page
+    assert "padding-left" in page.split(".held {")[1][:200]
