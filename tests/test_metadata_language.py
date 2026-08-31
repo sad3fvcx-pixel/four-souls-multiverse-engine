@@ -182,7 +182,14 @@ def test_it_is_said_of_every_parameter_the_executor_resolves(vocabulary) -> None
     Not per parameter and not per effect: `_resolve_params` walks every key an
     effect was written with except the ones it keeps literally, so the answer
     is read off the same `literal` the executor reads.
+
+    It never sees a modifier. `_operation` takes those off the node before the
+    effect is looked at, which is why they mean one thing wherever they appear
+    — and why a name a step invents for a later one to read is not a value
+    anything could work out.
     """
+    from fsme.runtime.interpreter import _MODIFIER_KEYS
+
     for name in vocabulary.effects:
         shape = vocabulary.shape(name)
 
@@ -190,6 +197,9 @@ def test_it_is_said_of_every_parameter_the_executor_resolves(vocabulary) -> None
             continue
 
         for key, parameter in shape.params.items():
+            if key in _MODIFIER_KEYS:
+                continue
+
             worked_out = bool(parameter.also)
 
             assert worked_out is (key not in shape.literal), f"{name}.{key}"

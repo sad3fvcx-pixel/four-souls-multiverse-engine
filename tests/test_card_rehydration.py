@@ -472,7 +472,18 @@ def test_where_a_short_spelling_lands_is_named_once() -> None:
             "in full",
         ),
         ({"effect": "gain_coins", "target": "nobody_binds_this"}, "binds"),
-        ({"effect": "roll_dice", "store": "first"}, "later step"),
+        # An effect that leaves nothing behind, asked to name what it left.
+        # `roll_dice` may be asked, because it says it stores something; this
+        # one says it stores nothing, so the name would point at nothing.
+        (
+            {
+                "effect": "gain_coins",
+                "amount": 1,
+                "target": "controller",
+                "store": "first",
+            },
+            "later step",
+        ),
     ],
 )
 def test_a_step_it_cannot_read_is_named_not_guessed(
@@ -3021,6 +3032,11 @@ def test_every_option_of_every_shipped_choice_has_a_name_of_its_own(
         Every list of two or more things that carry a name of their own.
         """
         for step in steps or ():
+            # A list under a field need not hold nodes: `values_equal` holds
+            # the names of two stored values, which are words.
+            if not isinstance(step, dict):
+                continue
+
             for value in (step.get("fields") or {}).values():
                 if not isinstance(value, list) or not value:
                     continue
@@ -3375,6 +3391,12 @@ def _needs_replacing(part: Mapping[str, Any]) -> bool:
 
     def walk(steps: Any) -> bool:
         for step in steps or ():
+            # Not every list under a field holds nodes. `values_equal` holds
+            # the names of two values an earlier step stored, which is a list
+            # of words, and walking into one looking for steps finds none.
+            if not isinstance(step, dict):
+                continue
+
             if step.get("id") in wants:
                 return True
 
@@ -3675,3 +3697,145 @@ def test_one_word_used_in_two_branches_stays_two_choices(
         "three choices were gathered into fewer"
     )
     assert not check_card(curse["once"]), check_card(curse["once"])
+
+
+# ----------------------------------------------------------------------
+# 24. A step that keeps its result under a name
+# ----------------------------------------------------------------------
+#
+# `store` is read by the interpreter around an effect rather than by the
+# effect, and it is described once, in `_ANY_NODE`, as one of the keys the
+# executor takes off any node — "one meaning each, wherever they appear".
+#
+# Every control node carries that description. No effect did, though the
+# interpreter accepts the key on any step and two effects already say they
+# produce a value to keep. So the reader met a card saying something the
+# engine understands, the builder writes and the checker passes, and had to
+# refuse it because nothing had said it could be asked for.
+#
+# Which effects may be asked is not a list: it is `stores`, the effect's own
+# statement that it produces a value at all. An effect that produces nothing
+# has nothing to name, and a box for naming it would be a box for a name
+# nothing can create.
+
+
+def test_only_an_effect_that_produces_a_value_is_asked_to_name_it() -> None:
+    """
+    The published question follows `stores`, and is not a list beside it.
+    """
+    offered = {
+        effect["id"]
+        for effect in catalogue()["effects"]
+        if any(field["id"] == "store" for field in effect["fields"])
+    }
+    produces = {
+        effect["id"] for effect in catalogue()["effects"] if effect["stores"]
+    }
+
+    assert offered == produces, offered ^ produces
+    assert offered, "no effect offers to keep its result"
+
+
+def test_the_question_says_the_same_thing_wherever_it_is_asked() -> None:
+    """
+    A modifier means one thing wherever it appears, so it is described once.
+
+    A second description would be a second copy, and a copy of a sentence is a
+    sentence that drifts. This asserts the effect's question is the node's
+    question, rather than a rewording of it.
+    """
+    catalogued = catalogue()
+    on_a_node = next(
+        field
+        for node in catalogued["structures"]
+        if node["id"] == "may"
+        for field in node["fields"]
+        if field["id"] == "store"
+    )
+    on_an_effect = next(
+        field
+        for effect in catalogued["effects"]
+        if effect["id"] == "roll_dice"
+        for field in effect["fields"]
+        if field["id"] == "store"
+    )
+
+    assert on_an_effect["asks"] == on_a_node["asks"]
+    assert on_an_effect["defines"] == on_a_node["defines"]
+
+
+def test_the_interpreter_still_takes_the_key_it_is_asked_for() -> None:
+    """
+    The guard and the question have to be about the same word.
+
+    `_MODIFIER_KEYS` is what the executor actually strips off a node. A
+    question offering a key the executor does not strip would be a question
+    whose answer the engine drops.
+    """
+    from fsme.runtime.interpreter import _MODIFIER_KEYS
+
+    assert "store" in _MODIFIER_KEYS
+
+
+def test_a_card_that_names_its_roll_can_be_opened(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    `the_bloat` rolls twice, keeps both results, and kills if they match.
+
+    It was the one card refused for keeping a result under a name.
+    """
+    bloat = next(
+        card
+        for card in walked
+        if card["card"]["id"] == "monster_deck-bosses-alt_art-the_bloat"
+    )
+
+    assert bloat["state"] is not None, bloat["why"]
+
+    rolls = [
+        step
+        for step in bloat["once"]["abilities"][0]["effects"]
+        if step.get("effect") == "roll_dice"
+    ]
+
+    assert [step["store"] for step in rolls] == ["first_die", "second_die"]
+
+    # The names are read again by the branch that compares them, and a card
+    # whose branch pointed at names the rolls no longer keep would be a card
+    # that quietly stopped working.
+    branch = bloat["once"]["abilities"][0]["effects"][-1]
+    compared = branch["if"][0]["values_equal"]["of"]
+
+    assert compared == ["first_die", "second_die"], compared
+    assert not check_card(bloat["once"]), check_card(bloat["once"])
+
+
+def test_nothing_is_refused_any_more_for_keeping_its_result(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    The reason is gone, not narrowed.
+    """
+    refused = [
+        one["card"].get("id")
+        for one in walked
+        if one["state"] is None and "keeps its result under a name" in one["why"]
+    ]
+
+    assert refused == [], refused
+
+
+def test_asking_this_moved_exactly_one_card(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    Twenty-one refusals were measured before this was asked for; twenty after.
+
+    A declaration that opened a card it was not about would be a declaration
+    doing something else as well, and the something else is what nobody
+    reviewed.
+    """
+    refused = [one for one in walked if one["state"] is None]
+
+    assert len(refused) == 20, [one["card"].get("id") for one in refused]

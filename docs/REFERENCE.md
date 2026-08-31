@@ -71,11 +71,11 @@ an effect and for a target.
 | `remove_curse` | — |
 | `repeat` | — |
 | `require_attack` | `times` a whole number, `what` `monster_deck`, `who` `{"player_of": name}`, a group of players the ability bound |
-| `reroll` | `sides` a whole number |
+| `reroll` | `sides` a whole number, `store` text |
 | `reveal_cards` | `count` a whole number ≥ 0, `deck` `loot` or `treasure` or `monster` or `room` |
 | `reveal_hand` | — |
 | `revive` | `hp` a whole number |
-| `roll_dice` | `sides` a whole number |
+| `roll_dice` | `sides` a whole number, `store` text |
 | `sequence` | — |
 | `set_coins` | `amount` a whole number ≥ 0 |
 | `set_roll` | `value` a whole number |

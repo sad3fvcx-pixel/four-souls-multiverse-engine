@@ -966,6 +966,24 @@ def _written_as(refers_to: str) -> str:
     return ""
 
 
+def _kept_under_a_name(spec: EffectSpec) -> dict[str, ParamShape]:
+    """
+    Whether this effect may be asked what to call the value it leaves behind.
+
+    ``store`` is one of the keys the executor takes off any node, described
+    once in ``_ANY_NODE`` because it means one thing wherever it appears —
+    and a control node has always carried that description. An effect never
+    did, though the interpreter accepts the key on any step, which left a
+    card saying something the engine reads and nothing offering to say it.
+
+    Which effects may be asked is not a list kept here. It is ``stores``, the
+    effect's own statement that it produces a value at all: an effect that
+    produces nothing has nothing to name, and asking for a name would be
+    asking for one nothing can create.
+    """
+    return {"store": _ANY_NODE["store"]} if spec.stores else {}
+
+
 def _shape_of(spec: EffectSpec) -> EffectShape:
     """
     An effect, flattened to what a card file may say about it.
@@ -1006,6 +1024,7 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
                 )
                 for name, param in spec.params.items()
             }
+            | _kept_under_a_name(spec)
         ),
         stores=spec.stores or "",
         hits=spec.hits,
