@@ -3376,3 +3376,168 @@ def _needs_replacing(part: Mapping[str, Any]) -> bool:
         return False
 
     return walk(part["fields"].get("effects") or [])
+
+
+# ----------------------------------------------------------------------
+# 22. The name a card gives to what it chose
+# ----------------------------------------------------------------------
+#
+# A card that chooses something gives it a name, and may say that name again
+# later. The reader turned the name into the thing it pointed at and let the
+# name go; the writer bound it again under one of its own making. That is
+# harmless exactly while nothing else says the name, and it is why the reader
+# refuses every card that does.
+#
+# A binding and a reference are not the same thing and are not made one here:
+# a binding is a name the card *makes*; a reference is a name the card *uses*,
+# and some of those name things that were standing there all along.
+
+
+def named_in(card: Mapping[str, Any]) -> list[str]:
+    """
+    Every name this card gives to something it chose.
+    """
+    found: list[str] = []
+
+    def walk(node: Any) -> None:
+        if isinstance(node, Mapping):
+            for key, value in node.items():
+                if key == "as" and isinstance(value, str):
+                    found.append(value)
+                walk(value)
+        elif isinstance(node, list):
+            for one in node:
+                walk(one)
+
+    walk(card.get("abilities"))
+
+    return found
+
+
+A_NAMED_CHOICE = {
+    "id": "probe-loot-naming",
+    "name": "Naming",
+    "type": "loot",
+    "expansion": "probe",
+    "schema_version": "1",
+    "abilities": [
+        {
+            "trigger": "on_play",
+            "targets": [{"target_player": {"as": "rival"}}],
+            "effects": [
+                {"effect": "deal_damage", "amount": 1, "target": "rival"},
+                {"effect": "lose_coins", "amount": 1, "target": "rival"},
+            ],
+        }
+    ],
+}
+
+
+def test_a_card_keeps_the_name_it_gave_what_it_chose() -> None:
+    """
+    The line no test asserted, which is why the name could be replaced for
+    years with everything still green.
+    """
+    once = build_card({"set": "probe", "card": read_card(A_NAMED_CHOICE)["card"]})
+
+    assert named_in(once) == ["rival"], named_in(once)
+
+
+def test_two_steps_naming_one_choice_still_mean_one_choice() -> None:
+    """
+    Keeping the name must not turn one choice into two. Both steps point at
+    the same player, and a card that chose twice would deal damage to one and
+    steal from another.
+    """
+    once = build_card({"set": "probe", "card": read_card(A_NAMED_CHOICE)["card"]})
+    ability = once["abilities"][0]
+
+    assert len(ability["targets"]) == 1, ability["targets"]
+    assert {step["target"] for step in ability["effects"]} == {"rival"}
+
+
+def test_a_card_keeps_the_names_its_ability_bound(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    101 shipped cards name something and none kept a name through a round
+    trip before this. 69 do now — every card whose names are bound by the
+    ability, which are the names a later step can say.
+
+    The other 33 name a choice written where it is used. Those names are not
+    kept, and must not be: the builder gathers every choice into one list for
+    the ability, where a name means one thing, and a card may call two choices
+    in two different branches by the same word because only one of them ever
+    happens. `the_curse` does exactly that — three options, each drawing from
+    a different deck, each calling its choice `top`. Keeping that name merged
+    them and the card came back drawing three times from the loot deck.
+    """
+    kept, lost = 0, []
+
+    for one in walked:
+        if one["state"] is None:
+            continue
+
+        was = set(named_in(one["card"]))
+
+        if not was:
+            continue
+
+        bound = {
+            str(spec[kind].get("as", ""))
+            for part in one["card"].get("abilities", ())
+            for spec in part.get("targets", ())
+            for kind in spec
+            if isinstance(spec, Mapping) and isinstance(spec.get(kind), Mapping)
+        }
+
+        if bound and not bound <= set(named_in(one["once"])):
+            lost.append(one["card"]["id"])
+
+        if was <= set(named_in(one["once"])):
+            kept += 1
+
+    assert lost == [], lost[:5]
+    assert kept == 69, kept
+
+
+def test_a_name_a_card_uses_is_not_a_name_a_card_makes() -> None:
+    """
+    `sloth` counts the loot *of* the controller. `of` is a key that names
+    something — but what it names is a target that stands on its own, not
+    anything this ability chose. Nothing is lost by reading it, and nothing
+    needs to be kept.
+    """
+    written = {
+        "id": "probe-loot-counting",
+        "name": "Counting",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "effect": "discard_loot",
+                        "count": {"count": "loot", "of": "controller"},
+                        "target": "controller",
+                    }
+                ],
+            }
+        ],
+    }
+
+    state = read_card(written)["card"]
+
+    # It names nothing, so nothing was bound to keep.
+    assert named_in(written) == []
+
+    once = build_card({"set": "probe", "card": state})
+
+    assert once["abilities"][0]["effects"][0]["count"] == {
+        "count": "loot",
+        "of": "controller",
+    }
+    assert not check_card(once), check_card(once)
+    assert read_card(once)["card"] == state

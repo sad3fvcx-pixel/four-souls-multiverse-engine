@@ -960,6 +960,7 @@ def _written_step(name: str, described: Any, aimed: Any) -> Any:
                 aimed,
             ),
             aimed,
+            str(described.get("aim_name", "") or ""),
         )
 
     if pointed:
@@ -1035,7 +1036,7 @@ def _given(
             continue
 
         inside = _given(vocabulary.target_shape(target), pick, aimed)
-        name = _pick_out(target, inside, aimed)
+        name = _pick_out(target, inside, aimed, str(pick.get("name", "")))
 
         written[str(key)] = (
             {BY_PLAYER_OF: name}
@@ -1140,10 +1141,30 @@ def _settled(parameter: Any, shape: Any, written: Mapping[str, Any]) -> bool:
     return now not in (None, "", False)
 
 
+MADE_UP = "chosen_"
+"""
+How a name this invents begins, when the card gave none.
+
+A target has to be named to be pointed at, so one is made up for a choice
+written where it is used. Such a name is this program's handwriting and not
+anything the card said — which is exactly what reading a card back has to be
+able to tell, or it would hand a card its own invented names as if the author
+had chosen them, and the card would grow a new one every time it was opened.
+"""
+
+
+def _the_card_s_own(called: str) -> str:
+    """
+    A name if the card gave one, and nothing if this made it up.
+    """
+    return "" if called.startswith(MADE_UP) else called
+
+
 def _pick_out(
     target: str,
     fields: Any,
     aimed: list[dict[str, Any]],
+    called: str = "",
 ) -> str:
     """
     Have the ability choose something, and give it a name to be pointed at.
@@ -1151,18 +1172,33 @@ def _pick_out(
     The same thing chosen twice is chosen once: two effects that both act on
     "a player somebody picks" mean the same player, which is what a card
     saying "deal 1 damage to a player and steal a cent from them" means.
+
+    A card that already called its choice something keeps that name. Two
+    choices alike in everything but their names are still two choices — a card
+    naming them apart said they were apart — so the name is part of what makes
+    one the same as another, and not a label put on afterwards.
     """
     written = _written_fields(fields)
+    # A name the card gave *is* which choice this is: it comes from the list
+    # an ability binds, where one name means one choice. Without a name there
+    # is nothing to go on but the choice itself, and two steps choosing alike
+    # mean one — which is what a card saying "damage a player and steal from
+    # them" means.
     already = [
         one
         for one in aimed
-        if target in one and _without_name(one[target]) == written
+        if target in one
+        and (
+            str(one[target].get("as", "")) == called
+            if called
+            else _without_name(one[target]) == written
+        )
     ]
 
     if already:
         return str(already[0][target]["as"])
 
-    name = f"chosen_{len(aimed) + 1}"
+    name = called or f"{MADE_UP}{len(aimed) + 1}"
     aimed.append({target: dict(written, **{"as": name})})
 
     return name
@@ -1541,7 +1577,7 @@ def _read_step(
         if pointed is None:
             # Not a name this understands. It may still be a value the ability
             # works out from one, which is a name it would drop.
-            _refuse_a_working(said, name, str(key), parameter, value)
+            _refuse_a_working(said, name, str(key), parameter, value, bound)
             fields[str(key)] = value
 
             continue
@@ -1551,7 +1587,7 @@ def _read_step(
                 f"{name!r} names {pointed!r}, which nothing on this card binds."
             )
 
-        groups[str(key)] = _as_chosen(said, bound[pointed], bound)
+        groups[str(key)] = _as_chosen(said, bound[pointed], bound, called=pointed)
 
     step: dict[str, Any] = {"id": name, "fields": fields, "groups": groups}
 
@@ -1559,9 +1595,9 @@ def _read_step(
         return step
 
     if isinstance(aimed, Mapping):
-        # A target written where it is used rather than bound and named. That
-        # is exactly what an aim is, so it needs no name and nothing is lost —
-        # the builder gives it one on the way back out.
+        # A target written where it is used rather than bound in a list of its
+        # own. That is exactly what an aim is — but it may still have been
+        # given a name, and the card is entitled to get it back.
         from fsme.runtime.target_resolver import normalise as a_target
 
         kind, params = a_target(_plainly(aimed))
@@ -1574,20 +1610,29 @@ def _read_step(
             "aim_groups": chosen["groups"],
         }
 
+        # Whatever this was called where it was written is not kept. The
+        # builder gathers every choice into one list for the ability, where a
+        # name has to mean one thing — and a card may call two choices in two
+        # different branches by the same word, because only one of them ever
+        # happens. Keeping such a name would merge them, and the card would
+        # come back drawing from the wrong deck.
         return step
 
     if not isinstance(aimed, str):
         raise UnreadableCard(f"{name!r} is aimed at something written in full.")
 
     if aimed in bound:
-        chosen = _as_chosen(said, bound[aimed], bound, frozenset({aimed}))
+        chosen = _as_chosen(said, bound[aimed], bound, frozenset({aimed}), aimed)
         step |= {
             "aim": chosen["id"],
             "aim_fields": chosen["fields"],
             "aim_groups": chosen["groups"],
         }
 
-        return step
+        # What the card called what it aimed at, kept beside the aim for the
+        # same reason it is kept beside anything else chosen: the card may say
+        # it again, and it is what the card said.
+        return _also_called(step, aimed)
 
     if said.target_shape(aimed) is not None:
         step |= {"aim": aimed, "aim_fields": {}, "aim_groups": {}}
@@ -1712,8 +1757,26 @@ def _names_one_of(
     return False
 
 
+def _also_called(step: dict[str, Any], called: str) -> dict[str, Any]:
+    """
+    A step, with the name it aimed by if the card gave one.
+
+    Left out entirely when there is none, rather than said as nothing: a key
+    holding an empty answer and a key that is not there read differently, and
+    a card would come back one way and then the other.
+    """
+    mine = _the_card_s_own(called)
+
+    return step | {"aim_name": mine} if mine else step
+
+
 def _refuse_a_working(
-    said: Any, effect: str, key: str, parameter: Any, value: Any
+    said: Any,
+    effect: str,
+    key: str,
+    parameter: Any,
+    value: Any,
+    bound: Mapping[str, tuple[str, dict[str, Any]]],
 ) -> None:
     """
     Refuse a value the ability works out from something it chose.
@@ -1722,6 +1785,12 @@ def _refuse_a_working(
     the name in it is one the ability bound. Reading the answer without the
     binding would leave a card counting nobody's hand, so the whole card goes
     to the editor rather than half of it here.
+
+    What is refused is a value that names something *this ability chose* —
+    which is a question about the name, not about the key holding it. ``of``
+    names something whether that something was chosen here or was standing
+    there all along, and "as much loot as the controller holds" needs nothing
+    kept: the controller is the controller in any card that mentions them.
     """
     if not isinstance(value, Mapping):
         return
@@ -1737,6 +1806,7 @@ def _refuse_a_working(
         head
         for head in value
         if getattr(working.params.get(str(head)), "refers_to", "")
+        and str(value[head]) in bound
     ]
 
     if named:
@@ -1773,6 +1843,7 @@ def _as_chosen(
     chosen: tuple[str, dict[str, Any]],
     bound: Mapping[str, tuple[str, dict[str, Any]]],
     seen: frozenset[str] = frozenset(),
+    called: str = "",
 ) -> dict[str, Any]:
     """
     One thing an ability picked out, as the answer that picked it.
@@ -1781,6 +1852,11 @@ def _as_chosen(
     chose" — and that name means nothing once the list it was bound in has been
     put away. So a parameter naming a binding is followed, and what it named
     becomes an answer inside this one, which is where the builder puts it back.
+
+    What the card *called* it is kept beside it. It is not an answer anybody
+    gave and it is not part of what was chosen — two cards choosing the same
+    player under different names choose the same player — but it is what the
+    card said, and a card that says it again later needs it to still be there.
     """
     kind, body = chosen
     shape = said.target_shape(kind)
@@ -1810,9 +1886,15 @@ def _as_chosen(
 
             continue
 
-        groups[str(key)] = _as_chosen(said, bound[pointed], bound, seen | {pointed})
+        groups[str(key)] = _as_chosen(
+            said, bound[pointed], bound, seen | {pointed}, pointed
+        )
 
-    return {"id": kind, "fields": fields, "groups": groups}
+    picked: dict[str, Any] = {"id": kind, "fields": fields, "groups": groups}
+
+    mine = _the_card_s_own(called)
+
+    return picked | {"name": mine} if mine else picked
 
 
 def _read_condition(said: Any, node: Any) -> dict[str, Any]:
