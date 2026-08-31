@@ -728,7 +728,16 @@ def _written_node(
 
     for name, parameter in shape.params.items():
         if parameter.written_as == BY_BINDING:
-            # A name this writes for itself further down.
+            # Never asked for — that is what this says, and it still holds:
+            # nothing offers a box for it. But a card that wrote one said
+            # something, and saying it back is not asking. The sibling writer
+            # that puts a target's name back has always done exactly this,
+            # for the same reason: without the name, nothing can point at it.
+            said = given.get(name)
+
+            if said not in (None, "", [], {}):
+                written[name] = said
+
             continue
 
         if parameter.instead_of and not parameter.names_the_node:
@@ -1696,16 +1705,6 @@ def _read_control(
         if parameter is None:
             raise UnreadableCard(
                 f"{name!r} says {key!r}, which the engine does not describe."
-            )
-
-        if parameter.written_as == BY_BINDING:
-            # A name this node keeps its answer under for a later step to
-            # read. The engine writes these, so the builder will not write
-            # this one back, and a card that lost it would quietly stop
-            # meaning what it said. The same reason `store` is refused.
-            raise UnreadableCard(
-                f"{name!r} keeps what it chose under a name for a later step "
-                "to read. Cards that do that are edited in full."
             )
 
         if not parameter.a_list_of and _names_one_of(value, bound):

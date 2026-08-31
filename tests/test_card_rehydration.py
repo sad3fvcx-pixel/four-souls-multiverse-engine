@@ -463,7 +463,14 @@ def test_where_a_short_spelling_lands_is_named_once() -> None:
 @pytest.mark.parametrize(
     "written_as, expect",
     [
-        ({"choose": [{"description": "A"}], "as": "picked"}, "later step"),
+        (
+            {
+                "effect": "deal_damage",
+                "amount": 1,
+                "targets": [{"target_player": {}}],
+            },
+            "in full",
+        ),
         ({"effect": "gain_coins", "target": "nobody_binds_this"}, "binds"),
         ({"effect": "roll_dice", "store": "first"}, "later step"),
     ],
@@ -652,9 +659,9 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
     workspace: Path,
 ) -> None:
     """
-    Not opened half way. A control node is read now, so what is checked here
-    is a card that still cannot be: one that keeps what it chose under a name
-    for a later step to read.
+    Not opened half way. A control node is read now, and so is one that keeps
+    what it chose under a name, so what is checked here is a card that still
+    cannot be: one whose step picks something out of its own inside a branch.
     """
     from fsme.lab.desk.author import make_set, sets
 
@@ -675,8 +682,15 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
                                 "effects": [
                                     {
                                         "if": ["dice_equals"],
-                                        "then": [{"gain_coins": 1}],
-                                        "as": "how_it_went",
+                                        "then": [
+                                            {
+                                                "effect": "gain_coins",
+                                                "amount": 1,
+                                                "targets": [
+                                                    {"target_player": {}}
+                                                ],
+                                            }
+                                        ],
                                     }
                                 ],
                             }
@@ -695,8 +709,8 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
 
     said = str(refused.value)
 
-    assert "'if'" in said
-    assert "later step" in said
+    assert "'gain_coins'" in said
+    assert "in full" in said
 
 
 def test_asking_for_a_card_that_is_not_there_says_so(workspace: Path) -> None:
@@ -3461,8 +3475,8 @@ def test_a_card_keeps_the_names_its_ability_bound(
 ) -> None:
     """
     101 shipped cards name something and none kept a name through a round
-    trip before this. 69 do now — every card whose names are bound by the
-    ability, which are the names a later step can say.
+    trip before this. 72 do now — every card whose names are bound by the
+    ability, and every control node that keeps what it chose under one.
 
     The other 33 name a choice written where it is used. Those names are not
     kept, and must not be: the builder gathers every choice into one list for
@@ -3498,7 +3512,7 @@ def test_a_card_keeps_the_names_its_ability_bound(
             kept += 1
 
     assert lost == [], lost[:5]
-    assert kept == 69, kept
+    assert kept == 72, kept
 
 
 def test_a_name_a_card_uses_is_not_a_name_a_card_makes() -> None:
@@ -3541,3 +3555,123 @@ def test_a_name_a_card_uses_is_not_a_name_a_card_makes() -> None:
     }
     assert not check_card(once), check_card(once)
     assert read_card(once)["card"] == state
+
+
+# ----------------------------------------------------------------------
+# 23. Writing a name back the way the card wrote it
+# ----------------------------------------------------------------------
+#
+# A target's name is written back because it must be — nothing could point at
+# it otherwise. A control node's is not, though it is the same kind of thing
+# said in the same word, and that is why a card keeping what it chose under a
+# name cannot be read: the reader would have to hand the builder something the
+# builder throws away.
+#
+# `BY_BINDING` is not what stops it. Its own words are that it decides *what
+# to offer* a person — never ask for this — and the two writers disagreeing
+# about whether to keep it is the defect.
+
+
+A_NAMED_OPTION = {
+    "id": "probe-loot-optioned",
+    "name": "Optioned",
+    "type": "loot",
+    "expansion": "probe",
+    "schema_version": "1",
+    "abilities": [
+        {
+            "trigger": "on_play",
+            "effects": [
+                {
+                    "choose": [
+                        {"description": "A cent",
+                         "effects": [{"effect": "gain_coins", "amount": 1,
+                                      "target": "controller"}]},
+                        {"description": "Two cents",
+                         "effects": [{"effect": "gain_coins", "amount": 2,
+                                      "target": "controller"}]},
+                    ],
+                    "as": "picked",
+                }
+            ],
+        }
+    ],
+}
+
+
+def test_a_control_node_keeps_the_name_the_card_gave_it() -> None:
+    """
+    The asymmetry this closes: a target's name survives and a node's does not.
+    """
+    once = build_card({"set": "probe", "card": read_card(A_NAMED_OPTION)["card"]})
+    node = once["abilities"][0]["effects"][0]
+
+    assert node.get("as") == "picked", node
+
+
+def test_a_name_nobody_wrote_does_not_become_one_the_card_wrote() -> None:
+    """
+    A choice the card never named gets one, because a target has to be
+    pointed at. That name is ours, and reading the card back must not hand it
+    to the author as if they had chosen it — or the card grows a new one every
+    time it is opened.
+    """
+    written = {
+        "id": "probe-loot-unnamed",
+        "name": "Unnamed",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "effect": "deal_damage",
+                        "amount": 1,
+                        "target": {"target_player": {}},
+                    }
+                ],
+            }
+        ],
+    }
+
+    state = read_card(written)["card"]
+    step = state["fields"]["abilities"][0]["fields"]["effects"][0]
+
+    assert "aim_name" not in step, step
+
+    once = build_card({"set": "probe", "card": state})
+
+    # The builder had to name it, and reading it back finds no name again.
+    assert named_in(once), "nothing was bound at all"
+    assert read_card(once)["card"] == state
+
+
+def test_one_word_used_in_two_branches_stays_two_choices(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    `the_curse` writes three options, each drawing from a different deck, each
+    calling its choice `top`. Only one option ever happens, so the card is
+    right — and anything that treats the word as one thing makes it draw three
+    times from the same deck.
+    """
+    curse = next(
+        one
+        for one in walked
+        if one["card"]["id"] == "starting_items-base_game-the_curse"
+    )
+
+    assert curse["state"] is not None
+
+    modes = curse["once"]["abilities"][0]["effects"][0]["choose"]
+    drawn = [mode["effects"][0]["target"] for mode in modes]
+
+    assert len(drawn) == 3
+    assert len(set(drawn)) == 3, f"three choices became {len(set(drawn))}: {drawn}"
+
+    assert len(curse["once"]["abilities"][0].get("targets", ())) == 3, (
+        "three choices were gathered into fewer"
+    )
+    assert not check_card(curse["once"]), check_card(curse["once"])
