@@ -1070,6 +1070,14 @@ def _written_inside(
     "unknown condition 'of'". Read off ``a_list_of`` rather than named, so this
     is not a fact about conditions but about anything the language describes
     that way.
+
+    A body that comes out empty is left out rather than written empty, the way
+    the sibling writer of a node already leaves one out. It matters because
+    the two are not the same to the checker: an effect that requires a body
+    and does not have the key is refused by name, and one whose key holds an
+    empty list is a card that says it watches for nothing and passes. Anything
+    this could not write is therefore something the card is told about, not
+    something it loses quietly.
     """
     if shape is None:
         return written
@@ -1080,7 +1088,12 @@ def _written_inside(
         if parameter is None or not parameter.a_list_of:
             continue
 
-        written[name] = _written_body(parameter.a_list_of, value, aimed)
+        body = _written_body(parameter.a_list_of, value, aimed)
+
+        if body or parameter.names_the_node:
+            written[name] = body
+        else:
+            del written[name]
 
     return written
 
@@ -1587,7 +1600,22 @@ def _read_step(
             # Not a name this understands. It may still be a value the ability
             # works out from one, which is a name it would drop.
             _refuse_a_working(said, name, str(key), parameter, value, bound)
-            fields[str(key)] = value
+
+            # An effect may hold more of the language — `watch_for` keeps the
+            # steps it will run and what must be true when it does — and the
+            # answer saying so is the same `a_list_of` a part and a control
+            # node are read by. Kept as the card's own words instead, it went
+            # into author state as something nothing could show and the writer
+            # would throw away, which is a card quietly emptied rather than a
+            # card refused.
+            read = (
+                _read_value(said, parameter, value, str(key), bound)
+                if parameter.a_list_of
+                else value
+            )
+
+            if read is not _NOT_AN_ANSWER:
+                fields[str(key)] = read
 
             continue
 

@@ -1020,6 +1020,7 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
                     unless_when=param.unless_when,
                     refers_to=param.refers_to,
                     written_as=_written_as(param.refers_to),
+                    a_list_of=param.a_list_of,
                     also=_also_worked_out(spec, name),
                 )
                 for name, param in spec.params.items()

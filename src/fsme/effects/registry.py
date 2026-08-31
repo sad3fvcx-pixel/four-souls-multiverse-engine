@@ -165,6 +165,20 @@ class ParamSpec:
     writes and the other is a card the engine hands over.
     """
 
+    a_list_of: str = ""
+    """
+    What a list-shaped parameter holds, when it holds more of the language.
+
+    ``LIST`` says several rather than one; this says several *of what*, and
+    the answer is one of ``NODES`` — the kinds one part of the language may
+    be built out of another. An effect that keeps a list of steps to run
+    later is holding the same nodes an ability holds, and saying so is what
+    lets one reader read them and one renderer draw them.
+
+    Empty for a list of plain values, which is nearly all of them: ``deck``
+    names are words, not nodes.
+    """
+
     def wants(self) -> str:
         """
         What this parameter takes, in the words an error message needs.
@@ -376,6 +390,7 @@ class EffectRegistry:
         roles: Mapping[str, str] | None = None,
         picks: Mapping[str, str] | None = None,
         holds: Mapping[str, str] | None = None,
+        holding: Mapping[str, str] | None = None,
         unless: Mapping[str, str] | None = None,
         unless_when: Mapping[str, Sequence[Any]] | None = None,
     ) -> EffectSpec:
@@ -430,6 +445,17 @@ class EffectRegistry:
             # makes load time the right place to say so.
             described[parameter] = _narrow(
                 described, parameter, name, kind=shaped
+            )
+
+        for parameter, held in (holding or {}).items():
+            # What a list holds, where it holds more of the language. `holds`
+            # says several rather than one; this says several of what, and the
+            # answer is a kind the rest of the layer can already describe. Said
+            # here for the same reason as `holds`: the handler is what runs
+            # them, and a signature cannot say that a list of `Any` is a list
+            # of steps.
+            described[parameter] = _narrow(
+                described, parameter, name, a_list_of=held
             )
 
         for parameter, names in (picks or {}).items():
@@ -553,6 +579,7 @@ def _narrow(
     unless: str | None = None,
     unless_when: tuple[Any, ...] | None = None,
     refers_to: str | None = None,
+    a_list_of: str | None = None,
 ) -> ParamSpec:
     """
     Add a domain, a floor or a label to a parameter the handler declares.
@@ -585,6 +612,7 @@ def _narrow(
             unless_when if unless_when is not None else known.unless_when
         ),
         refers_to=refers_to if refers_to is not None else known.refers_to,
+        a_list_of=a_list_of if a_list_of is not None else known.a_list_of,
     )
 
 

@@ -218,6 +218,7 @@ def test_the_shape_a_kept_parameter_is_kept_in_is_judged(
     assert [(name, key) for name, key, _ in outer] == [
         ("promise", "changes"),
         ("promise", "when"),
+        ("watch_for", "conditions"),
         ("watch_for", "effects"),
     ]
 

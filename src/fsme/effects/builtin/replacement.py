@@ -13,7 +13,14 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from fsme.content.vocabulary import A_LIST, A_MAPPING, OPEN, PLAYERS
+from fsme.content.vocabulary import (
+    A_LIST,
+    A_MAPPING,
+    CONDITION,
+    OPEN,
+    PLAYERS,
+    STEP,
+)
 from fsme.events import EventType
 from fsme.state import DamageShield, Duration, Promise, Watcher
 from fsme.state.promises import CHANGES
@@ -337,7 +344,8 @@ def register(registry: EffectRegistry) -> None:
         needs_target=False,
         primary="event",
         literal=("effects", "conditions"),
-        holds={"effects": A_LIST},
+        holds={"effects": A_LIST, "conditions": A_LIST},
+        holding={"effects": STEP, "conditions": CONDITION},
         description="Wait for an event and resolve an ability when it happens.",
         values={"event": _EVENT_NAMES},
         needs=("event", "effects"),

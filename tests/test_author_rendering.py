@@ -300,9 +300,16 @@ def test_a_structured_parameter_is_never_offered_as_a_box(
         "watch_for.effects",
     }
 
+    # Shown as what it is, because nothing here can say what is inside it.
+    # A structure the layer *can* describe is a different case: `watch_for`
+    # says its two lists hold steps and conditions, and the honest way to
+    # show a list of steps is as a list of steps.
     for _, owner, field in every_field(can):
-        if field["role"] == STRUCTURE:
+        if field["role"] == STRUCTURE and not field["a_list_of"]:
             assert field["shown"] == "advanced", f"{owner}.{field['id']}"
+
+        if field["role"] == STRUCTURE and field["a_list_of"]:
+            assert field["shown"] == "body", f"{owner}.{field['id']}"
 
 
 def test_the_page_never_stores_half_written_structure_as_text() -> None:
@@ -318,21 +325,46 @@ def test_the_page_never_stores_half_written_structure_as_text() -> None:
 
 
 def test_a_structure_survives_as_a_structure() -> None:
+    """
+    `promise` is owed a change per key, and nothing here describes what a
+    change is, so what somebody wrote is what the card gets.
+    """
+    card = a_card(
+        [
+            {
+                "id": "promise",
+                "fields": {
+                    "event": "before_loot_draw",
+                    "changes": {"source": {"value": "discard"}},
+                },
+            }
+        ]
+    )
+
+    assert one_effect(card)["changes"] == {"source": {"value": "discard"}}
+    assert check_card(card) == []
+
+
+def test_a_body_survives_as_the_steps_it_holds() -> None:
+    """
+    The other half of the same idea. `watch_for` says its list holds steps, so
+    what it is given is author state and what it writes is a card — and a
+    thing it cannot write is left out, where the checker says so, rather than
+    written as an empty list that reads as "watches for nothing".
+    """
     card = a_card(
         [
             {
                 "id": "watch_for",
                 "fields": {
                     "event": "damage_dealt",
-                    "effects": [{"effect": "gain_coins", "amount": 1}],
+                    "effects": [{"id": "gain_coins", "fields": {"amount": 1}}],
                 },
             }
         ]
     )
 
-    assert one_effect(card)["effects"] == [
-        {"effect": "gain_coins", "amount": 1}
-    ]
+    assert one_effect(card)["effects"] == [{"effect": "gain_coins", "amount": 1}]
     assert check_card(card) == []
 
 

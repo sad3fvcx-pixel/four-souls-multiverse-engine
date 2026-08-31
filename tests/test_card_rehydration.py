@@ -3497,8 +3497,13 @@ def test_a_card_keeps_the_names_its_ability_bound(
 ) -> None:
     """
     101 shipped cards name something and none kept a name through a round
-    trip before this. 72 do now — every card whose names are bound by the
+    trip before this. 71 do now — every card whose names are bound by the
     ability, and every control node that keeps what it chose under one.
+
+    It was 72 until `watch_for` said what its lists hold. `host_hat` bound a
+    name inside its watcher, and reading that watcher as steps is what showed
+    that the step inside chooses its own target — so the card is refused now,
+    and a refused card keeps nothing because it is never written back.
 
     The other 33 name a choice written where it is used. Those names are not
     kept, and must not be: the builder gathers every choice into one list for
@@ -3534,7 +3539,7 @@ def test_a_card_keeps_the_names_its_ability_bound(
             kept += 1
 
     assert lost == [], lost[:5]
-    assert kept == 72, kept
+    assert kept == 71, kept
 
 
 def test_a_name_a_card_uses_is_not_a_name_a_card_makes() -> None:
@@ -3826,16 +3831,179 @@ def test_nothing_is_refused_any_more_for_keeping_its_result(
     assert refused == [], refused
 
 
-def test_asking_this_moved_exactly_one_card(
+def test_what_each_of_these_moved_is_counted(
     walked: list[dict[str, Any]],
 ) -> None:
     """
-    Twenty-one refusals were measured before this was asked for; twenty after.
+    A ledger, so that a change opening a card it was not about is noticed.
 
-    A declaration that opened a card it was not about would be a declaration
-    doing something else as well, and the something else is what nobody
-    reviewed.
+    Twenty-one were refused when this pass began. Asking an effect to name
+    what it stores opened `the_bloat`, and left twenty. Saying what
+    `watch_for` holds opened `crystal_ball` — which was refused by the walk
+    rather than by the reader, so the count did not move for it — and refused
+    `host_hat`, whose watcher holds a step that chooses its own target. That
+    is not a card lost: it opened before only because nothing read its body.
     """
-    refused = [one for one in walked if one["state"] is None]
+    refused = {one["card"].get("id") for one in walked if one["state"] is None}
 
-    assert len(refused) == 20, [one["card"].get("id") for one in refused]
+    assert len(refused) == 21, sorted(refused)
+    assert "monster_deck-bosses-alt_art-the_bloat" not in refused
+    assert "treasure_deck-active_items-base_game-host_hat" in refused
+
+
+# ----------------------------------------------------------------------
+# 25. An effect that holds more of the language
+# ----------------------------------------------------------------------
+#
+# `watch_for` waits for an event and runs steps when it arrives. Its two
+# lists hold ordinary steps and ordinary conditions — the same nodes an
+# ability holds — and nothing said so. `holds` said `effects` is a list; what
+# a list holds had no way to be said at all, because the registry could not
+# say it, though `NODES` has named the answer since the day it was written.
+#
+# Saying it is half the change. The reader kept both lists exactly as the card
+# wrote them, which survived only because nothing looked at them: the writer
+# honours what a shape declares, so declaring it alone would have handed the
+# writer raw card JSON where it expected author state, and written the card
+# back with both lists empty — which the checker passes, because an empty
+# list is a legal answer.
+#
+# So the declaration and the reading go together. `_read_value` already knew
+# both kinds; the part reader and the control node reader already called it.
+# The effect reader did not.
+
+
+def test_an_effect_says_what_its_lists_hold() -> None:
+    """
+    Said beside the guard, and only about what the language can answer.
+    """
+    from fsme.content.vocabulary import CONDITION, NODES, STEP
+
+    watching = next(
+        effect for effect in catalogue()["effects"] if effect["id"] == "watch_for"
+    )
+    holds = {
+        field["id"]: field["a_list_of"]
+        for field in watching["fields"]
+        if field["a_list_of"]
+    }
+
+    assert holds == {"effects": STEP, "conditions": CONDITION}
+
+    for said in holds.values():
+        assert said in NODES, said
+
+
+def test_a_card_that_watches_keeps_what_it_watches_for(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    `crystal_ball` names a number and loots three if a roll comes up that way.
+
+    Six options, one `watch_for` each, and each holds a condition and a step.
+    Reading them into nothing and writing nothing back is what a declaration
+    without a reader would have done.
+    """
+    ball = next(
+        card
+        for card in walked
+        if card["card"]["id"] == "treasure_deck-active_items-base_game-crystal_ball"
+    )
+
+    assert ball["state"] is not None, ball["why"]
+
+    options = ball["once"]["abilities"][0]["effects"][0]["choose"]
+
+    assert len(options) == 6, len(options)
+
+    for option in options:
+        watching = option["effects"][0]
+
+        assert watching["effect"] == "watch_for"
+        assert watching["conditions"], watching
+        assert watching["effects"], watching
+
+    # Written long, which reading is allowed to do: `{"dice_equals": 1}` is
+    # the short spelling of `{"dice_equals": {"value": 1}}`, and the six
+    # options still name six different numbers.
+    named = [
+        option["effects"][0]["conditions"][0]["dice_equals"]["value"]
+        for option in options
+    ]
+
+    assert named == [1, 2, 3, 4, 5, 6], named
+    assert not check_card(ball["once"]), check_card(ball["once"])
+
+
+def test_the_steps_inside_are_read_as_steps(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    Not kept as the card's own words.
+
+    Author state says what a step is one way — a name, what was filled in,
+    what was pointed at. A list held raw is a list the page cannot show and
+    the writer cannot write, and it round-tripped only because nobody looked.
+    """
+    ball = next(
+        card
+        for card in walked
+        if card["card"]["id"] == "treasure_deck-active_items-base_game-crystal_ball"
+    )
+
+    assert ball["state"] is not None, ball["why"]
+
+    option = ball["state"]["card"]["fields"]["abilities"][0]["fields"]["effects"][0]
+    watching = option["fields"]["choose"][0]["fields"]["effects"][0]
+    inside = watching["fields"]["effects"][0]
+
+    assert set(inside) == {"id", "fields", "groups"}, inside
+    assert inside["id"] == "draw_loot", inside
+
+
+def test_a_card_whose_watcher_chooses_lands_in_the_next_class(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    `host_hat` prevents damage and then hurts somebody else when it does.
+
+    Reading its watcher's steps as steps is what makes the step visible, and
+    the step chooses its own target — so the card moves from opening with its
+    body unread to being refused, by name, for the reason that is actually in
+    the way. That is the reader becoming truthful rather than a card being
+    lost: it opened before only because nothing looked inside.
+    """
+    hat = next(
+        card
+        for card in walked
+        if card["card"]["id"] == "treasure_deck-active_items-base_game-host_hat"
+    )
+
+    assert hat["state"] is None, "host_hat opens with its watcher unread"
+    assert "picks something out for itself" in hat["why"], hat["why"]
+    assert "deal_damage" in hat["why"], hat["why"]
+
+
+def test_nothing_is_shown_but_not_edited_for_a_watcher_any_more(
+    walked: list[dict[str, Any]],
+    can: dict[str, Any],
+) -> None:
+    """
+    The reason is gone. `promise` is the only one left, and it is a different
+    question — what an event carries — which nothing has answered yet.
+    """
+    holding = {
+        effect["id"]: {f["id"]: f["a_list_of"] for f in effect["fields"] if f["a_list_of"]}
+        for effect in can["effects"]
+        if any(f["a_list_of"] for f in effect["fields"])
+    }
+
+    assert holding == {"watch_for": {"effects": "step", "conditions": "condition"}}
+
+    watching = [
+        one["card"].get("id")
+        for one in walked
+        if one["state"] is None and "watch_for" in one["why"]
+    ]
+
+    assert watching == [], watching

@@ -418,12 +418,14 @@ def test_no_effect_condition_or_target_parameter_gained_a_body(
     can: dict[str, Any],
 ) -> None:
     """
-    The two new concepts describe the ability layer and nothing below it. An
-    effect's structured data is still a structure — `watch_for.effects` really
-    is a list of effect nodes, and saying so here would change what the form
-    already draws, which is a separate decision from this one.
+    The two new concepts describe the ability layer and nearly nothing below
+    it. An effect's structured data is still a structure, with one exception
+    that was named here when this was written and left for later: `watch_for`
+    really does hold a list of steps, and saying so changes what the form
+    draws. That was the separate decision; it has since been taken.
     """
     joining = {"and", "or", "not"}
+    holding = {"watch_for": {"effects": "step", "conditions": "condition"}}
 
     for group in ("effects", "conditions", "targets"):
         for one in can[group]:
@@ -432,6 +434,12 @@ def test_no_effect_condition_or_target_parameter_gained_a_body(
                     # The three that are made of other conditions. Describing
                     # them is what §3 of this pass was for.
                     assert field["a_list_of"] == "condition"
+                    continue
+
+                if one["id"] in holding:
+                    assert field["a_list_of"] == holding[one["id"]].get(
+                        field["id"], ""
+                    ), f"{one['id']}.{field['id']}"
                     continue
 
                 assert not field["a_list_of"], f"{one['id']}.{field['id']}"

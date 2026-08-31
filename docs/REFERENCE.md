@@ -88,7 +88,7 @@ an effect and for a target.
 | `take_card` | `player` `{"player_of": name}`, a group of players the ability bound, `shuffle` `` or `loot` or `treasure` or `monster` or `room`, `to` `hand` or `treasures` |
 | `take_extra_turn` | — |
 | `transfer_coins` | `amount` a whole number, `source_player` `{"player_of": name}`, a group of players the ability bound |
-| `watch_for` | `conditions` only a game can judge, `effects` a list*, `event` one of 66 event names*, `mine` true or false, `unlimited` true or false, `uses` a whole number, `waits` true or false |
+| `watch_for` | `conditions` a list, `effects` a list*, `event` one of 66 event names*, `mine` true or false, `unlimited` true or false, `uses` a whole number, `waits` true or false |
 
 ## Conditions
 

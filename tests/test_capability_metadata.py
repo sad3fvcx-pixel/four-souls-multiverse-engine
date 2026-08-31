@@ -123,7 +123,9 @@ def test_the_things_that_are_not_boxes_are_not_sent_to_the_form() -> None:
                     assert field["shown"] == "given", where
                 elif field["role"] == WHOM:
                     assert field["shown"] == "group", where
-                elif field["role"] == STRUCTURE:
+                elif field["role"] == STRUCTURE and not field["a_list_of"]:
+                    # Nested data nothing here describes. One that says what
+                    # it holds is described, and goes where its kind goes.
                     assert field["shown"] == "advanced", where
 
 
