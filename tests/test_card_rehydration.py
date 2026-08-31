@@ -1022,7 +1022,10 @@ def test_a_card_the_walk_cannot_show_whole_is_not_opened_for_changing() -> None:
     # How many parts a card has is no longer a reason to refuse it — the walk
     # asks about each in turn. What it still refuses is an action it does not
     # offer, which is the rule it already applies when making a card.
-    assert "finishable(e)" in rule
+    # What may be done is asked of the part in hand, and an action it can
+    # finish is still the rule — it just lives where the asking happens.
+    assert "actionsIn(" in rule
+    assert "finishable(e)" in body_of("actionsIn")
     assert "length !== 1" not in rule, "the walk still refuses a card by its shape"
     # The reading screen only offers the way in when the rule allows it.
     assert "walkable()" in body_of("viewing")
@@ -3177,10 +3180,10 @@ def test_the_rule_asks_about_what_it_holds_the_same_way() -> None:
     """
     rule = body_of("walkable")
 
-    assert "under.every(reachable)" in rule, (
+    assert "reachable(one, offered)" in rule, (
         "what a node holds is still judged by whether each thing is an action"
     )
-    assert "under.every(known)" not in rule
+    assert "under.every(known" not in rule
 
 
 def test_a_branch_inside_a_branch_survives_the_pipeline(
@@ -3235,3 +3238,141 @@ def test_a_branch_inside_a_branch_survives_the_pipeline(
     assert kept["amount"] == 5
     assert not check_card(again), check_card(again)
     assert read_card(again)["card"] == state
+
+
+# ----------------------------------------------------------------------
+# 21. Where an effect that changes an event is allowed
+# ----------------------------------------------------------------------
+#
+# Three effects reach for the event an ability was handed, and only work
+# inside an ability that was handed one. The effect says so — `replacing` is
+# published beside it. Which of the ability's own answers says the ability *is*
+# one was not published anywhere, so nothing but the validator could pair them,
+# and a page offering effects could only find the field by knowing its name.
+
+
+def test_the_engine_says_which_answer_allows_an_effect_that_replaces(
+    can: dict[str, Any],
+) -> None:
+    """
+    The pairing, published: exactly one question, on the part that holds such
+    effects, declares that it is the one they need answered.
+    """
+    from fsme.content.vocabulary import REPLACING
+
+    allowing = [
+        (shape["id"], f["id"])
+        for section in can.values()
+        if isinstance(section, list)
+        for shape in section
+        if isinstance(shape, dict) and "fields" in shape
+        for f in shape["fields"]
+        if f.get("allows") == REPLACING
+    ]
+
+    assert len(allowing) == 1, allowing
+
+    holder, field = allowing[0]
+
+    assert holder == "ability"
+    # And it is the very answer the validator reads, rather than a second one
+    # that agrees with it today.
+    from fsme.cards.references import REPLACES_THE_EVENT
+
+    assert field == REPLACES_THE_EVENT
+
+
+def test_the_effects_that_need_it_are_the_ones_that_say_so(
+    can: dict[str, Any],
+) -> None:
+    """
+    Read off the catalogue rather than listed here, so an effect the engine
+    gains says this for itself.
+    """
+    from fsme.content.vocabulary import REPLACING
+
+    needing = {e["id"] for e in can["effects"] if e.get(REPLACING)}
+
+    assert needing, "no effect declares that it changes an event"
+    assert len(needing) == 3
+
+
+def test_the_validator_and_the_description_read_one_answer() -> None:
+    """
+    The fact is enforced in the validator and described in the vocabulary. It
+    is the same name in both, because both take it from one place.
+    """
+    from fsme.cards import references
+    from fsme.cards.references import REPLACES_THE_EVENT
+    from fsme.runtime import vocabulary
+
+    said = Path(vocabulary.__file__).read_text("utf-8")
+    pairing = said.split("ABILITY_ALLOWS = {", 1)[1].split("}", 1)[0]
+
+    # The pairing reads the name from the guard rather than spelling it. The
+    # per-field wording elsewhere in that file keys on the name as text, which
+    # is ordinary and is not the pairing.
+    assert "REPLACES_THE_EVENT" in pairing
+    assert f'"{REPLACES_THE_EVENT}"' not in pairing
+    assert references.REPLACES_THE_EVENT == REPLACES_THE_EVENT
+
+
+def test_publishing_the_pairing_leaves_every_card_saying_what_it_said(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    A description of the language is not the language. Every shipped card
+    reads, rebuilds and reads back to the same thing, and the abilities that
+    replace an event are the same ones as before.
+
+    Twenty-five abilities say they replace an event. Twenty-one *cards* hold
+    one of the three effects that require such an ability — the other four
+    replace an event by doing something that needs no such saying. The two
+    counts are different questions and are easy to run together.
+    """
+    from fsme.cards.references import REPLACES_THE_EVENT
+
+    marked, needing = 0, set()
+
+    for one in walked:
+        if one["state"] is None:
+            continue
+
+        assert one["again"] == one["state"], one["card"]["id"]
+
+        for part in one["state"]["card"]["fields"].get("abilities", ()):
+            if part["fields"].get(REPLACES_THE_EVENT) is True:
+                marked += 1
+
+            if _needs_replacing(part):
+                needing.add(one["card"]["id"])
+
+    assert marked == 25, marked
+    assert len(needing) == 21, len(needing)
+
+
+def _needs_replacing(part: Mapping[str, Any]) -> bool:
+    """
+    Whether a part holds an effect that says it needs a replacing ability.
+    """
+    from fsme.content.vocabulary import REPLACING
+
+    wants = {e["id"] for e in catalogue()["effects"] if e.get(REPLACING)}
+
+    def walk(steps: Any) -> bool:
+        for step in steps or ():
+            if step.get("id") in wants:
+                return True
+
+            for value in (step.get("fields") or {}).values():
+                if isinstance(value, list) and value and isinstance(value[0], dict):
+                    if walk(value):
+                        return True
+
+                    for one in value:
+                        for held in (one.get("fields") or {}).values():
+                            if isinstance(held, list) and walk(held):
+                                return True
+        return False
+
+    return walk(part["fields"].get("effects") or [])

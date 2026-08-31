@@ -324,10 +324,11 @@ function pickKind(kind) {
 // same catalogue the editor offers — every action here is an effect the engine
 // already has, shown by the sentence the effect already carries about itself.
 function chooseAction(how) {
-  // Not the ones that edit an event an ability was handed: this walk does not
-  // ask whether the ability is a replacement, so offering them would offer a
-  // card the checker refuses. The editor still offers them, where it does ask.
-  const doing = can.effects.filter(e => !e.a_step && !e.replacing && finishable(e));
+  // What may be done here is asked of the part in hand. An effect that edits
+  // the event an ability was handed is offered inside an ability that is
+  // handed one, and nowhere else — which is the same condition the checker
+  // applies, read from the same place the checker reads it.
+  const doing = actionsIn(walk && walk.where ? at(walk.where) : null);
   const one = (e) => `<button class="task" onclick="pickAction('${e.id}','${how}')">
       <b>${esc(sentence(e.about))}</b></button>`;
   const common = doing.filter(e => e.common);
@@ -784,22 +785,24 @@ function doesIn(part) {
 function walkable() {
   const parts = partsOf();
   if (!parts.length) return false;
-  const offered = can.effects.filter(e => !e.a_step && !e.replacing && finishable(e));
-  const known = step => offered.some(e => e.id === step.id);
+  const known = (step, offered) => offered.some(e => e.id === step.id);
   // An action the walk can finish, or something holding only such actions.
   // The rule is the same rule, asked one level further down — and asked of
   // what it holds in the same way, because a branch inside a branch is not an
   // action either. Asking only whether each held thing is an action turned
   // down three cards that read perfectly.
-  const reachable = step => {
-    if (known(step)) return true;
+  const reachable = (step, offered) => {
+    if (known(step, offered)) return true;
     const under = stepsUnder(step);
-    return under.length > 0 && under.every(reachable);
+    return under.length > 0 && under.every(one => reachable(one, offered));
   };
   return parts.every(part => {
     const does = doesIn(part);
     if (!does) return true;
-    return does.steps.every(reachable);
+    // What may be done is asked of the part being judged: an effect that only
+    // works where an event is being changed is offered where one is.
+    const offered = actionsIn(part.node);
+    return does.steps.every(step => reachable(step, offered));
   });
 }
 
@@ -1009,6 +1012,39 @@ function catalogues() {
     Array.isArray(list) && list.length && list.every(one => one && one.fields));
 }
 const shapeNamed = (id) => catalogues().flat().find(x => x.id === id);
+
+// What a part in hand says about where it is.
+//
+// Some effects only work somewhere particular and say so; which of a part's
+// own answers settles that is the part's shape's answer, published as
+// `allows`. So the pairing is read rather than known, and a requirement the
+// engine gains later is honoured by this without it changing.
+function allowedIn(node) {
+  const shape = node && shapeNamed(node.id);
+  const said = {};
+  for (const f of (shape ? shape.fields : []))
+    if (f.allows) said[f.allows] = (node.fields || {})[f.id] === true;
+  return said;
+}
+
+// Every requirement any part is able to answer at all. An effect asking for
+// one nobody can answer is offered nowhere, which is what used to be written
+// out by hand for the only requirement there was.
+function requirements() {
+  const found = new Set();
+  for (const shape of catalogues().flat())
+    for (const f of (shape.fields || [])) if (f.allows) found.add(f.allows);
+  return found;
+}
+
+// The actions on offer inside one part: those this walk can finish, whose
+// every requirement that part answers.
+function actionsIn(node) {
+  const allowed = allowedIn(node);
+  const asked = [...requirements()];
+  return can.effects.filter(e => !e.a_step && finishable(e)
+    && asked.every(need => !e[need] || allowed[need] === true));
+}
 
 // A structure the page can draw is one whose every own field lands somewhere
 // this renderer has a control for. Nothing is listed by name.

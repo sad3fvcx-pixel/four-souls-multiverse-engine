@@ -16,6 +16,7 @@ from types import MappingProxyType
 from typing import Any
 
 from fsme.cards.definition import Ability, CardDefinition, Static
+from fsme.cards.references import REPLACES_THE_EVENT
 from fsme.cards.types import PRINTED_NUMBERS, TYPE_WORDS, CardType
 from fsme.content import Vocabulary
 from fsme.content.vocabulary import (
@@ -38,6 +39,7 @@ from fsme.content.vocabulary import (
     NEVER,
     OPEN,
     PLAYERS,
+    REPLACING,
     STATIC,
     STEP,
     STRUCTURE,
@@ -451,6 +453,19 @@ ABILITY_ASKS = {
 What each field of an ability *asks*, which is a different question.
 """
 
+ABILITY_ALLOWS = {
+    REPLACES_THE_EVENT: REPLACING,
+}
+"""
+Which of an ability's answers lets an effect that needs something be used.
+
+One entry, and the pairing it publishes is the one the validator applies: an
+effect that reaches for the event an ability was handed only works where an
+ability was handed one. Anything offering effects reads this rather than
+knowing the field, which is the difference between a renderer that follows the
+language and one that has a copy of it.
+"""
+
 ABILITY_ASKED = {
     # What the card does, and when. Everything else is a refinement of it.
     "trigger": FIRST,
@@ -544,6 +559,7 @@ def _ability_field(field: Field[Any]) -> ParamShape:
         describes=ABILITY_WORDS.get(field.name, ""),
         asks=ABILITY_ASKS.get(field.name, ""),
         asked=ABILITY_ASKED.get(field.name, ""),
+        allows=ABILITY_ALLOWS.get(field.name, ""),
         default=None if field.name == "scope" else _default_of(field),
     )
 

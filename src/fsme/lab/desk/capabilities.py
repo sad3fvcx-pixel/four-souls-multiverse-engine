@@ -407,6 +407,9 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
                 answer: [str(one) for one in allowed]
                 for answer, allowed in parameter.domains.items()
             },
+            # Which requirement of an effect this answer satisfies, so a page
+            # offering effects can ask the shape instead of knowing the field.
+            "allows": parameter.allows,
             "names_the_node": parameter.names_the_node,
             "also": [
                 {

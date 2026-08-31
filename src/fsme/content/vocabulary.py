@@ -244,6 +244,16 @@ class Written:
     describes: str = ""
 
 
+REPLACING = "replacing"
+"""
+What an effect calls the requirement that it be inside an ability handed the
+event it changes.
+
+The name of ``EffectSpec.replacing`` as it is published, so that whatever
+pairs the requirement with the answer to it spells the requirement one way.
+"""
+
+
 @dataclass(frozen=True, slots=True)
 class ParamShape:
     """
@@ -407,6 +417,16 @@ class ParamShape:
     until that is answered, and giving the union would be giving a list that is
     wrong half the time — so what is said instead is *where the answer comes
     from*.
+    """
+
+    allows: str = ""
+    """
+    The requirement of an effect that this answer satisfies, if it is one.
+
+    An effect may only work somewhere particular, and say so — ``REPLACING``
+    is such a thing to say. Which of the holder's own questions answers it is
+    this, so a page offering effects asks the shape rather than knowing the
+    field.
     """
 
     names_the_node: bool = False

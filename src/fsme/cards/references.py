@@ -26,6 +26,18 @@ from typing import Any
 
 from .suggest import did_you_mean
 
+REPLACES_THE_EVENT = "replacement"
+"""
+Which of an ability's own answers says it was handed the event.
+
+Declared here because here is where it is enforced: an effect that reaches for
+the event an ability was handed is refused inside an ability that was not. The
+description of the language points at this name through ``ParamShape.allows``,
+so the rule and the account of the rule cannot come apart — and the account is
+all anything offering effects has to go on. Until it existed, the only way to
+find this answer was to know what it is called.
+"""
+
 GROUP_READERS = ("of", "chooser", "exclude")
 """
 Parameters on a target specification that name a group instead of carrying a
@@ -182,7 +194,7 @@ class _Ability:
         # Whether this ability is handed the event that is about to happen.
         # Read off the card, because it is the card that says so, and kept for
         # the whole walk: an effect nested three deep is in the same ability.
-        self._replacing = ability.get("replacement") is True
+        self._replacing = ability.get(REPLACES_THE_EVENT) is True
 
         # An ability's own conditions are asked before its effects run, so
         # they cannot see anything those effects store. Checking them first,
