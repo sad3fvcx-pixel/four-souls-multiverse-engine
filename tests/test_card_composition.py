@@ -342,11 +342,17 @@ def test_the_same_ability_may_read_what_it_stored_itself() -> None:
             an_ability(
                 trigger="on_play",
                 effects=[
-                    {"id": "roll_dice", "fields": {}},
+                    {"id": "roll_dice", "fields": {"store": "first"}},
+                    {"id": "roll_dice", "fields": {"store": "second"}},
                     {
                         "id": "if",
                         "fields": {
-                            "if": [{"id": "values_equal", "fields": {"of": "dice"}}],
+                            "if": [
+                                {
+                                    "id": "values_equal",
+                                    "fields": {"of": ["first", "second"]},
+                                }
+                            ],
                             "then": [COIN],
                         },
                     },

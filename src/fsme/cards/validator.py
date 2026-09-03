@@ -119,6 +119,9 @@ def validate_card(
             # with. The names inside one are references like any other, and
             # this is what says which of its keys name what.
             worked_out=(node_shapes or {}).get("worked_out"),
+            # What each condition takes, so that whichever of them reads a
+            # stored value can be found by asking rather than by name.
+            conditions=condition_shapes,
         )
     )
 
@@ -1173,18 +1176,36 @@ def _naming(
             f"and the card gives {value!r}"
         ]
 
-    if isinstance(value, str):
-        return []
+    named = (
+        [value]
+        if isinstance(value, str)
+        else list(value)
+        if isinstance(value, (list, tuple))
+        and all(isinstance(one, str) for one in value)
+        else None
+    )
 
-    if isinstance(value, (list, tuple)) and all(
-        isinstance(one, str) for one in value
-    ):
-        return []
+    if named is None:
+        return [
+            f"{where}: '{name}' takes the name something the ability chose was "
+            f"bound with, and the card gives {value!r}"
+        ]
 
-    return [
-        f"{where}: '{name}' takes the name something the ability chose was "
-        f"bound with, and the card gives {value!r}"
-    ]
+    # How few names will do, where the answer holds several. A bare name is a
+    # list of one everywhere the engine reads one of these, so it is counted
+    # as one rather than excused. Two rolls compared with one name given is a
+    # comparison that is false whatever happens, and a card that never does
+    # what it says is worth being told about while it is being written.
+    fewest = int(getattr(parameter, "names_at_least", 0) or 0)
+
+    if fewest > 1 and len(named) < fewest:
+        return [
+            f"{where}: '{name}' compares what is named here, so it needs at "
+            f"least {fewest} names, and the card gives "
+            f"{len(named)} ({value!r})"
+        ]
+
+    return []
 
 
 BY_BINDING = "FSME writes this one for you"

@@ -398,6 +398,11 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             "written": parameter.written_as,
             "instead_of": parameter.instead_of,
             "picks": parameter.refers_to,
+            # How few of them the answer may hold, where it holds several.
+            # Separate from `picks`, which says which namespace: one box for
+            # an answer that names two is how a comparison of two rolls
+            # becomes a comparison of one.
+            "picks_at_least": parameter.names_at_least,
             "a_list_of": parameter.a_list_of,
             "shaped_like": parameter.shaped_like,
             "defines": parameter.defines,

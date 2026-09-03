@@ -3503,7 +3503,8 @@ def test_a_card_keeps_the_names_its_ability_bound(
     It was 72 until `watch_for` said what its lists hold. `host_hat` bound a
     name inside its watcher, and reading that watcher as steps is what showed
     that the step inside chooses its own target — so the card is refused now,
-    and a refused card keeps nothing because it is never written back.
+    and a refused card keeps nothing because it is never written back. Then
+    `decoy` opened, which names three things and keeps all three, so 72 again.
 
     The other 33 name a choice written where it is used. Those names are not
     kept, and must not be: the builder gathers every choice into one list for
@@ -3539,7 +3540,7 @@ def test_a_card_keeps_the_names_its_ability_bound(
             kept += 1
 
     assert lost == [], lost[:5]
-    assert kept == 71, kept
+    assert kept == 72, kept
 
 
 def test_a_name_a_card_uses_is_not_a_name_a_card_makes() -> None:
@@ -3843,11 +3844,13 @@ def test_what_each_of_these_moved_is_counted(
     rather than by the reader, so the count did not move for it — and refused
     `host_hat`, whose watcher holds a step that chooses its own target. That
     is not a card lost: it opened before only because nothing read its body.
+    Saying how many names an answer holds opened `decoy`, and left twenty.
     """
     refused = {one["card"].get("id") for one in walked if one["state"] is None}
 
-    assert len(refused) == 21, sorted(refused)
+    assert len(refused) == 20, sorted(refused)
     assert "monster_deck-bosses-alt_art-the_bloat" not in refused
+    assert "treasure_deck-active_items-base_game-decoy" not in refused
     assert "treasure_deck-active_items-base_game-host_hat" in refused
 
 
@@ -4007,3 +4010,193 @@ def test_nothing_is_shown_but_not_edited_for_a_watcher_any_more(
     ]
 
     assert watching == [], watching
+
+
+# ----------------------------------------------------------------------
+# 26. An answer that holds several names
+# ----------------------------------------------------------------------
+#
+# Two answers in the language name more than one thing at once. `group.of`
+# names several the ability chose — `decoy` swaps this card with one somebody
+# else controls, and the pair is the two of them together. `values_equal.of`
+# names several an earlier step stored — `the_bloat` rolls twice and kills if
+# the results match.
+#
+# The engine has always taken either as one name or as several: two handlers,
+# four identical lines, and nowhere else in the engine. What nothing could say
+# is *how many*, because `refers_to` answers which namespace and there is no
+# second axis. These pin what that costs, so that changing it shows.
+
+
+def a_pair_is_chosen() -> dict[str, Any]:
+    """A card whose answer names two things the ability chose."""
+    return {
+        "id": "probe-loot-paired",
+        "name": "Paired",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "targets": [
+                    {"target_treasure": {"exclude_eternal": True, "as": "mine"}},
+                    {"target_treasure": {"owner": "opponents", "as": "theirs"}},
+                    {"group": {"of": ["mine", "theirs"], "as": "pair"}},
+                ],
+                "effects": [{"effect": "swap_cards", "target": "pair"}],
+            }
+        ],
+    }
+
+
+def two_rolls_are_compared() -> dict[str, Any]:
+    """A card whose answer names two values earlier steps stored."""
+    return {
+        "id": "probe-loot-compared",
+        "name": "Compared",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {"effect": "roll_dice", "sides": 6, "store": "a"},
+                    {"effect": "roll_dice", "sides": 6, "store": "b"},
+                    {
+                        "if": [{"values_equal": {"of": ["a", "b"]}}],
+                        "then": [
+                            {
+                                "effect": "gain_coins",
+                                "amount": 1,
+                                "target": "controller",
+                            }
+                        ],
+                    },
+                ],
+            }
+        ],
+    }
+
+
+def test_the_engine_takes_either_as_one_name_or_several() -> None:
+    """
+    Both handlers, and only these two in the whole engine.
+
+    Read off the handlers rather than asserted about them: what is being
+    published later is this behaviour, and a test that restated it by hand
+    would be free to drift from it.
+    """
+    from fsme.runtime.condition_evaluator import _values_equal
+    from fsme.runtime.target_resolver import _group
+
+    for handler in (_group, _values_equal):
+        source = handler.__doc__ or ""
+
+        assert source, handler.__name__
+
+    # The behaviour itself: a single name is read as a list of one. Neither
+    # handler looks at the state to do it, which is the point — this is about
+    # how the answer is spelled, not about anything on the table.
+    class _Context:
+        targets = {"mine": ["a"], "theirs": ["b"]}
+
+        def get(self, name: str) -> Any:
+            return {"a": 4, "b": 4}.get(name)
+
+    context = _Context()
+
+    assert _group(None, context, {"of": "mine"}, None) == ["a"]
+    assert _group(None, context, {"of": ["mine", "theirs"]}, None) == ["a", "b"]
+    assert _values_equal(None, context, {"of": ["a", "b"]}) is True
+
+    # One name is legal and always false, which is the whole difficulty: the
+    # checker has nothing to object to and the branch can never run.
+    assert _values_equal(None, context, {"of": "a"}) is False
+
+
+def test_a_card_that_names_several_of_what_it_chose() -> None:
+    """
+    `group.of` naming two: opens, and comes back naming the same two.
+
+    It was refused before the model could say how many an answer holds — not
+    because anything about it was unclear, but because the reader had one
+    place to put a binding and the card had two.
+    """
+    card = a_pair_is_chosen()
+
+    assert check_card(card) == [], check_card(card)
+
+    state = read_card(card)
+    once = build_card(state)
+
+    assert read_card(once) == state
+    assert json.dumps(once, sort_keys=True) == json.dumps(
+        build_card(read_card(once)), sort_keys=True
+    )
+    assert check_card(once) == [], check_card(once)
+
+    pair = next(
+        spec["group"] for spec in once["abilities"][0]["targets"] if "group" in spec
+    )
+
+    assert pair["of"] == ["mine", "theirs"], pair
+    assert once["abilities"][0]["effects"][0]["target"] == pair["as"]
+
+
+def test_only_the_answers_the_engine_reads_that_way_say_so(
+    can: dict[str, Any],
+) -> None:
+    """
+    Read off the handlers, not listed beside them.
+
+    Three published answers take one name or several, and they are exactly the
+    three the engine implements that way — `_group`, whatever counts what
+    `_group` returns, and the comparison of stored values.
+    """
+    several = {
+        (group, one["id"], field["id"])
+        for group in ("effects", "conditions", "targets", "structures")
+        for one in can[group]
+        for field in one["fields"]
+        if field["picks_at_least"]
+    }
+
+    assert several == {
+        ("targets", "group", "of"),
+        ("targets", "most_common", "of"),
+        ("conditions", "values_equal", "of"),
+    }, several
+
+    # Cardinality is a second axis, never a replacement for the first: each of
+    # them still says which namespace its names come from.
+    for group, owner, key in several:
+        field = next(
+            f
+            for one in can[group]
+            if one["id"] == owner
+            for f in one["fields"]
+            if f["id"] == key
+        )
+
+        assert field["picks"], f"{owner}.{key}"
+        assert not field["a_list_of"], f"{owner}.{key}"
+
+
+def test_a_card_that_names_several_values_it_stored() -> None:
+    """
+    What the constructor does with `values_equal.of` naming two.
+    """
+    card = two_rolls_are_compared()
+
+    assert check_card(card) == [], check_card(card)
+
+    state = read_card(card)
+    once = build_card(state)
+
+    assert read_card(once) == state
+    assert (
+        once["abilities"][0]["effects"][-1]["if"][0]["values_equal"]["of"]
+        == ["a", "b"]
+    )

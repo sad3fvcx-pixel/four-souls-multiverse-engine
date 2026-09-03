@@ -1260,6 +1260,19 @@ function referenceHtml(f, values, path) {
       <p class="muted">Nothing earlier in this card remembers a value yet.
         ${esc(whatWouldMakeOne(f.picks))}</p>`;
   }
+  // An answer the engine reads as one name or as several says so, and one
+  // box for it is how "if the two rolls match" becomes a comparison of one
+  // roll, which is never true and which nothing complains about.
+  if (f.picks_at_least) {
+    const chosen = Array.isArray(value) ? value.map(String) : value ? [String(value)] : [];
+    return `<label>${esc(asksOf(f))}${needed(f)}</label>
+      <select multiple size="${Math.min(known.length, 5)}"
+        onchange="setMany('${path}','${f.id}',this)">
+        ${known.map(n => `<option ${chosen.includes(n) ? "selected" : ""}
+          >${esc(n)}</option>`).join("")}
+      </select>
+      <p class="muted">Hold ctrl to name more than one.</p>`;
+  }
   return `<label>${esc(asksOf(f))}${needed(f)}</label>
     <select onchange="setField('${path}','${f.id}',this.value,false)">
       <option value="">${esc(fallback(f))}</option>
@@ -1447,23 +1460,41 @@ function whatWouldMakeOne(kind) {
 // behind them, which is the machinery the aim already uses.
 function groupHtml(f, groups, groupPath) {
   if (!canChoose(groupPath)) return cannotChooseHtml(f);
-  const pick = groups[f.id] || {};
   const options = can.targets.filter(t => t.aimable && fits(t, f.picks));
-  const one = (t) => `<option value="${t.id}" ${
-      t.id === pick.id ? "selected" : ""}>${esc(t.about)}</option>`;
-  const picked = can.targets.find(t => t.id === pick.id);
-  const mine = `${groupPath}.${f.id}`;
+
+  // One picker, drawn the same way whether the answer holds one of them or
+  // one of several. `at` is where this one is kept, which is the only thing
+  // that differs between the two.
+  const chooser = (pick, at) => {
+    const one = (t) => `<option value="${t.id}" ${
+        t.id === pick.id ? "selected" : ""}>${esc(t.about)}</option>`;
+    const picked = can.targets.find(t => t.id === pick.id);
+    const mine = `${groupPath}.${at}`;
+    return `<select onchange="setPick('${groupPath}','${at}',this.value)">
+        <option value="">${esc(nobody(f))}</option>
+        ${options.filter(t => t.common && !t.after).map(one).join("")}
+        <optgroup label="everything else"
+          >${options.filter(t => !t.common && !t.after).map(one).join("")}</optgroup>
+        <optgroup label="what an earlier step chose"
+          >${options.filter(t => t.after).map(one).join("")}</optgroup>
+      </select>
+      ${picked ? `<div class="nested">${fieldsHtml(picked.fields, pick.fields,
+          pick.groups, `${mine}.fields`, `${mine}.groups`, picked.id)}</div>` : ""}`;
+  };
+
+  // An answer the engine reads as one name or as several says so. Drawing one
+  // picker for it would let an author say half of what the card says, and the
+  // half that was dropped would pass every check there is.
+  if (f.picks_at_least) {
+    const held = Array.isArray(groups[f.id]) ? groups[f.id] : [];
+    return `<label>${esc(asksOf(f))}${needed(f)}</label>
+      ${held.map((pick, i) => `<div class="held"
+        >${chooser(pick, `${f.id}.${i}`)}</div>`).join("")}
+      <div class="held">${chooser({}, `${f.id}.${held.length}`)}</div>`;
+  }
+
   return `<label>${esc(asksOf(f))}${needed(f)}</label>
-    <select onchange="setPick('${groupPath}','${f.id}',this.value)">
-      <option value="">${esc(nobody(f))}</option>
-      ${options.filter(t => t.common && !t.after).map(one).join("")}
-      <optgroup label="everything else"
-        >${options.filter(t => !t.common && !t.after).map(one).join("")}</optgroup>
-      <optgroup label="what an earlier step chose"
-        >${options.filter(t => t.after).map(one).join("")}</optgroup>
-    </select>
-    ${picked ? `<div class="nested">${fieldsHtml(picked.fields, pick.fields,
-        pick.groups, `${mine}.fields`, `${mine}.groups`, picked.id)}</div>` : ""}`;
+    ${chooser(groups[f.id] || {}, f.id)}`;
 }
 
 // Said, never drawn as a box, and not the same sentence as "not built yet":
@@ -1684,8 +1715,21 @@ function setMany(path, key, box) {
 // Something the ability picks out, named behind the author's back.
 function setPick(groupPath, key, target) {
   const groups = at(groupPath);
-  if (target) groups[key] = { id: target, fields: {}, groups: {} };
-  else delete groups[key];
+  const made = target ? { id: target, fields: {}, groups: {} } : null;
+  const at_ = key.split(".");
+  const last = at_.length > 1 ? Number(at_[at_.length - 1]) : NaN;
+
+  // One of several, when the answer holds several. Which it is comes from the
+  // key the renderer wrote, and the renderer got it from the model.
+  if (!Number.isNaN(last)) {
+    const name = at_.slice(0, -1).join(".");
+    const held = Array.isArray(groups[name]) ? groups[name] : [];
+    if (made) held[last] = made; else held.splice(last, 1);
+    if (held.length) groups[name] = held.filter(Boolean); else delete groups[name];
+    return drawn();
+  }
+
+  if (made) groups[key] = made; else delete groups[key];
   drawn();
 }
 

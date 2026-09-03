@@ -558,7 +558,8 @@ NAMED_VALUES = {
         "of",
         UNCHECKED,
         refers_to=VALUES,
-        describes="the name an earlier step stored the value under",
+        names_at_least=2,
+        describes="the names earlier steps stored the values under",
     )
 }
 """
@@ -568,6 +569,11 @@ Everywhere else ``of`` names a group of objects an ability chose. Here it
 names what an ability *stored* — two dice kept apart under names so that they
 can be compared. The two namespaces never meet, and a checker that read `of`
 as one thing would be wrong about the other.
+
+They do agree about how many, though, and ``names_at_least`` is where they say
+so. `_values_equal` compares everything it is named and is false when it is
+named fewer than two, which is why an interface offering one box for it is an
+interface that can write a comparison nothing will ever satisfy.
 """
 EVENT_VALUE = _shape(
     COMPARISON,

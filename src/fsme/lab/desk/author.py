@@ -1036,16 +1036,29 @@ def _given(
     for key, pick in picked.items():
         parameter = shape.params.get(str(key))
 
-        if parameter is None or not isinstance(pick, dict):
+        if parameter is None:
             continue
 
-        target = str(pick.get("id", ""))
+        if parameter.names_at_least and isinstance(pick, (list, tuple)):
+            # One answer holding several of them. Each is bound the way a
+            # single one is, and what the answer carries is the names — so a
+            # pair chosen here is two bindings and one list, which is what the
+            # engine reads.
+            names = [
+                _named(vocabulary, one, aimed)
+                for one in pick
+                if isinstance(one, dict) and one.get("id")
+            ]
 
-        if not target:
+            if names:
+                written[str(key)] = names
+
             continue
 
-        inside = _given(vocabulary.target_shape(target), pick, aimed)
-        name = _pick_out(target, inside, aimed, str(pick.get("name", "")))
+        if not isinstance(pick, dict) or not pick.get("id"):
+            continue
+
+        name = _named(vocabulary, pick, aimed)
 
         written[str(key)] = (
             {BY_PLAYER_OF: name}
@@ -1054,6 +1067,23 @@ def _given(
         )
 
     return written
+
+
+def _named(
+    vocabulary: Any,
+    pick: Mapping[str, Any],
+    aimed: list[dict[str, Any]],
+) -> str:
+    """
+    One thing an answer points at, bound and given back as its name.
+
+    Only reached where there is somewhere to bind it: the caller returns
+    before this when nothing is gathering what the card chooses.
+    """
+    target = str(pick.get("id", ""))
+    inside = _given(vocabulary.target_shape(target), pick, aimed)
+
+    return _pick_out(target, inside, aimed, str(pick.get("name", "")))
 
 
 def _written_inside(
@@ -1895,15 +1925,26 @@ def _as_chosen(
 
         if (
             parameter is not None
-            and parameter.refers_to
-            and parameter.refers_to != VALUES
+            and parameter.names_at_least
             and isinstance(value, (list, tuple))
-            and any(str(one) in bound for one in value)
         ):
+            # An answer the engine reads as one name or as several. Each name
+            # is followed the way a single one is, so what comes back is the
+            # same answer repeated rather than a second kind of thing.
+            several = [
+                _as_chosen(said, bound[str(one)], bound, seen | {str(one)}, str(one))
+                for one in value
+                if str(one) in bound and str(one) not in seen
+            ]
+
+            if len(several) == len(value):
+                groups[str(key)] = several
+
+                continue
+
             raise UnreadableCard(
-                f"{kind!r} is built out of several things the ability chose "
-                f"({', '.join(str(one) for one in value)}), and an answer "
-                "holds one. This card is edited in full."
+                f"{kind!r} names {', '.join(str(one) for one in value)}, and "
+                "not all of those are things this card binds."
             )
 
         pointed = None if parameter is None else _points_at(parameter, value)

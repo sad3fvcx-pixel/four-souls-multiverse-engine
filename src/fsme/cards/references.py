@@ -103,6 +103,7 @@ def validate_references(
     card_id: str,
     effects: Mapping[str, Any] | None = None,
     worked_out: Any = None,
+    conditions: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Check every name an ability uses against the names it binds.
@@ -120,6 +121,7 @@ def validate_references(
                 targets=frozenset(known_targets or ()),
                 card_id=card_id,
                 worked_out=worked_out,
+                conditions=conditions or {},
             ).check(ability, where)
         )
 
@@ -162,9 +164,20 @@ class _Ability:
         card_id: str,
         effects: Mapping[str, Any] | None = None,
         worked_out: Any = None,
+        conditions: Mapping[str, Any] | None = None,
     ) -> None:
         self._shapes = shapes
         self._effects = effects or {}
+        # Which conditions read a value an earlier step stored, and by which
+        # answer. Asked of the shapes rather than named here: a condition the
+        # engine gains later is found by this too, and a name written down
+        # would be a second copy of a fact the shape already carries.
+        self._reads_values = {
+            name: parameter
+            for name, shape in (conditions or {}).items()
+            for parameter in getattr(shape, "params", {}).values()
+            if parameter.refers_to == VALUES
+        }
         # Which keys of a worked-out value name something, and what kind of
         # thing each names. Read off the shape rather than listed here: the
         # executor resolves exactly these, and a list would be a second copy.
@@ -507,8 +520,9 @@ class _Ability:
         """
         The other namespace.
 
-        Only one condition reads it — ``values_equal`` compares things an
-        ability stored — and a name it cannot find was never stored.
+        Which conditions read it is the shapes' own answer — a parameter
+        that says it names a stored value is one — and a name it cannot find
+        was never stored.
         """
         if isinstance(nodes, Mapping):
             nodes = [nodes]
@@ -524,15 +538,33 @@ class _Ability:
 
                 continue
 
-            if name != "values_equal":
+            parameter = self._reads_values.get(name)
+
+            if parameter is None:
                 continue
 
-            for named in _names(params.get("of")):
-                if named not in values:
+            named = _names(params.get(parameter.name))
+
+            for one in named:
+                if one not in values:
                     self._say(
-                        f"{path}[{index}]: '{named}' is not a value this "
-                        f"ability stores{did_you_mean(named, values)}"
+                        f"{path}[{index}]: '{one}' is not a value this "
+                        f"ability stores{did_you_mean(one, values)}"
                     )
+
+            # How few names will do. A condition comparing what it is named
+            # needs two of them, and one is a comparison that is false
+            # whatever happens — legal to the engine, and never what anybody
+            # meant. Said by the shape, so a condition gaining or losing the
+            # requirement carries it here without this being touched.
+            fewest = int(getattr(parameter, "names_at_least", 0) or 0)
+
+            if fewest > 1 and len(named) < fewest:
+                self._say(
+                    f"{path}[{index}]: '{name}' compares what is named here, "
+                    f"so it needs at least {fewest} names, and the card gives "
+                    f"{len(named)}"
+                )
 
     def _unknown(self, named: str, groups: Mapping[str, str]) -> str:
         """

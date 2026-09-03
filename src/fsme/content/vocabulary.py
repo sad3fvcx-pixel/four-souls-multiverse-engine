@@ -495,6 +495,29 @@ class ParamShape:
     the words for it and no more.
     """
 
+    names_at_least: int = 0
+    """
+    The fewest names this answer holds, where it holds several of them.
+
+    ``refers_to`` says which namespace a name is drawn from; this says how
+    many names go in the answer, and the two are separate questions. Nought
+    means exactly one, which is nearly every naming parameter there is.
+    Anything above nought means several are allowed, and says how few will do.
+
+    "Swap this with an item somebody else controls" is one answer holding both
+    halves of the pair, and one half is a pair somebody has not finished
+    choosing: `group` reads whatever it is given, so its floor is one. "If the
+    two rolls match" is one answer holding both rolls, and one roll matches
+    nothing: `values_equal` is false below two, so its floor is two. Both
+    sentences are already written in the handlers; this is where they are said
+    somewhere a form can read them.
+
+    Not a list of nodes, which is ``a_list_of``, and not a choice of several
+    values from a closed set, which follows from ``A_LIST`` and ``values``, and
+    not the floor under a number, which is ``least``. A parameter that says
+    this still names, and still names what ``refers_to`` says it names.
+    """
+
     @property
     def checkable(self) -> bool:
         return self.kind != UNCHECKED

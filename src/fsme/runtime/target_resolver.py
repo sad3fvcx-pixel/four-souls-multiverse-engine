@@ -737,11 +737,17 @@ ANY_BOUND_GROUP = {
         "of",
         A_BOUND_GROUP,
         refers_to=ANY_GROUP,
+        names_at_least=1,
         describes="which of the things this ability already chose",
     )
 }
 """
 What ``_group`` reads: one name or several, of anything at all.
+
+``names_at_least`` is that sentence, said where the sentence is true. `_group`
+takes a bare name as a list of one and extends its members from each name it
+is given; `_most_common` counts what `_group` returns, so it says the same
+thing by reading the same shape.
 """
 
 

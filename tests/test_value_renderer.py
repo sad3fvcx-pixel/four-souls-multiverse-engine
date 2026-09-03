@@ -287,22 +287,35 @@ def test_a_reference_is_not_free_text(can: dict[str, Any]) -> None:
 
 
 def test_reading_a_name_an_earlier_step_made_makes_a_card() -> None:
+    """
+    Two rolls kept apart, and a branch that reads both names back.
+
+    Two because that is what a comparison is: `values_equal` is false when it
+    is named fewer, and the answer says so, so a card naming one is refused
+    rather than loaded and quietly never true.
+    """
     card = a_card(
         [
-            {"id": "roll_dice", "fields": {"sides": 6}},
+            {"id": "roll_dice", "fields": {"sides": 6, "store": "first"}},
+            {"id": "roll_dice", "fields": {"sides": 6, "store": "second"}},
             {
                 "id": "if",
                 "fields": {
-                    "if": [{"id": "values_equal", "fields": {"of": "dice"}}],
+                    "if": [
+                        {
+                            "id": "values_equal",
+                            "fields": {"of": ["first", "second"]},
+                        }
+                    ],
                     "then": [{"id": "gain_coins", "fields": {"amount": 1}}],
                 },
             },
         ]
     )
 
-    assert check_card(card) == []
-    assert card["abilities"][0]["effects"][1]["if"] == [
-        {"values_equal": {"of": "dice"}}
+    assert check_card(card) == [], check_card(card)
+    assert card["abilities"][0]["effects"][2]["if"] == [
+        {"values_equal": {"of": ["first", "second"]}}
     ]
 
 
