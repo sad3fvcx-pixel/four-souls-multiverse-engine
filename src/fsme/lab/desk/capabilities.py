@@ -136,15 +136,18 @@ What describes a card's ability: the ability itself, and the shape of what it
 charges. ``mode`` is not here — it belongs to ``choose``, which is a structure.
 """
 
-STRUCTURE_NODES = (*sorted(CONTROL_NAMES), "mode", "worked_out", "named_count")
+STRUCTURE_NODES = (
+    *sorted(CONTROL_NAMES), "mode", "worked_out", "named_count", "change"
+)
 """
 The nodes that shape what happens, and the one small shape they refer to.
 
-``mode``, ``worked_out`` and ``named_count`` are published beside them rather
-than on their own because none of them is a thing a card writes by itself: one
-is what a ``choose`` is a list of, and the other two are the second way of
-writing a value somewhere else. A name in ``a_list_of`` or ``shaped_like``
-that nothing describes would be a promise this layer cannot keep.
+``mode``, ``worked_out``, ``named_count`` and ``change`` are published beside
+them rather than on their own because none of them is a thing a card writes by
+itself: one is what a ``choose`` is a list of, two are the second way of writing
+a value somewhere else, and a change is what a ``promise`` owes to one value an
+event carries. A name in ``a_list_of`` or ``shaped_like`` that nothing describes
+would be a promise this layer cannot keep.
 """
 
 STATIC_NODES = ("static",)
@@ -208,6 +211,7 @@ ABOUT_NODES = {
     "mode": "one option of a choice",
     "worked_out": "a value the ability works out while it runs",
     "named_count": "a price paid in counters of a named kind",
+    "change": "one change to a value an event carries",
     "if": "depending on something",
     "may": "the controller may choose to",
     "choose": "one of several options",

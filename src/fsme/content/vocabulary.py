@@ -157,6 +157,7 @@ COST = "cost"
 STEP = "step"
 WORKED_OUT = "worked_out"
 NAMED_COUNT = "named_count"
+CHANGE = "change"
 ABILITY = "ability"
 STATIC = "static"
 CARD = "card"
@@ -170,6 +171,7 @@ NODES = (
     STEP,
     WORKED_OUT,
     NAMED_COUNT,
+    CHANGE,
     ABILITY,
     STATIC,
     CARD,
@@ -187,7 +189,8 @@ Three of them are described by registries a card already reads — ``effect``,
 that happen really holds: an effect node, or a control node, and a list whose
 elements may be either is not a list of effects however it is usually written.
 The rest are described by node shapes of their own, because nothing else
-describes them: ``mode``, ``cost``, ``worked_out`` and ``named_count``.
+describes them: ``mode``, ``cost``, ``worked_out``, ``named_count`` and
+``change``.
 
 The last three are the card itself and the two lists it is made of. A card is
 not one rule with some numbers beside it — it is a composition, and ``abilities``

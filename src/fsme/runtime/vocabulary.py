@@ -29,6 +29,7 @@ from fsme.content.vocabulary import (
     BY_PLAYER_OF,
     CARD,
     CARDS,
+    CHANGE,
     CONDITION,
     COST,
     DEEPER,
@@ -62,6 +63,7 @@ from fsme.rules.loot import PLAYED_BY
 from fsme.rules.restrictions import ACTION_WORDS, ACTIONS
 from fsme.rules.statics import MONSTER_SCOPES, SCOPE_WORDS, STATIC_SCOPES
 from fsme.state.modifiers import MONSTER_STATS, STAT_WORDS, STATS
+from fsme.state.promises import CAP, CHANGES, DELTA, FACTOR, FLIP, FLOOR, VALUE
 
 from .condition_evaluator import ConditionEvaluator
 from .effect_executor import COUNTABLE, WORKING_OUT
@@ -198,6 +200,7 @@ def _node_shapes() -> Mapping[str, NodeShape]:
             MODE: _MODE,
             WORKED_OUT: _WORKED_OUT,
             NAMED_COUNT: _NAMED_COUNT,
+            CHANGE: _CHANGE,
             **{
                 name: NodeShape(
                     name=name,
@@ -775,6 +778,63 @@ A price paid in counters, when the card has more than one kind on it.
 
 `_counter_cost` reads a plain number as `charge` counters and this as any of
 them, which is two ways of writing one price.
+"""
+
+
+CHANGE_WORDS = {
+    VALUE: "what to put there instead",
+    DELTA: "add this to it",
+    FACTOR: "multiply it by this",
+    CAP: "lower it to at most this",
+    FLOOR: "raise it to at least this",
+    FLIP: "read it from the other side: this less what it was",
+}
+"""
+What each of the six changes does, as a question rather than as prose.
+
+``state/promises.py`` states them for a reader — "Lower a number to at most
+this" — and a form needs them for somebody filling one in. Read by name from
+``CHANGES`` below, so a change the engine gains and nobody describes fails
+where it is built rather than reaching a person as a bare word.
+"""
+
+
+def _one_change(name: str) -> ParamShape:
+    """
+    One of the six, as a question.
+
+    ``value`` is the one that is not a number: it puts back whatever the event
+    should carry, which on `compost` is the word "discard". The other five read
+    a number and compose in the order ``CHANGES`` lists them — and every one of
+    them is moot once ``value`` is written, because ``apply_to`` settles the
+    value and moves on before any of them runs. That is not a rule invented
+    here; it is the ``continue`` in the applier, said with the language's own
+    word for a question another answer has already closed.
+    """
+    if name == VALUE:
+        return ParamShape(name, UNCHECKED, role=OPEN, describes=CHANGE_WORDS[name])
+
+    return ParamShape(name, WHOLE, unless=VALUE, describes=CHANGE_WORDS[name])
+
+
+_CHANGE = NodeShape(
+    name=CHANGE,
+    params=MappingProxyType({name: _one_change(name) for name in CHANGES}),
+)
+"""
+One change a promise owes to a value an event carries.
+
+The six ways the engine has of changing such a value, which until this were
+declared in ``state/promises.py``, enforced in ``promise`` itself, and
+described nowhere — so three of them, ``cap``, ``floor`` and ``flip``, could
+not be found by anybody who did not already know they existed, and three of the
+four promises in the shipped sets use one.
+
+Nothing here is required. A change carries one of the six, or several of the
+five that compose; insisting on any would refuse every promise ever written.
+
+The names are ``CHANGES`` itself, in its order, so this cannot come to describe
+an operation the engine does not have or miss one it gains.
 """
 
 

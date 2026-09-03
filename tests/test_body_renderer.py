@@ -377,6 +377,7 @@ def test_the_metadata_says_which_shapes_are_things_that_happen(
         "mode",
         "worked_out",
         "named_count",
+        "change",
     }
 
 
