@@ -779,7 +779,9 @@ def _written_node(
         if value not in (None, "", [], {}):
             written[name] = value
 
-    written.update(_given(shape, {"fields": {}, "groups": picked}, aimed))
+    for key, value in _given(shape, {"fields": {}, "groups": picked}, aimed).items():
+        # Never over what the node has already said, for the reason above.
+        written.setdefault(key, value)
 
     return written
 
@@ -1079,6 +1081,14 @@ def _given(
             continue
 
         name = _named(vocabulary, pick, aimed)
+
+        # An answer that already said what it is keeps saying it. A group
+        # beside such an answer is there because the answer *names* something
+        # from inside itself — "as much loot as that player holds" — and what
+        # it needs is for the thing to be bound, not for the expression to be
+        # replaced by the name of it.
+        if str(key) in written:
+            continue
 
         written[str(key)] = (
             {BY_PLAYER_OF: name}
@@ -1733,9 +1743,15 @@ def _read_step(
         pointed = _points_at(parameter, value)
 
         if pointed is None:
-            # Not a name this understands. It may still be a value the ability
-            # works out from one, which is a name it would drop.
-            _refuse_a_working(said, name, str(key), parameter, value, bound)
+            # Not a name outright. It may still be an answer that names one
+            # from inside — a value worked out from a player the ability
+            # chose. The expression stays exactly as the card wrote it, and
+            # what it names is kept beside it so that writing the card back
+            # binds the same thing at the same moment.
+            named = _named_inside(said, parameter, value, bound)
+
+            if named is not None:
+                groups[str(key)] = named[1]
 
             # An effect may hold more of the language — `watch_for` keeps the
             # steps it will run and what must be true when it does — and the
@@ -1880,6 +1896,7 @@ def _read_control(
             )
 
     fields: dict[str, Any] = {}
+    groups: dict[str, Any] = {}
 
     for key, value in written.items():
         parameter = shape.params.get(str(key))
@@ -1889,15 +1906,16 @@ def _read_control(
                 f"{name!r} says {key!r}, which the engine does not describe."
             )
 
-        if not parameter.a_list_of and _names_one_of(value, bound):
-            # A value that points at something the ability chose. The builder
-            # binds what a card picks out under names of its own making, so a
-            # name written here would be written back pointing at nothing.
-            raise UnreadableCard(
-                f"{name!r} points at something the ability chose. Folding that "
-                "up would leave it pointing at nothing, so this card is edited "
-                "in full."
-            )
+        if not parameter.a_list_of:
+            # An answer that names something the ability chose from inside —
+            # a loop whose domain is "the items that player controls". Kept
+            # the same way a step's is: the specification unchanged, and what
+            # it names beside it, so the binding is still there to be found
+            # when the loop is expanded.
+            named = _named_inside(said, parameter, value, bound)
+
+            if named is not None:
+                groups[str(key)] = named[1]
 
         read = (
             _read_value(said, parameter, value, str(key), bound)
@@ -1908,7 +1926,7 @@ def _read_control(
         if read is not _NOT_AN_ANSWER:
             fields[str(key)] = read
 
-    step: dict[str, Any] = {"id": name, "fields": fields, "groups": {}}
+    step: dict[str, Any] = {"id": name, "fields": fields, "groups": groups}
 
     if aimed is None:
         return step
@@ -1918,24 +1936,6 @@ def _read_control(
         "ability would change which steps it reaches, so this card is edited "
         "in full."
     )
-
-
-def _names_one_of(
-    value: Any, bound: Mapping[str, tuple[str, dict[str, Any], str]]
-) -> bool:
-    """
-    Whether anything written in this value is a name the part bound.
-    """
-    if isinstance(value, str):
-        return value in bound
-
-    if isinstance(value, Mapping):
-        return any(_names_one_of(one, bound) for one in value.values())
-
-    if isinstance(value, (list, tuple)):
-        return any(_names_one_of(one, bound) for one in value)
-
-    return False
 
 
 def _also_called(step: dict[str, Any], called: str) -> dict[str, Any]:
@@ -1951,51 +1951,80 @@ def _also_called(step: dict[str, Any], called: str) -> dict[str, Any]:
     return step | {"aim_name": mine} if mine else step
 
 
-def _refuse_a_working(
+def _named_inside(
     said: Any,
-    effect: str,
-    key: str,
     parameter: Any,
     value: Any,
     bound: Mapping[str, tuple[str, dict[str, Any], str]],
-) -> None:
+) -> tuple[str, dict[str, Any]] | None:
     """
-    Refuse a value the ability works out from something it chose.
+    What an answer names, when it names it from inside rather than outright.
 
-    ``{"count": "loot", "of": "rival"}`` is "as many as that player holds", and
-    the name in it is one the ability bound. Reading the answer without the
-    binding would leave a card counting nobody's hand, so the whole card goes
-    to the editor rather than half of it here.
+    `_points_at` reads the two spellings an answer uses when the whole of it is
+    a name. Some answers are not a name but a small node that contains one:
+    "as much loot as that player is holding" is a value worked out while the
+    ability runs, and the player it counts is named inside it; a loop's domain
+    is a target specification, and whose things it walks is named inside that.
 
-    What is refused is a value that names something *this ability chose* —
-    which is a question about the name, not about the key holding it. ``of``
-    names something whether that something was chosen here or was standing
-    there all along, and "as much loot as the controller holds" needs nothing
-    kept: the controller is the controller in any card that mentions them.
+    Both are already described. The parameter says which node its value may
+    be, that node's own shape says which of *its* answers name something, and
+    what they name is the same binding a step points at outright. So this
+    follows the description one level down rather than knowing anything about
+    the answers it finds there.
+
+    What comes back is the key that named it and the thing it named, or
+    nothing. The value itself is left alone: it is an expression the engine
+    works out while the card is played, and reading it is not evaluating it.
     """
     if not isinstance(value, Mapping):
-        return
+        return None
 
-    working = said.node_shape(WORKED_OUT)
+    for shape, body in _how_it_may_be_written(said, parameter, value):
+        if shape is None:
+            continue
 
-    if working is None or not any(
-        way.shaped_like == WORKED_OUT for way in parameter.also
-    ):
-        return
+        for key, inside in shape.params.items():
+            pointed = _points_at(inside, body.get(key))
 
-    named = [
-        head
-        for head in value
-        if getattr(working.params.get(str(head)), "refers_to", "")
-        and str(value[head]) in bound
-    ]
+            if pointed is not None and pointed in bound:
+                return str(key), _as_chosen(
+                    said, bound[pointed], bound, frozenset({pointed}), pointed
+                )
 
-    if named:
-        raise UnreadableCard(
-            f"{effect!r} works {key!r} out from something the ability chose "
-            f"({', '.join(sorted(named))}). Cards that do that are edited "
-            "in full."
-        )
+    return None
+
+
+def _how_it_may_be_written(
+    said: Any, parameter: Any, value: Mapping[str, Any]
+) -> Iterator[tuple[Any, Mapping[str, Any]]]:
+    """
+    Each described node this answer may hold, with the body to read it by.
+
+    Two sorts, and the parameter says which it is. A node of a named shape —
+    a worked-out value, a cost — is the value itself, whether the parameter
+    holds one always or says it is one of the ways it may be written. A target
+    is written as one key naming the kind, so the kind is looked up and the
+    body is what is under it.
+    """
+    from fsme.runtime.target_resolver import normalise as a_target
+
+    shapes = [parameter.shaped_like] + [way.shaped_like for way in parameter.also]
+
+    for kind in shapes:
+        if not kind:
+            continue
+
+        if kind == TARGET:
+            try:
+                name, params = a_target(_plainly(value))
+            except (TypeError, ValueError):
+                continue
+
+            yield said.target_shape(name), params
+
+            continue
+
+        yield said.node_shape(kind), value
 
 
 def _points_at(parameter: Any, value: Any) -> str | None:

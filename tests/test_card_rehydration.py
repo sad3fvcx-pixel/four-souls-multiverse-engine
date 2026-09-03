@@ -463,14 +463,12 @@ def test_where_a_short_spelling_lands_is_named_once() -> None:
 @pytest.mark.parametrize(
     "written_as, expect",
     [
-        (
-            {
-                "effect": "draw_loot",
-                "count": {"count": "loot", "of": "rival"},
-                "targets": [{"target_player": {"as": "rival"}}],
-            },
-            "in full",
-        ),
+        # A step that picks something out for itself is read now, and so is a
+        # value worked out from a name the ability chose. What still cannot be
+        # read is a node written two ways at once: the engine reads one of
+        # them and drops the other, so the card would come back saying
+        # something it did not say.
+        ({"repeat": 2, "times": 3, "effects": []}, "in full"),
         ({"effect": "gain_coins", "target": "nobody_binds_this"}, "binds"),
         # An effect that leaves nothing behind, asked to name what it left.
         # `roll_dice` may be asked, because it says it stores something; this
@@ -720,10 +718,11 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
     workspace: Path,
 ) -> None:
     """
-    Not opened half way. A control node is read now, and so is one that keeps
-    what it chose under a name, and so is a step that picks something out for
-    itself — so what is checked here is a card that still cannot be: one whose
-    step works a number out from a name the ability chose.
+    Not opened half way. Nearly everything is read now — a control node, a
+    step that keeps its result under a name, a step that picks something out
+    for itself, a value worked out from a name the ability chose. What is
+    checked here is one of the few that still cannot be: a node written two
+    ways at once, where the engine reads one and drops the other.
     """
     from fsme.lab.desk.author import make_set, sets
 
@@ -746,18 +745,9 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
                                         "if": ["dice_equals"],
                                         "then": [
                                             {
-                                                "effect": "draw_loot",
-                                                "count": {
-                                                    "count": "loot",
-                                                    "of": "rival",
-                                                },
-                                                "targets": [
-                                                    {
-                                                        "target_player": {
-                                                            "as": "rival"
-                                                        }
-                                                    }
-                                                ],
+                                                "repeat": 2,
+                                                "times": 3,
+                                                "effects": [],
                                             }
                                         ],
                                     }
@@ -778,7 +768,7 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
 
     said = str(refused.value)
 
-    assert "'draw_loot'" in said
+    assert "'repeat'" in said
     assert "in full" in said
 
 
@@ -3555,15 +3545,16 @@ def test_a_card_keeps_the_names_its_ability_bound(
 ) -> None:
     """
     101 shipped cards name something and none kept a name through a round
-    trip before this. **126** do now — every card whose names are bound by the
+    trip before this. **129** do now — every card whose names are bound by the
     ability, every control node that keeps what it chose under one, and every
     step that picks something out for itself.
 
-    The number went 71, 72, and then here. What moved it last was the choice
-    a card writes where it uses it: those names used to be thrown away,
-    because the builder gathered every choice into one list for the ability
-    and a word had to mean one thing there. Nothing is gathered up any more,
-    so a word means one thing where it is written and the card keeps it.
+    The number went 71, 72, 126, and then here. What moved it most was the
+    choice a card writes where it uses it: those names used to be thrown
+    away, because the builder gathered every choice into one list for the
+    ability and a word had to mean one thing there. Nothing is gathered up any
+    more, so a word means one thing where it is written and the card keeps it.
+    The last three are the cards that name a binding from inside a value.
 
     The other 33 name a choice written where it is used. Those names are not
     kept, and must not be: the builder gathers every choice into one list for
@@ -3599,7 +3590,7 @@ def test_a_card_keeps_the_names_its_ability_bound(
             kept += 1
 
     assert lost == [], lost[:5]
-    assert kept == 126, kept
+    assert kept == 129, kept
 
 
 def test_a_name_a_card_uses_is_not_a_name_a_card_makes() -> None:
@@ -3935,21 +3926,28 @@ def test_what_each_of_these_moved_is_counted(
     Saying how many names an answer holds opened `decoy`, and left twenty.
 
     Then a step was allowed to keep what it chooses, which opened seventeen
-    and left three. The three are not step-local bindings at all: each works
-    a number out from, or points a `for_each` at, a name the ability chose,
-    and that is a different sentence.
+    and left three. The three were not step-local bindings at all: each works
+    a number out from, or points a `for_each` at, a name the ability chose.
+    Following a name written inside such an answer opened those, and left
+    none.
+
+    None is not the point and is not a target. What the number is for is that
+    a change opening a card it was not about gets noticed, and every card
+    below is one this pass has a reason for.
     """
     refused = {one["card"].get("id") for one in walked if one["state"] is None}
 
-    assert len(refused) == 3, sorted(refused)
-    assert {one.split("-")[-1] for one in refused} == {
-        "famine",
-        "viii_justice",
-        "the_d4",
-    }, sorted(refused)
-    assert "monster_deck-bosses-alt_art-the_bloat" not in refused
-    assert "treasure_deck-active_items-base_game-decoy" not in refused
-    assert "treasure_deck-active_items-base_game-host_hat" not in refused
+    assert refused == set(), sorted(refused)
+
+    for opened in (
+        "monster_deck-bosses-alt_art-the_bloat",
+        "treasure_deck-active_items-base_game-decoy",
+        "treasure_deck-active_items-base_game-host_hat",
+        "monster_deck-bosses-alt_art-famine",
+        "loot_deck-cards_miscellaneous-base_game-viii_justice",
+        "treasure_deck-one_use_items-base_game-the_d4",
+    ):
+        assert any(one["card"]["id"] == opened for one in walked), opened
 
 
 # ----------------------------------------------------------------------
@@ -4643,3 +4641,286 @@ def test_a_step_that_chooses_twice_keeps_the_order_it_asked_in() -> None:
     assert [
         str(next(iter(one.values()))["as"]) for one in step["targets"]
     ] == ["mine", "theirs", "pair"], step["targets"]
+
+
+# ----------------------------------------------------------------------
+# 28. An answer that names something from inside itself
+# ----------------------------------------------------------------------
+#
+# `_points_at` reads the two spellings an answer uses when the whole of it is
+# a name. Some answers are not a name but a small node holding one: "loot
+# until you have as many as they do" is a value the engine works out while the
+# ability runs, and the player it counts is named inside it; a loop's domain
+# is a target specification, and whose things it walks is named inside that.
+#
+# Both were already described — the parameter says which node its value may
+# be, and that node's shape says which of its answers name something. The
+# reader followed a name at the top of an answer and not one inside it, so a
+# card whose only mention of a binding was inside such a value came back with
+# nothing bound. Six cards using `player_of` worked all along, because that
+# spelling happens to sit where the reader was looking.
+#
+# The value is an expression, computed when its step runs. Reading it is not
+# evaluating it, and none of this turns it into a number.
+
+
+def only_names_it_inside() -> dict[str, Any]:
+    """
+    A card whose binding is named nowhere but inside a worked-out value.
+
+    The case an aim cannot rescue: nothing else mentions `rival`, so if the
+    reader does not follow the name, nothing rebuilds the choice.
+    """
+    return {
+        "id": "probe-loot-inside",
+        "name": "Inside",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "targets": [
+                    {"target_player": {"exclude_controller": True, "as": "rival"}}
+                ],
+                "effects": [
+                    {
+                        "effect": "draw_loot",
+                        "count": {"count": "loot", "of": "rival"},
+                    }
+                ],
+            }
+        ],
+    }
+
+
+def a_loop_that_names_it_inside() -> dict[str, Any]:
+    """
+    The same, one construct along: a loop whose domain names the binding.
+    """
+    return {
+        "id": "probe-loot-looping",
+        "name": "Looping",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "targets": [{"target_player": {"as": "whoever"}}],
+                "effects": [
+                    {
+                        "for_each": {"owned_treasure": {"of": "whoever"}},
+                        "effects": [{"effect": "destroy_treasure"}],
+                    }
+                ],
+            }
+        ],
+    }
+
+
+def test_a_name_inside_an_answer_is_found() -> None:
+    """
+    And the binding comes back, though nothing else on the card mentions it.
+    """
+    once = round_trip(only_names_it_inside())
+    bound = [
+        str(next(iter(one.values()))["as"])
+        for one in once["abilities"][0].get("targets", ())
+    ]
+
+    assert bound == ["rival"], once["abilities"][0].get("targets")
+
+
+def test_the_expression_is_kept_and_not_worked_out() -> None:
+    """
+    The card says "as many as they are holding". It must not come back saying
+    a number — the number is not knowable while the card is being written.
+    """
+    once = round_trip(only_names_it_inside())
+    count = once["abilities"][0]["effects"][0]["count"]
+
+    assert count == {"count": "loot", "of": "rival"}, count
+    assert not isinstance(count, int)
+
+
+def test_the_binding_is_found_on_purpose_not_by_luck() -> None:
+    """
+    `famine` and `the_d4` both aim a step at the same name they work a value
+    out from, so an aim would rebuild their bindings either way. These do not:
+    the only mention is inside the value, and it is still bound.
+    """
+    for card in (only_names_it_inside(), a_loop_that_names_it_inside()):
+        once = round_trip(card)
+
+        assert once["abilities"][0].get("targets"), card["id"]
+
+
+def test_a_loop_keeps_the_domain_it_walks() -> None:
+    """
+    The specification is written back as written. Turning it into the name of
+    a binding would move when the loop's domain is worked out.
+    """
+    once = round_trip(a_loop_that_names_it_inside())
+    loop = once["abilities"][0]["effects"][0]
+
+    assert loop["for_each"] == {"owned_treasure": {"of": "whoever"}}, loop
+
+
+def test_the_three_cards_this_was_for_open(walked: list[dict[str, Any]]) -> None:
+    """
+    `famine`, `viii_justice` and `the_d4`, each keeping its expression and the
+    binding that expression names.
+    """
+    wanted = {
+        "monster_deck-bosses-alt_art-famine": (
+            "discard_loot",
+            "count",
+            {"count": "loot", "of": "loser"},
+            "loser",
+        ),
+        "loot_deck-cards_miscellaneous-base_game-viii_justice": (
+            "draw_loot",
+            "count",
+            {"count": "loot", "of": "rival", "minus": "controller"},
+            "rival",
+        ),
+    }
+
+    for card_id, (effect, key, expression, name) in wanted.items():
+        one = next(row for row in walked if row["card"]["id"] == card_id)
+
+        assert one["state"] is not None, one["why"]
+
+        step = next(
+            s
+            for part in one["once"]["abilities"]
+            for s in part["effects"]
+            if s.get("effect") == effect
+        )
+
+        assert step[key] == expression, step
+        assert name in {
+            str(next(iter(spec.values()))["as"])
+            for part in one["once"]["abilities"]
+            for spec in part.get("targets", ())
+        }
+
+    d4 = next(
+        row
+        for row in walked
+        if row["card"]["id"] == "treasure_deck-one_use_items-base_game-the_d4"
+    )
+
+    assert d4["state"] is not None, d4["why"]
+
+    loop = d4["once"]["abilities"][0]["effects"][1]["then"][0]
+
+    assert loop["for_each"] == {
+        "owned_treasure": {"of": "rerolled_player", "exclude_eternal": True}
+    }, loop
+
+
+def test_the_cards_that_already_worked_still_do(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    Six cards name a player from inside a value the other way round, with the
+    one dynamic head the reader already followed. Nothing about them changes.
+    """
+    theirs = {
+        "forever_alone",
+        "jawbone",
+        "donation_machine",
+        "baby_haunt",
+        "daddy_haunt",
+        "guppy_s_head",
+    }
+    seen = 0
+
+    for row in walked:
+        if row["card"]["id"].split("-")[-1] not in theirs:
+            continue
+
+        if "player_of" not in json.dumps(row["card"]):
+            continue
+
+        seen += 1
+
+        assert row["state"] is not None, row["why"]
+        assert row["again"] == row["state"], row["card"]["id"]
+        assert not check_card(row["once"]), check_card(row["once"])
+
+        # And the answer is still written the way the card wrote it.
+        assert "player_of" in json.dumps(row["once"]), row["card"]["id"]
+
+    assert seen == len(theirs), seen
+
+
+def test_nothing_is_refused_any_more(walked: list[dict[str, Any]]) -> None:
+    """
+    Every shipped card with rules opens. Which is not the point — the point is
+    that each of the three tests above holds while it does.
+    """
+    refused = [one["card"]["id"] for one in walked if one["state"] is None]
+
+    assert refused == [], refused
+
+
+def test_when_each_of_them_is_asked_did_not_move(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    The three layers: the binding chosen before any step, the value worked out
+    when its step runs, the loop expanded when the loop runs. A round trip may
+    not move any of them, and the one that could have moved is the binding.
+    """
+    for row in walked:
+        if row["state"] is None:
+            continue
+
+        was, now = when_asked(row["card"]), when_asked(row["once"])
+
+        for name, when in was.items():
+            assert now.get(name, when) == when, (row["card"]["id"], name)
+
+
+def test_a_name_inside_an_answer_obeys_the_same_scope(
+    walked: list[dict[str, Any]],
+) -> None:
+    """
+    Nothing new: an answer sees what its step sees, which is its own scope and
+    the scopes around it. A binding made inside a branch is still not there
+    for an answer outside it, and the checker still says so.
+    """
+    card = {
+        "id": "probe-loot-outside",
+        "name": "Outside",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "may": [
+                            {
+                                "effect": "deal_damage",
+                                "amount": 1,
+                                "targets": [{"target_player": {"as": "rival"}}],
+                                "target": "rival",
+                            }
+                        ]
+                    },
+                    {
+                        "effect": "draw_loot",
+                        "count": {"count": "loot", "of": "rival"},
+                    },
+                ],
+            }
+        ],
+    }
+
+    assert check_card(card), "a name escaped the branch that bound it"
+    assert "not where this can see it" in check_card(card)[0]
