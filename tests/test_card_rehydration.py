@@ -465,9 +465,9 @@ def test_where_a_short_spelling_lands_is_named_once() -> None:
     [
         (
             {
-                "effect": "deal_damage",
-                "amount": 1,
-                "targets": [{"target_player": {}}],
+                "effect": "draw_loot",
+                "count": {"count": "loot", "of": "rival"},
+                "targets": [{"target_player": {"as": "rival"}}],
             },
             "in full",
         ),
@@ -523,16 +523,66 @@ def test_a_step_that_picks_for_itself_says_why_it_is_refused(
     walked: list[dict[str, Any]],
 ) -> None:
     """
-    Not a shrug. Folding a step's own choice up to the ability would let a
-    later step reuse it, and two separate choices of the same thing become
-    one — which is a card doing something different.
+    It used to be refused, and the reason was sound while it held: folding a
+    step's own choice up to the ability would let a later step reuse it, and
+    two separate choices of the same thing become one.
+
+    Nothing is folded up any more, so nothing is refused for it — and the
+    thing the refusal protected is what this asks about instead. A step that
+    picks something out keeps it, and the ability's list does not grow.
     """
     said = [
         row["why"] for row in walked if "picks something out for itself" in row["why"]
     ]
 
-    assert said, "no shipped card is refused for picking something out itself"
-    assert "become one" in said[0]
+    assert said == [], said
+
+    kept = 0
+
+    for row in walked:
+        if row["state"] is None:
+            continue
+
+        parts = list(row["once"].get("abilities") or ()) + list(
+            row["once"].get("statics") or ()
+        )
+
+        for part in parts:
+            for step in _every_step(part.get("effects", ())):
+                if not step.get("targets"):
+                    continue
+
+                kept += 1
+
+                # What a step chose is the step's own, and is not also in the
+                # ability's list. Being in both is the fold this guards.
+                theirs = {
+                    str(next(iter(one.values())).get("as"))
+                    for one in step["targets"]
+                }
+                ability = {
+                    str(next(iter(one.values())).get("as"))
+                    for one in part.get("targets", ())
+                }
+
+                assert not (theirs & ability), (row["card"]["id"], theirs & ability)
+
+    assert kept, "no shipped card has a step that picks something out"
+
+
+def _every_step(steps: Any) -> Any:
+    """
+    Every step of a part, however deeply a branch holds it.
+    """
+    for step in steps or ():
+        if not isinstance(step, dict):
+            continue
+
+        yield step
+
+        for value in step.values():
+            if isinstance(value, list):
+                yield from _every_step(value)
 
 
 # ----------------------------------------------------------------------
@@ -671,8 +721,9 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
 ) -> None:
     """
     Not opened half way. A control node is read now, and so is one that keeps
-    what it chose under a name, so what is checked here is a card that still
-    cannot be: one whose step picks something out of its own inside a branch.
+    what it chose under a name, and so is a step that picks something out for
+    itself — so what is checked here is a card that still cannot be: one whose
+    step works a number out from a name the ability chose.
     """
     from fsme.lab.desk.author import make_set, sets
 
@@ -695,10 +746,17 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
                                         "if": ["dice_equals"],
                                         "then": [
                                             {
-                                                "effect": "gain_coins",
-                                                "amount": 1,
+                                                "effect": "draw_loot",
+                                                "count": {
+                                                    "count": "loot",
+                                                    "of": "rival",
+                                                },
                                                 "targets": [
-                                                    {"target_player": {}}
+                                                    {
+                                                        "target_player": {
+                                                            "as": "rival"
+                                                        }
+                                                    }
                                                 ],
                                             }
                                         ],
@@ -720,7 +778,7 @@ def test_a_card_it_cannot_read_is_refused_with_the_reason(
 
     said = str(refused.value)
 
-    assert "'gain_coins'" in said
+    assert "'draw_loot'" in said
     assert "in full" in said
 
 
@@ -3497,14 +3555,15 @@ def test_a_card_keeps_the_names_its_ability_bound(
 ) -> None:
     """
     101 shipped cards name something and none kept a name through a round
-    trip before this. 71 do now — every card whose names are bound by the
-    ability, and every control node that keeps what it chose under one.
+    trip before this. **126** do now — every card whose names are bound by the
+    ability, every control node that keeps what it chose under one, and every
+    step that picks something out for itself.
 
-    It was 72 until `watch_for` said what its lists hold. `host_hat` bound a
-    name inside its watcher, and reading that watcher as steps is what showed
-    that the step inside chooses its own target — so the card is refused now,
-    and a refused card keeps nothing because it is never written back. Then
-    `decoy` opened, which names three things and keeps all three, so 72 again.
+    The number went 71, 72, and then here. What moved it last was the choice
+    a card writes where it uses it: those names used to be thrown away,
+    because the builder gathered every choice into one list for the ability
+    and a word had to mean one thing there. Nothing is gathered up any more,
+    so a word means one thing where it is written and the card keeps it.
 
     The other 33 name a choice written where it is used. Those names are not
     kept, and must not be: the builder gathers every choice into one list for
@@ -3540,7 +3599,7 @@ def test_a_card_keeps_the_names_its_ability_bound(
             kept += 1
 
     assert lost == [], lost[:5]
-    assert kept == 72, kept
+    assert kept == 126, kept
 
 
 def test_a_name_a_card_uses_is_not_a_name_a_card_makes() -> None:
@@ -3684,6 +3743,11 @@ def test_one_word_used_in_two_branches_stays_two_choices(
     calling its choice `top`. Only one option ever happens, so the card is
     right — and anything that treats the word as one thing makes it draw three
     times from the same deck.
+
+    The word being the same is not the danger; treating it as one thing is.
+    Each option keeps its own choice, in its own body, and the three are never
+    compared with one another because no two of those bodies are ever open at
+    once. So this asks what the card does, not what its choices are called.
     """
     curse = next(
         one
@@ -3694,13 +3758,37 @@ def test_one_word_used_in_two_branches_stays_two_choices(
     assert curse["state"] is not None
 
     modes = curse["once"]["abilities"][0]["effects"][0]["choose"]
-    drawn = [mode["effects"][0]["target"] for mode in modes]
 
-    assert len(drawn) == 3
-    assert len(set(drawn)) == 3, f"three choices became {len(set(drawn))}: {drawn}"
+    assert len(modes) == 3
 
-    assert len(curse["once"]["abilities"][0].get("targets", ())) == 3, (
-        "three choices were gathered into fewer"
+    # Three choices, one per option, each made where the option makes it.
+    chose = [mode["effects"][0].get("targets") for mode in modes]
+
+    assert all(len(one or ()) == 1 for one in chose), chose
+    assert [list(one[0].values())[0].get("deck") for one in chose] == [
+        "loot",
+        "treasure",
+        "monster",
+    ], chose
+
+    # And each option acts on its own, not on another option's.
+    assert [mode["effects"][0]["deck"] for mode in modes] == [
+        "loot",
+        "treasure",
+        "monster",
+    ]
+
+    # The card said `top` three times, and gets `top` three times back.
+    assert [list(one[0].values())[0].get("as") for one in chose] == [
+        "top",
+        "top",
+        "top",
+    ], chose
+
+    # Nothing was gathered up to the ability, where one word would mean one
+    # thing and the three would have become one.
+    assert not curse["once"]["abilities"][0].get("targets"), (
+        "an option's choice was lifted out of the option"
     )
     assert not check_card(curse["once"]), check_card(curse["once"])
 
@@ -3845,13 +3933,23 @@ def test_what_each_of_these_moved_is_counted(
     `host_hat`, whose watcher holds a step that chooses its own target. That
     is not a card lost: it opened before only because nothing read its body.
     Saying how many names an answer holds opened `decoy`, and left twenty.
+
+    Then a step was allowed to keep what it chooses, which opened seventeen
+    and left three. The three are not step-local bindings at all: each works
+    a number out from, or points a `for_each` at, a name the ability chose,
+    and that is a different sentence.
     """
     refused = {one["card"].get("id") for one in walked if one["state"] is None}
 
-    assert len(refused) == 20, sorted(refused)
+    assert len(refused) == 3, sorted(refused)
+    assert {one.split("-")[-1] for one in refused} == {
+        "famine",
+        "viii_justice",
+        "the_d4",
+    }, sorted(refused)
     assert "monster_deck-bosses-alt_art-the_bloat" not in refused
     assert "treasure_deck-active_items-base_game-decoy" not in refused
-    assert "treasure_deck-active_items-base_game-host_hat" in refused
+    assert "treasure_deck-active_items-base_game-host_hat" not in refused
 
 
 # ----------------------------------------------------------------------
@@ -3970,11 +4068,11 @@ def test_a_card_whose_watcher_chooses_lands_in_the_next_class(
     """
     `host_hat` prevents damage and then hurts somebody else when it does.
 
-    Reading its watcher's steps as steps is what makes the step visible, and
-    the step chooses its own target — so the card moves from opening with its
-    body unread to being refused, by name, for the reason that is actually in
-    the way. That is the reader becoming truthful rather than a card being
-    lost: it opened before only because nothing looked inside.
+    It went the long way round. It used to open with its watcher unread, which
+    looked like success and was not; reading the watcher as steps showed that
+    the step inside chooses its own target, and the card was honestly refused.
+    Now a step may keep what it chooses, so it opens — and the choice it makes
+    is on the step that makes it, asked when that step runs.
     """
     hat = next(
         card
@@ -3982,9 +4080,30 @@ def test_a_card_whose_watcher_chooses_lands_in_the_next_class(
         if card["card"]["id"] == "treasure_deck-active_items-base_game-host_hat"
     )
 
-    assert hat["state"] is None, "host_hat opens with its watcher unread"
-    assert "picks something out for itself" in hat["why"], hat["why"]
-    assert "deal_damage" in hat["why"], hat["why"]
+    assert hat["state"] is not None, hat["why"]
+
+    watching = next(
+        step
+        for part in hat["once"]["abilities"]
+        for step in part["effects"]
+        if step.get("effect") == "watch_for"
+    )
+    inside = watching["effects"][0]
+
+    assert inside["effect"] == "deal_damage"
+    assert [
+        str(next(iter(one.values())).get("as")) for one in inside["targets"]
+    ] == ["bystander"]
+
+    # And not lifted to the ability, where it would be asked before the
+    # watcher had anything to watch. The ability binds something of its own —
+    # the controller its first step acts on — and that is a different choice.
+    lifted = {
+        str(next(iter(one.values())).get("as"))
+        for one in hat["once"]["abilities"][0].get("targets", ())
+    }
+
+    assert "bystander" not in lifted, lifted
 
 
 def test_nothing_is_shown_but_not_edited_for_a_watcher_any_more(
@@ -4200,3 +4319,327 @@ def test_a_card_that_names_several_values_it_stored() -> None:
         once["abilities"][0]["effects"][-1]["if"][0]["values_equal"]["of"]
         == ["a", "b"]
     )
+
+
+# ----------------------------------------------------------------------
+# 27. Who chose it, and when they were asked
+# ----------------------------------------------------------------------
+#
+# Where a card writes a choice is not a matter of shape. An ability's list is
+# resolved before its steps are even built; a step's own list when that step
+# runs. So a choice moved between them is a question put at a different
+# moment — and inside a branch that may not run, a question put or not put at
+# all.
+#
+# Author state therefore carries one fact beside each aim: who chose it. The
+# scope a name is visible in is not stored — it is worked out by walking, the
+# way the checker works it out — and the writer keeps a stack of lists open
+# for exactly as long as the names in them can be seen.
+
+
+def when_asked(card: Mapping[str, Any]) -> dict[str, str]:
+    """
+    Every name a card binds, and the moment the engine would ask for it.
+    """
+    found: dict[str, str] = {}
+
+    def bound(specs: Any, when: str) -> None:
+        for one in specs or ():
+            if not isinstance(one, dict):
+                continue
+
+            for body in one.values():
+                if isinstance(body, dict) and body.get("as"):
+                    found[str(body["as"])] = when
+
+    def inside(node: Any) -> None:
+        """Every step, however deep, and what it chooses for itself."""
+        if isinstance(node, dict):
+            if "effect" in node or "targets" in node:
+                bound(node.get("targets"), "at the step")
+
+            for key, value in node.items():
+                if key != "targets":
+                    inside(value)
+
+        elif isinstance(node, list):
+            for one in node:
+                inside(one)
+
+    for part in list(card.get("abilities") or ()) + list(card.get("statics") or ()):
+        # The ability's own list, and then everything its steps write.
+        bound(part.get("targets"), "before any step")
+
+        for key, value in part.items():
+            if key != "targets":
+                inside(value)
+
+    return found
+
+
+def a_card_that(effects: Any, targets: Any = None) -> dict[str, Any]:
+    ability: dict[str, Any] = {"trigger": "on_play", "effects": effects}
+
+    if targets:
+        ability["targets"] = targets
+
+    return {
+        "id": "probe-loot-scoped",
+        "name": "Scoped",
+        "type": "loot",
+        "expansion": "probe",
+        "schema_version": "1",
+        "abilities": [ability],
+    }
+
+
+def round_trip(card: Mapping[str, Any]) -> dict[str, Any]:
+    """
+    Read, write, and insist the reading of the writing says the same thing.
+    """
+    state = read_card(card)
+    once = build_card(state)
+
+    assert read_card(once) == state, "the card came back meaning something else"
+    assert json.dumps(once, sort_keys=True) == json.dumps(
+        build_card(read_card(once)), sort_keys=True
+    ), "writing it twice wrote two different cards"
+    assert check_card(once) == [], check_card(once)
+
+    return once
+
+
+def test_a_choice_the_ability_makes_stays_the_ability_s() -> None:
+    """
+    Asked before any step runs, and still asked before any step runs.
+    """
+    card = a_card_that(
+        [
+            {"effect": "deal_damage", "amount": 1, "target": "victim"},
+            {"effect": "lose_coins", "amount": 1, "target": "victim"},
+        ],
+        targets=[{"target_player": {"as": "victim"}}],
+    )
+    once = round_trip(card)
+
+    assert when_asked(card)["victim"] == "before any step"
+    assert when_asked(once)["victim"] == "before any step"
+
+    # One choice, not one per step that reads it.
+    assert len(once["abilities"][0]["targets"]) == 1
+
+
+def test_a_choice_a_step_makes_stays_the_step_s() -> None:
+    """
+    Asked when that step runs, and still asked when that step runs.
+    """
+    card = a_card_that(
+        [
+            {
+                "effect": "deal_damage",
+                "amount": 1,
+                "targets": [{"target_player": {"as": "victim"}}],
+                "target": "victim",
+            }
+        ]
+    )
+    once = round_trip(card)
+
+    assert when_asked(card)["victim"] == "at the step"
+    assert when_asked(once)["victim"] == "at the step"
+    assert not once["abilities"][0].get("targets"), "the step's choice was lifted"
+
+
+def test_a_choice_written_where_it_is_used_keeps_its_name() -> None:
+    """
+    The name was thrown away while a word had to mean one thing across a whole
+    ability. It no longer does, so it is no longer thrown away.
+    """
+    card = a_card_that(
+        [
+            {
+                "effect": "deal_damage",
+                "amount": 1,
+                "target": {"target_player": {"as": "victim"}},
+            }
+        ]
+    )
+    once = round_trip(card)
+
+    assert "victim" in when_asked(once)
+    assert when_asked(once)["victim"] == "at the step"
+
+
+def test_the_same_word_in_two_branches_is_two_choices() -> None:
+    """
+    Neither list is open when the other is, so nothing compares them.
+    """
+    card = a_card_that(
+        [
+            {
+                "choose": [
+                    {
+                        "description": "Loot.",
+                        "effects": [
+                            {
+                                "effect": "move_cards",
+                                "deck": "loot",
+                                "position": "discard",
+                                "target": {
+                                    "deck_top": {
+                                        "deck": "loot",
+                                        "count": 1,
+                                        "as": "top",
+                                    }
+                                },
+                            }
+                        ],
+                    },
+                    {
+                        "description": "Treasure.",
+                        "effects": [
+                            {
+                                "effect": "move_cards",
+                                "deck": "treasure",
+                                "position": "discard",
+                                "target": {
+                                    "deck_top": {
+                                        "deck": "treasure",
+                                        "count": 1,
+                                        "as": "top",
+                                    }
+                                },
+                            }
+                        ],
+                    },
+                ]
+            }
+        ]
+    )
+    once = round_trip(card)
+    modes = once["abilities"][0]["effects"][0]["choose"]
+
+    # Two choices, each in its own option, each drawing from its own deck.
+    chose = [mode["effects"][0]["targets"] for mode in modes]
+
+    assert [next(iter(one[0].values()))["deck"] for one in chose] == [
+        "loot",
+        "treasure",
+    ]
+    assert [next(iter(one[0].values()))["as"] for one in chose] == ["top", "top"]
+    assert not once["abilities"][0].get("targets")
+
+
+def test_one_choice_the_ability_made_serves_several_branches() -> None:
+    """
+    Read from two arms and still one choice — the case that would break if
+    every step owned what it points at.
+    """
+    card = a_card_that(
+        [
+            {"effect": "deal_damage", "amount": 1, "target": "victim"},
+            {
+                "if": ["last_effect_did"],
+                "then": [
+                    {"effect": "lose_coins", "amount": 1, "target": "victim"}
+                ],
+            },
+        ],
+        targets=[{"target_player": {"as": "victim"}}],
+    )
+    once = round_trip(card)
+
+    assert len(once["abilities"][0]["targets"]) == 1
+    assert when_asked(once)["victim"] == "before any step"
+
+
+def test_a_choice_made_outside_a_branch_is_visible_inside_it() -> None:
+    """
+    Visibility runs inward: current scope, then its parents.
+    """
+    card = a_card_that(
+        [
+            {
+                "may": [
+                    {"effect": "deal_damage", "amount": 1, "target": "victim"}
+                ],
+                "prompt": "Hurt them?",
+            }
+        ],
+        targets=[{"target_player": {"as": "victim"}}],
+    )
+    once = round_trip(card)
+
+    assert when_asked(once)["victim"] == "before any step"
+    assert once["abilities"][0]["effects"][0]["may"][0]["target"] == "victim"
+
+
+def test_a_choice_made_inside_a_branch_is_not_visible_outside_it() -> None:
+    """
+    And the checker says so, which is what makes reading the rest of this
+    safe: the boundary is not held up by refusing to read.
+    """
+    card = a_card_that(
+        [
+            {
+                "may": [
+                    {
+                        "effect": "deal_damage",
+                        "amount": 1,
+                        "targets": [{"target_player": {"as": "victim"}}],
+                        "target": "victim",
+                    }
+                ]
+            },
+            {"effect": "lose_coins", "amount": 1, "target": "victim"},
+        ]
+    )
+
+    assert check_card(card), "a name escaped the branch that bound it"
+    assert "not where this can see it" in check_card(card)[0]
+
+
+def test_a_name_this_invented_is_not_taken_for_the_card_s_own() -> None:
+    """
+    A card with no name for its choice gets one made up, and reading it back
+    must not hand that name over as if the author had chosen it — or the card
+    grows a new one every time it is opened.
+    """
+    card = a_card_that(
+        [{"effect": "gain_coins", "amount": 1, "target": "controller"}]
+    )
+    once = round_trip(card)
+    made = [
+        str(next(iter(one.values()))["as"])
+        for one in once["abilities"][0].get("targets", ())
+    ]
+
+    assert made and all(one.startswith("chosen_") for one in made), made
+
+    # Opened, written, opened, written: the same name, not a new one each time.
+    assert build_card(read_card(once)) == once
+
+
+def test_a_step_that_chooses_twice_keeps_the_order_it_asked_in() -> None:
+    """
+    `swap_cards` asks about one card before the other, and the order the
+    questions are put in is the order the list is written in.
+    """
+    card = a_card_that(
+        [
+            {
+                "effect": "swap_cards",
+                "targets": [
+                    {"target_loot": {"as": "mine"}},
+                    {"target_loot": {"as": "theirs"}},
+                ],
+                "target": {"group": {"of": ["mine", "theirs"], "as": "pair"}},
+            }
+        ]
+    )
+    once = round_trip(card)
+    step = once["abilities"][0]["effects"][0]
+
+    assert [
+        str(next(iter(one.values()))["as"]) for one in step["targets"]
+    ] == ["mine", "theirs", "pair"], step["targets"]

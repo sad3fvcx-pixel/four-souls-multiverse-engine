@@ -708,7 +708,7 @@ def _as_a_card(described: Mapping[str, Any]) -> dict[str, Any]:
 def _written_node(
     shape: Any,
     described: Any,
-    aimed: list[dict[str, Any]] | None,
+    aimed: _Chosen | None,
 ) -> dict[str, Any]:
     """
     One node of the language, written out of the shape describing it.
@@ -796,7 +796,7 @@ ability and pointed at — so it goes through `_pick_out` and not through here.
 def _written_body(
     kind: str,
     described: Any,
-    aimed: list[dict[str, Any]] | None,
+    aimed: _Chosen | None,
 ) -> list[Any]:
     """
     A list of nodes of one kind, written out.
@@ -807,6 +807,10 @@ def _written_body(
     if not isinstance(described, (list, tuple)):
         return []
 
+    # A list of things that happen is a scope: what a step in it chooses is
+    # there for the steps after it and gone once the list ends. Nothing else
+    # is — a list of conditions or of modes binds nothing of its own.
+    mark = aimed.opened() if aimed is not None and kind == STEP else None
     written: list[Any] = []
 
     for one in described:
@@ -814,6 +818,9 @@ def _written_body(
 
         if node is not None:
             written.append(node)
+
+    if mark is not None and aimed is not None:
+        aimed.shut(mark)
 
     return written
 
@@ -875,7 +882,7 @@ def _written_one(kind: str, described: Any, aimed: Any) -> Any:
 def _written_part(
     shape: Any,
     described: Any,
-    aimed: list[dict[str, Any]] | None,
+    aimed: _Chosen | None,
 ) -> dict[str, Any]:
     """
     One node of a named shape, given the names it is allowed to make.
@@ -897,7 +904,7 @@ def _written_part(
 
     kept = _chooses(shape)
     ours: list[dict[str, Any]] = []
-    node = _written_node(shape, described, ours if kept else None)
+    node = _written_node(shape, described, _Chosen(ours) if kept else None)
 
     if ours:
         node[kept] = list(node.get(kept, ())) + ours
@@ -952,13 +959,23 @@ def _written_step(name: str, described: Any, aimed: Any) -> Any:
         return inside
 
     node: dict[str, Any] = {"effect": name}
+
+    # Somewhere for this step to keep what it picks out for itself, open from
+    # here to the end of the body so that a later step in it can point at the
+    # same choice. Written onto the step only if it turns out to hold
+    # something, because a step that chooses nothing says so by having no list.
+    mine: list[dict[str, Any]] = []
+
+    if aimed is not None:
+        aimed.holding(mine)
+
     node.update(_given(vocabulary.shape(name), described, aimed))
 
     pointed = str(described.get("target", "") or "")
     aim = str(described.get("aim", "") or "")
 
     if aim and aimed is not None:
-        pointed = _pick_out(
+        pointed = aimed.named(
             aim,
             _given(
                 vocabulary.target_shape(aim),
@@ -968,12 +985,15 @@ def _written_step(name: str, described: Any, aimed: Any) -> Any:
                 },
                 aimed,
             ),
-            aimed,
             str(described.get("aim_name", "") or ""),
+            str(described.get("aim_chosen_by", "") or BY_THE_ABILITY),
         )
 
     if pointed:
         node["target"] = pointed
+
+    if mine:
+        node[_STEP_TARGETS] = mine
 
     return node
 
@@ -1001,7 +1021,7 @@ def _nothing_yet(parameter: Any) -> Any:
 def _given(
     shape: Any,
     described: Any,
-    aimed: list[dict[str, Any]] | None,
+    aimed: _Chosen | None,
 ) -> dict[str, Any]:
     """
     Everything written beside one effect, condition or target.
@@ -1072,7 +1092,7 @@ def _given(
 def _named(
     vocabulary: Any,
     pick: Mapping[str, Any],
-    aimed: list[dict[str, Any]],
+    aimed: _Chosen,
 ) -> str:
     """
     One thing an answer points at, bound and given back as its name.
@@ -1083,13 +1103,18 @@ def _named(
     target = str(pick.get("id", ""))
     inside = _given(vocabulary.target_shape(target), pick, aimed)
 
-    return _pick_out(target, inside, aimed, str(pick.get("name", "")))
+    return aimed.named(
+        target,
+        inside,
+        str(pick.get("name", "")),
+        str(pick.get("chosen_by", "") or BY_THE_ABILITY),
+    )
 
 
 def _written_inside(
     shape: Any,
     written: dict[str, Any],
-    aimed: list[dict[str, Any]] | None,
+    aimed: _Chosen | None,
 ) -> dict[str, Any]:
     """
     Write out any answer that is itself a list of nodes.
@@ -1193,6 +1218,22 @@ def _settled(parameter: Any, shape: Any, written: Mapping[str, Any]) -> bool:
     return now not in (None, "", False)
 
 
+BY_THE_ABILITY = "ability"
+BY_THE_STEP = "step"
+"""
+Who chose the thing an answer points at.
+
+The card says which by where it writes the choice, and the engine reads that
+as *when to ask*: an ability's list is resolved before any of its steps run,
+and a step's own list when that step runs. So this is not a detail of shape —
+a choice moved from one to the other is a question put at a different moment,
+and inside a branch that may not run at all it is a question put or not put.
+
+Kept beside an aim so that writing a card back can put the choice where the
+card had it. It is not scope: where a name can be seen is worked out by
+walking, the way the checker works it out, and nothing about that is stored.
+"""
+
 MADE_UP = "chosen_"
 """
 How a name this invents begins, when the card gave none.
@@ -1212,48 +1253,91 @@ def _the_card_s_own(called: str) -> str:
     return "" if called.startswith(MADE_UP) else called
 
 
-def _pick_out(
-    target: str,
-    fields: Any,
-    aimed: list[dict[str, Any]],
-    called: str = "",
-) -> str:
+class _Chosen:
     """
-    Have the ability choose something, and give it a name to be pointed at.
+    Where a part of a card keeps what it picks out, while it is being written.
 
-    The same thing chosen twice is chosen once: two effects that both act on
-    "a player somebody picks" mean the same player, which is what a card
-    saying "deal 1 damage to a player and steal a cent from them" means.
+    Not one list but a stack of them, because a name is not visible everywhere
+    a part can see. An ability's own list is open the whole time; a step's is
+    open from the step that makes it to the end of the body it is in, and shut
+    after that. So a later step in the same body finds what an earlier one
+    chose, and nothing outside the body finds it at all — which is the rule the
+    checker keeps, kept here by opening and shutting rather than by asking
+    anything where it is.
 
-    A card that already called its choice something keeps that name. Two
-    choices alike in everything but their names are still two choices — a card
-    naming them apart said they were apart — so the name is part of what makes
-    one the same as another, and not a label put on afterwards.
+    Two lists are never open beside each other. Sibling bodies cannot see one
+    another's names, which is why two branches may each call a choice `top`
+    and mean two different things.
     """
-    written = _written_fields(fields)
-    # A name the card gave *is* which choice this is: it comes from the list
-    # an ability binds, where one name means one choice. Without a name there
-    # is nothing to go on but the choice itself, and two steps choosing alike
-    # mean one — which is what a card saying "damage a player and steal from
-    # them" means.
-    already = [
-        one
-        for one in aimed
-        if target in one
-        and (
-            str(one[target].get("as", "")) == called
-            if called
-            else _without_name(one[target]) == written
-        )
-    ]
 
-    if already:
-        return str(already[0][target]["as"])
+    def __init__(self, root: list[dict[str, Any]]) -> None:
+        self._root = root
+        self._open: list[list[dict[str, Any]]] = [root]
+        self._made = 0
 
-    name = called or f"{MADE_UP}{len(aimed) + 1}"
-    aimed.append({target: dict(written, **{"as": name})})
+    def opened(self) -> int:
+        """
+        How much is open now, so that a body can shut what it opened.
+        """
+        return len(self._open)
 
-    return name
+    def shut(self, mark: int) -> None:
+        """
+        Shut everything opened since a mark. A body ending is that.
+        """
+        del self._open[mark:]
+
+    def holding(self, kept: list[dict[str, Any]]) -> None:
+        """
+        Open one more list: a step that may choose something of its own.
+        """
+        self._open.append(kept)
+
+    def named(
+        self,
+        target: str,
+        fields: Any,
+        called: str = "",
+        level: str = BY_THE_ABILITY,
+    ) -> str:
+        """
+        Have this part choose something, and give it a name to be pointed at.
+
+        The same thing chosen twice is chosen once: two effects that both act
+        on "a player somebody picks" mean the same player, which is what a card
+        saying "deal 1 damage to a player and steal a cent from them" means.
+        Twice means twice *where both can be seen* — the same word in two
+        branches is two choices, and neither list is open when the other is.
+
+        A card that already called its choice something keeps that name. Two
+        choices alike in everything but their names are still two choices — a
+        card naming them apart said they were apart.
+
+        Where a new one goes is what the card said, not what would be
+        convenient: a choice the ability made is asked before any step runs,
+        and one a step makes is asked when that step runs. Moving it between
+        them would move the question.
+        """
+        written = _written_fields(fields)
+
+        for kept in reversed(self._open):
+            for one in kept:
+                if target not in one:
+                    continue
+
+                if (
+                    str(one[target].get("as", "")) == called
+                    if called
+                    else _without_name(one[target]) == written
+                ):
+                    return str(one[target]["as"])
+
+        self._made += 1
+        name = called or f"{MADE_UP}{self._made}"
+        where = self._open[-1] if level == BY_THE_STEP else self._root
+        where.append({target: dict(written, **{"as": name})})
+
+        return name
 
 
 def _without_name(body: Any) -> dict[str, Any]:
@@ -1370,7 +1454,7 @@ def _read_fields(
     shape: Any,
     node: Mapping[str, Any],
     what: str,
-    bound: Mapping[str, tuple[str, dict[str, Any]]] | None = None,
+    bound: Mapping[str, tuple[str, dict[str, Any], str]] | None = None,
 ) -> dict[str, Any]:
     """
     Everything one node holds, read by what its shape says each field is.
@@ -1413,7 +1497,7 @@ def _read_value(
     parameter: Any,
     value: Any,
     name: str,
-    bound: Mapping[str, tuple[str, dict[str, Any]]] | None,
+    bound: Mapping[str, tuple[str, dict[str, Any], str]] | None,
 ) -> Any:
     """
     One answer, read by what kind of thing the shape says it is.
@@ -1482,7 +1566,13 @@ def _read_value(
                 "what they may be aimed at."
             )
 
-        return [_read_step(said, one, bound) for one in value]
+        # A copy, because a name bound inside a body is visible inside it and
+        # after it there, and not outside — the rule the checker keeps by
+        # copying its namespace on the way in. Each step is read with what the
+        # steps before it bound, so a name is visible only after it is made.
+        visible = dict(bound)
+
+        return [_read_step(said, one, visible) for one in value]
 
     raise UnreadableCard(f"{name!r} is a list of {kind}, which cannot be read yet.")
 
@@ -1491,7 +1581,7 @@ def _read_inside(
     said: Any,
     node: Any,
     kind: str,
-    bound: Mapping[str, tuple[str, dict[str, Any]]],
+    bound: Mapping[str, tuple[str, dict[str, Any], str]],
 ) -> dict[str, Any]:
     """
     One node that lives inside a part, read with that part's own bindings.
@@ -1543,13 +1633,11 @@ def _read_part(said: Any, node: Any, kind: str) -> dict[str, Any]:
 
 def _bound_by(
     said: Any, node: Mapping[str, Any]
-) -> dict[str, tuple[str, dict[str, Any]]]:
+) -> dict[str, tuple[str, dict[str, Any], str]]:
     """
     Every name this part binds, and what it bound to it.
     """
-    from fsme.runtime.target_resolver import normalise as a_target
-
-    found: dict[str, tuple[str, dict[str, Any]]] = {}
+    found: dict[str, tuple[str, dict[str, Any], str]] = {}
 
     holder = said.node_shape(ABILITY)
 
@@ -1557,19 +1645,39 @@ def _bound_by(
         if parameter.a_list_of != TARGET:
             continue
 
-        for spec in node.get(key, ()) or ():
-            name, params = a_target(_plainly(spec))
-            under = str(params.get("as", name))
-            found[under] = (
-                name,
-                {k: v for k, v in params.items() if k != "as"},
-            )
+        found.update(_binds(node.get(key, ()) or (), BY_THE_ABILITY))
+
+    return found
+
+
+def _binds(
+    specs: Any, level: str
+) -> dict[str, tuple[str, dict[str, Any], str]]:
+    """
+    Every name one list of choices binds, and who chose them.
+
+    The same list read the same way wherever it appears — an ability keeps one
+    and so may a step. Which of them it was is carried along, because the card
+    said it by writing the list where it did.
+    """
+    from fsme.runtime.target_resolver import normalise as a_target
+
+    found: dict[str, tuple[str, dict[str, Any], str]] = {}
+
+    for spec in specs if isinstance(specs, (list, tuple)) else ():
+        name, params = a_target(_plainly(spec))
+        under = str(params.get("as", name))
+        found[under] = (
+            name,
+            {k: v for k, v in params.items() if k != "as"},
+            level,
+        )
 
     return found
 
 
 def _read_step(
-    said: Any, node: Any, bound: Mapping[str, tuple[str, dict[str, Any]]]
+    said: Any, node: Any, bound: dict[str, tuple[str, dict[str, Any], str]]
 ) -> Any:
     """
     One thing that happens, with what it is aimed at put back inside it.
@@ -1589,6 +1697,12 @@ def _read_step(
 
     written = dict(params)
     short = written.pop(SHORTHAND, None)
+
+    # What this step picks out for itself. The engine takes such a list off the
+    # node and resolves it when the step runs, which is the whole difference
+    # from the ability's list — so it is bound here, at this step, and the
+    # names it makes are visible to the steps after it in the same body.
+    bound.update(_binds(written.pop(_STEP_TARGETS, ()), BY_THE_STEP))
 
     if short is not None:
         if not shape.primary:
@@ -1610,14 +1724,6 @@ def _read_step(
                 raise UnreadableCard(
                     f"{name!r} keeps its result under a name for a later step "
                     "to read. Cards that do that are edited in full."
-                )
-
-            if str(key) == _STEP_TARGETS:
-                raise UnreadableCard(
-                    f"{name!r} picks something out for itself. Folding that up "
-                    "to the ability would let a later step reuse the choice, "
-                    "and two separate choices of the same thing become one — "
-                    "so this card is edited in full."
                 )
 
             raise UnreadableCard(
@@ -1669,21 +1775,27 @@ def _read_step(
 
         kind, params = a_target(_plainly(aimed))
         chosen = _as_chosen(
-            said, (kind, {k: v for k, v in params.items() if k != "as"}), bound
+            said,
+            (kind, {k: v for k, v in params.items() if k != "as"}, BY_THE_STEP),
+            bound,
         )
         step |= {
             "aim": chosen["id"],
             "aim_fields": chosen["fields"],
             "aim_groups": chosen["groups"],
+            # A choice written where it is used is this step's own, and is
+            # asked when this step runs. Saying so is what lets it be written
+            # back where it was, rather than lifted to the ability and asked
+            # before anything happens.
+            "aim_chosen_by": BY_THE_STEP,
         }
 
-        # Whatever this was called where it was written is not kept. The
-        # builder gathers every choice into one list for the ability, where a
-        # name has to mean one thing — and a card may call two choices in two
-        # different branches by the same word, because only one of them ever
-        # happens. Keeping such a name would merge them, and the card would
-        # come back drawing from the wrong deck.
-        return step
+        # And what the card called it, which is safe to keep now that a name
+        # means one thing within one body rather than across a whole ability.
+        # Two branches may each call a choice by the same word, because only
+        # one of them ever happens, and neither is ever compared with the
+        # other.
+        return _also_called(step, str(params.get("as", "")))
 
     if not isinstance(aimed, str):
         raise UnreadableCard(f"{name!r} is aimed at something written in full.")
@@ -1694,6 +1806,7 @@ def _read_step(
             "aim": chosen["id"],
             "aim_fields": chosen["fields"],
             "aim_groups": chosen["groups"],
+            "aim_chosen_by": bound[aimed][2],
         }
 
         # What the card called what it aimed at, kept beside the aim for the
@@ -1702,7 +1815,18 @@ def _read_step(
         return _also_called(step, aimed)
 
     if said.target_shape(aimed) is not None:
-        step |= {"aim": aimed, "aim_fields": {}, "aim_groups": {}}
+        # Aimed at one of the engine's own, named rather than bound: "the
+        # controller", "each opponent". Nothing on the card chose it, so
+        # nothing here says who did — but the builder binds it into the
+        # ability's list to have something to point at, and reading that back
+        # would say the ability chose it. Saying so now is what keeps opening a
+        # card twice the same as opening it once.
+        step |= {
+            "aim": aimed,
+            "aim_fields": {},
+            "aim_groups": {},
+            "aim_chosen_by": BY_THE_ABILITY,
+        }
 
         return step
 
@@ -1716,7 +1840,7 @@ def _read_control(
     name: str,
     params: Mapping[str, Any],
     aimed: Any,
-    bound: Mapping[str, tuple[str, dict[str, Any]]],
+    bound: Mapping[str, tuple[str, dict[str, Any], str]],
 ) -> dict[str, Any]:
     """
     A step that holds other steps, read as a node like any other.
@@ -1797,7 +1921,7 @@ def _read_control(
 
 
 def _names_one_of(
-    value: Any, bound: Mapping[str, tuple[str, dict[str, Any]]]
+    value: Any, bound: Mapping[str, tuple[str, dict[str, Any], str]]
 ) -> bool:
     """
     Whether anything written in this value is a name the part bound.
@@ -1833,7 +1957,7 @@ def _refuse_a_working(
     key: str,
     parameter: Any,
     value: Any,
-    bound: Mapping[str, tuple[str, dict[str, Any]]],
+    bound: Mapping[str, tuple[str, dict[str, Any], str]],
 ) -> None:
     """
     Refuse a value the ability works out from something it chose.
@@ -1897,8 +2021,8 @@ def _points_at(parameter: Any, value: Any) -> str | None:
 
 def _as_chosen(
     said: Any,
-    chosen: tuple[str, dict[str, Any]],
-    bound: Mapping[str, tuple[str, dict[str, Any]]],
+    chosen: tuple[str, dict[str, Any], str],
+    bound: Mapping[str, tuple[str, dict[str, Any], str]],
     seen: frozenset[str] = frozenset(),
     called: str = "",
 ) -> dict[str, Any]:
@@ -1915,7 +2039,7 @@ def _as_chosen(
     player under different names choose the same player — but it is what the
     card said, and a card that says it again later needs it to still be there.
     """
-    kind, body = chosen
+    kind, body, level = chosen
     shape = said.target_shape(kind)
     fields: dict[str, Any] = {}
     groups: dict[str, Any] = {}
@@ -1958,7 +2082,15 @@ def _as_chosen(
             said, bound[pointed], bound, seen | {pointed}, pointed
         )
 
-    picked: dict[str, Any] = {"id": kind, "fields": fields, "groups": groups}
+    picked: dict[str, Any] = {
+        "id": kind,
+        "fields": fields,
+        "groups": groups,
+        # Who chose it, kept for the same reason the name is: writing the card
+        # back has to put the choice where the card had it, and the two places
+        # are asked at different moments.
+        "chosen_by": level,
+    }
 
     mine = _the_card_s_own(called)
 
