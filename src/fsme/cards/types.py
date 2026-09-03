@@ -60,6 +60,40 @@ What each kind of card is, in the words a person would use for it.
 The engine accepts all twelve. Six of them are what an author usually makes,
 and the rest exist because the shipped content has them — so they are described
 rather than hidden, and whatever offers them decides how prominent to be.
+
+These are the words for a choice — "type: an item kept in play" — and read as
+fragments, which is why they are not what a card of this kind is *called*. That
+is `TYPE_LABELS`.
+"""
+
+
+TYPE_LABELS: Mapping[CardType, str] = MappingProxyType(
+    {
+        CardType.LOOT: "Loot card",
+        CardType.TREASURE: "Treasure",
+        CardType.MONSTER: "Monster",
+        CardType.CHARACTER: "Character",
+        CardType.ROOM: "Room",
+        CardType.CURSE: "Curse",
+        CardType.STARTING_ITEM: "Starting item",
+        CardType.EVENT: "Event",
+        CardType.BONUS_SOUL: "Bonus soul",
+        CardType.SOUL: "Soul",
+        CardType.TOKEN: "Token",
+        CardType.OTHER: "Other",
+    }
+)
+"""
+What a card of each kind is called, in a heading or on the card's own face.
+
+`TYPE_WORDS` cannot do this. It completes a sentence about a choice, so it
+reads as a fragment on its own — "Your an item kept in play" — and a page
+wanting to say "Your treasure" has nowhere else to look. This is the missing
+half, and the only fact about a card type that was ever kept anywhere but here.
+
+The order is the other thing this says: the kinds in the order an author meets
+them, most often made first. `CardType`'s own order is read elsewhere — it is
+what `CARD_TYPES` offers in two search filters — so it cannot be about that.
 """
 
 

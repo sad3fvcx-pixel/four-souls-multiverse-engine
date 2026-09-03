@@ -17,7 +17,7 @@ from typing import Any
 
 from fsme.cards.definition import Ability, CardDefinition, Static
 from fsme.cards.references import REPLACES_THE_EVENT
-from fsme.cards.types import PRINTED_NUMBERS, TYPE_WORDS, CardType
+from fsme.cards.types import PRINTED_NUMBERS, TYPE_LABELS, TYPE_WORDS, CardType
 from fsme.content import Vocabulary
 from fsme.content.vocabulary import (
     A_LIST,
@@ -109,6 +109,9 @@ def engine_vocabulary(effects: EffectRegistry | None = None) -> Vocabulary:
         node_shapes=_node_shapes(),
         trigger_scopes=_trigger_scopes(),
         used_by=USED_BY,
+        type_labels=MappingProxyType(
+            {str(kind): label for kind, label in TYPE_LABELS.items()}
+        ),
     )
 
 

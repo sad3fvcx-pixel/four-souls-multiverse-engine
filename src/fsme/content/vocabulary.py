@@ -954,6 +954,19 @@ class Vocabulary:
     cannot act.
     """
 
+    type_labels: Mapping[str, str] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    """
+    What a card of each kind is called, and the order somebody meets them in.
+
+    ``values_mean`` on the card's own ``type`` field already says what each
+    kind *is*, in words that complete a sentence about a choice. Those words
+    read as fragments on their own, so anything putting a kind in a heading
+    needs the other half — and until this was published there was nowhere to
+    get it, which is how a page came to say "Your bonus_soul".
+    """
+
     shapes: Mapping[str, EffectShape] = field(
         default_factory=lambda: MappingProxyType({})
     )

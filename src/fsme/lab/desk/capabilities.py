@@ -27,6 +27,7 @@ from fsme.content.vocabulary import (
     BY_ENGINE,
     BY_NAME,
     BY_PLAYER_OF,
+    CARD,
     STRUCTURE,
 )
 from fsme.events.types import WHEN_IT_HAPPENS, EventType
@@ -99,18 +100,6 @@ other. It makes them *second*, so they are offered apart and said to need
 something before them. Read off `yields` rather than listed.
 """
 
-CARD_KINDS = (
-    ("loot", "Loot card", "Played from your hand, then discarded."),
-    ("treasure", "Treasure", "An item you keep in play."),
-    ("monster", "Monster", "Something to fight."),
-    ("character", "Character", "Somebody to play as."),
-    ("room", "Room", "A place that changes the table."),
-    ("curse", "Curse", "Something unpleasant that sticks to a player."),
-)
-"""
-The kinds of card an author can make, in the order they are most often made.
-"""
-
 
 def catalogue() -> dict[str, Any]:
     """
@@ -119,19 +108,7 @@ def catalogue() -> dict[str, Any]:
     vocabulary = engine_vocabulary()
 
     return {
-        "kinds": [
-            {
-                "id": kind,
-                "name": name,
-                "about": about,
-                # What a card of this kind does to do its thing, where the
-                # engine settles it. Anything putting an action on a card can
-                # then stop asking about triggers; where it is empty there is
-                # no single answer and the question has to be put.
-                "used_by": vocabulary.used_by.get(kind, ""),
-            }
-            for kind, name, about in CARD_KINDS
-        ],
+        "kinds": _kinds(vocabulary),
         "triggers": _triggers(vocabulary),
         "effects": _effects(vocabulary),
         "conditions": _conditions(vocabulary),
@@ -245,6 +222,48 @@ What each part of the language is, in the words a person would use for it.
 The parameters inside them describe themselves; this is the sentence for the
 node, which is the one thing a shape read off a dataclass cannot carry.
 """
+
+
+def _kinds(vocabulary: Any) -> list[dict[str, Any]]:
+    """
+    Every kind of card there is, named, described, and in the order to offer.
+
+    All four things are read: the kinds are the ones the card's own ``type``
+    field offers, the sentence is what that field says each one means, the name
+    and the order are the engine's, and how a kind is used comes from beside
+    the rule that uses it. There is no list here, which is the point — a kind
+    the engine gains is offered without this being told about it.
+
+    A kind nobody has named still appears, under its identifier. Losing it
+    would be worse than naming it badly, and the test that every kind has a
+    name is what stops it happening quietly.
+    """
+    card = vocabulary.node_shape(CARD)
+    kinds = card.params["type"] if card is not None else None
+    named = vocabulary.type_labels
+    order = list(named)
+
+    def met(kind: str) -> int:
+        return order.index(kind) if kind in named else len(order)
+
+    if kinds is None:
+        return []
+
+    said = dict(kinds.values_mean)
+
+    return [
+        {
+            "id": kind,
+            "name": named.get(kind, kind),
+            "about": said.get(kind, ""),
+            # What a card of this kind does to do its thing, where the engine
+            # settles it. Anything putting an action on a card can then stop
+            # asking about triggers; where it is empty there is no single
+            # answer and the question has to be put.
+            "used_by": vocabulary.used_by.get(kind, ""),
+        }
+        for kind in sorted((str(value) for value in kinds.values), key=met)
+    ]
 
 
 def _triggers(vocabulary: Any) -> list[dict[str, Any]]:

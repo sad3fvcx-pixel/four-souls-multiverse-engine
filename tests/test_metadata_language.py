@@ -572,9 +572,14 @@ def test_nothing_invents_a_domain_it_cannot_stand_behind(
 
 
 def test_the_older_sections_still_answer(can: dict[str, Any]) -> None:
+    from fsme.cards.types import CardType
+
     assert len(can["effects"]) == 63
     assert len(can["targets"]) == 46
-    assert len(can["kinds"]) == 6
+    # Not a number: the kinds offered are the kinds there are, and a count
+    # written here would be a fourth place to keep that and the first to
+    # fall behind.
+    assert len(can["kinds"]) == len(CardType)
     assert len(can["triggers"]) == 66
 
 
