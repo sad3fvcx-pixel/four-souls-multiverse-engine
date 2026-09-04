@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from fsme.cards import validate_card
+from fsme.cards.references import NEW_SCOPE
 from fsme.content.vocabulary import (
     ABILITY,
     BY_BINDING,
@@ -971,7 +972,18 @@ def _written_step(name: str, described: Any, aimed: Any) -> Any:
     if aimed is not None:
         aimed.holding(mine)
 
+    # What this one keeps for later, if it keeps anything. Written inside that
+    # and shut again before the step's own aim, which is asked now and belongs
+    # to the ability's time like any other.
+    kept_for_later = aimed is not None and name in NEW_SCOPE
+
+    if kept_for_later and aimed is not None:
+        aimed.later(aimed.opened())
+
     node.update(_given(vocabulary.shape(name), described, aimed))
+
+    if kept_for_later and aimed is not None:
+        aimed.sooner()
 
     pointed = str(described.get("target", "") or "")
     aim = str(described.get("aim", "") or "")
@@ -1331,6 +1343,7 @@ class _Chosen:
         self._root = root
         self._open: list[list[dict[str, Any]]] = [root]
         self._made = 0
+        self._later: list[int] = []
 
     def opened(self) -> int:
         """
@@ -1349,6 +1362,35 @@ class _Chosen:
         Open one more list: a step that may choose something of its own.
         """
         self._open.append(kept)
+
+    def later(self, mark: int) -> None:
+        """
+        Everything from here down runs against a context of its own.
+
+        ``watch_for`` and ``promise`` keep their contents for an event that has
+        not happened yet, and the runtime builds a fresh ``AbilityContext`` when
+        it does — so nothing this ability bound is there to be found. The
+        checker says the same thing by walking such a body with empty
+        namespaces, and this is that rule on the writing side: below here the
+        ability's list is not somewhere a choice can go, because by the time
+        these steps run there is no ability holding it.
+        """
+        self._later.append(mark)
+
+    def sooner(self) -> None:
+        """
+        Back out to the ability's own time. The body ending is that.
+        """
+        self._later.pop()
+
+    def _floor(self) -> int:
+        """
+        The oldest list still worth looking in, and still worth writing to.
+
+        Nought while an ability is writing its own steps, which is every card
+        that keeps nothing for later.
+        """
+        return self._later[-1] if self._later else 0
 
     def named(
         self,
@@ -1374,10 +1416,17 @@ class _Chosen:
         convenient: a choice the ability made is asked before any step runs,
         and one a step makes is asked when that step runs. Moving it between
         them would move the question.
+
+        Except where the ability's list is not a place at all. Inside something
+        kept for later there is no ability to hold a choice by the time these
+        steps run, so a choice made there is the step's own whatever the card
+        said — and a name bound outside is not there to be pointed at either,
+        which is why the search stops at the same line.
         """
         written = _written_fields(fields)
+        floor = self._floor()
 
-        for kept in reversed(self._open):
+        for kept in reversed(self._open[floor:]):
             for one in kept:
                 if target not in one:
                     continue
@@ -1391,7 +1440,9 @@ class _Chosen:
 
         self._made += 1
         name = called or f"{MADE_UP}{self._made}"
-        where = self._open[-1] if level == BY_THE_STEP else self._root
+        where = (
+            self._open[-1] if level == BY_THE_STEP or floor else self._root
+        )
         where.append({target: dict(written, **{"as": name})})
 
         return name

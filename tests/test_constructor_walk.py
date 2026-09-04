@@ -674,20 +674,16 @@ def test_the_shipped_cards_that_needed_the_editor(can: dict[str, Any]) -> None:
         ], name
 
 
-def test_a_step_inside_a_body_is_not_aimed_here() -> None:
+def test_a_step_inside_a_body_may_be_aimed() -> None:
     """
-    A limitation this walk inherits rather than introduces, written down so it
-    is not mistaken for something this stage did.
+    The walk can reach `watch_for`, so a step inside one can be aimed, and the
+    card that comes out of it is a card.
 
-    `watch_for` keeps its steps for later, and the list it keeps them in is a
-    branch: a name bound outside is not visible inside it. So a step in there
-    that picks its own target has to bind it there, and the writer places a
-    binding on the ability. The card is refused, by the checker, with the rule
-    stated — which is the right refusal and the wrong moment to meet it.
-
-    Nothing about it is new. It is the same before this stage and after, in the
-    editor and in the walk, and it is a question about where a step-local
-    binding is written rather than about which questions get asked.
+    This used to record the opposite. `watch_for` keeps its steps for an event
+    that has not happened yet and the runtime builds a fresh context when it
+    arrives, so the ability's own list is gone by then — and the writer put the
+    choice there anyway, which the checker refused and was right to. The writer
+    now knows where it is, and puts the choice on the step whose body it is in.
     """
     said = {
         "set": "demo",
@@ -724,9 +720,14 @@ def test_a_step_inside_a_body_is_not_aimed_here() -> None:
         },
     }
 
-    assert check_card(build_card(said)), "the refusal is what is recorded here"
+    card = build_card(said)
+    ability = card["abilities"][0]
+
+    assert check_card(card) == [], check_card(card)
+    assert "targets" not in ability, "the choice went where nothing can see it"
+    assert ability["effects"][0]["effects"][0]["targets"], "the step kept nothing"
 
     inner = said["card"]["fields"]["abilities"][0]["fields"]["effects"][0]
     inner["fields"]["effects"][0].pop("aim")
 
-    assert check_card(build_card(said)) == [], "and unaimed it is a fine card"
+    assert check_card(build_card(said)) == [], "and unaimed it is a fine card too"

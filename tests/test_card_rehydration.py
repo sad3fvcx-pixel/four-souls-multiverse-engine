@@ -29,6 +29,7 @@ from typing import Any
 import pytest
 
 from fsme.api import load_content
+from fsme.cards.references import NEW_SCOPE
 from fsme.cards.types import PRINTED_NUMBERS, CardType
 from fsme.lab.desk.author import (
     UnreadableCard,
@@ -37,6 +38,7 @@ from fsme.lab.desk.author import (
     read_card,
 )
 from fsme.lab.desk.capabilities import catalogue
+from fsme.runtime.vocabulary import engine_vocabulary
 
 CONTENT = Path(__file__).resolve().parents[1] / "content"
 WRITTEN_BY_THE_BUILDER = ("id", "schema_version")
@@ -4924,3 +4926,286 @@ def test_a_name_inside_an_answer_obeys_the_same_scope(
 
     assert check_card(card), "a name escaped the branch that bound it"
     assert "not where this can see it" in check_card(card)[0]
+
+
+# ----------------------------------------------------------------------
+# 29. A choice made inside something kept for later
+# ----------------------------------------------------------------------
+
+
+def aiming_inside(holder: str, event: str) -> dict[str, Any]:
+    """
+    A card whose watched — or promised — body holds one step that aims.
+
+    Written the way the page writes it: the step says what it is aimed at and
+    says nothing about who chose it, because nothing asks. What the writer does
+    with that silence is the whole of this section.
+    """
+    return {
+        "set": "demo",
+        "card": {
+            "id": "card",
+            "fields": {
+                "name": "Kept",
+                "type": "loot",
+                "abilities": [
+                    {
+                        "id": "ability",
+                        "fields": {
+                            "trigger": "on_play",
+                            "effects": [
+                                {
+                                    "id": holder,
+                                    "fields": {
+                                        "event": event,
+                                        "effects": [
+                                            {
+                                                "id": "deal_damage",
+                                                "fields": {"amount": 1},
+                                                "aim": "target_player",
+                                                "aim_fields": {},
+                                                "aim_groups": {},
+                                            }
+                                        ],
+                                    },
+                                }
+                            ],
+                        },
+                    }
+                ],
+            },
+            "groups": {},
+        },
+    }
+
+
+def test_a_choice_inside_a_watched_body_is_kept_there() -> None:
+    """
+    The ability's list is not a place, so the choice cannot be put in it.
+
+    ``watch_for`` and ``promise`` keep their contents for an event that has not
+    happened yet, and the runtime builds a fresh context when it arrives — so
+    an ability's own list is gone by then. A choice written there is a name
+    reached for across that boundary, which the checker refuses and is right
+    to: it is not a late binding, it is an empty one.
+    """
+    card = build_card(aiming_inside("watch_for", "on_play"))
+    ability = card["abilities"][0]
+    kept = ability["effects"][0]
+
+    assert "targets" not in ability, "the choice was put where nothing can see it"
+    assert kept["effects"][0]["targets"], "the step kept nothing of its own"
+    assert check_card(card) == [], check_card(card)
+
+
+def test_that_choice_survives_being_read_back() -> None:
+    said = read_card(build_card(aiming_inside("watch_for", "on_play")))
+    once = build_card(said)
+
+    assert read_card(once) == said
+    assert build_card(read_card(once)) == once
+    assert check_card(once) == []
+
+
+def test_the_other_thing_kept_for_later_holds_nothing_that_aims() -> None:
+    """
+    Why only one of the two can be tested with a step inside it.
+
+    ``watch_for`` and ``promise`` are both kept for later and the writer treats
+    both the same way, but a promise holds changes to a value and a change has
+    nothing to aim. So the boundary is real for both and only one of them can
+    ever reach it — read off the shapes rather than assumed, because a promise
+    that grew a body would want the test the moment it did.
+    """
+    said = engine_vocabulary()
+    holds = {
+        name: [
+            key
+            for key, one in said.shapes[name].params.items()
+            if one.a_list_of == "step"
+        ]
+        for name in NEW_SCOPE
+    }
+
+    assert holds["watch_for"] == ["effects"]
+    assert holds["promise"] == [], "a promise now holds steps and wants the test above"
+
+
+def test_a_choice_inside_an_ordinary_arm_is_still_the_abilitys() -> None:
+    """
+    The rule is about time, not about depth.
+
+    A ``may`` runs while the ability is resolving, so the ability's list is
+    there and a choice put in it is asked before any of the steps run. That is
+    what the card said and it goes on saying it.
+    """
+    said = {
+        "set": "demo",
+        "card": {
+            "id": "card",
+            "fields": {
+                "name": "Perhaps",
+                "type": "loot",
+                "abilities": [
+                    {
+                        "id": "ability",
+                        "fields": {
+                            "trigger": "on_play",
+                            "effects": [
+                                {
+                                    "id": "may",
+                                    "fields": {
+                                        "may": [
+                                            {
+                                                "id": "deal_damage",
+                                                "fields": {"amount": 1},
+                                                "aim": "target_player",
+                                                "aim_fields": {},
+                                                "aim_groups": {},
+                                            }
+                                        ]
+                                    },
+                                }
+                            ],
+                        },
+                    }
+                ],
+            },
+            "groups": {},
+        },
+    }
+    card = build_card(said)
+
+    assert card["abilities"][0]["targets"], "an ordinary arm lost its choice"
+    assert check_card(card) == []
+
+
+def test_a_choice_a_step_makes_outright_is_still_its_own() -> None:
+    """
+    The ordinary ability-level aim, unchanged by any of this.
+    """
+    said = {
+        "set": "demo",
+        "card": {
+            "id": "card",
+            "fields": {
+                "name": "Plain",
+                "type": "loot",
+                "abilities": [
+                    {
+                        "id": "ability",
+                        "fields": {
+                            "trigger": "on_play",
+                            "effects": [
+                                {
+                                    "id": "deal_damage",
+                                    "fields": {"amount": 1},
+                                    "aim": "target_player",
+                                    "aim_fields": {},
+                                    "aim_groups": {},
+                                }
+                            ],
+                        },
+                    }
+                ],
+            },
+            "groups": {},
+        },
+    }
+    card = build_card(said)
+
+    assert card["abilities"][0]["targets"]
+    assert check_card(card) == []
+
+
+def test_a_name_bound_inside_a_watched_body_does_not_escape_it() -> None:
+    """
+    The other direction, and the one that must go on being refused.
+    """
+    card = {
+        "id": "e",
+        "name": "E",
+        "type": "loot",
+        "expansion": "e",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "effect": "watch_for",
+                        "event": "on_play",
+                        "effects": [
+                            {
+                                "effect": "deal_damage",
+                                "amount": 1,
+                                "target": "X",
+                                "targets": [{"target_player": {"as": "X"}}],
+                            }
+                        ],
+                    },
+                    {"effect": "heal", "amount": 1, "target": "X"},
+                ],
+            }
+        ],
+    }
+
+    assert check_card(card), "a name escaped a body kept for later"
+    assert "not where this can see it" in check_card(card)[0]
+
+
+def test_two_steps_in_one_watched_body_share_what_the_first_chose() -> None:
+    """
+    Inside the boundary the ordinary rule still holds: a later step in the same
+    body finds what an earlier one chose, and does not choose it twice.
+    """
+    aim = {
+        "aim": "target_player",
+        "aim_fields": {},
+        "aim_groups": {},
+    }
+    said = {
+        "set": "demo",
+        "card": {
+            "id": "card",
+            "fields": {
+                "name": "Twice",
+                "type": "loot",
+                "abilities": [
+                    {
+                        "id": "ability",
+                        "fields": {
+                            "trigger": "on_play",
+                            "effects": [
+                                {
+                                    "id": "watch_for",
+                                    "fields": {
+                                        "event": "on_play",
+                                        "effects": [
+                                            {
+                                                "id": "deal_damage",
+                                                "fields": {"amount": 1},
+                                                **aim,
+                                            },
+                                            {
+                                                "id": "heal",
+                                                "fields": {"amount": 1},
+                                                **aim,
+                                            },
+                                        ],
+                                    },
+                                }
+                            ],
+                        },
+                    }
+                ],
+            },
+            "groups": {},
+        },
+    }
+    card = build_card(said)
+    inside = card["abilities"][0]["effects"][0]["effects"]
+
+    assert inside[0]["target"] == inside[1]["target"], "one choice became two"
+    assert len(inside[0]["targets"]) == 1
+    assert "targets" not in inside[1], "the second step chose again"
+    assert check_card(card) == []
