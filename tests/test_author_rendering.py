@@ -145,7 +145,7 @@ def test_several_values_reach_the_card_as_several() -> None:
             }
         ]
     )
-    chosen = card["abilities"][0]["targets"][0]["target_stack_item"]
+    chosen = one_effect(card)["targets"][0]["target_stack_item"]
 
     assert chosen["kinds"] == ["loot", "dice"]
     assert check_card(card) == []
@@ -553,10 +553,13 @@ def test_a_target_that_names_a_group_keeps_naming_one() -> None:
             }
         ]
     )
-    chosen = card["abilities"][0]["targets"]
-
-    assert chosen[0] == {"another_player": {"as": "chosen_1"}}
-    assert chosen[1] == {"target_player": {"chooser": "chosen_1", "as": "chosen_2"}}
+    # The group the aim names is an answer to one of the aim's own parameters,
+    # so the ability binds it; the aim itself was written on the step, so the
+    # step keeps it. What matters is that the second still names the first.
+    assert card["abilities"][0]["targets"] == [{"another_player": {"as": "chosen_1"}}]
+    assert one_effect(card)["targets"] == [
+        {"target_player": {"chooser": "chosen_1", "as": "chosen_2"}}
+    ]
     assert check_card(card) == []
 
 
@@ -604,10 +607,13 @@ def test_require_attack_can_say_who_owes_it_and_what_is_attacked() -> None:
 
     assert owed["who"] == {"player_of": "chosen_1"}
     assert owed["target"] == "chosen_2"
+
+    # Who owes the attack answers a parameter, so the ability binds it. What
+    # is attacked was written on the step as its aim, so the step keeps it.
     assert card["abilities"][0]["targets"] == [
         {"target_player": {"exclude_controller": True, "as": "chosen_1"}},
-        {"current_monster": {"as": "chosen_2"}},
     ]
+    assert owed["targets"] == [{"current_monster": {"as": "chosen_2"}}]
     assert check_card(card) == []
 
 
@@ -818,8 +824,12 @@ def test_a_name_the_tool_writes_never_reaches_the_card_from_a_form() -> None:
             }
         ]
     )
-    chosen = card["abilities"][0]["targets"][0]["target_stack_item"]
+    # On the step, because that is where the target was written. It used to be
+    # lifted to the ability, which asks for it before the step runs.
+    step = card["abilities"][0]["effects"][0]
+    chosen = step["targets"][0]["target_stack_item"]
 
+    assert "targets" not in card["abilities"][0]
     assert chosen["as"].startswith("chosen_")
     assert chosen["kinds"] == ["loot"]
     assert check_card(card) == []

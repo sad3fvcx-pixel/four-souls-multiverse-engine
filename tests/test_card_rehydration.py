@@ -1016,9 +1016,16 @@ def test_changing_one_value_changes_one_thing(workspace: Path) -> None:
 
     assert was[0]["amount"] == 2 and now[0]["amount"] == 3
     assert was[1] == now[1], "the other action moved"
-    assert (
-        before["abilities"][0]["targets"] == after["abilities"][0]["targets"]
+
+    # And what each step picks out is untouched, wherever the writer keeps it.
+    # Asked of the steps rather than of the ability, because a target written
+    # on a step is the step's and this card writes both of its that way.
+    assert before["abilities"][0].get("targets") == after["abilities"][0].get(
+        "targets"
     ), "what it picks out moved"
+    assert [one.get("targets") for one in was] == [
+        one.get("targets") for one in now
+    ], "what it picks out moved"
 
 
 def test_changing_a_card_does_not_write_it(workspace: Path) -> None:
@@ -1711,7 +1718,9 @@ def test_changing_one_value_and_keeping_it_keeps_the_rest(workspace: Path) -> No
 
     assert after["abilities"][0]["effects"][0]["amount"] == 5
     assert after["abilities"][0]["effects"][1] == before["abilities"][0]["effects"][1]
-    assert after["abilities"][0]["targets"] == before["abilities"][0]["targets"]
+    assert after["abilities"][0].get("targets") == before["abilities"][0].get(
+        "targets"
+    )
 
     for key in ("id", "name", "type", "expansion", "schema_version"):
         assert after[key] == before[key], key
@@ -4609,12 +4618,13 @@ def test_a_name_this_invented_is_not_taken_for_the_card_s_own() -> None:
         [{"effect": "gain_coins", "amount": 1, "target": "controller"}]
     )
     once = round_trip(card)
-    made = [
-        str(next(iter(one.values()))["as"])
-        for one in once["abilities"][0].get("targets", ())
-    ]
 
-    assert made and all(one.startswith("chosen_") for one in made), made
+    # Wherever the choice went, the name is one this made up. It used to be
+    # looked for in the ability's list, which was where such a choice was put
+    # before a target written on a step was understood to be the step's.
+    made = [name for name in when_asked(once) if name.startswith("chosen_")]
+
+    assert made == list(when_asked(once)), when_asked(once)
 
     # Opened, written, opened, written: the same name, not a new one each time.
     assert build_card(read_card(once)) == once
@@ -5031,13 +5041,18 @@ def test_the_other_thing_kept_for_later_holds_nothing_that_aims() -> None:
     assert holds["promise"] == [], "a promise now holds steps and wants the test above"
 
 
-def test_a_choice_inside_an_ordinary_arm_is_still_the_abilitys() -> None:
+def test_a_choice_inside_an_ordinary_arm_is_the_step_s() -> None:
     """
-    The rule is about time, not about depth.
+    The rule is about time, not about depth — and this used to record the
+    opposite.
 
-    A ``may`` runs while the ability is resolving, so the ability's list is
-    there and a choice put in it is asked before any of the steps run. That is
-    what the card said and it goes on saying it.
+    A ``may`` does run while the ability is resolving, so the ability's list is
+    reachable from inside one. That is why this once put the choice there. But
+    reachable is not the same as right: the ability's list is asked before any
+    step runs, and a ``may`` is a step that may not run at all, so a choice put
+    there is a question asked whether or not the card ever needed the answer.
+    Nothing on the page said who chose it, and silence used to mean the
+    ability. It means the step, because that is where the target was written.
     """
     said = {
         "set": "demo",
@@ -5075,14 +5090,21 @@ def test_a_choice_inside_an_ordinary_arm_is_still_the_abilitys() -> None:
         },
     }
     card = build_card(said)
+    ability = card["abilities"][0]
 
-    assert card["abilities"][0]["targets"], "an ordinary arm lost its choice"
+    assert "targets" not in ability, "the arm's choice was lifted to the ability"
+    assert ability["effects"][0]["may"][0]["targets"], "the arm lost its choice"
     assert check_card(card) == []
 
 
 def test_a_choice_a_step_makes_outright_is_still_its_own() -> None:
     """
-    The ordinary ability-level aim, unchanged by any of this.
+    The plainest case of all, and it used to go to the ability.
+
+    One step, no branch, a target written on it and nothing said about who
+    chose it. The writer read that silence as the ability's, which asked the
+    question before the step it belongs to. The name of this test was already
+    right; only what it asserted was not.
     """
     said = {
         "set": "demo",
@@ -5113,8 +5135,10 @@ def test_a_choice_a_step_makes_outright_is_still_its_own() -> None:
         },
     }
     card = build_card(said)
+    ability = card["abilities"][0]
 
-    assert card["abilities"][0]["targets"]
+    assert "targets" not in ability
+    assert ability["effects"][0]["targets"]
     assert check_card(card) == []
 
 
@@ -5209,3 +5233,218 @@ def test_two_steps_in_one_watched_body_share_what_the_first_chose() -> None:
     assert len(inside[0]["targets"]) == 1
     assert "targets" not in inside[1], "the second step chose again"
     assert check_card(card) == []
+
+
+# ----------------------------------------------------------------------
+# 30. A target written where it is used
+# ----------------------------------------------------------------------
+#
+# A card may name what an effect acts on right there on the effect —
+# `"target": "target_loot"` — instead of binding it in a list of its own. The
+# engine resolves such a target when that step runs. An ability's list is
+# resolved before any step runs, so lifting one into the other moves the
+# question to a moment the card did not ask it at: a card that discards a loot
+# card only on a roll of 5-6 came back asking for the loot card every time it
+# was played.
+#
+# The Constructor does not have to write the target back the way the card
+# spelled it. A binding on the step is resolved immediately before that step's
+# own operation and under a name minted for that one site, so it is asked at
+# the same moment and answered independently. What it may not do is put it on
+# the ability.
+#
+# Two ways in, and both had to be closed. A card off disk arrives through the
+# reader, which says who chose each aim. A target somebody has just added
+# arrives from the page, which says nothing — and the writer used to read that
+# silence as the ability's.
+
+
+def an_aim(target: str = "target_loot") -> dict[str, Any]:
+    """
+    A step with a target on it, written the way the page writes one.
+
+    No word about who chose it, because the page has no such question: it
+    offers the engine's targets and puts the answer on the step.
+    """
+    return {
+        "id": "discard_cards",
+        "fields": {},
+        "groups": {},
+        "aim": target,
+        "aim_fields": {},
+        "aim_groups": {},
+    }
+
+
+def as_authored(effects: list[dict[str, Any]]) -> dict[str, Any]:
+    """
+    Author state for a card being made, with no file behind it.
+    """
+    return {
+        "set": "demo",
+        "card": {
+            "id": "card",
+            "fields": {
+                "name": "Made",
+                "type": "loot",
+                "abilities": [
+                    {
+                        "id": "ability",
+                        "fields": {"trigger": "on_play", "effects": effects},
+                        "groups": {},
+                    }
+                ],
+            },
+            "groups": {},
+        },
+    }
+
+
+def a_roll_of(number: int) -> dict[str, Any]:
+    return {"id": "dice_greater", "fields": {"value": number}, "groups": {}}
+
+
+def test_the_card_this_was_found_on_keeps_its_target_in_the_branch() -> None:
+    """
+    `pills-v2`: "1-2 loot 1, 3-4 loot 3, 5-6 discard 1 loot card."
+
+    The discard is one arm of a roll. Opening the card and writing it back
+    without touching anything used to hand the loot card to the ability, which
+    asks for it before the die is rolled.
+    """
+    card = a_card_that(
+        [
+            {"effect": "roll_dice", "sides": 6},
+            {
+                "if": [{"dice_greater": 4}],
+                "then": [{"effect": "discard_cards", "target": "target_loot"}],
+            },
+        ]
+    )
+    once = round_trip(card)
+    ability = once["abilities"][0]
+
+    assert "targets" not in ability, "the branch's choice was lifted to the ability"
+
+    inside = ability["effects"][1]["then"][0]
+
+    assert inside["targets"], "the step kept nothing"
+    assert when_asked(once)[inside["target"]] == "at the step"
+
+
+def test_a_target_added_to_a_step_in_a_branch_is_written_in_the_branch() -> None:
+    """
+    The other door, and the one the reader cannot close.
+
+    Nothing here was ever read: this is a card being made, and the page says
+    what the step is aimed at without saying who chose it. Silence used to mean
+    the ability.
+    """
+    card = build_card(
+        as_authored(
+            [
+                {
+                    "id": "if",
+                    "fields": {"if": [a_roll_of(4)], "then": [an_aim()]},
+                    "groups": {},
+                }
+            ]
+        )
+    )
+    ability = card["abilities"][0]
+
+    assert "targets" not in ability, "a newly made choice went to the ability"
+    assert ability["effects"][0]["then"][0]["targets"], "it went nowhere"
+    assert check_card(card) == []
+
+
+def test_a_target_added_to_an_ordinary_step_is_that_step_s() -> None:
+    """
+    Not only inside branches. A target written on a step is the step's
+    wherever the step is, which is what makes the rule one rule.
+    """
+    card = build_card(as_authored([an_aim()]))
+    ability = card["abilities"][0]
+
+    assert "targets" not in ability
+    assert ability["effects"][0]["targets"]
+    assert check_card(card) == []
+
+
+def test_a_target_two_branches_deep_stays_two_branches_deep() -> None:
+    """
+    The rule is the same rule however far down it is asked.
+    """
+    card = build_card(
+        as_authored(
+            [
+                {
+                    "id": "if",
+                    "fields": {
+                        "if": [a_roll_of(4)],
+                        "then": [
+                            {
+                                "id": "may",
+                                "fields": {"may": [an_aim()]},
+                                "groups": {},
+                            }
+                        ],
+                    },
+                    "groups": {},
+                }
+            ]
+        )
+    )
+    ability = card["abilities"][0]
+    inner = ability["effects"][0]["then"][0]["may"][0]
+
+    assert "targets" not in ability
+    assert inner["targets"], "the choice left the arm it was made in"
+    assert check_card(card) == []
+
+
+def test_a_choice_the_card_binds_for_itself_is_still_the_ability_s() -> None:
+    """
+    The half that must not move.
+
+    A card that binds a group and points two steps at it means one choice, and
+    it is asked before either step runs. Nothing above may turn that into two.
+    """
+    card = a_card_that(
+        [
+            {"effect": "deal_damage", "amount": 1, "target": "victim"},
+            {"effect": "lose_coins", "amount": 1, "target": "victim"},
+        ],
+        targets=[{"target_player": {"as": "victim"}}],
+    )
+    once = round_trip(card)
+    ability = once["abilities"][0]
+
+    assert len(ability["targets"]) == 1, ability["targets"]
+    assert when_asked(once)["victim"] == "before any step"
+    assert all("targets" not in step for step in ability["effects"])
+
+
+def test_something_kept_for_later_still_keeps_its_choice_inside() -> None:
+    """
+    The boundary a watched body draws is not the boundary a branch draws, and
+    closing the second must not disturb the first.
+    """
+    card = a_card_that(
+        [
+            {
+                "effect": "watch_for",
+                "event": "on_play",
+                "effects": [
+                    {"effect": "deal_damage", "amount": 1, "target": "target_player"}
+                ],
+            }
+        ]
+    )
+    once = round_trip(card)
+    ability = once["abilities"][0]
+    watched = ability["effects"][0]["effects"][0]
+
+    assert "targets" not in ability
+    assert watched["targets"], "the watched body's choice was lifted"
+    assert when_asked(once)[watched["target"]] == "at the step"

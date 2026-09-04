@@ -403,7 +403,9 @@ def test_an_effect_can_be_aimed_at_somebody_chosen(address: str) -> None:
 
     ability = saved["card"]["abilities"][0]
 
-    assert ability["targets"] == [
+    # Kept by the step it was written on, so it is asked when that step runs.
+    assert "targets" not in ability
+    assert ability["effects"][0]["targets"] == [
         {"target_player": {"exclude_controller": True, "as": "chosen_1"}}
     ]
     assert ability["effects"][0]["target"] == "chosen_1"
@@ -465,8 +467,13 @@ def test_aiming_twice_at_the_same_thing_chooses_once(address: str) -> None:
     )
 
     ability = saved["card"]["abilities"][0]
+    bound = [one for step in ability["effects"] for one in step.get("targets", ())]
 
-    assert len(ability["targets"]) == 1, "one player, chosen once"
+    # One choice, wherever it is kept. It is kept by the first step that needs
+    # it — which is when the card asks — and the second step points at it, the
+    # way any later step in the same body points at what an earlier one chose.
+    assert len(bound) == 1, "one player, chosen once"
+    assert "targets" not in ability
     assert {effect["target"] for effect in ability["effects"]} == {"chosen_1"}
 
 

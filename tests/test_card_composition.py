@@ -191,10 +191,13 @@ def test_what_an_ability_picks_out_is_bound_inside_that_ability() -> None:
     )
 
     for ability in card["abilities"]:
-        assert len(ability["targets"]) == 1, "a binding reached across abilities"
-        assert ability["effects"][0]["target"] == ability["targets"][0][
-            "target_player"
-        ]["as"]
+        # Kept by the step that wrote it, which is inside the ability either
+        # way. What matters here is that neither ability reached the other's.
+        step = ability["effects"][0]
+
+        assert "targets" not in ability
+        assert len(step["targets"]) == 1, "a binding reached across abilities"
+        assert step["target"] == step["targets"][0]["target_player"]["as"]
 
     assert check_card(card) == [], check_card(card)
 
@@ -222,8 +225,13 @@ def test_an_ability_that_picks_the_same_thing_twice_picks_it_once() -> None:
         abilities=[an_ability(trigger="on_play", effects=[aimed, healed])]
     )
     (ability,) = card["abilities"]
+    bound = [one for step in ability["effects"] for one in step.get("targets", ())]
 
-    assert len(ability["targets"]) == 1
+    # One choice between them, made by the first step to need it and pointed
+    # at by the second — which is what sharing a binding means wherever the
+    # binding is kept.
+    assert "targets" not in ability
+    assert len(bound) == 1
     assert ability["effects"][0]["target"] == ability["effects"][1]["target"]
 
 

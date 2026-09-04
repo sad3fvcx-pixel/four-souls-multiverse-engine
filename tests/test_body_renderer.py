@@ -287,7 +287,8 @@ def test_aiming_still_binds_a_group_and_points_at_it() -> None:
     )
 
     assert ability["effects"][0]["target"] == "chosen_1"
-    assert ability["targets"] == [
+    assert "targets" not in ability
+    assert ability["effects"][0]["targets"] == [
         {"target_player": {"exclude_controller": True, "as": "chosen_1"}}
     ]
 

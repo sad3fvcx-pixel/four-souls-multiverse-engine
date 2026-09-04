@@ -284,9 +284,13 @@ def test_every_action_is_aimed_on_its_own(can: dict[str, Any]) -> None:
         for b in aiming:
             card = as_the_walk(can, [a, b])
             ability = card["abilities"][0]
+            # Every name the ability binds, wherever it is kept. A target
+            # written on a step is the step's, so the names are gathered from
+            # the steps as well as from the ability's own list.
             bound = [
                 next(iter(spec.values()))["as"]
-                for spec in ability.get("targets", ())
+                for holder in (ability, *ability["effects"])
+                for spec in holder.get("targets", ())
             ]
             pointed = [step.get("target") for step in ability["effects"]]
 

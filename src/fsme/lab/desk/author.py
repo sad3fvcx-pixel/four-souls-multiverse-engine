@@ -1000,7 +1000,19 @@ def _written_step(name: str, described: Any, aimed: Any) -> Any:
                 aimed,
             ),
             str(described.get("aim_name", "") or ""),
-            str(described.get("aim_chosen_by", "") or BY_THE_ABILITY),
+            # Whose choice this is, and the step's own when nobody has said.
+            #
+            # A card that was read says: the reader fills this in on every path
+            # it takes, so what arrives here from a file is the answer that
+            # file gave. Nothing says it only when nobody has been asked yet —
+            # a target somebody has just put on a step, which the page writes
+            # as an aim and says no more about.
+            #
+            # And that one is the step's. An aim is written where it is used,
+            # so it is asked when that step runs; calling it the ability's
+            # would ask it before anything happens, which is the same thing
+            # going wrong one door along from the reader.
+            str(described.get("aim_chosen_by", "") or BY_THE_STEP),
         )
 
     if pointed:
@@ -1953,16 +1965,23 @@ def _read_step(
 
     if said.target_shape(aimed) is not None:
         # Aimed at one of the engine's own, named rather than bound: "the
-        # controller", "each opponent". Nothing on the card chose it, so
-        # nothing here says who did — but the builder binds it into the
-        # ability's list to have something to point at, and reading that back
-        # would say the ability chose it. Saying so now is what keeps opening a
-        # card twice the same as opening it once.
+        # controller", "each opponent". Nothing on the card chose it in a list
+        # of its own — the aim is written where it is used, and the engine
+        # resolves it there, when this step runs.
+        #
+        # So it is this step's own, for the same reason an aim written out in
+        # full above is. It used to be said to be the ability's, which was
+        # true of where the builder put it and false of what the card meant: a
+        # choice the ability makes is asked before any step runs, so a card
+        # saying "on a 5-6, discard a loot card" asked for the loot card every
+        # time it was played. `_read_control` has always refused to fold a
+        # node's aim up to the ability, saying that doing so would change which
+        # steps it reaches; this is the same sentence about a step.
         step |= {
             "aim": aimed,
             "aim_fields": {},
             "aim_groups": {},
-            "aim_chosen_by": BY_THE_ABILITY,
+            "aim_chosen_by": BY_THE_STEP,
         }
 
         return step
