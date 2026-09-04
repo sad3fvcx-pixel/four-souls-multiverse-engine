@@ -17,6 +17,7 @@ from typing import Any
 
 import pytest
 
+from fsme.content.vocabulary import A_MAPPING
 from fsme.effects.errors import EffectExecutionError
 from fsme.lab.desk.author import build_card, check_card, read_card
 from fsme.runtime.vocabulary import engine_vocabulary
@@ -241,3 +242,114 @@ def test_a_shipped_promise_still_says_what_it_said(named: str) -> None:
     assert build_card(read_card(once)) == once, "writing it twice wrote two cards"
     assert check_card(once) == []
     assert once["abilities"][0]["effects"][0] == card["abilities"][0]["effects"][0]
+
+
+# ----------------------------------------------------------------------
+# 4. What holds a change, and what it is worth to the person writing one
+# ----------------------------------------------------------------------
+
+
+def test_a_field_of_an_event_is_named_and_never_chosen_from_a_list() -> None:
+    """
+    Three places ask which value of an event is meant, and not one of them
+    offers a set to pick from.
+
+    That is the engine's answer and not an omission. `compost` changes
+    `source` on `before_loot_draw`, and nothing proposes that field: it exists
+    only once a replacement has written it, so a list of the fields an event
+    carries would be a list `compost` is not on.
+    """
+    vocabulary = engine_vocabulary()
+    asking = [
+        vocabulary.shapes["modify_event"].params["key"],
+        vocabulary.condition_shapes["event_value"].params["key"],
+    ]
+    worked_out = vocabulary.node_shape("worked_out")
+    assert worked_out is not None
+    asking.append(worked_out.params["from_event"])
+
+    for parameter in asking:
+        assert parameter.kind == "text", parameter.name
+        assert parameter.values == (), parameter.name
+
+
+def test_what_a_promise_owes_is_a_set_of_named_changes() -> None:
+    """
+    Named, and each one a change — the two halves the desk has to be told.
+    """
+    changes = engine_vocabulary().shapes["promise"].params["changes"]
+
+    assert changes.kind == A_MAPPING
+    assert changes.each_shaped_like == "change"
+
+    # Not a list, and not one change. Both were measured to be wrong: a list
+    # refuses every card that has one, and calling the whole mapping a change
+    # asks the six operations at the top with nowhere to put the field name.
+    assert changes.a_list_of == ""
+    assert changes.shaped_like == ""
+
+
+def test_the_desk_is_told_what_holds_the_changes() -> None:
+    """
+    Published, so the page draws a map of them without being told which
+    effect it belongs to or what its names may be.
+    """
+    from fsme.lab.desk.capabilities import catalogue
+
+    promise = next(one for one in catalogue()["effects"] if one["id"] == "promise")
+    changes = next(one for one in promise["fields"] if one["id"] == "changes")
+
+    assert changes["each_shaped_like"] == "change"
+    assert changes["shown"] == "named"
+    assert changes["choices"] == [], "the names are the author's, not a list"
+
+
+@pytest.mark.parametrize("named", sorted(FOUR))
+def test_a_shipped_promise_keeps_the_names_it_was_written_with(named: str) -> None:
+    """
+    The names are free text and stay free text.
+
+    `source` is the one that matters: it is not among the values any event is
+    proposed with, so anything deriving the names from the engine would lose
+    this card and say nothing.
+    """
+    card = {
+        "id": f"probe-{named}",
+        "name": named,
+        "type": "treasure",
+        "expansion": "probe",
+        "abilities": [
+            {"trigger": "on_play", "effects": [{"effect": "promise", **FOUR[named]}]}
+        ],
+    }
+
+    said = read_card(card)
+    once = build_card(said)
+
+    assert once["abilities"][0]["effects"][0]["changes"] == FOUR[named]["changes"]
+
+
+def test_a_change_that_cannot_be_written_is_not_quietly_dropped() -> None:
+    """
+    An empty map where a card said something is the failure this cannot have.
+
+    A promise owing nothing is a promise the engine refuses, so writing one
+    would turn a card the author was editing into a card that does not load —
+    and the checker would say the card owes no changes, which is at least true.
+    """
+    card = {
+        "id": "probe-empty",
+        "name": "Empty",
+        "type": "treasure",
+        "expansion": "probe",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [{"effect": "promise", "event": "before_damage"}],
+            }
+        ],
+    }
+
+    problems = check_card(build_card(read_card(card)))
+
+    assert problems, "a promise owing nothing must not pass as written"

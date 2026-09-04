@@ -167,13 +167,19 @@ class ParamSpec:
 
     a_list_of: str = ""
     """
-    What a list-shaped parameter holds, when it holds more of the language.
+    What a parameter holds, when it holds more of the language.
 
     ``LIST`` says several rather than one; this says several *of what*, and
     the answer is one of ``NODES`` — the kinds one part of the language may
     be built out of another. An effect that keeps a list of steps to run
     later is holding the same nodes an ability holds, and saying so is what
     lets one reader read them and one renderer draw them.
+
+    ``kind`` says how they are held. ``LIST`` is a list of them; ``MAPPING``
+    is several under names the card chooses, which is what ``promise`` owes —
+    one change per field of the event. One answer, because it is one question:
+    *of what*. How they are arranged is already written down beside it, and
+    asking twice is how the two come apart.
 
     Empty for a list of plain values, which is nearly all of them: ``deck``
     names are words, not nodes.

@@ -305,11 +305,14 @@ def test_a_structured_parameter_is_never_offered_as_a_box(
     # says its two lists hold steps and conditions, and the honest way to
     # show a list of steps is as a list of steps.
     for _, owner, field in every_field(can):
-        if field["role"] == STRUCTURE and not field["a_list_of"]:
-            assert field["shown"] == "advanced", f"{owner}.{field['id']}"
-
         if field["role"] == STRUCTURE and field["a_list_of"]:
             assert field["shown"] == "body", f"{owner}.{field['id']}"
+        elif field["role"] == STRUCTURE and field["each_shaped_like"]:
+            # Several of a described kind, each under a name — describable, so
+            # shown as what it is rather than as a box of JSON.
+            assert field["shown"] == "named", f"{owner}.{field['id']}"
+        elif field["role"] == STRUCTURE:
+            assert field["shown"] == "advanced", f"{owner}.{field['id']}"
 
 
 def test_the_page_never_stores_half_written_structure_as_text() -> None:
@@ -663,6 +666,7 @@ def test_every_parameter_still_arrives_somewhere(can: dict[str, Any]) -> None:
             "given",
             "spelling",
             "body",
+            "named",
             "nested",
         ), f"{owner}.{field['id']} has nowhere to go"
 

@@ -1051,7 +1051,8 @@ function actionsIn(node) {
 function drawable(node) {
   return node.fields.every(f => DRAWS.includes(f.shown));
 }
-const DRAWS = ["form", "group", "advanced", "given", "spelling", "body", "nested"];
+const DRAWS = ["form", "group", "advanced", "given", "spelling", "body",
+               "named", "nested"];
 
 function bodyHtml(kind, list, path) {
   // A kind this renderer has no component for is said, never drawn as a box.
@@ -1120,6 +1121,60 @@ function shapeHtml(shape, holder, path) {
 
 // One node of a named shape — a cost, a mode, a way of working a number out.
 // The renderer does not know what is in one: it asks the metadata.
+// Several nodes of one kind, each under a name the card chooses. `promise`
+// owes a change per value of the event it waits for, and which values those
+// are is not a list anything here has: `compost` changes `source`, which no
+// event is proposed with and only a replacement ever writes. So the name is a
+// box and never a menu, and what goes under it is the ordinary form for
+// whatever `each_shaped_like` says it is.
+function namedHtml(field, values, path) {
+  const shape = shapeNamed(field.each_shaped_like);
+  if (!shape) return unsupportedHtml(field);
+  const held = values[field.id] || {};
+  const where = `${path}.${field.id}`;
+  const rows = Object.keys(held).map(name => `
+    <div class="node">
+      <div class="head">
+        <input value="${esc(name)}" placeholder="which value of the event"
+               onchange="renameEntry('${where}','${esc(name)}',this.value)">
+        <button onclick="dropEntry('${where}','${esc(name)}')">remove</button>
+      </div>
+      ${fieldsHtml(shape.fields, held[name].fields || {}, held[name].groups || {},
+                   `${where}.${esc(name)}.fields`,
+                   `${where}.${esc(name)}.groups`, shape.id)}
+    </div>`).join("");
+  return `<label>${esc(asksOf(field))}${needed(field)}</label>
+    <div class="body">${rows}
+      <button onclick="addEntry('${where}','${field.each_shaped_like}')"
+        >Add ${esc(shape.about)}</button>
+    </div>`;
+}
+
+// A name is the key, so changing one moves what is under it. Order is kept
+// because a person reading the form back should find their entries where they
+// left them, and an object that rebuilds itself in a different order every
+// keystroke is not a form anybody can use.
+function renameEntry(path, was, now) {
+  const held = at(path);
+  const wanted = now.trim();
+  if (!wanted || wanted === was || wanted in held) return drawn();
+  const rebuilt = {};
+  for (const key of Object.keys(held)) rebuilt[key === was ? wanted : key] = held[key];
+  for (const key of Object.keys(held)) delete held[key];
+  Object.assign(held, rebuilt);
+  drawn();
+}
+
+function dropEntry(path, name) { delete at(path)[name]; drawn(); }
+
+function addEntry(path, kind) {
+  const held = at(path);
+  let name = "";
+  for (let n = 1; !name || name in held; n++) name = `value ${n}`;
+  held[name] = { id: kind, fields: {}, groups: {} };
+  drawn();
+}
+
 function nestedHtml(field, values, path) {
   const shape = shapeNamed(field.shaped_like);
   if (!shape) return unsupportedHtml(field);
@@ -1418,6 +1473,7 @@ function oneByOne(fields, values, groups, path, groupPath, owner) {
     // More of the language: a list of nodes, or one node of a named shape.
     if (f.shown === "body") return `<label>${esc(asksOf(f))}${needed(f)}</label>`
       + bodyHtml(f.a_list_of, values[f.id], `${path}.${f.id}`);
+    if (f.shown === "named") return namedHtml(f, values, path);
     if (f.shown === "nested") return nestedHtml(f, values, path);
     if (f.shown === "advanced") return structureHtml(f, values, path);
     // More than one way of being written, a name an earlier step made, or a

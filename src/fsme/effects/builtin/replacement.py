@@ -16,6 +16,7 @@ from typing import Any
 from fsme.content.vocabulary import (
     A_LIST,
     A_MAPPING,
+    CHANGE,
     CONDITION,
     OPEN,
     PLAYERS,
@@ -327,6 +328,7 @@ def register(registry: EffectRegistry) -> None:
         primary="event",
         literal=("changes", "when"),
         holds={"changes": A_MAPPING, "when": A_MAPPING},
+        holding={"changes": CHANGE},
         description="Owe a change to the next event of a kind.",
         values={"event": _EVENT_NAMES},
         needs=("event", "changes"),

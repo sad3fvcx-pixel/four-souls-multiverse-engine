@@ -584,7 +584,8 @@ def test_the_older_sections_still_answer(can: dict[str, Any]) -> None:
 
 
 def test_every_parameter_anywhere_still_lands_somewhere(can: dict[str, Any]) -> None:
-    known = {"form", "group", "advanced", "given", "spelling", "body", "nested"}
+    known = {"form", "group", "advanced", "given", "spelling", "body", "named",
+             "nested"}
 
     for group in ("effects", "conditions", "targets", "abilities", "statics",
                   "structures"):

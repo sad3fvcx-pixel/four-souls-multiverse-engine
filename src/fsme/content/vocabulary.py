@@ -461,6 +461,26 @@ class ParamShape:
     them text is how a form comes to ask for a structure in a box.
     """
 
+    each_shaped_like: str = ""
+    """
+    This parameter holds several nodes of one kind, each under a name.
+
+    The third way one part of the language holds another, and the one the
+    other two cannot say. ``a_list_of`` says the parts are in a list, and a
+    reader given a mapping refuses it. ``shaped_like`` says the whole thing is
+    one node — which is what ``ability.cost`` means by it, ``{"tap": true}``
+    being a cost whose own fields are ``tap`` and ``coins``. Said of a mapping
+    that *holds* nodes it would claim the mapping is one, and a form built on
+    that asks the node's own questions with nowhere to put the names.
+
+    ``promise`` owes a change per field of the event — ``{"amount": {"cap":
+    1}}`` — and the names are the author's: ``compost`` changes ``source`` on
+    ``before_loot_draw``, a field nothing proposes and only a replacement ever
+    writes. So this says what each named one *is* and never which names there
+    may be. Those are two different questions and only one of them has an
+    answer.
+    """
+
     instead_of: str = ""
     """
     Another parameter this one is a second spelling of.

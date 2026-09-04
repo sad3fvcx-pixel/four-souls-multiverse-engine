@@ -77,7 +77,8 @@ def test_every_ability_field_lands_on_a_control_the_page_has(
     The skeleton is drawn by the ordinary field renderer, so every one of its
     fields has to be somewhere that renderer dispatches to.
     """
-    drawn = {"form", "group", "advanced", "given", "spelling", "body", "nested"}
+    drawn = {"form", "group", "advanced", "given", "spelling", "body", "named",
+             "nested"}
     shape = next(one for one in can["abilities"] if one["id"] == "ability")
 
     for field in shape["fields"]:
@@ -302,7 +303,8 @@ def test_every_way_a_field_may_be_shown_still_reaches_something(
     the engine answers is not asked at all now, which is a wider rule than
     ``shown`` was and catches the bound names and the second spellings with it.
     """
-    routed = {"spelling", "group", "advanced", "body", "nested", "form"}
+    routed = {"spelling", "group", "advanced", "body", "named", "nested",
+              "form"}
     possible = {
         field["shown"]
         for group in ("effects", "conditions", "targets", "cards",
@@ -384,7 +386,8 @@ def test_the_metadata_says_which_shapes_are_things_that_happen(
 def test_every_control_node_is_offered_and_none_is_half_offered(
     can: dict[str, Any],
 ) -> None:
-    drawn = {"form", "group", "advanced", "given", "spelling", "body", "nested"}
+    drawn = {"form", "group", "advanced", "given", "spelling", "body", "named",
+             "nested"}
 
     for one in can["structures"]:
         if not one["a_step"]:

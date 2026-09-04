@@ -1083,7 +1083,15 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
                     unless_when=param.unless_when,
                     refers_to=param.refers_to,
                     written_as=_written_as(param.refers_to),
-                    a_list_of=param.a_list_of,
+                    # One declaration, published as whichever it is. The
+                    # kind already says whether the parts are in a list or
+                    # under names, so the effect is not asked twice.
+                    a_list_of=(
+                        "" if param.kind is ParamKind.MAPPING else param.a_list_of
+                    ),
+                    each_shaped_like=(
+                        param.a_list_of if param.kind is ParamKind.MAPPING else ""
+                    ),
                     also=_also_worked_out(spec, name),
                 )
                 for name, param in spec.params.items()

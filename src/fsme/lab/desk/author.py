@@ -1150,7 +1150,20 @@ def _written_inside(
     for name, value in list(written.items()):
         parameter = shape.params.get(name)
 
-        if parameter is None or not parameter.a_list_of:
+        if parameter is None:
+            continue
+
+        if parameter.each_shaped_like:
+            named = _written_named(parameter.each_shaped_like, value, aimed)
+
+            if named:
+                written[name] = named
+            else:
+                del written[name]
+
+            continue
+
+        if not parameter.a_list_of:
             continue
 
         body = _written_body(parameter.a_list_of, value, aimed)
@@ -1159,6 +1172,40 @@ def _written_inside(
             written[name] = body
         else:
             del written[name]
+
+    return written
+
+
+def _written_named(
+    kind: str,
+    described: Any,
+    aimed: _Chosen | None,
+) -> dict[str, Any]:
+    """
+    Several nodes of one kind, each under the name the card gave it.
+
+    The names are the author's and are written back exactly as they came:
+    ``compost`` changes ``source``, which is a value of the event that nothing
+    proposes and only a replacement ever writes, so a writer that checked the
+    names against anything would lose that card.
+
+    A named node that comes out with nothing in it is left out, the way an
+    empty body is: a promise owing ``{"amount": {}}`` owes nothing about
+    ``amount`` and would be a card that says it changes something and does
+    not. If that empties the whole answer the key goes too, and the checker
+    says the effect needs it — which is the card being told, rather than the
+    card quietly losing what it said.
+    """
+    if not isinstance(described, Mapping):
+        return {}
+
+    written: dict[str, Any] = {}
+
+    for name, one in described.items():
+        node = _written_one(kind, one, aimed)
+
+        if node:
+            written[str(name)] = node
 
     return written
 
@@ -1512,6 +1559,29 @@ def _read_value(
     """
     One answer, read by what kind of thing the shape says it is.
     """
+    named = parameter.each_shaped_like
+
+    if named:
+        if not isinstance(value, Mapping):
+            raise UnreadableCard(
+                f"{name!r} should be a set of named {named}s and is not."
+            )
+
+        if bound is None:
+            raise UnreadableCard(
+                f"{name!r} holds named {named}s, and nothing here says what "
+                "they may be aimed at."
+            )
+
+        # The names are the card's own — which value of the event a promise
+        # changes — so they are kept exactly as written and never looked up.
+        # What is under each of them is a node the engine describes, read the
+        # way every other nested node is read.
+        return {
+            str(key): _read_inside(said, one, named, bound)
+            for key, one in value.items()
+        }
+
     kind = parameter.a_list_of
 
     if not kind:

@@ -426,6 +426,9 @@ def test_no_effect_condition_or_target_parameter_gained_a_body(
     """
     joining = {"and", "or", "not"}
     holding = {"watch_for": {"effects": "step", "conditions": "condition"}}
+    # The one that holds nodes without holding a list of them: a promise owes
+    # a change per value of the event, each under the name of that value.
+    named = {"promise": {"changes": "change"}}
 
     for group in ("effects", "conditions", "targets"):
         for one in can[group]:
@@ -442,8 +445,15 @@ def test_no_effect_condition_or_target_parameter_gained_a_body(
                     ), f"{one['id']}.{field['id']}"
                     continue
 
+                if one["id"] in named:
+                    assert field["each_shaped_like"] == named[one["id"]].get(
+                        field["id"], ""
+                    ), f"{one['id']}.{field['id']}"
+                    continue
+
                 assert not field["a_list_of"], f"{one['id']}.{field['id']}"
                 assert not field["shaped_like"], f"{one['id']}.{field['id']}"
+                assert not field["each_shaped_like"], f"{one['id']}.{field['id']}"
                 assert field["shown"] in (
                     "form",
                     "group",

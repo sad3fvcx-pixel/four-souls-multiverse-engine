@@ -382,6 +382,10 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
       name the engine also reads. Asked once, under the first.
     - ``body`` — more of the language, listed. ``a_list_of`` says of what, and
       whatever draws one list of effects draws every one of them.
+    - ``named`` — more of the language, several of them, each under a name the
+      card chooses. ``each_shaped_like`` says what each one is. The names are
+      not offered from anywhere: a promise changes the values of an event, and
+      one of the four in the shipped sets changes a value nothing proposes.
     - ``nested`` — more of the language, once. ``shaped_like`` says which.
 
     ``also`` carries the other ways the same parameter may be written, on the
@@ -428,6 +432,9 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             "picks_at_least": parameter.names_at_least,
             "a_list_of": parameter.a_list_of,
             "shaped_like": parameter.shaped_like,
+            # Several nodes of one kind under names the card chooses.
+            # What each one is; never which names there may be.
+            "each_shaped_like": parameter.each_shaped_like,
             "defines": parameter.defines,
             "one_of": parameter.one_of,
             "domain_from": parameter.domain_from,
@@ -465,6 +472,8 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             if parameter.written_as in (BY_NAME, BY_PLAYER_OF)
             else "body"
             if parameter.a_list_of
+            else "named"
+            if parameter.each_shaped_like
             else "nested"
             if parameter.shaped_like
             else "advanced"
