@@ -431,7 +431,7 @@ function asking() {
 function questions() {
   const { shape } = asking();
   if (!shape) return [];
-  const values = (shape.fields || []).filter(f => f.asked === "first" && putable(f));
+  const values = (shape.fields || []).filter(asks);
   // Only something that happens is aimed at anything. A part is not, and says
   // so by not carrying the answer at all.
   const aim = shape.needs_target ? [{ aim: true }] : [];
@@ -450,20 +450,40 @@ function picksFirst(part) {
   return picks >= 0 && does >= 0 ? picks < does : true;
 }
 
-// A question this walk can put: one whose answer is a single value, which is
-// what `shown` already says. A list of steps, a set of named values, a name an
-// earlier step bound — those are more of the language, and the language is the
-// editor's business. Read off the same routing the editor draws by, so a field
-// that changes how it is written changes which walk can ask it.
-function putable(f) {
+// A field whose answer is one plain value, and can therefore be read back as
+// a word inside a sentence. Not the same question as whether the walk asks it:
+// a list of steps is asked and is not a word.
+function sayable(f) {
   return f.asked !== "never" && f.shown === "form";
 }
 
+// The three ways of showing a field that are not a question this walk puts.
+// `given` is answered by the engine or by whatever writes the card; `spelling`
+// is the same question under a second name and is asked under the first; and
+// `group` is what aiming an action asks, which the walk puts as its own step.
+// Said as the three exceptions rather than as a list of the rest, so a control
+// the language gains is asked without this being told about it.
+const ANSWERED_ELSEWHERE = ["given", "spelling", "group"];
+
+// Whether the walk puts this question. Read off the same routing the editor
+// draws by, so a field that changes how it is written changes how it is asked.
+//
+// `asked` says how prominent a question is in a *form* — straight away, behind
+// "more options", behind "advanced". A walk has no "advanced": it puts one
+// question after another until the action is finished. So a required answer is
+// asked wherever the shape puts it, and an optional one waits for the editor.
+function asks(f) {
+  if (f.asked === "never" || ANSWERED_ELSEWHERE.includes(f.shown)) return false;
+  return f.asked === "first" || f.required;
+}
+
 // An action a walk can finish: everything the engine insists on is something
-// this walk can put. Offering the rest would be putting a question with no box
-// to answer it in, and then saving a card the checker refuses.
+// this walk asks. The same predicate `questions` filters by, so the two cannot
+// come apart — an action is offered exactly when answering everything it puts
+// finishes it. Offering one whose required answer is never put would be a card
+// the checker refuses, made by somebody who answered every question shown.
 function finishable(e) {
-  return e.fields.every(f => !f.required || putable(f));
+  return e.fields.every(f => !f.required || asks(f));
 }
 
 function ask(n, problems = [], moments = []) {
@@ -524,7 +544,7 @@ function saidAs(step) {
   const doing = shapeNamed(step.id);
   if (!doing) return step.id || "something";
   const answers = doing.fields
-    .filter(f => putable(f))
+    .filter(f => sayable(f))
     .map(f => [f, (step.fields || {})[f.id]])
     .filter(([, v]) => v !== undefined && v !== null && v !== "" && v !== false)
     .map(([f, v]) => `${trimmed(asksOf(f)).toLowerCase()}: ${esc(meant(f, String(v)))}`);
@@ -580,7 +600,7 @@ function stepsUnder(node) {
 function nameOf(node) {
   const shape = shapeNamed(node.id);
   const naming = (shape ? shape.fields : []).find(
-    f => f.role === "names" && putable(f));
+    f => f.role === "names" && sayable(f));
   const said = naming && (node.fields || {})[naming.id];
   return said ? esc(String(said)) : saidAs(node);
 }

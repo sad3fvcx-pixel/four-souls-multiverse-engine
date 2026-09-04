@@ -55,19 +55,40 @@ def bench(everything: Any, tmp_path: Path) -> Workbench:
 # ----------------------------------------------------------------------
 
 
-def putable(field: Mapping[str, Any]) -> bool:
+ANSWERED_ELSEWHERE = ("given", "spelling", "group")
+"""
+The three ways of showing a field that are not a question this walk puts.
+
+``given`` is answered by the engine or by whatever writes the card; ``spelling``
+is the same question under a second name and is asked under the first; ``group``
+is what aiming an action asks, which the walk puts as its own step. Everything
+else the page has a control for is a question.
+"""
+
+
+def asks(field: Mapping[str, Any]) -> bool:
     """
-    A question whose answer is one value, which is what ``shown`` says.
+    Whether the walk puts this question.
+
+    Read off the same routing the editor draws by, so a control the language
+    gains is asked without this being told. ``asked`` decides how prominent a
+    question is in a *form*; a walk has no "advanced", so a required answer is
+    asked wherever it sits and an optional one waits for the editor.
     """
-    return field["asked"] != "never" and field["shown"] == "form"
+    if field["asked"] == "never" or field["shown"] in ANSWERED_ELSEWHERE:
+        return False
+
+    return field["asked"] == "first" or field["required"]
 
 
 def finishable(effect: Mapping[str, Any]) -> bool:
     """
-    An action every one of whose required answers is a question that can be
-    put. Anything else needs the editor and should not be offered here.
+    An action every one of whose required answers is one the walk will ask.
+
+    The same predicate ``questions`` filters by, so the two cannot come apart:
+    an action is offered exactly when answering everything it puts finishes it.
     """
-    return all(not f["required"] or putable(f) for f in effect["fields"])
+    return all(not f["required"] or asks(f) for f in effect["fields"])
 
 
 def offered(can: dict[str, Any]) -> list[dict[str, Any]]:
@@ -85,7 +106,7 @@ def asked_about(effect: Mapping[str, Any]) -> list[dict[str, Any]]:
     """
     The value questions a walk puts for one action.
     """
-    return [f for f in effect["fields"] if f["asked"] == "first" and putable(f)]
+    return [f for f in effect["fields"] if asks(f)]
 
 
 def fits(target: Mapping[str, Any], hits: str) -> bool:
@@ -116,10 +137,20 @@ def aims_at(can: dict[str, Any], effect: Mapping[str, Any]) -> str:
     return common[0]["id"] if common else ""
 
 
-def answer(field: Mapping[str, Any]) -> Any:
+def answer(can: dict[str, Any], field: Mapping[str, Any]) -> Any:
     """
     One answer of the kind the control for this question allows.
+
+    A control that holds more of the language is answered with one of what it
+    holds — the "add" button on it, pressed once. Which kind that is comes from
+    the shape, so nothing here names an effect or a node.
     """
+    if field["a_list_of"]:
+        return [one_of(can, field["a_list_of"])]
+
+    if field["each_shaped_like"]:
+        return {"something": one_of(can, field["each_shaped_like"])}
+
     if field["choices"]:
         return field["choices"][0]
 
@@ -132,13 +163,54 @@ def answer(field: Mapping[str, Any]) -> Any:
     return "something"
 
 
+def one_of(can: dict[str, Any], kind: str) -> dict[str, Any]:
+    """
+    The smallest node of a kind, as the control's own "add" button makes one.
+
+    A step is chosen from the actions on offer, which is what the page offers
+    inside a body; anything else is a shape of its own and is simply filled in.
+    """
+    if kind == "step":
+        # A step inside a body is walked exactly as a step at the top is: the
+        # action is chosen and then its own questions are answered. What it is
+        # *not* is aimed — the walk aims the step it is walking, and a step
+        # inside a body takes the usual target for the card. See the test
+        # below for why aiming one is a separate question.
+        chosen = offered(can)[0]
+
+        return {"id": chosen["id"],
+                "fields": {f["id"]: answer(can, f) for f in asked_about(chosen)}}
+
+    shape = next(
+        one
+        for group in ("structures", "abilities", "statics")
+        for one in can[group]
+        if one["id"] == kind
+    )
+    filled = {f["id"]: answer(can, f) for f in shape["fields"] if f["required"]}
+
+    return {"id": kind, "fields": filled or _one_answer(can, shape), "groups": {}}
+
+
+def _one_answer(can: dict[str, Any], shape: Mapping[str, Any]) -> dict[str, Any]:
+    """
+    A node none of whose fields is required still has to say something.
+
+    A change carries one of six operations and insists on none of them, and a
+    change carrying nothing is a promise that changes nothing.
+    """
+    first = next((f for f in shape["fields"] if f["shown"] == "form"), None)
+
+    return {first["id"]: answer(can, first)} if first else {}
+
+
 def a_step(can: dict[str, Any], effect: Mapping[str, Any]) -> dict[str, Any]:
     """
     The effect node a finished walk has built.
     """
     step: dict[str, Any] = {
         "id": effect["id"],
-        "fields": {f["id"]: answer(f) for f in asked_about(effect)},
+        "fields": {f["id"]: answer(can, f) for f in asked_about(effect)},
     }
     aim = aims_at(can, effect)
 
@@ -455,8 +527,12 @@ def test_a_walk_offers_nothing_it_cannot_finish(can: dict[str, Any]) -> None:
             f"{name} is held back for no reason the metadata gives"
         )
 
-    assert "prevent_damage" in held
-    assert "watch_for" in held
+    # What is left is the three that edit the event their ability is handed,
+    # which is a fact about them and not about the page: the walk makes an
+    # ordinary ability, and an ability that is not a replacement is not handed
+    # one. `watch_for` and `promise` used to be here for a reason that was
+    # about the page instead, and are not any more.
+    assert sorted(held) == ["cancel_event", "modify_event", "prevent_damage"]
     assert "deal_damage" not in held
 
 
@@ -488,3 +564,169 @@ def test_the_page_asks_one_question_at_a_time(can: dict[str, Any]) -> None:
     # Which questions and in what order come from the shapes, not from here.
     assert 'f.asked === "first"' in script
     assert "picksFirst" in script
+
+
+# ----------------------------------------------------------------------
+# 6. Every question the walk must put, it puts
+# ----------------------------------------------------------------------
+
+
+def every_field(can: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
+    return [
+        (one["id"], field)
+        for group in ("effects", "conditions", "targets", "cards",
+                      "abilities", "statics", "structures")
+        for one in can[group]
+        for field in one["fields"]
+    ]
+
+
+def test_the_walk_asks_by_the_same_routing_the_editor_draws_by(
+    can: dict[str, Any],
+) -> None:
+    """
+    Not a list of the ways a field may be shown: three of them are questions
+    somebody else puts, and the rest are questions.
+
+    `given` is answered by the engine, `spelling` is asked under the other
+    name, and `group` is what aiming an action asks — so a walk that put any
+    of them would be asking twice or asking nobody. Everything else the page
+    has a control for is a question, which is why a control the language gains
+    is asked without this being told about it.
+    """
+    script = PAGE.read_text("utf-8").split("<script>")[1]
+
+    assert "const ANSWERED_ELSEWHERE" in script
+    assert 'f.shown === "form"' not in script.split("function asks(")[1][:400]
+
+
+def test_a_required_answer_is_never_out_of_reach(can: dict[str, Any]) -> None:
+    """
+    The invariant the two gates exist for.
+
+    `asked` says how prominent a question is in a form — straight away, behind
+    "more options", behind "advanced". A walk has no "advanced": it asks one
+    question after another until the action is finished. So a required answer
+    is asked wherever it sits, or the action is not offered at all. There is no
+    third state, and this is the test that says so.
+    """
+    for owner, field in every_field(can):
+        if field["required"] and field["asked"] not in ("never",):
+            assert asks(field), f"{owner}.{field['id']} is required and unreachable"
+
+
+def test_nothing_optional_is_asked_that_was_not_asked_before(
+    can: dict[str, Any],
+) -> None:
+    """
+    The walk stays a walk. Widening it to reach a required answer must not
+    drag every "more options" field onto the screen with it.
+    """
+    for owner, field in every_field(can):
+        if not field["required"] and field["asked"] != "first":
+            assert not asks(field), f"{owner}.{field['id']} became a walk question"
+
+
+def test_the_two_gates_cannot_disagree(can: dict[str, Any]) -> None:
+    """
+    `finishable` says an action can be finished; `questions` decides what is
+    put. If one widens and the other does not, the walk offers an action and
+    never asks what it needs — which is a card the checker refuses, made by
+    somebody who answered everything they were shown.
+    """
+    for one in can["effects"]:
+        if not finishable(one):
+            continue
+
+        for field in one["fields"]:
+            if field["required"] and field["asked"] != "never":
+                assert asks(field), f"{one['id']}.{field['id']}"
+
+
+def test_the_walk_now_offers_everything_that_is_not_a_replacement(
+    can: dict[str, Any],
+) -> None:
+    """
+    Two effects used to be held back for a reason that was about the page
+    rather than about them: a promise owes a set of named changes and
+    `watch_for` holds a list of steps, and the page could draw both long
+    before the walk would ask for either.
+    """
+    held = [
+        one["id"]
+        for one in can["effects"]
+        if not one.get("a_step") and not one["replacing"] and not finishable(one)
+    ]
+
+    assert held == [], held
+
+
+def test_the_shipped_cards_that_needed_the_editor(can: dict[str, Any]) -> None:
+    """
+    The six the analysis found, by what they use rather than by name.
+    """
+    for name in ("promise", "watch_for"):
+        one = next(x for x in can["effects"] if x["id"] == name)
+
+        assert finishable(one), name
+        assert [f["id"] for f in one["fields"] if f["required"] and asks(f)] == [
+            f["id"] for f in one["fields"] if f["required"]
+        ], name
+
+
+def test_a_step_inside_a_body_is_not_aimed_here() -> None:
+    """
+    A limitation this walk inherits rather than introduces, written down so it
+    is not mistaken for something this stage did.
+
+    `watch_for` keeps its steps for later, and the list it keeps them in is a
+    branch: a name bound outside is not visible inside it. So a step in there
+    that picks its own target has to bind it there, and the writer places a
+    binding on the ability. The card is refused, by the checker, with the rule
+    stated — which is the right refusal and the wrong moment to meet it.
+
+    Nothing about it is new. It is the same before this stage and after, in the
+    editor and in the walk, and it is a question about where a step-local
+    binding is written rather than about which questions get asked.
+    """
+    said = {
+        "set": "demo",
+        "card": {
+            "fields": {
+                "name": "W",
+                "type": "loot",
+                "abilities": [
+                    {
+                        "fields": {
+                            "trigger": "on_play",
+                            "effects": [
+                                {
+                                    "id": "watch_for",
+                                    "fields": {
+                                        "event": "on_play",
+                                        "effects": [
+                                            {
+                                                "id": "deal_damage",
+                                                "fields": {"amount": 1},
+                                                "aim": "target_player",
+                                                "aim_fields": {},
+                                                "aim_groups": {},
+                                            }
+                                        ],
+                                    },
+                                }
+                            ],
+                        }
+                    }
+                ],
+            },
+            "groups": {},
+        },
+    }
+
+    assert check_card(build_card(said)), "the refusal is what is recorded here"
+
+    inner = said["card"]["fields"]["abilities"][0]["fields"]["effects"][0]
+    inner["fields"]["effects"][0].pop("aim")
+
+    assert check_card(build_card(said)) == [], "and unaimed it is a fine card"
