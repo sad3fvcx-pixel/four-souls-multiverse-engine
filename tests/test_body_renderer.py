@@ -13,6 +13,7 @@ the metadata it reads, and the card it produces.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -77,8 +78,7 @@ def test_every_ability_field_lands_on_a_control_the_page_has(
     The skeleton is drawn by the ordinary field renderer, so every one of its
     fields has to be somewhere that renderer dispatches to.
     """
-    drawn = {"form", "group", "advanced", "given", "spelling", "body", "named",
-             "nested"}
+    drawn = declared(page)
     shape = next(one for one in can["abilities"] if one["id"] == "ability")
 
     for field in shape["fields"]:
@@ -384,10 +384,9 @@ def test_the_metadata_says_which_shapes_are_things_that_happen(
 
 
 def test_every_control_node_is_offered_and_none_is_half_offered(
-    can: dict[str, Any],
+    can: dict[str, Any], page: str
 ) -> None:
-    drawn = {"form", "group", "advanced", "given", "spelling", "body", "named",
-             "nested"}
+    drawn = declared(page)
 
     for one in can["structures"]:
         if not one["a_step"]:
@@ -453,3 +452,109 @@ def test_the_card_is_still_ordinary_content(tmp_path: Path) -> None:
     library = load_content([tmp_path])
 
     assert library.registry().get(card["id"]) is not None
+
+
+# ----------------------------------------------------------------------
+# 5. Every way the model says a field may be shown reaches a control
+# ----------------------------------------------------------------------
+
+
+def declared(page: str) -> set[str]:
+    """
+    The ways of showing a field this page says it has a control for.
+
+    Read from the page rather than written here. It is the page's own claim
+    about itself: the model says how a field should be shown, and only the
+    client knows whether it can draw that. A second list here would be a
+    second answer to a question this file does not get to answer.
+    """
+    said = page.split("const DRAWS = [")[1].split("]")[0]
+
+    return set(re.findall(r'"(\w+)"', said))
+
+
+def routed(page: str) -> set[str]:
+    """
+    The ways the renderer actually branches on.
+
+    Not the same set as ``declared``: a way of being shown may be reached by a
+    branch that does not name it, and one of them is.
+    """
+    return set(re.findall(r'f\.shown === "(\w+)"', page))
+
+
+def published(can: dict[str, Any]) -> set[str]:
+    """
+    Every way the model says any field may be shown, anywhere.
+    """
+    return {
+        field["shown"]
+        for group in ("effects", "conditions", "targets", "cards",
+                      "abilities", "statics", "structures")
+        for one in can[group]
+        for field in one["fields"]
+    }
+
+
+def test_every_way_a_field_may_be_shown_has_a_control(
+    can: dict[str, Any], page: str
+) -> None:
+    """
+    The invariant this file exists to keep.
+
+    `shown` is the model's answer to what kind of question a field is; `DRAWS`
+    is the page's answer to which of those it can draw. Neither may be derived
+    from the other — a different client would answer the second differently
+    while reading the same model — so the only thing that can be checked is
+    that they still meet.
+
+    A way of being shown that the engine gains and this page cannot draw fails
+    here, which is the whole point: it would otherwise be drawn by the last
+    branch in the chain, as a box, and a structure asked for in a box is a
+    capability quietly taken away.
+    """
+    missing = published(can) - declared(page)
+
+    assert missing == set(), f"the page has no control for: {sorted(missing)}"
+
+
+def test_the_page_claims_no_control_it_does_not_have(
+    can: dict[str, Any], page: str
+) -> None:
+    """
+    The other direction, so the claim cannot become a fiction.
+
+    Most ways of being shown are reached by a branch naming them. One is not:
+    every field the model shows as `given` is one nobody is asked, and the
+    renderer turns those away before it looks at `shown` at all. So a claim
+    with no branch of its own is allowed exactly when the model says every
+    field of that kind is answered by a branch there is — which is read off
+    the model here rather than written down as an exception.
+    """
+    script = page.split("<script>")[1]
+    unbranched = declared(page) - routed(script)
+    fields = [
+        field
+        for group in ("effects", "conditions", "targets", "cards",
+                      "abilities", "statics", "structures")
+        for one in can[group]
+        for field in one["fields"]
+    ]
+
+    for way in sorted(unbranched):
+        theirs = [f for f in fields if f["shown"] == way]
+
+        assert theirs, f"the page claims {way!r}, and nothing is shown that way"
+        assert all(f["asked"] == "never" or f["one_of"] for f in theirs), (
+            f"{way!r} has no branch of its own and is not answered by another"
+        )
+
+
+def test_nothing_is_shown_a_way_nobody_publishes(
+    can: dict[str, Any], page: str
+) -> None:
+    """
+    A claim for a way of being shown that no longer exists is dead weight, and
+    dead weight is what falls out of step first.
+    """
+    assert declared(page) - published(can) == set()

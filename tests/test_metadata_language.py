@@ -15,6 +15,7 @@ import pathlib
 from typing import Any
 
 import pytest
+from test_body_renderer import PAGE, declared
 
 from fsme.cards import validate_card
 from fsme.content.vocabulary import (
@@ -584,8 +585,7 @@ def test_the_older_sections_still_answer(can: dict[str, Any]) -> None:
 
 
 def test_every_parameter_anywhere_still_lands_somewhere(can: dict[str, Any]) -> None:
-    known = {"form", "group", "advanced", "given", "spelling", "body", "named",
-             "nested"}
+    known = declared(PAGE.read_text("utf-8"))
 
     for group in ("effects", "conditions", "targets", "abilities", "statics",
                   "structures"):

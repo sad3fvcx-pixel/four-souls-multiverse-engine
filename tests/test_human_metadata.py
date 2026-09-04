@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from test_body_renderer import declared
 
 from fsme.content.vocabulary import ASKED, DEEPER, FIRST, MORE, NEVER
 from fsme.lab.desk.capabilities import catalogue
@@ -311,8 +312,10 @@ def test_the_page_never_names_an_effect_to_decide_how_to_draw_it(
     script = without_comments(page.split("<script>")[1])
     # `shown` is the renderer's own routing vocabulary and one of its words —
     # "group" — happens to also be the name of a target. Matching on the word
-    # alone would call that a violation, and it is not one.
-    routing = {"form", "group", "advanced", "given", "spelling", "body", "nested"}
+    # alone would call that a violation, and it is not one. Read from the page
+    # rather than listed: a word this file did not know about would look like
+    # an effect being named, and once did.
+    routing = declared(page)
     named = [
         one["id"]
         for kind in ("effects", "conditions", "targets")

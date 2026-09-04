@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from test_body_renderer import declared
 
 from fsme.cards import validate_card
 from fsme.lab.desk.author import build_card, check_card
@@ -435,9 +436,10 @@ def test_the_page_still_names_no_effect_of_its_own(page: str) -> None:
     assert named == []
 
 
-def test_every_parameter_anywhere_still_lands_somewhere(can: dict[str, Any]) -> None:
-    known = {"form", "group", "advanced", "given", "spelling", "body", "named",
-             "nested"}
+def test_every_parameter_anywhere_still_lands_somewhere(
+    can: dict[str, Any], page: str
+) -> None:
+    known = declared(page)
 
     for group in ("effects", "conditions", "targets", "abilities", "statics",
                   "structures"):

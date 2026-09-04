@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from test_body_renderer import declared
 
 from fsme.content.vocabulary import (
     A_LIST,
@@ -658,17 +659,10 @@ def test_every_parameter_still_arrives_somewhere(can: dict[str, Any]) -> None:
     Nothing may be dropped for being hard to draw, and every parameter has to
     land in one of the places the page knows.
     """
+    known = declared(PAGE.read_text("utf-8"))
+
     for _, owner, field in every_field(can):
-        assert field["shown"] in (
-            "form",
-            "group",
-            "advanced",
-            "given",
-            "spelling",
-            "body",
-            "named",
-            "nested",
-        ), f"{owner}.{field['id']} has nowhere to go"
+        assert field["shown"] in known, f"{owner}.{field['id']} has nowhere to go"
 
 
 def test_an_answer_is_written_into_the_card_and_not_beside_it() -> None:

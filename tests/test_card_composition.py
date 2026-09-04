@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from test_body_renderer import declared
 
 from fsme.cards.definition import CardDefinition
 from fsme.cards.types import PRINTED_NUMBERS
@@ -450,7 +451,7 @@ def test_every_field_a_card_may_carry_reaches_a_control(
     omits is a capability quietly taken away, and the one thing the form asks
     in its own words instead is the card's name.
     """
-    drawable = {"form", "group", "advanced", "given", "spelling", "body", "nested"}
+    drawable = declared(page)
     shape = card_shape(can)
 
     for field in shape["fields"]:
