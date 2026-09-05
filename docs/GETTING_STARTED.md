@@ -98,6 +98,21 @@ Read the wording carefully — it is chosen to be honest rather than impressive.
 
 ## 5. Write a card
 
+The quickest way is not to write one at all:
+
+```bash
+fsme desk --open        # then: Make a card
+```
+
+The Card Constructor asks what the card is and what it does, offers only what
+the engine can play, checks as you type, and writes the file. Cards you make
+are kept in `FSME/my sets` in your documents folder, which is loaded alongside
+the shipped cards. The walkthrough is in the
+[Constructor guide](CONSTRUCTOR_GUIDE.md).
+
+The rest of this section is the same card written by hand, which is worth
+reading whichever way you author: it is what the Constructor is producing.
+
 ### What a card can and cannot do
 
 Before the first one, the shape of the whole thing:
@@ -134,6 +149,8 @@ A card that seems to need a new mechanic usually does not. Look at
 "choose a player, they choose a card from their hand, you take it" is three
 existing pieces and no new machinery.
 
+
+### By hand
 
 Make a set under `content/user/`:
 
@@ -181,9 +198,10 @@ A mistake is named where it is, with the nearest thing the engine does know:
 ```
 
 The card's printed words go in `metadata.text`, which is where all 1045
-shipped cards keep theirs and where the browser view reads them from. A `text`
-field at the top level of a card is not an error — unknown fields there are
-kept for forward compatibility — but nothing reads it, so nothing would show.
+shipped cards keep theirs and where the browser view reads them from. Do not
+put a `text` field at the top level of a card: nothing reads it, and the
+Constructor refuses to open a card carrying a field the engine does not
+describe rather than opening it half-way.
 
 Every effect, condition, target and trigger there is, with what each one
 takes, is in [REFERENCE.md](REFERENCE.md), which is generated from the engine
@@ -196,7 +214,8 @@ less than the reference lists, and the reference says by how much. The shape
 of a card is in [CARD_SCHEMA.md](CARD_SCHEMA.md).
 
 Working sets to copy rather than type are in
-[`author-kit/`](../author-kit/README.md).
+[`author-kit/`](../author-kit/README.md), and the Constructor is in the
+[Constructor guide](CONSTRUCTOR_GUIDE.md).
 
 ---
 

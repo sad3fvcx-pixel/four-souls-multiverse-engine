@@ -167,6 +167,22 @@ The browser page is one local game for one person looking at it. No accounts,
 no network play, no matchmaking, no mobile client. FSME deals games so that it
 can measure them.
 
+## The Constructor keeps some fields whole
+
+A card's `rewards`, a promise's `when`, and `metadata` are stored and given
+back exactly as written rather than being taken apart into separate boxes.
+That is deliberate. The engine accepts reward types it does not yet understand
+so that future content does not invalidate today's cards, and a form with one
+box per known reward would delete the ones it had no box for. Keeping them
+whole cannot lose anything; describing them could.
+
+Two smaller edges of the same kind. A card whose identifier is not a plain
+name — lowercase letters, digits, `-` and `_` — can be opened but not saved,
+because an identifier becomes a file name; thirty-one cards in the
+`engine_demo` set use dots and are view-only. And a card using a field the
+engine does not describe is refused outright rather than opened half-way, with
+the offending part named.
+
 ## Practical limits
 
 | | |
