@@ -6,6 +6,50 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## 0.9.0 - Card Constructor
+
+The first release since 0.7.0, and it carries everything since. There was no
+public 0.8: the work that would have been in one is here, and inventing a tag
+for it after the fact would be inventing history rather than recording it.
+
+### Added
+
+- **Card Constructor** — make and edit cards in a browser, without writing
+  JSON. It is built from the engine's own vocabulary, so it offers only cards
+  the engine can play, and it checks a card with the same validator that checks
+  the shipped sets: a card that would not load cannot be saved.
+- **Guided Walk** — build a card by answering one question at a time. Every one
+  of the 352 rule-bearing shipped cards can be edited this way.
+- **Card types from one place** — the twelve kinds of card come from the model
+  the engine owns, and the page reads them off it rather than keeping a list.
+- **Structured promises** — what a card promises to change about an event is
+  now edited as structure, with the six ways a value may change offered from
+  the engine's own description of them.
+- **Constructor documentation** — a guide for making cards, and the
+  Constructor is now the first path the README and the getting-started tour
+  offer. Writing JSON by hand remains fully supported as the advanced route.
+
+### Fixed
+
+- **A target is chosen when the card says it is.** A target written on an
+  effect used to be lifted to the ability, where it is resolved before any step
+  runs — so a card reading "on a 5-6, discard a loot card" asked for the loot
+  card every time it was played. It now stays where it was written, in both
+  cards read from disk and cards made in the editor.
+- **The order choices are declared in is kept.** A card that picks an item and
+  then a player asks those two questions in that order; saving the card used to
+  be able to swap them, which is a different card.
+- **A choice nothing points at is no longer dropped.** A declaration that no
+  step refers to used to disappear on save, reported as successful.
+
+### Verified
+
+- 1045 of 1045 shipped cards open, save, and mean the same afterwards.
+- 352 of 352 rule-bearing cards pass the checker.
+- 234 of 234 constructs the engine describes are supported end to end.
+- The whole shipped corpus, rewritten through the Constructor and replayed over
+  a thousand games, produces identical games.
+
 ## 0.7.0 - Multiple Actions Constructor
 
 - A card made in the constructor can now do several things in turn. When an
@@ -84,27 +128,6 @@ that cannot be read says so) and the **card schema**.
 - Verified 352 of 1045 shipped definitions load unchanged and 1000 recorded
   games replay without changes.
 
-## 0.4.0 — capability metadata
-
-- Added capability metadata for effect parameters.
-- Added parameter roles and appropriate Author UI controls.
-- Added declared parameter domains and required parameters.
-- Added target selection metadata for parameters supplied by the engine.
-- Added parameter dependencies and validation for capability metadata.
-- Added drift checks to keep runtime requirements and UI metadata synchronized.
-- Audited all registered effects and their parameters.
-
-## 0.3.0 — author experience
-
-- Added a writable workspace for author-created sets.
-- Added the Author UI for creating and editing cards without writing JSON.
-- Added capability discovery from the engine's existing registries.
-- Added human-readable descriptions for conditions, targets, parameters, and triggers.
-- Added target selection for effects that operate on players or items.
-- Added in-app card validation and playable card preview.
-- Added persistence of author-created sets across application restarts.
-- Added an end-to-end authoring workflow and comprehensive Author UI tests.
-
 ## 0.5.2 - an editor that explains itself
 
 - Added a human-facing description layer over the capability metadata: every
@@ -154,7 +177,26 @@ that cannot be read says so) and the **card schema**.
 - Preserved the existing card JSON format and compatibility with existing cards.
 - Verified 1014 shipped cards load unchanged and 1000 recorded games replay without changes.
 
-## Unreleased
+## 0.4.0 — capability metadata
+
+- Added capability metadata for effect parameters.
+- Added parameter roles and appropriate Author UI controls.
+- Added declared parameter domains and required parameters.
+- Added target selection metadata for parameters supplied by the engine.
+- Added parameter dependencies and validation for capability metadata.
+- Added drift checks to keep runtime requirements and UI metadata synchronized.
+- Audited all registered effects and their parameters.
+
+## 0.3.0 — author experience
+
+- Added a writable workspace for author-created sets.
+- Added the Author UI for creating and editing cards without writing JSON.
+- Added capability discovery from the engine's existing registries.
+- Added human-readable descriptions for conditions, targets, parameters, and triggers.
+- Added target selection for effects that operate on players or items.
+- Added in-app card validation and playable card preview.
+- Added persistence of author-created sets across application restarts.
+- Added an end-to-end authoring workflow and comprehensive Author UI tests.
 
 ## 0.2.0 — author preview
 
