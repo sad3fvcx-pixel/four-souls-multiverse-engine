@@ -88,6 +88,22 @@ what exists. Everything the engine has is still offered; this decides what a
 person sees without opening "everything else".
 """
 
+MOMENT_IS_ASKED = ("curse", "character")
+"""
+The kinds the walk asks the moment of, of those the engine settles none for.
+
+Not a statement about the language. The question is put by one piece of code
+that knows nothing about kinds, offering the moments the engine has; every
+kind here could already be given any of those moments by hand in the editor.
+This is how far the walk has been taken and checked, and it is written here
+rather than in the page so that the page carries no list of kinds at all.
+
+It shrinks as the rest are checked. What the remaining kinds are waiting for
+is a different question, not this one: a monster has printed numbers — health,
+attack, a roll — that the walk does not yet ask for, and a card of one is not
+finished by naming a moment.
+"""
+
 NEEDS_SOMETHING_EARLIER = "passthrough"
 """
 Targets that hand back whatever they were given.
@@ -265,6 +281,8 @@ def _kinds(vocabulary: Any) -> list[dict[str, Any]]:
             # asking about triggers; where it is empty there is no single
             # answer and the question has to be put.
             "used_by": vocabulary.used_by.get(kind, ""),
+            # And, where it is empty, whether the walk is the one to put it.
+            "moment_is_asked": kind in MOMENT_IS_ASKED,
         }
         for kind in sorted((str(value) for value in kinds.values), key=met)
     ]

@@ -309,12 +309,44 @@ function chooseKind() {
 // the editor used to ask them first.
 function pickKind(kind) {
   state.card.fields.type = kind;
-  const how = (can.kinds.find(k => k.id === kind) || {}).used_by;
-  if (how) return chooseAction(how);
-  // No single moment makes this kind of card act, so there is nothing to fill
-  // in and the question has to be put. That is the editor's job, not a guess.
+  const of = can.kinds.find(k => k.id === kind) || {};
+  if (of.used_by) return chooseAction(of.used_by);
+  // No single moment makes this kind of card act, so the question has to be
+  // put rather than guessed. Where the engine says the walk is the one to put
+  // it, this asks; where it does not, the editor takes the card as it always
+  // did. Which kinds those are is not written here — a page that carried its
+  // own list of kinds would be a second copy of something already published.
+  if (of.moment_is_asked) return chooseMoment();
   state.mode = "expert";
   editor();
+}
+
+// ------------------------------------------------------- when does it happen
+//
+// The question the four settled kinds never see, because the engine answers it
+// for them. For the rest there is no one right answer, and the only honest
+// thing is to ask.
+//
+// Nothing here names a moment. The moments are the ones the ability's own
+// `trigger` field offers, each shown by the sentence the engine already
+// carries about it, and split the way every other list on this screen is split
+// — the handful somebody usually wants, and the rest a click away. A moment
+// the engine gains is offered by this without it being told.
+function chooseMoment() {
+  const one = (t) => `<button class="task" onclick="chooseAction('${t.id}')">
+      <b>${esc(sentence(t.about))}</b></button>`;
+  const common = can.triggers.filter(t => t.common);
+  const rest = can.triggers.filter(t => !t.common);
+  el(`<button class="back" onclick="chooseKind()">← back</button>
+    <h1>When should this card do it?</h1>
+    <p class="lead">A card of this kind can act at more than one moment, so
+      there is nothing to fill in for you. Pick the one it waits for.</p>
+    ${common.map(one).join("")}
+    <details class="deep"><summary>Every other moment</summary>
+      <div class="nested">${rest.map(one).join("")}</div></details>
+    <hr>
+    <p><button onclick="startBlank()">I would rather start from an empty
+      card</button></p>`);
 }
 
 // ------------------------------------------------- what should it do?

@@ -843,3 +843,199 @@ def test_a_walked_event_opens_again_saying_the_same_thing(
 
     assert again == made, "opening it again said something else"
     assert check_card(again) == []
+
+
+# ----------------------------------------------------------------------
+# When the engine settles no moment, the walk asks for one
+# ----------------------------------------------------------------------
+#
+# Four kinds have one right answer and the walk fills it in: a loot card is
+# played, an item is used, an event is turned over and resolved. The rest react
+# to several moments and no one of them is *the* moment — which was why they
+# were handed the whole card instead.
+#
+# So the walk asks. Nothing about the question is about a kind: the moments are
+# the ones the ability's own trigger field offers, shown by the sentence the
+# engine carries about each, and a moment the engine gains is offered without
+# this being told. What is limited is how far it has been taken, not what it
+# can do.
+
+
+def script() -> str:
+    return PAGE.read_text("utf-8").split("<script>")[1]
+
+
+def test_the_walk_puts_the_question_when_nothing_settles_it() -> None:
+    """
+    The screen exists, and `pickKind` reaches it instead of the editor.
+    """
+    said = script()
+
+    assert "function chooseMoment()" in said
+    assert "return chooseMoment()" in said
+
+
+def test_the_moments_offered_are_the_engines_own(can: dict[str, Any]) -> None:
+    """
+    Read from the catalogue, not written down here.
+
+    A list in the page would go on offering the same handful after the engine
+    gained a moment, which is the failure this whole screen is built to avoid.
+    """
+    said = script()
+    named = [one["id"] for one in can["triggers"] if f'"{one["id"]}"' in said]
+
+    assert named == [], named
+    assert "can.triggers" in said, "the moments come from somewhere else"
+
+
+def test_the_question_splits_the_moments_the_way_everything_else_is_split(
+    can: dict[str, Any],
+) -> None:
+    """
+    The handful somebody usually wants, and the rest a click away — the same
+    grammar the actions use, not a second one.
+    """
+    said = script().split("function chooseMoment()")[1].split("\n}")[0]
+
+    assert "t.common" in said, "the split is not the published one"
+    assert "!t.common" in said
+    assert "t.about" in said, "a moment is shown by something other than itself"
+    assert any(one["common"] for one in can["triggers"])
+
+
+def test_the_kinds_the_engine_settles_are_never_asked(can: dict[str, Any]) -> None:
+    """
+    Four kinds have an answer, so the question would be a second one put about
+    something already decided.
+    """
+    said = script()
+    where = said.index("function pickKind(")
+    body = said[where:said.index("\n}", where)]
+
+    # The question is reached only where there is no answer to read.
+    assert body.index("if (of.used_by) return chooseAction(of.used_by)") < body.index(
+        "chooseMoment()"
+    ), "a kind the engine settles could reach the question"
+
+    for kind in ("loot", "treasure", "starting_item", "event"):
+        assert next(
+            one["used_by"] for one in can["kinds"] if one["id"] == kind
+        ), kind
+
+
+def test_how_far_this_has_been_taken_is_published_not_written_down(
+    can: dict[str, Any],
+) -> None:
+    """
+    The kinds walked so far, said once and where the kinds themselves are said.
+
+    Not a claim about the language — `chooseMoment` knows nothing about kinds —
+    so it is checked as a stage and not as a rule. It is beside `used_by`
+    because it answers the half of that question `used_by` leaves open: no
+    moment is settled, and this says whether the walk is the one to ask.
+    """
+    asked = {one["id"] for one in can["kinds"] if one["moment_is_asked"]}
+
+    assert asked == {"curse", "character"}
+    # Every one of them is a kind the engine settles no moment for, or the
+    # question would be a second one put about something already decided.
+    for one in can["kinds"]:
+        assert not (one["moment_is_asked"] and one["used_by"]), one["id"]
+
+
+def test_the_page_names_no_kind_of_card_at_all() -> None:
+    """
+    Neither the question nor the routing to it may carry its own list.
+
+    A list of kinds in the page is the same mistake as a list of moments: it
+    goes on saying the same thing after the engine has changed. It also reads
+    as a rule about a kind when it is nothing of the sort — the collision that
+    found this is that `character` is a target as well, and the page's standing
+    rule is that it names none of those either.
+    """
+    runs = "\n".join(
+        one.split("//")[0] for one in script().splitlines()
+    )
+    named = [
+        one for one in catalogue()["kinds"] if f'"{one["id"]}"' in runs
+    ]
+
+    assert named == [], [one["id"] for one in named]
+
+
+def a_walked_card(can: dict[str, Any], kind: str, moment: str) -> Any:
+    """
+    A card the way the walk sends one whose moment was answered rather than
+    filled in: the kind, the moment that was picked, one action.
+    """
+    effect = next(one for one in offered(can) if one["id"] == "gain_coins")
+
+    return build_card(
+        {
+            "set": "demo",
+            "card": {
+                "fields": {
+                    "name": "Walked",
+                    "type": kind,
+                    "abilities": [
+                        {"fields": {"trigger": moment, "effects": [a_step(can, effect)]}}
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    ("kind", "moment"),
+    [("curse", "turn_end"), ("character", "on_activate")],
+)
+def test_a_card_whose_moment_was_asked_for_is_a_card_the_engine_takes(
+    can: dict[str, Any], kind: str, moment: str
+) -> None:
+    """
+    Both kinds this has been taken to, each at a moment its own shipped cards
+    use. The moment is the only thing that came from the question; everything
+    after it is the walk that was already there.
+    """
+    card = a_walked_card(can, kind, moment)
+
+    assert card["type"] == kind
+    assert card["abilities"][0]["trigger"] == moment
+    assert check_card(card) == [], check_card(card)
+
+
+@pytest.mark.parametrize(
+    ("kind", "moment"),
+    [("curse", "turn_end"), ("character", "on_activate")],
+)
+def test_a_card_whose_moment_was_asked_for_opens_again_the_same(
+    can: dict[str, Any], kind: str, moment: str
+) -> None:
+    """
+    Kept and opened again, which is the contract every other kind is held to.
+    """
+    from fsme.lab.desk.author import read_card
+
+    made = a_walked_card(can, kind, moment)
+    again = build_card(read_card(made))
+
+    assert again == made, "opening it again said something else"
+    assert check_card(again) == []
+
+
+def test_every_moment_the_question_offers_has_somewhere_to_go(
+    can: dict[str, Any]
+) -> None:
+    """
+    The question offers the engine's moments; the walk has to be able to put
+    each of them on a card. Both come from the shapes, so this checks they
+    still meet rather than assuming it.
+    """
+    for one in can["triggers"]:
+        card = a_walked_card(can, "curse", one["id"])
+
+        assert card["abilities"][0]["trigger"] == one["id"], one["id"]
+        assert check_card(card) == [], (one["id"], check_card(card))
