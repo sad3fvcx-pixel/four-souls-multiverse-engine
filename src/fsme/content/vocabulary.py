@@ -977,6 +977,29 @@ class Vocabulary:
     cannot act.
     """
 
+    printed_numbers: Mapping[str, tuple[str, ...]] = field(
+        default_factory=lambda: MappingProxyType({})
+    )
+    """
+    The numbers each kind of card carries printed on it, where anybody has said.
+
+    ``{"monster": ("health", "attack", "roll")}`` — what somebody reading the
+    card would find on it, in the order the card writes them.
+
+    The other half of a fact already published. Each of those numbers carries
+    ``unless_when``, which lists the kinds that do *not* have it — and a kind
+    nobody has described is in no such list, so the absence reads as "keep it"
+    rather than "nobody knows". That is the right answer for a form, which must
+    not hide an answer it cannot rule out, and the wrong one for a walk, which
+    would go on to ask a loot card how many hit points it has. So the positive
+    is published beside the negative: a kind missing from here is one nobody
+    has described, and asking it for numbers would be asking somebody to invent
+    a fact about their card.
+
+    Both come from the same place and neither is written twice; a test holds
+    them to each other.
+    """
+
     type_labels: Mapping[str, str] = field(
         default_factory=lambda: MappingProxyType({})
     )
@@ -1017,6 +1040,7 @@ class Vocabulary:
         node_shapes: Mapping[str, NodeShape] | None = None,
         trigger_scopes: Mapping[str, str] | None = None,
         used_by: Mapping[str, str] | None = None,
+        printed_numbers: Mapping[str, tuple[str, ...]] | None = None,
     ) -> Vocabulary:
         """
         Build a vocabulary from any collections of names.
@@ -1032,6 +1056,7 @@ class Vocabulary:
             node_shapes=MappingProxyType(dict(node_shapes or {})),
             trigger_scopes=MappingProxyType(dict(trigger_scopes or {})),
             used_by=MappingProxyType(dict(used_by or {})),
+            printed_numbers=MappingProxyType(dict(printed_numbers or {})),
         )
 
     def shape(self, effect: str) -> EffectShape | None:

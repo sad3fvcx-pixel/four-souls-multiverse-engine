@@ -111,6 +111,12 @@ def engine_vocabulary(effects: EffectRegistry | None = None) -> Vocabulary:
         node_shapes=_node_shapes(),
         trigger_scopes=_trigger_scopes(),
         used_by=USED_BY,
+        printed_numbers=MappingProxyType(
+            {
+                str(kind): tuple(numbers)
+                for kind, numbers in PRINTED_NUMBERS.items()
+            }
+        ),
         type_labels=MappingProxyType(
             {str(kind): label for kind, label in TYPE_LABELS.items()}
         ),

@@ -696,7 +696,7 @@ function sofar(problems = [], moments = []) {
     <ol class="list">${rows}</ol>
     <hr>
     <div class="row">
-      <button class="go" onclick="done()">That is everything</button>
+      <button class="go" onclick="finish()">That is everything</button>
       <button onclick="addAction()">Add another thing it does</button>
     </div>
     ${saidHtml(problems, moments)}`);
@@ -771,7 +771,10 @@ function saidHtml(problems, moments) {
 // editor uses, so what is said about it here is what the engine says about it.
 async function done(problems = [], moments = []) {
   walk.on = "done";
-  const out = partsOf().length > 1 || !walk.list ? "chooseWhich()" : "sofar()";
+  // Back is the screen this was reached from, which is the numbers where the
+  // kind has any and the list of what the card does where it has none.
+  const out = printedFields().length ? "numbers()"
+    : partsOf().length > 1 || !walk.list ? "chooseWhich()" : "sofar()";
   el(`<button class="back" onclick="${out}">← back</button>
     <h1>Your card</h1>
     <label for="name">What is it called?</label>
@@ -793,6 +796,53 @@ async function done(problems = [], moments = []) {
     <h2>The card</h2>
     <div id="face"></div>`);
   face();
+}
+
+// --------------------------------------------------- what is printed on it
+//
+// The numbers a card carries because of the kind of card it is: a monster's
+// hit points, what it hits for and the roll needed to hit it; a treasure's
+// price. Not the same species of question as everything before this screen —
+// those are things the card *does*, and these are things it *is*.
+//
+// Which numbers those are is not decided here. Each kind publishes what it
+// carries, and the fields themselves carry the wording, the shape and the
+// domain, so this screen names no number and no kind of card. A kind for
+// which nobody has said carries none as far as this is concerned, and gets
+// no screen at all — asking somebody how many hit points their loot card has
+// is asking them to invent a fact about it.
+
+// The card's own fields, in its own order, kept to the ones this kind prints.
+function printedFields() {
+  const card = named(can.cards, "card") || { fields: [] };
+  const of = can.kinds.find(k => k.id === state.card.fields.type) || {};
+  const carries = of.printed || [];
+  return card.fields.filter(f => carries.includes(f.id));
+}
+
+// Between the last thing a card does and the card itself. Put here rather
+// than at the start because until an action exists there is no card to write
+// them on, and skipped where there is nothing to put.
+function finish(problems = [], moments = []) {
+  return printedFields().length ? numbers(problems, moments)
+                                : done(problems, moments);
+}
+
+function numbers(problems = [], moments = []) {
+  walk.on = "numbers";
+  const back = walk.list ? "sofar()" : "chooseWhich()";
+  el(`<button class="back" onclick="${back}">← back</button>
+    <h1>What is printed on it?</h1>
+    <p class="lead">The numbers this kind of card carries. They are what it is
+      rather than what it does, so nothing before now has asked for them.</p>
+    <div class="nested">${oneByOne(printedFields(), state.card.fields,
+      state.card.groups, "state.card.fields", "state.card.groups", "card")}</div>
+    <hr>
+    <div class="row">
+      <button class="go" onclick="done()">Next</button>
+      <button onclick="startBlank()">Fill the rest in myself</button>
+    </div>
+    ${saidHtml(problems, moments)}`);
 }
 
 function startBlank() { walk = null; state.mode = "expert"; editor(); }
@@ -921,7 +971,7 @@ function chooseWhich(problems = [], moments = []) {
     ${sections}
     <hr>
     <div class="row">
-      <button class="go" onclick="done()">That is everything</button>
+      <button class="go" onclick="finish()">That is everything</button>
     </div>
     ${saidHtml(problems, moments)}`);
 }
@@ -933,6 +983,7 @@ function drawn(problems = [], moments = []) {
   if (!walk) return editor(problems, moments);
   if (walk.on === "parts") return chooseWhich(problems, moments);
   if (walk.on === "sofar") return sofar(problems, moments);
+  if (walk.on === "numbers") return numbers(problems, moments);
   if (walk.on === "done") return done(problems, moments);
   return ask(walk.at, problems, moments);
 }

@@ -937,7 +937,7 @@ def test_how_far_this_has_been_taken_is_published_not_written_down(
     """
     asked = {one["id"] for one in can["kinds"] if one["moment_is_asked"]}
 
-    assert asked == {"curse", "character"}
+    assert asked == {"curse", "character", "monster"}
     # Every one of them is a kind the engine settles no moment for, or the
     # question would be a second one put about something already decided.
     for one in can["kinds"]:
@@ -1039,3 +1039,254 @@ def test_every_moment_the_question_offers_has_somewhere_to_go(
 
         assert card["abilities"][0]["trigger"] == one["id"], one["id"]
         assert check_card(card) == [], (one["id"], check_card(card))
+
+
+# ----------------------------------------------------------------------
+# What is printed on a card, as opposed to what it does
+# ----------------------------------------------------------------------
+#
+# Everything the walk asked until now was something the card *does*. A monster
+# also carries numbers because of what it *is* — hit points, what it hits for,
+# the roll needed to hit it — and no question about an effect will ever reach
+# them, because they are not on an effect.
+#
+# Which numbers a kind carries is a fact the engine already held and only half
+# published. Each number says which kinds do *not* have it, which is the right
+# answer for a form: a kind nobody has described is in no such list, so the
+# form shows the box rather than hiding an answer it cannot rule out. It is the
+# wrong answer for a walk, which would then ask a soul card for hit points. So
+# the other half is published beside it, and the screen is built from that.
+
+
+def test_what_each_kind_prints_is_published(can: dict[str, Any]) -> None:
+    """
+    Read from the engine's own table, for every kind, not only the ones a walk
+    happens to reach.
+    """
+    printed = {one["id"]: tuple(one["printed"]) for one in can["kinds"]}
+
+    assert printed["monster"] == ("health", "attack", "roll")
+    assert printed["character"] == ("health", "attack")
+    assert printed["treasure"] == ("cost",)
+    # A kind that carries none, and a kind nobody has described, both say so by
+    # being empty — and the walk has nothing to put for either.
+    assert printed["loot"] == ()
+    assert printed["soul"] == ()
+
+
+def test_the_two_halves_of_the_printed_numbers_agree(can: dict[str, Any]) -> None:
+    """
+    The half a field publishes and the half a kind publishes come from one
+    table, and this is what stops them becoming two.
+
+    A number's `unless_when` lists the kinds that do not carry it. Where a kind
+    is described at all, that list and this one are the same fact said twice —
+    so every number a kind is said to print must be one no number excludes it
+    from, and the other way about.
+    """
+    fields = {
+        one["id"]: one
+        for one in next(n for n in can["cards"] if n["id"] == "card")["fields"]
+        if one["unless"] == "type"
+    }
+    described = {
+        one["id"] for one in can["kinds"]
+        if any(one["id"] in fields[f]["unless_when"] for f in fields)
+        or one["printed"]
+    }
+
+    assert described, "no kind is described at all"
+
+    for kind in can["kinds"]:
+        if kind["id"] not in described:
+            continue
+
+        expected = {
+            name for name, f in fields.items()
+            if kind["id"] not in f["unless_when"]
+        }
+
+        assert set(kind["printed"]) == expected, kind["id"]
+
+
+def test_the_screen_is_built_from_that_and_names_no_number() -> None:
+    """
+    The page picks the card's own fields by what the kind says it prints. A
+    list of names here would be the third copy of the same table, and the one
+    that could not be checked against the engine.
+    """
+    said = script()
+
+    assert "function printedFields()" in said
+    assert "of.printed" in said, "the numbers come from somewhere else"
+
+    where = said.index("function printedFields()")
+    body = said[where:said.index("\n}", where)]
+
+    for name in ("health", "attack", "roll", "cost", "souls"):
+        assert f'"{name}"' not in body, name
+
+
+def test_a_kind_that_prints_nothing_is_never_asked() -> None:
+    """
+    The screen is skipped rather than shown empty, which is the difference
+    between "there is nothing to say" and "you have said nothing".
+    """
+    said = script()
+    where = said.index("function finish(")
+    body = said[where:said.index("\n}", where)]
+
+    assert "printedFields().length" in body
+    assert "done(" in body, "a kind with no numbers never reaches the end"
+
+
+def a_printed_card(can: dict[str, Any], kind: str, moment: str, **numbers: int) -> Any:
+    """
+    A card the way the walk sends one whose numbers were answered: the kind,
+    the moment, one action, and what the kind prints.
+    """
+    effect = next(one for one in offered(can) if one["id"] == "gain_coins")
+
+    return build_card(
+        {
+            "set": "demo",
+            "card": {
+                "fields": {
+                    "name": "Printed",
+                    "type": kind,
+                    **numbers,
+                    "abilities": [
+                        {"fields": {"trigger": moment, "effects": [a_step(can, effect)]}}
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+
+def test_a_monster_walked_through_keeps_what_is_printed_on_it(
+    can: dict[str, Any],
+) -> None:
+    """
+    The whole point of the screen: the numbers reach the card, survive being
+    written, and come back saying the same thing.
+    """
+    from fsme.lab.desk.author import read_card
+
+    card = a_printed_card(can, "monster", "monster_killed", health=3, attack=1, roll=4)
+
+    assert card["type"] == "monster"
+    assert card["abilities"][0]["trigger"] == "monster_killed"
+    assert (card["health"], card["attack"], card["roll"]) == (3, 1, 4)
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card, "opening it again said something else"
+
+
+def test_every_kind_the_walk_reaches_keeps_every_number_it_prints(
+    can: dict[str, Any],
+) -> None:
+    """
+    Over the kinds rather than over monsters: whatever a kind is said to print
+    is a number the walk can put on it and the writer keeps.
+    """
+    from fsme.lab.desk.author import read_card
+
+    reached = [
+        one for one in can["kinds"]
+        if (one["used_by"] or one["moment_is_asked"]) and one["printed"]
+    ]
+
+    assert {one["id"] for one in reached} == {"treasure", "character", "monster"}
+
+    for one in reached:
+        numbers = {name: 2 for name in one["printed"]}
+        moment = one["used_by"] or "turn_end"
+        card = a_printed_card(can, one["id"], moment, **numbers)
+
+        for name in one["printed"]:
+            assert card.get(name) == 2, (one["id"], name)
+
+        assert check_card(card) == [], (one["id"], check_card(card))
+        assert build_card(read_card(card)) == card, one["id"]
+
+
+def test_the_kinds_that_print_nothing_gain_no_numbers(can: dict[str, Any]) -> None:
+    """
+    A loot card walked through is the card it was before this screen existed.
+    """
+    fields = {
+        one["id"]
+        for one in next(n for n in can["cards"] if n["id"] == "card")["fields"]
+        if one["unless"] == "type"
+    }
+
+    for kind in ("loot", "event", "starting_item", "curse"):
+        one = next(k for k in can["kinds"] if k["id"] == kind)
+
+        assert one["printed"] == [], kind
+
+        card = a_printed_card(can, kind, one["used_by"] or "turn_end")
+
+        assert not (fields & set(card)), (kind, fields & set(card))
+        assert check_card(card) == [], (kind, check_card(card))
+
+
+def test_a_monster_is_a_kind_the_walk_asks_the_moment_of(can: dict[str, Any]) -> None:
+    """
+    The engine settles no moment for a monster and it is not in `USED_BY`; the
+    walk asks, the same way it asks a curse.
+    """
+    monster = next(one for one in can["kinds"] if one["id"] == "monster")
+
+    assert monster["used_by"] == "", "a monster was given one settled moment"
+    assert monster["moment_is_asked"] is True
+    assert "monster" not in USED_BY
+
+
+def test_every_moment_a_real_monster_uses_can_be_put_on_one(
+    can: dict[str, Any],
+) -> None:
+    """
+    The thirteen moments the shipped monsters actually react to, built the way
+    the walk builds one. Read off the content rather than listed here, so a
+    moment the sets gain is checked without this being told.
+    """
+    library = load_content(CONTENT)
+    moments = sorted(
+        {
+            str(ability.trigger)
+            for card in library.definitions()
+            if str(card.type) == "monster"
+            for ability in card.abilities
+        }
+    )
+
+    assert moments, "no shipped monster reacts to anything"
+
+    for moment in moments:
+        card = a_printed_card(can, "monster", moment, health=2, attack=1, roll=4)
+
+        assert card["abilities"][0]["trigger"] == moment, moment
+        assert check_card(card) == [], (moment, check_card(card))
+
+
+def test_a_number_left_off_stays_off(can: dict[str, Any]) -> None:
+    """
+    The screen asks; it does not answer.
+
+    A monster that prints no attack is a real card — `death` is one, and the
+    engine has a documented answer for the blow it deals when the card names
+    none. Turning an unanswered question into a number would put a fact on the
+    card that its author never said, and the round trip would then swear the
+    card had always said it.
+    """
+    from fsme.lab.desk.author import read_card
+
+    card = a_printed_card(can, "monster", "monster_killed", health=3, roll=4)
+
+    assert card["health"] == 3
+    assert card["roll"] == 4
+    assert "attack" not in card, card.get("attack")
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card

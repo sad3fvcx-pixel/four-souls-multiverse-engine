@@ -88,7 +88,7 @@ what exists. Everything the engine has is still offered; this decides what a
 person sees without opening "everything else".
 """
 
-MOMENT_IS_ASKED = ("curse", "character")
+MOMENT_IS_ASKED = ("curse", "character", "monster")
 """
 The kinds the walk asks the moment of, of those the engine settles none for.
 
@@ -98,10 +98,11 @@ kind here could already be given any of those moments by hand in the editor.
 This is how far the walk has been taken and checked, and it is written here
 rather than in the page so that the page carries no list of kinds at all.
 
-It shrinks as the rest are checked. What the remaining kinds are waiting for
-is a different question, not this one: a monster has printed numbers — health,
-attack, a roll — that the walk does not yet ask for, and a card of one is not
-finished by naming a moment.
+It shrinks as the rest are checked. A monster joined it once the walk learned
+to ask what is printed on a card, which was the thing it was waiting for — the
+moment was never the difficulty. What the rest are waiting for is not one
+question: a room and a soul do their work in ways the walk has no screen for
+yet.
 """
 
 NEEDS_SOMETHING_EARLIER = "passthrough"
@@ -283,6 +284,11 @@ def _kinds(vocabulary: Any) -> list[dict[str, Any]]:
             "used_by": vocabulary.used_by.get(kind, ""),
             # And, where it is empty, whether the walk is the one to put it.
             "moment_is_asked": kind in MOMENT_IS_ASKED,
+            # What a card of this kind has printed on it, so that whatever
+            # asks knows which numbers to put and — where this is empty —
+            # that there are none to put. The fields themselves say which
+            # kinds do *not* carry them; this is the half that says which do.
+            "printed": list(vocabulary.printed_numbers.get(kind, ())),
         }
         for kind in sorted((str(value) for value in kinds.values), key=met)
     ]
