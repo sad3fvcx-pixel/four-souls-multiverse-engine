@@ -291,6 +291,7 @@ USED_BY = MappingProxyType(
         str(CardType.LOOT): str(PLAYED_BY),
         str(CardType.TREASURE): str(ACTIVATED_BY),
         str(CardType.STARTING_ITEM): str(ACTIVATED_BY),
+        str(CardType.EVENT): str(PLAYED_BY),
     }
 )
 """
@@ -302,6 +303,14 @@ for, and an item nobody can activate is an item that does nothing. Both are
 the engine's own answers — `play_loot` emits one and `_activatable` refuses an
 item without the other — so both are read from beside those rules rather than
 written down a second time here.
+
+An event is the third of them and the same answer as the first. Nobody plays
+one — it is turned over out of the monster deck — but what the engine does
+with it once it is turned over is exactly what it does with a loot card that
+has been played: `_resolve_event` discards it and emits `PLAYED_BY`, which is
+the moment its ability waits for. So "when does this happen" has one answer
+for an event too, and it is not a second answer written down here but the same
+`PLAYED_BY` a loot card already reads.
 
 The kinds missing from this are missing on purpose. A monster, a room, a
 character and a curse each react to several moments and no single one of them

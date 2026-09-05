@@ -68,15 +68,49 @@ def test_the_kinds_that_print_numbers_are_a_choice_about_cards() -> None:
     }
 
 
-def test_the_engine_settles_how_three_kinds_are_used() -> None:
+def test_the_engine_settles_how_four_kinds_are_used() -> None:
     """
-    Read from beside `play_loot` and `_activatable`, not written down twice.
+    Read from beside `play_loot`, `_activatable` and `_resolve_event`, not
+    written down twice.
+
+    This said three until an event was looked at properly. Nobody plays an
+    event — it is turned over out of the monster deck — and that is what the
+    absence was about; but what the engine does once it is turned over is
+    what it does with a played loot card, and `_resolve_event` emits the same
+    moment. One right answer is one right answer however the card got there.
     """
     assert dict(engine_vocabulary().used_by) == {
         "loot": "on_play",
         "treasure": "on_activate",
         "starting_item": "on_activate",
+        "event": "on_play",
     }
+
+
+def test_what_an_event_waits_for_is_what_a_played_card_waits_for() -> None:
+    """
+    The same constant, not a second string that happens to read alike.
+
+    A value copied here would go on saying `on_play` after the engine stopped
+    meaning it, which is the whole reason none of these is written down.
+    """
+    from fsme.rules.loot import PLAYED_BY
+
+    used = engine_vocabulary().used_by
+
+    assert used["event"] == str(PLAYED_BY)
+    assert used["event"] == used["loot"], "two answers for one moment"
+
+
+def test_the_kinds_with_no_one_moment_still_say_so() -> None:
+    """
+    The half that must not move. Each of these reacts to several moments and
+    no one of them is *the* moment, so there is nothing to fill in.
+    """
+    used = engine_vocabulary().used_by
+
+    for kind in ("monster", "room", "character", "curse"):
+        assert kind not in used, kind
 
 
 # ----------------------------------------------------------------------
@@ -200,14 +234,19 @@ def test_how_a_kind_is_used_reaches_the_desk() -> None:
     """
     Including `starting_item`, which the engine has always settled and the
     desk could not say, because it did not offer that kind at all.
+
+    And `event`, which it settles the same way it settles a loot card: the
+    desk is what this is for, because a kind the desk is told about is one it
+    can put questions for instead of handing somebody the whole card.
     """
     used = {one["id"]: one["used_by"] for one in catalogue()["kinds"]}
 
     assert used["loot"] == "on_play"
     assert used["treasure"] == "on_activate"
     assert used["starting_item"] == "on_activate"
+    assert used["event"] == "on_play"
 
     # No single moment is *the* moment for these, and filling one in would
     # put a trigger on a card that never fires.
-    for kind in ("monster", "room", "character", "curse", "event"):
+    for kind in ("monster", "room", "character", "curse"):
         assert used[kind] == "", kind

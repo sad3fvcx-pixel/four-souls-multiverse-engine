@@ -731,3 +731,115 @@ def test_a_step_inside_a_body_may_be_aimed() -> None:
     inner["fields"]["effects"][0].pop("aim")
 
     assert check_card(build_card(said)) == [], "and unaimed it is a fine card too"
+
+
+# ----------------------------------------------------------------------
+# An event is walked like anything else the engine settles
+# ----------------------------------------------------------------------
+#
+# The walk skips "when does this happen" for a kind the engine has one answer
+# for, and hands the whole card to the editor for a kind it has not. An event
+# looked like the second and is the first: nobody plays one — it is turned
+# over out of the monster deck — but once it is turned over `_resolve_event`
+# does what a played loot card does and emits the same moment.
+#
+# So these are the loot tests asked about an event, and they pass for the same
+# reason: nothing in the walk knows what kind of card it is walking.
+
+
+def the_walk_asks(can: dict[str, Any], kind: str) -> str:
+    """
+    What the page would fill in for this kind, or nothing if it must ask.
+
+    Read the way `pickKind` reads it, because that is the thing being checked:
+    a kind with an answer goes to the questions, one without goes to the
+    editor with the kind already set.
+    """
+    return next(one["used_by"] for one in can["kinds"] if one["id"] == kind)
+
+
+def test_choosing_an_event_reaches_the_questions(can: dict[str, Any]) -> None:
+    """
+    The entry point, which is the whole of what changed.
+    """
+    assert the_walk_asks(can, "event") == "on_play"
+
+
+def test_the_kinds_that_must_still_ask_still_do(can: dict[str, Any]) -> None:
+    """
+    And the ones that were not touched. Each reacts to several moments, so
+    the page hands over the editor rather than choosing one of them.
+    """
+    for kind in ("monster", "character", "curse", "room"):
+        assert the_walk_asks(can, kind) == "", kind
+
+
+def test_an_event_walked_through_is_a_card_the_engine_takes(
+    can: dict[str, Any],
+) -> None:
+    """
+    The path a person walks: pick the kind, pick one action, answer it, keep
+    it. Nothing here says `on_play` — the kind said it.
+    """
+    effect = next(one for one in offered(can) if one["id"] == "gain_coins")
+    card = build_card(
+        {
+            "set": "demo",
+            "card": {
+                "fields": {
+                    "name": "Walked Event",
+                    "type": "event",
+                    "abilities": [
+                        {
+                            "fields": {
+                                "trigger": the_walk_asks(can, "event"),
+                                "effects": [a_step(can, effect)],
+                            }
+                        }
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+    assert card["type"] == "event"
+    assert card["abilities"][0]["trigger"] == "on_play"
+    assert check_card(card) == [], check_card(card)
+
+
+def test_a_walked_event_opens_again_saying_the_same_thing(
+    can: dict[str, Any],
+) -> None:
+    """
+    Kept and opened again. A card whose meaning survives the round trip is the
+    contract every other kind is already held to, and an event is not exempt
+    from it for being reached a different way.
+    """
+    from fsme.lab.desk.author import read_card
+
+    effect = next(one for one in offered(can) if one["id"] == "gain_coins")
+    made = build_card(
+        {
+            "set": "demo",
+            "card": {
+                "fields": {
+                    "name": "Walked Event",
+                    "type": "event",
+                    "abilities": [
+                        {
+                            "fields": {
+                                "trigger": the_walk_asks(can, "event"),
+                                "effects": [a_step(can, effect)],
+                            }
+                        }
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+    again = build_card(read_card(made))
+
+    assert again == made, "opening it again said something else"
+    assert check_card(again) == []
