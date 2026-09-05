@@ -345,6 +345,7 @@ function chooseMoment() {
     <details class="deep"><summary>Every other moment</summary>
       <div class="nested">${rest.map(one).join("")}</div></details>
     <hr>
+    ${standingHtml()}
     <p><button onclick="startBlank()">I would rather start from an empty
       card</button></p>`);
 }
@@ -379,6 +380,7 @@ function chooseAction(how) {
     <details class="deep"><summary>Everything else it could do</summary>
       <div class="nested">${rest.map(one).join("")}</div></details>
     <hr>
+    ${standingHtml()}
     <p><button onclick="${more ? "sofar()" : "startBlank()"}">${more
       ? "Never mind"
       : "I would rather start from an empty card"}</button></p>`);
@@ -430,6 +432,65 @@ function pickAction(effect, how) {
   const doing = at(walk.list, []);
   walk.doing = doing.length;
   doing.push({ id: effect, fields: {}, groups: {} });
+  ask(0);
+}
+
+// ------------------------------------------- a rule that waits for nothing
+//
+// Not everything a card does is a reaction. A card may also change a number
+// for as long as it is in play — and such a rule has no moment to wait for
+// and nothing that happens in it, so no question about an action will ever
+// reach one. Until now the walk could only make the reacting sort, because
+// picking an effect was the only way a part of a card came into being.
+//
+// Nothing here is named. A card's parts are the fields of the card that are
+// lists of something the page has a shape for, which is what `partsOf` reads;
+// the reacting sort are the ones that hold a list of steps, which is what
+// `doesIn` reads. Both were already written. This is the other side of that
+// same test, and a part the language gains lands on whichever side it belongs.
+
+// The shapes of rule a card may hold that are not made of things that happen.
+function standingShapes() {
+  const card = named(can.cards, "card") || { fields: [] };
+  return card.fields
+    .map(list => ({ list, part: shapeNamed(list.a_list_of || "") }))
+    .filter(one => one.part
+      && !one.part.fields.some(f => f.a_list_of === "step"));
+}
+
+// Offered wherever somebody is being asked what their card does, in the words
+// the shape carries about itself. One button where there is one such shape,
+// and one each where the language grows more.
+function standingHtml() {
+  return standingShapes().map(one =>
+    `<p><button onclick="pickShape('${one.part.id}')">Or: ${
+      esc(sentence(one.part.about))}</button></p>`).join("");
+}
+
+// The part comes into being the way the reacting sort does — the same node,
+// in the list the card keeps that sort in — and then the walk asks about the
+// part itself, because there is nothing inside it to ask about instead. That
+// is the branch `openPart` has always taken for a card read off disk; this
+// gives a card being written now the same one.
+function pickShape(which) {
+  const where = standingShapes().find(one => one.part.id === which);
+
+  if (!where) return startBlank();
+
+  const held = state.card.fields[where.list.id]
+    || (state.card.fields[where.list.id] = []);
+  held.push({ id: where.part.id, fields: {}, groups: {} });
+  state.mode = "simple";
+  // `how` is carried over untouched where a moment was already picked: it
+  // belongs to the reacting sort, and a second rule of that sort would still
+  // want it. This rule simply has nowhere to put one.
+  walk = {
+    how: (walk && walk.how) || "",
+    part: where.part,
+    where: `state.card.fields.${where.list.id}[${held.length - 1}]`,
+    doing: 0,
+    list: "",
+  };
   ask(0);
 }
 

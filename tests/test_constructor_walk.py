@@ -1290,3 +1290,298 @@ def test_a_number_left_off_stays_off(can: dict[str, Any]) -> None:
     assert "attack" not in card, card.get("attack")
     assert check_card(card) == [], check_card(card)
     assert build_card(read_card(card)) == card
+
+
+# ----------------------------------------------------------------------
+# A rule that waits for nothing
+# ----------------------------------------------------------------------
+#
+# Everything the walk could make until now was a reaction: a moment, and the
+# things that happen at it. A card may also change a number for as long as it
+# is in play, and such a rule has no moment and nothing that happens in it —
+# so no question about an action was ever going to reach one, and picking an
+# effect was the only way a part of a card came into being at all.
+#
+# The two sides of that are already told apart, and were before this: a part
+# that holds a list of steps is the reacting sort, which is the test `doesIn`
+# makes to decide whether to show a card's parts as the things they do. This
+# is the other side of the same test, and nothing about it is about any one
+# shape — a part the language gains lands on whichever side it belongs to.
+
+
+def parts_of(can: dict[str, Any]) -> list[dict[str, Any]]:
+    """
+    The card's own fields that are lists of a part the catalogue describes.
+    """
+    shapes = {
+        one["id"]: one
+        for group in ("abilities", "statics", "structures", "cards")
+        for one in can[group]
+    }
+    card = next(n for n in can["cards"] if n["id"] == "card")
+
+    return [
+        {"list": f, "part": shapes[f["a_list_of"]]}
+        for f in card["fields"]
+        if f["a_list_of"] in shapes
+    ]
+
+
+def test_a_card_holds_both_sorts_of_rule(can: dict[str, Any]) -> None:
+    """
+    What the route is built on: some parts are made of things that happen and
+    some are not, and the card says which of its lists hold which.
+    """
+    holds = {
+        one["part"]["id"]: any(
+            f["a_list_of"] == "step" for f in one["part"]["fields"]
+        )
+        for one in parts_of(can)
+    }
+
+    assert True in holds.values(), "no part of a card is made of steps"
+    assert False in holds.values(), "every part of a card is made of steps"
+
+
+def test_the_walk_can_make_a_rule_that_is_not_made_of_steps() -> None:
+    """
+    The route exists, and is reached from both screens that ask somebody what
+    their card does — the one that asks a moment first and the one that does
+    not. A card whose moment the engine settles never sees the first, so an
+    option offered only there would be unreachable for most of the kinds that
+    have such rules.
+    """
+    said = script()
+
+    assert "function standingShapes()" in said
+    assert "function pickShape(" in said
+
+    for screen in ("chooseAction", "chooseMoment"):
+        where = said.index(f"function {screen}(")
+        body = said[where:said.index("\n}", where)]
+
+        assert "standingHtml()" in body, screen
+
+
+def test_which_rules_those_are_is_read_and_not_listed(can: dict[str, Any]) -> None:
+    """
+    The route finds them by asking whether the part is made of steps, which is
+    the test the walk already made to decide what to show. A list of shapes
+    here would be a second answer to a question already answered.
+    """
+    said = script()
+    where = said.index("function standingShapes()")
+    body = said[where:said.index("\n}", where)]
+
+    assert 'a_list_of === "step"' in body, "the two sorts are told apart some other way"
+
+    for one in parts_of(can):
+        assert f'"{one["part"]["id"]}"' not in body, one["part"]["id"]
+        assert f'"{one["list"]["id"]}"' not in body, one["list"]["id"]
+
+
+def test_the_page_names_no_part_of_a_card(can: dict[str, Any]) -> None:
+    """
+    Neither the shapes nor the lists they live in, anywhere the page runs.
+
+    The same standing rule that keeps effects, targets and kinds of card out of
+    the page. A name here reads as a rule about one shape, and the next shape
+    the language gains would quietly not get it.
+    """
+    runs = "\n".join(one.split("//")[0] for one in script().splitlines())
+
+    for one in parts_of(can):
+        assert f'"{one["part"]["id"]}"' not in runs, one["part"]["id"]
+        assert f'"{one["list"]["id"]}"' not in runs, one["list"]["id"]
+
+
+def test_the_option_is_worded_by_the_shape_itself(can: dict[str, Any]) -> None:
+    """
+    What the button says comes from what the shape says about itself, so a
+    shape the language gains introduces itself.
+    """
+    said = script()
+    where = said.index("function standingHtml()")
+    body = said[where:said.index("\n}", where)]
+
+    assert "one.part.about" in body, "the wording is written here instead"
+
+    for one in parts_of(can):
+        assert one["part"]["about"], one["part"]["id"]
+
+
+def a_standing_card(can: dict[str, Any], kind: str, **numbers: int) -> Any:
+    """
+    A card the way the new route sends one: the kind, one rule that waits for
+    nothing, and whatever the kind prints.
+    """
+    return build_card(
+        {
+            "set": "demo",
+            "card": {
+                "fields": {
+                    "name": "Standing",
+                    "type": kind,
+                    **numbers,
+                    "statics": [
+                        {
+                            "id": "static",
+                            "fields": {
+                                "scope": "self",
+                                "stat": "attack",
+                                "amount": 1,
+                            },
+                            "groups": {},
+                        }
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    ("kind", "numbers"),
+    [
+        ("monster", {"health": 3, "attack": 1, "roll": 4}),
+        ("treasure", {"cost": 5}),
+        ("curse", {}),
+    ],
+)
+def test_a_card_whose_only_rule_waits_for_nothing(
+    can: dict[str, Any], kind: str, numbers: dict[str, int]
+) -> None:
+    """
+    The three kinds the shipped sets actually write such cards for, each built
+    the way the walk builds one, kept and opened again.
+    """
+    from fsme.lab.desk.author import read_card
+
+    card = a_standing_card(can, kind, **numbers)
+
+    assert card["type"] == kind
+    assert card["statics"] == [{"stat": "attack", "amount": 1, "scope": "self"}]
+    assert not card.get("abilities"), "a rule that waits for nothing made one"
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card, "opening it again said something else"
+
+
+def test_the_kinds_that_write_such_cards_are_the_kinds_this_reaches(
+    can: dict[str, Any],
+) -> None:
+    """
+    Read off the content rather than listed: every kind that ships a card whose
+    only rules are of the standing sort is a kind the walk now takes.
+    """
+    library = load_content(CONTENT)
+    kinds = {
+        str(card.type)
+        for card in library.definitions()
+        if card.statics and not card.abilities
+    }
+
+    assert kinds, "no shipped card has only standing rules"
+
+    walked = {
+        one["id"] for one in can["kinds"]
+        if one["used_by"] or one["moment_is_asked"]
+    }
+
+    assert kinds <= walked, kinds - walked
+
+
+def test_a_standing_rule_does_not_take_the_place_of_an_ability(
+    can: dict[str, Any],
+) -> None:
+    """
+    Both sorts on one card, which is how fourteen shipped cards are written.
+    The walk shows them through the screen that already shows a card's parts,
+    rather than a second way of choosing between them.
+    """
+    from fsme.lab.desk.author import read_card
+
+    effect = next(one for one in offered(can) if one["id"] == "gain_coins")
+    card = build_card(
+        {
+            "set": "demo",
+            "card": {
+                "fields": {
+                    "name": "Both",
+                    "type": "monster",
+                    "health": 3,
+                    "abilities": [
+                        {
+                            "fields": {
+                                "trigger": "monster_killed",
+                                "effects": [a_step(can, effect)],
+                            }
+                        }
+                    ],
+                    "statics": [
+                        {
+                            "id": "static",
+                            "fields": {"scope": "self", "stat": "difficulty",
+                                       "amount": 1},
+                            "groups": {},
+                        }
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+    assert card["abilities"][0]["trigger"] == "monster_killed"
+    assert card["statics"] == [
+        {"stat": "difficulty", "amount": 1, "scope": "self"}
+    ]
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card
+
+
+def test_every_shipped_card_of_the_standing_sort_still_round_trips() -> None:
+    """
+    Over the cards themselves. The route makes what these already are, so if
+    the writer stopped keeping one of them the route would be making something
+    the engine had never been given.
+    """
+    from fsme.lab.desk.author import read_card
+
+    standing = [
+        card
+        for card in every_shipped_card()
+        if card.get("statics") and not card.get("abilities")
+    ]
+
+    assert len(standing) >= 18, len(standing)
+
+    for card in standing:
+        once = build_card(read_card(card, set_id=str(card["expansion"])))
+
+        assert once["statics"] == card["statics"], card["id"]
+        assert check_card(once) == [], (card["id"], check_card(once))
+        assert build_card(read_card(once, set_id=str(card["expansion"]))) == once, (
+            card["id"]
+        )
+
+
+def every_shipped_card() -> list[dict[str, Any]]:
+    """
+    Every shipped card as it is written on disk, rather than as the engine
+    holds it — this is about what the writer puts back, so it is the file that
+    has to be compared against.
+    """
+    found = []
+
+    for path in sorted(CONTENT.rglob("*.json")):
+        if path.name == "manifest.json" or path.name.startswith("_"):
+            continue
+
+        data = json.loads(path.read_text("utf-8"))
+        cards = data["cards"] if isinstance(data, dict) and "cards" in data else (
+            data if isinstance(data, list) else [data]
+        )
+        found.extend(one for one in cards if isinstance(one, dict))
+
+    return found
