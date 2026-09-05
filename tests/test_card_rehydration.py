@@ -5448,3 +5448,161 @@ def test_something_kept_for_later_still_keeps_its_choice_inside() -> None:
     assert "targets" not in ability
     assert watched["targets"], "the watched body's choice was lifted"
     assert when_asked(once)[watched["target"]] == "at the step"
+
+
+# ----------------------------------------------------------------------
+# 31. The order a part declares its choices in
+# ----------------------------------------------------------------------
+#
+# A list of choices is not a set. The engine resolves it top to bottom, and a
+# choice that asks the table stops the ability until it is answered — so the
+# order the list is written in is the order the questions are put in, and two
+# cards differing only in that order are two different cards.
+#
+# The author model used to keep no such list at all. Each choice survived as an
+# attachment to whichever step pointed at it, and the writer rebuilt the list
+# out of whichever step it met first. That answered the questions in a
+# different order, and dropped outright any choice no step points at. Both
+# lists — an ability's and a step's — are now kept as the part wrote them, and
+# the writer puts them back before anything it has to invent.
+
+
+def declared_by(card: Mapping[str, Any], where: int | None = None) -> list[str]:
+    """
+    The names a part's list binds, in the order the list holds them.
+
+    `where` is which step's list, or the ability's own when it is None.
+    """
+    ability = card["abilities"][0]
+    held = ability if where is None else ability["effects"][where]
+
+    return [
+        str(next(iter(one.values()))["as"]) for one in held.get("targets", ())
+    ]
+
+
+def test_the_card_this_was_found_on_keeps_the_order_it_asks_in() -> None:
+    """
+    `donation_machine` gives an item away and then asks who to. Both questions
+    are put to the table, so which comes first is what the card does.
+    """
+    card = a_card_that(
+        [{"effect": "give_treasure", "to": {"player_of": "lucky"}, "target": "gift"}],
+        targets=[
+            {"target_treasure": {"exclude_source": True, "as": "gift"}},
+            {"target_player": {"exclude_controller": True, "as": "lucky"}},
+        ],
+    )
+    once = round_trip(card)
+
+    assert declared_by(once) == ["gift", "lucky"], declared_by(once)
+
+
+def test_an_order_the_steps_do_not_follow_is_still_the_card_s() -> None:
+    """
+    The half the shipped cards do not cover.
+
+    Where a card happens to declare its choices in the order its steps mention
+    them, rebuilding the list from the steps gives the right answer by luck.
+    This one declares them the other way round, so luck says nothing.
+    """
+    card = a_card_that(
+        [
+            {"effect": "destroy_treasure", "target": "first"},
+            {"effect": "deal_damage", "amount": 1, "target": "second"},
+        ],
+        targets=[
+            {"target_player": {"as": "second"}},
+            {"target_treasure": {"as": "first"}},
+        ],
+    )
+    once = round_trip(card)
+
+    assert declared_by(once) == ["second", "first"], declared_by(once)
+
+
+def test_a_step_s_own_list_keeps_the_order_it_asks_in() -> None:
+    """
+    The same rule one scope down, and the same trick to make luck say nothing:
+    the group names the two the other way round from the list that binds them.
+    """
+    card = a_card_that(
+        [
+            {
+                "effect": "swap_cards",
+                "targets": [
+                    {"target_loot": {"as": "mine"}},
+                    {"target_loot": {"as": "theirs"}},
+                ],
+                "target": {"group": {"of": ["theirs", "mine"], "as": "pair"}},
+            }
+        ]
+    )
+    once = round_trip(card)
+
+    assert declared_by(once, 0) == ["mine", "theirs", "pair"], declared_by(once, 0)
+    assert "targets" not in once["abilities"][0], "a step's list reached the ability"
+
+
+def test_a_choice_no_step_points_at_is_still_the_card_s() -> None:
+    """
+    A declaration is not the sum of the references to it.
+
+    Nothing pointed at this one, so nothing carried it, so it used to be gone
+    from the file — saved successfully, with nothing said.
+    """
+    card = a_card_that(
+        [{"effect": "deal_damage", "amount": 1, "target": "hit"}],
+        targets=[
+            {"target_treasure": {"as": "unused"}},
+            {"target_player": {"as": "hit"}},
+        ],
+    )
+    once = round_trip(card)
+
+    assert declared_by(once) == ["unused", "hit"], declared_by(once)
+
+
+def test_a_step_s_choice_no_step_points_at_is_kept_too() -> None:
+    """
+    And the same one scope down.
+    """
+    card = a_card_that(
+        [
+            {
+                "effect": "deal_damage",
+                "amount": 1,
+                "targets": [
+                    {"target_treasure": {"as": "unused"}},
+                    {"target_player": {"as": "hit"}},
+                ],
+                "target": "hit",
+            }
+        ]
+    )
+    once = round_trip(card)
+
+    assert declared_by(once, 0) == ["unused", "hit"], declared_by(once, 0)
+    assert "targets" not in once["abilities"][0]
+
+
+def test_keeping_the_list_did_not_make_one_choice_into_two() -> None:
+    """
+    The invariant this could most easily have broken.
+
+    A list put back before anything is invented is a list of things already
+    there to be found, so a step that wants one finds it. If it did not, the
+    card would bind the same choice twice and ask twice.
+    """
+    card = a_card_that(
+        [
+            {"effect": "deal_damage", "amount": 1, "target": "victim"},
+            {"effect": "lose_coins", "amount": 1, "target": "victim"},
+        ],
+        targets=[{"target_player": {"as": "victim"}}],
+    )
+    once = round_trip(card)
+
+    assert declared_by(once) == ["victim"]
+    assert {step["target"] for step in once["abilities"][0]["effects"]} == {"victim"}
+    assert when_asked(once)["victim"] == "before any step"

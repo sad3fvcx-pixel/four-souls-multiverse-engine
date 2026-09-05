@@ -749,6 +749,12 @@ def _written_node(
             # — a card that asks and then does nothing either way.
             continue
 
+        if parameter.a_list_of == TARGET:
+            # What a part picks out is written by the part, not from here: it
+            # is one list per scope, in declared order, with whatever the steps
+            # minted appended. Writing it here as well would write it twice.
+            continue
+
         if parameter.a_list_of:
             body = _written_body(parameter.a_list_of, given.get(name), aimed)
 
@@ -907,12 +913,54 @@ def _written_part(
 
     kept = _chooses(shape)
     ours: list[dict[str, Any]] = []
-    node = _written_node(shape, described, _Chosen(ours) if kept else None)
+    chosen = _Chosen(ours) if kept else None
+
+    # What the part said it picks out, put back first and in its own order.
+    # One at a time, because an entry may name an earlier one — "the two
+    # chosen above" — and it can only find it once that one is in the list.
+    #
+    # Everything after this is unchanged: a step that points at one of these
+    # finds it here and adds nothing, and a choice nothing declared is minted
+    # and appended the way it always was. So the list is the declared order
+    # followed by whatever the steps needed and the part never named.
+    if chosen is not None:
+        _declared(kept, described, ours, chosen)
+
+    node = _written_node(shape, described, chosen)
 
     if ours:
         node[kept] = list(node.get(kept, ())) + ours
 
     return node
+
+
+def _declared(
+    kept: str,
+    described: Any,
+    into: list[dict[str, Any]],
+    aimed: _Chosen,
+) -> None:
+    """
+    The choices a scope wrote down, written back into its list in order.
+    """
+    if not isinstance(described, dict):
+        return
+
+    # Where a scope keeps its list is where its own shape puts it. An ability
+    # describes one, so it is an answer among its fields; an effect does not —
+    # nobody fills one in — so a step keeps it beside its aim, which is the
+    # other thing about a step that nobody fills in either.
+    given = described.get("fields")
+    said = described.get(kept)
+
+    if said is None and isinstance(given, dict):
+        said = given.get(kept)
+
+    for one in said or ():
+        written = _written_one(TARGET, one, aimed)
+
+        if written is not None:
+            into.append(written)
 
 
 def _chooses(shape: Any) -> str:
@@ -970,7 +1018,12 @@ def _written_step(name: str, described: Any, aimed: Any) -> Any:
     mine: list[dict[str, Any]] = []
 
     if aimed is not None:
+        # Open first, then fill: an entry may name another, and what it names
+        # has to go in this list rather than in whichever one happened to be
+        # open outside it. Filling it before opening put a step's choices on
+        # the ability.
         aimed.holding(mine)
+        _declared(_STEP_TARGETS, described, mine, aimed)
 
     # What this one keeps for later, if it keeps anything. Written inside that
     # and shut again before the step's own aim, which is asked now and belongs
@@ -1677,12 +1730,25 @@ def _read_value(
         return _NOT_AN_ANSWER
 
     if kind == TARGET:
-        # Where a part says what it picks out. Not an answer anybody gave: an
-        # author aims an action at something, and the list is what the builder
-        # makes of that. It is put back inside the steps that point at it, and
-        # left out here — a card that had none and a card whose list was
-        # rebuilt must read the same way.
-        return _NOT_AN_ANSWER
+        # Where a part says what it picks out, kept as the part wrote it.
+        #
+        # It is also put back inside the steps that point at it, because that
+        # is what an author edits — they aim an action at something and never
+        # see a list. But the list is more than the sum of those aims: it is an
+        # order, and the engine asks its questions in it. Rebuilding it from
+        # whichever step mentions each name first answered them in a different
+        # order, and dropped outright a declaration no step mentions at all.
+        #
+        # So it is read as well as resolved. Nothing here decides where a
+        # binding lives — that is still the step's own answer — and this is
+        # only the list, in the order the part declared it.
+        if bound is None:
+            raise UnreadableCard(
+                f"{name!r} says what is picked out, and nothing here says "
+                "what those may be."
+            )
+
+        return [_a_declared_target(said, one, bound) for one in value]
 
     if kind == CONDITION:
         return [_read_condition(said, one) for one in value]
@@ -1718,6 +1784,39 @@ def _read_value(
         return [_read_step(said, one, visible) for one in value]
 
     raise UnreadableCard(f"{name!r} is a list of {kind}, which cannot be read yet.")
+
+
+def _a_declared_target(
+    said: Any,
+    spec: Any,
+    bound: Mapping[str, tuple[str, dict[str, Any], str]],
+    level: str = BY_THE_ABILITY,
+) -> dict[str, Any]:
+    """
+    One entry of a declared list of choices, as the answer that made it.
+
+    The same shape a step's aim is read into, plus the name the list gave it —
+    which is the whole of what a declaration is that an aim is not. A target
+    naming another is followed exactly as it is followed anywhere else, so a
+    list whose last entry is "the two chosen above" comes back saying that.
+
+    ``level`` is which list this one was written in, and it is the list's own
+    answer rather than a guess: a step's declarations are the step's, and
+    saying otherwise would send them to the ability the next time the card was
+    written — which is the thing two stages have now been spent undoing.
+    """
+    from fsme.runtime.target_resolver import normalise as a_target
+
+    kind, params = a_target(_plainly(spec))
+    called = str(params.get("as", kind))
+    chosen = _as_chosen(
+        said,
+        (kind, {k: v for k, v in params.items() if k != "as"}, level),
+        bound,
+        frozenset({called}),
+    )
+
+    return chosen | {"as": called}
 
 
 def _read_inside(
@@ -1845,7 +1944,16 @@ def _read_step(
     # node and resolves it when the step runs, which is the whole difference
     # from the ability's list — so it is bound here, at this step, and the
     # names it makes are visible to the steps after it in the same body.
-    bound.update(_binds(written.pop(_STEP_TARGETS, ()), BY_THE_STEP))
+    #
+    # Kept as well as bound, and for the reason an ability's list is: the list
+    # is an order, and it is asked in it. It is taken off `written` because an
+    # effect's shape does not describe it — nobody fills it in, the same way
+    # nobody fills in the ability's — and put back beside the step's own aim.
+    declared = written.pop(_STEP_TARGETS, ()) or ()
+    bound.update(_binds(declared, BY_THE_STEP))
+    mine = [
+        _a_declared_target(said, one, bound, BY_THE_STEP) for one in declared
+    ]
 
     if short is not None:
         if not shape.primary:
@@ -1912,6 +2020,9 @@ def _read_step(
         groups[str(key)] = _as_chosen(said, bound[pointed], bound, called=pointed)
 
     step: dict[str, Any] = {"id": name, "fields": fields, "groups": groups}
+
+    if mine:
+        step[_STEP_TARGETS] = mine
 
     if aimed is None:
         return step
@@ -2085,10 +2196,36 @@ def _also_called(step: dict[str, Any], called: str) -> dict[str, Any]:
     Left out entirely when there is none, rather than said as nothing: a key
     holding an empty answer and a key that is not there read differently, and
     a card would come back one way and then the other.
+
+    And the step's own list loses that entry, because the aim is already it.
+    A card may write an aim inside the step or bind it in the step's list and
+    point at it; the writer writes the second, so reading the first and reading
+    what was written of it have to arrive at the same answer. Keeping both
+    would make one of the two spellings say one thing more than the other, and
+    a card would grow an entry every time it was opened.
     """
     mine = _the_card_s_own(called)
+    said = step | {"aim_name": mine} if mine else dict(step)
 
-    return step | {"aim_name": mine} if mine else step
+    if not called:
+        return said
+
+    # By what it is bound as, not by what the card called it: a choice written
+    # inside the step is bound under a name this made up, and the entry the
+    # writer leaves in the list carries that made-up name. Filtering by the
+    # card's own name would miss exactly those and let the list grow.
+    kept = [
+        one
+        for one in said.get(_STEP_TARGETS, ())
+        if str(one.get("as", "")) != called
+    ]
+
+    if kept:
+        said[_STEP_TARGETS] = kept
+    else:
+        said.pop(_STEP_TARGETS, None)
+
+    return said
 
 
 def _named_inside(
