@@ -1,0 +1,1068 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-requiem-corny",
+      "name": "Corny",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 4
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 1\n\nWhen this dies,\nit deals 2 damage to\na non-active player\n chosen at random.\n------------------------------\nRewards: 4¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-requiem-corny",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-requiem-gutted_fatty",
+      "name": "Gutted Fatty",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 3+ | AT: 1\n\nWhen this dies, expand\nmonster slots by 1. The\nactive player must make\nan additional attack.\n------------------------------\nRewards: +1 treasure",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-requiem-gutted_fatty",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-requiem-mushroom",
+      "name": "Mushroom",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nEach time this deals\ncombat damage to the\nattacking player, it\ndeals 1 damage to each\nother player.\n------------------------------\nRewards: Loot 1",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-requiem-mushroom",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-requiem-null",
+      "name": "Null",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nThis takes no combat\ndamage on every other\nattack roll made\nagainst it.\n------------------------------\nRewards: 6¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-requiem-null",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-requiem-peeping_fatty",
+      "name": "Peeping Fatty",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhen this dies, look\nat the top 5 cards of\nthe loot deck and\nput them back in\nany order.\n------------------------------\nRewards: Loot 2",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-requiem-peeping_fatty",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-requiem-red_ghost",
+      "name": "Red Ghost",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEach time this takes damage,\nthe active player chooses\nanother player. That player\ntakes 1 damage.\n------------------------------\nRewards: Loot 3",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-requiem-red_ghost",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-requiem-whipper",
+      "name": "Whipper",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEach time a player\ndeclares an attack, the\nactive player rolls-\n1-2: This deals 1\ndamage to that player.\n------------------------------\nRewards: 5¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-requiem-whipper",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-baby_plum",
+      "name": "Baby Plum",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 2,
+      "souls": 1,
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 2+ | AT: 1\n\nEach time this takes damage,\nthe active player rolls-\n1-2: You take 1 damage.\n------------------------------\n3-4: The player to your\nleft takes 1 damage.\n------------------------------\n5-6: The player to your\nright takes 1 damage.\n------------------------------\nRewards: Roll- Gain x¢\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-baby_plum",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-brownie",
+      "name": "Brownie",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 5+ | AT: 1\n\nEach time this takes\ndamage, it gains -1 DC\ntill end of turn.\n------------------------------\n\"They shall revive as the corn\"\nHosea 14:7\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-brownie",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-charmed_monstro",
+      "name": "Charmed Monstro",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nIf the active player\nwould gain this soul,\nthey instead choose\nanother player. That\nplayer gains this soul.\n------------------------------\nRewards: +2 treasure\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-charmed_monstro",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-clog",
+      "name": "Clog",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 1\n\nWhen this dies, each\nplayer gives their\nhand to the player to\ntheir left.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-clog",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-hornfel",
+      "name": "Hornfel",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 5+ | AT: 1\n\nWhen this would deal combat\ndamage to the active player,\nprevent it, then this deals\n1 damage to a player\nchosen at random.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-hornfel",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-mama_gurdy",
+      "name": "Mama Gurdy",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 7,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 7 | DC: 3+ | AT: 2\n\n\"For You formed my\ninward parts; You\nknitted me together\nin my mother's womb.\"\nPsalm 139:13\n------------------------------\nRewards: Roll- Loot x\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-mama_gurdy",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-rag_mega",
+      "name": "Rag Mega",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 5+ | AT: 1\n\nWhen an attack is declared\non this, each non-active\nplayer discards a loot card.\n------------------------------\nWhen this dies, the active\nplayer kills up to 3\nother players.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-rag_mega",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-sisters_vis",
+      "name": "Sisters Vis",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 2,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 4+ | AT: 2\n\nWhen an attack is declared on this,\nthe active player chooses another\nplayer. That player must make an\nattack roll against this after each\nattack roll the active player makes\nthis attack. If this dies this turn,\nthat player gains +1 treasure.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-sisters_vis",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-the_rainmaker",
+      "name": "The Rainmaker",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEach time a player rolls\na 1, they loot 1\n------------------------------\nWhen this dies, search the monster\ndeck for a curse card and put it in\na monster slot not being attacked,\nthen shuffle the monster deck.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-the_rainmaker",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-the_scourge",
+      "name": "The Scourge",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhen this would take damage,\neach living player votes\neither whip or whiff-\nIf whip wins, prevent the\ndamage this would take and each\nnon-active player takes 1 damage.\n------------------------------\nIf whiff wins or there is a tie,\nthe active player loots 1.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-the_scourge",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@NY_Sagittarius",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-the_siren",
+      "name": "The Siren",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nThe active player may\nattack other players.\nAttacked players\nhave 4+ DC.\n------------------------------\nRewards: Loot 1\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-the_siren",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@NY_Sagittarius"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-requiem-turdlings",
+      "name": "Turdlings",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 2,
+      "roll": 2,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 2+ | AT: 2\n\nThis only takes combat\ndamage on attack rolls of 2.\n------------------------------\nWhen the attacking player\nmakes their 2nd attack roll\nthis turn, after combat damage,\ncancel the attack.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-requiem-turdlings",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-requiem-cursed_dople",
+      "name": "Cursed Dople",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 2,
+      "roll": 4,
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 2\n\nEach time this takes\ndamage, it deals 1\ndamage to each\nnon-active player.\n------------------------------\nRewards: Roll- Gain x¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-requiem-cursed_dople",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-requiem-cursed_lil_haunt",
+      "name": "Cursed Lil Haunt",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nIf a player would roll\na dice, they instead roll\n2 dice. The player to their\nleft chooses one of the\nrolls as the result.\n------------------------------\nRewards: Loot 1",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-requiem-cursed_lil_haunt",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-requiem-cursed_mulliboom",
+      "name": "Cursed Mulliboom",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 3,
+      "roll": 4,
+      "rewards": {
+        "cents": 2
+      },
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 3\n\nEach time a monster\ndies, this deals 3\ndamage to a player\nchosen at random.\n------------------------------\nRewards: 2¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-requiem-cursed_mulliboom",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-requiem-cursed_mulligan",
+      "name": "Cursed Mulligan",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nEach time a monster\ndies, expand monster\nslots by 1.\n------------------------------\nRewards: Loot 1",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-requiem-cursed_mulligan",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-requiem-dogma",
+      "name": "Dogma",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 3,
+      "roll": 3,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 3\n\nWhen an attack is declared on this,\nput each other monster into discard.\n------------------------------\nWhen this dies, put a card named The\nHarbingers from outside the game in\na monster slot not being attacked.\n------------------------------\nRewards: +2 treasure",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-requiem-dogma",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-requiem-mega_satan",
+      "name": "Mega Satan!",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 6,
+      "roll": 6,
+      "souls": 2,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 6 | AT: 6\n\nPlayers can be attacked\nand have 4+ DC.\n------------------------------\nAt the end of each turn, if\nthe active player is the only\nliving player, they win.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: +2 treasure\n(+2 souls)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-requiem-mega_satan",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-requiem-mother",
+      "name": "Mother!",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 8,
+      "attack": 8,
+      "roll": 1,
+      "souls": 2,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 8 | DC: 1+ | AT: 8\n\nEach time this takes damage,\nit gains +1 DC till end of turn.\n------------------------------\nWhen this dies, expand\nmonster slots by 2.\n------------------------------\nRewards: +1 treasure\n(+2 souls)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-requiem-mother",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@NY_Sagittarius"
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-requiem-ultra_greed",
+      "name": "Ultra Greed!",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 8,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "cents": 40
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 8 | DC: 5+ | AT: 1\n\nAfter each attack roll the\nactive player makes against\nthis, each other player in\nturn order makes an\nattack roll against this.\n------------------------------\nThe player who kills this\ngains its rewards.\n------------------------------\nRewards: 40¢\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-requiem-ultra_greed",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-charmed_bony",
+      "name": "Charmed Bony",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nWhen this dies, after gaining rewards,\nchoose another player. They gain 5¢.\n------------------------------\nEach time the attacking player\nrolls an attack roll of 6, they\ndeal 1 damage to a player.\n------------------------------\nRewards: 5¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-charmed_bony",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-charmed_clotty",
+      "name": "Charmed Clotty",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nWhen this dies, after\ngaining rewards, choose\nanother player.\nThey loot 1.\n------------------------------\nRewards: Loot 1",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-charmed_clotty",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-charmed_dip",
+      "name": "Charmed Dip",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 2
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 1\n\nWhen this dies, after\ngaining rewards, choose\nanother player. They\nrecharge an item\nthey control.\n------------------------------\nRewards: 2¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-charmed_dip",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-charmed_fat_bat",
+      "name": "Charmed Fat Bat",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nWhen this dies, after\ngaining rewards, choose\nanother player. They\ngain +1 treasure.\n------------------------------\nRewards: +1 treasure",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-charmed_fat_bat",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-charmed_fatty",
+      "name": "Charmed Fatty",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 2,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 2+ | AT: 1\n\nWhen this dies, after gaining rewards,\nchoose another player. They loot 2.\n------------------------------\nEach time this deals combat\ndamage to a player, they\ndiscard a loot card.\n------------------------------\nRewards: Loot 2",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-charmed_fatty",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-charmed_globin",
+      "name": "Charmed Globin",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nWhen this dies, after gaining rewards,\nchoose another player. They loot 3.\n------------------------------\nEach time the attacking\nplayer misses an attack\nroll, this heals 1 HP.\n------------------------------\nRewards: Loot 3",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-charmed_globin",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-charmed_greedling",
+      "name": "Charmed Greedling",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 0,
+      "roll": 6,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 6 | AT: 0\n\nWhen this dies, after\ngaining rewards, choose\nanother player. They\ngain 10¢.\n------------------------------\nRewards: 6¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-charmed_greedling",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-charmed_keeper",
+      "name": "Charmed Keeper",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 2,
+      "roll": 3,
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 2\n\nWhen this dies, after gaining rewards,\nchoose another player.  They roll\nand gain ¢ equal to the result.\n------------------------------\nEach time this deals combat\ndamage to a player, they lose 2¢.\n------------------------------\nRewards: Roll- Gain x¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-charmed_keeper",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-holy_brain",
+      "name": "Holy Brain",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nEach time a player\nrolls a 3, each\nmonster gains -1 DC\ntill end of turn.\n------------------------------\nRewards: Loot 1",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-holy_brain",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-holy_greedling",
+      "name": "Holy Greedling",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nEach time a monster\ndies, the active player\nmay gain 3¢.\n------------------------------\nRewards: Roll- Gain x¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-holy_greedling",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-holy_portal",
+      "name": "Holy Portal",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nEach time a monster\ndies, the active player\nmay make an additional\ntime this turn.\n------------------------------\nRewards: 5¢",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-holy_portal",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-requiem-holy_psy_horf",
+      "name": "Holy Psy Horf",
+      "type": "monster",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nAt the end of each\nturn, the active\nplayer loots 1.\n------------------------------\nRewards: Loot 3",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-requiem-holy_psy_horf",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-the_summer_of_isaac-ball_of_tar",
+      "name": "Ball of Tar",
+      "type": "starting_item",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard a loot card:\nChoose one-\n•Copy a non-trinket, non-ambush loot\nbeing played by another player that\nhasn't already been copied this turn.\n------------------------------\n•Put a monster not being\nattacked into discard.\n------------------------------\n•Prevent the next 1 damage you\nwould take this turn.\n------------------------------\n-Eternal-",
+        "set": "The Summer of Isaac",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-the_summer_of_isaac-ball_of_tar",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Gish.\n\nThese cards are part of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    },
+    {
+      "id": "starting_items-the_summer_of_isaac-club",
+      "name": "Club",
+      "type": "starting_item",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Rewards from non-boss monsters\nare doubled on your turn.\n------------------------------\n↷: If it's your turn, put a monster\nnot being attacked on the\nbottom of the monster deck.\n------------------------------\n↷: Cancel the ↷ or $ ability of an\nitem or a loot being played. This\nloses all abilities except eternal\nuntil the next time your turn ends.\n------------------------------\n-Eternal-",
+        "set": "The Summer of Isaac",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-the_summer_of_isaac-club",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Clubby the Seal.\n\nThese cards are part of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    },
+    {
+      "id": "starting_items-the_summer_of_isaac-unstable_dna",
+      "name": "Unstable DNA",
+      "type": "starting_item",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, roll-\n1-2: Remove all counters\nfrom this.\n------------------------------\n3-4: Put a HP counter on this.\n------------------------------\n5-6: Put a AT counter on this.\n------------------------------\n-Eternal-",
+        "set": "The Summer of Isaac",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-the_summer_of_isaac-unstable_dna",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the upcoming video game Mewgenics.\n\nThese cards are part of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    }
+  ]
+}

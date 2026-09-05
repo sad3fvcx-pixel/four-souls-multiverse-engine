@@ -1,0 +1,74 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-one_use_items-mewgenics-mini_nuke",
+      "name": "Mini Nuke",
+      "type": "treasure",
+      "expansion": "mewgenics",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "any",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "nuke",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time a monster dies, put a counter on this."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "counters": {
+              "counter": "nuke",
+              "amount": 9
+            }
+          },
+          "effects": [
+            {
+              "effect": "destroy_treasure",
+              "target": "self"
+            },
+            {
+              "if": [
+                "last_effect_did"
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 999,
+                  "target": "all_monsters"
+                },
+                {
+                  "effect": "deal_damage",
+                  "amount": 999,
+                  "target": "all_players"
+                }
+              ]
+            }
+          ],
+          "description": "Remove 9 counters from this: destroy this. If you do, deal 999 damage to each monster and each player."
+        }
+      ],
+      "tags": [
+        "one_use",
+        "paid"
+      ],
+      "metadata": {
+        "text": "Each time a monster dies,\nput a counter on this.\n------------------------------\n$: Remove 9 counters\nfrom this:\n\nDestroy this. If you do, deal\n999 damage to each monster\nand each player.",
+        "set": "Mewgenics",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-mewgenics-mini_nuke",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Mewgenics Collectible Cat Carrier bundle to celebrate the release of the Mewgenics video game."
+      }
+    }
+  ]
+}

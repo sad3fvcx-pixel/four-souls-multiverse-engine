@@ -1,0 +1,9 @@
+A deal the engine refuses to finish, and what it says about it.
+Placebo copies an item's ability; Rainbow Tapeworm becomes a copy of an item;
+together they copy each other without end. The rules say nothing about
+infinite loops, so no rule was invented: the engine names what kept
+happening and stops. Recorded as a gap in docs/PROJECT_PLAN.md 11.5.
+
+$ fsme play --seed 8 --players 2  # with treasure_deck-active_items-base_game-guppy_s_paw removed
+
+StabilityError: game state did not stabilise within 512 steps. Still arriving when it gave up: stack_push(Placebo) ×10, stack_resolve(Rainbow Tapeworm) ×10, stack_push(Rainbow Tapeworm) ×10, stack_resolve(Placebo) ×10

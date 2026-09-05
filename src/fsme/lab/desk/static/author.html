@@ -1,0 +1,2099 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>FSME — cards for Four Souls</title>
+<style>
+ :root { color-scheme: light dark; --line:#8884; --dim:#8889; --bad:#c0392b; --good:#1e8449; }
+ body { font: 16px/1.55 system-ui, sans-serif; margin:0; padding:2rem 1.2rem 4rem;
+        max-width:52rem; margin-inline:auto; }
+ h1 { font-size:1.5rem; margin:0 0 .2rem; }
+ h2 { font-size:1.15rem; margin:1.8rem 0 .6rem; }
+ p.lead { color:var(--dim); margin:0 0 2rem; }
+ .task { display:block; width:100%; text-align:left; border:1px solid var(--line);
+         border-radius:.6rem; padding:1rem 1.1rem; margin:0 0 .7rem; background:none;
+         font:inherit; color:inherit; cursor:pointer; }
+ .task:hover { border-color:currentColor; }
+ .task b { display:block; font-size:1.05rem; }
+ .task span { color:var(--dim); font-size:.92rem; }
+ label { display:block; margin:.8rem 0 .2rem; font-size:.92rem; }
+ input, select, textarea { font:inherit; padding:.4rem .5rem; border:1px solid var(--line);
+        border-radius:.35rem; background:none; color:inherit; width:100%; box-sizing:border-box; }
+ textarea { min-height:4rem; }
+ button { font:inherit; padding:.45rem .9rem; border:1px solid var(--line);
+        border-radius:.35rem; background:none; color:inherit; cursor:pointer; }
+ button.go { border-color:currentColor; font-weight:600; }
+ .row { display:flex; gap:.6rem; align-items:flex-end; flex-wrap:wrap; }
+ .row > * { flex:1; }
+ .row > button { flex:0 0 auto; }
+ .step { border:1px solid var(--line); border-radius:.5rem; padding:.8rem .9rem; margin:.6rem 0; }
+ .step .head { display:flex; justify-content:space-between; align-items:center; gap:.5rem; }
+ .kinds { display:grid; grid-template-columns:repeat(auto-fill,minmax(13rem,1fr)); gap:.6rem; }
+ .problem { color:var(--bad); font-size:.92rem; margin:.35rem 0; }
+ .ok { color:var(--good); }
+ .card { border:1px solid var(--line); border-radius:.5rem; padding:1rem; }
+ .card .kind { color:var(--dim); font-size:.85rem; text-transform:uppercase;
+               letter-spacing:.06em; }
+ .card .text { white-space:pre-wrap; margin-top:.5rem; }
+ .muted { color:var(--dim); font-size:.9rem; }
+ .back { background:none; border:none; color:inherit; cursor:pointer; padding:0;
+         font:inherit; opacity:.7; margin-bottom:1rem; }
+ .list { list-style:none; padding:0; margin:0; }
+ .list li { border-bottom:1px solid var(--line); padding:.55rem 0; display:flex;
+            justify-content:space-between; gap:.6rem; align-items:center; }
+ /* A row that reads rather than offers: what a card does stacks down the
+    page. The rows elsewhere put a label beside a button, which is why they
+    are laid across. */
+ .list li.reads { display:block; }
+ /* What a step holds, set in from what holds it. A branch drawn level with
+    the steps around it reads as one more thing that happens, rather than as
+    something that happens instead — so the indent is the meaning, not
+    decoration. */
+ .held { margin:.35rem 0 .1rem .9rem; padding-left:.9rem;
+         border-left:2px solid var(--line); }
+ .held .list li { display:block; border-bottom:none; padding:.2rem 0; }
+ button.plain { background:none; border:none; padding:0; width:auto;
+                color:inherit; font:inherit; text-align:left;
+                text-decoration:underline; cursor:pointer;
+                /* An option's own words, and some of them are long: the
+                   longest in the game runs to 98 characters. A line that
+                   cannot wrap either cuts the words or stretches the page. */
+                white-space:normal; }
+ .moment { margin:.3rem 0; }
+ hr { border:none; border-top:1px solid var(--line); margin:2rem 0 1rem; }
+ .need { color:var(--dim); font-size:.82rem; font-style:italic;
+         margin-left:.4rem; }
+ .nested { border-left:2px solid var(--line); padding-left:.8rem; margin:.4rem 0 .4rem .2rem; }
+ .deep { margin:.6rem 0; }
+ .deep > summary { cursor:pointer; font-size:.92rem; }
+ .deep textarea { font-family:ui-monospace, monospace; font-size:.88rem; min-height:6rem; }
+ label.flag { display:flex; gap:.45rem; align-items:center; }
+ select[multiple] { height:auto; }
+ :disabled { opacity:.45; }
+ p.problem:empty { display:none; }
+ select.way { font-size:.82rem; color:var(--dim); margin-top:-.25rem; }
+ .body { border-left:2px solid var(--line); padding-left:.7rem; margin:.3rem 0 .6rem; }
+ .node { border:1px solid var(--line); border-radius:8px; padding:.6rem .7rem;
+         margin:.5rem 0; }
+ .node > .head { display:flex; gap:.4rem; align-items:center; }
+ .node > .head select { flex:1; }
+</style>
+
+<div id="page"></div>
+
+<script>
+const api = async (path, body) => {
+  const options = body === undefined ? {} :
+    { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body) };
+  const answer = await fetch(path, options);
+  return answer.json();
+};
+
+let can = null;          // what the engine can do
+let state = {};          // the card being made
+// Where a walk has got to, or null while the editor is open. Deliberately not
+// part of `state`: it is how somebody is being asked, not anything about the
+// card, and the card is what gets sent.
+let walk = null;
+// True while a card that already exists is being looked at. Reading only, so
+// nothing writes into the card — but "Try it in a game" answers back, and the
+// answer belongs on the screen that asked for it.
+let looking = false;
+// True while the card in hand came off disk rather than being made here.
+// Changing one is a later step than this: everything is offered except
+// keeping it, so nothing can be written over a card by accident.
+let editing = false;
+const page = document.getElementById("page");
+const el = (html) => { page.innerHTML = html; };
+const esc = (s) => String(s ?? "").replace(/[<>&"]/g, c =>
+  ({ "<":"&lt;", ">":"&gt;", "&":"&amp;", '"':"&quot;" }[c]));
+
+// ---------------------------------------------------------------- home
+
+async function home() {
+  walk = null;
+  looking = false;
+  editing = false;
+  const { sets, where } = await api("/api/sets");
+  const cards = sets.reduce((n, s) => n + s.cards.length, 0);
+  el(`
+    <h1>FSME</h1>
+    <p class="lead">Make cards for Four Souls and watch the game play them.</p>
+    <button class="task" onclick="startCard()">
+      <b>Make a card</b><span>Start something new.</span></button>
+    <button class="task" onclick="mine()">
+      <b>My cards</b><span>${cards} card${cards === 1 ? "" : "s"} in
+      ${sets.length} set${sets.length === 1 ? "" : "s"}.</span></button>
+    <button class="task" onclick="location.href='/play'">
+      <b>Watch a game</b><span>See the engine play, with your cards in it.</span></button>
+    <hr>
+    <button class="task" onclick="location.href='/advanced'">
+      <b>Everything else</b><span>Runs, studies, reports — the tools for
+      measuring, once a card works.</span></button>
+    <p class="muted">Your sets are kept in ${esc(where)}</p>`);
+}
+
+// ------------------------------------------------------------- my cards
+
+async function mine() {
+  walk = null;
+  looking = false;
+  editing = false;
+  const { sets } = await api("/api/sets");
+  const one = (set, card) => `<li><button class="plain"
+      onclick="openCard('${esc(set.id)}','${esc(card.id)}')"
+      >${esc(card.name)}</button></li>`;
+  el(`<button class="back" onclick="home()">← back</button>
+      <h1>My cards</h1>` +
+    (sets.length ? sets.map(s => `
+      <h2>${esc(s.name)}</h2>
+      <ul class="list">${s.cards.length
+        ? s.cards.map(c => one(s, c)).join("")
+        : '<li><span class="muted">No cards yet.</span></li>'}</ul>`).join("")
+      : `<p class="muted">You have not made a set yet.</p>`) +
+    `<p><button class="go" onclick="startCard()">Make a card</button></p>`);
+}
+
+// ------------------------------------------------------- looking at a card
+//
+// A card that already exists, read back into the same thing a card being made
+// carries — so it is shown by the same words a card being made is shown by,
+// and nothing here knows what any effect is.
+//
+// Reading only. A card the reader cannot take faithfully is not opened at all:
+// half of a card, shown as if it were the card, is how somebody saves away the
+// half that was not read.
+
+async function openCard(set, card) {
+  if (!can) can = await api("/api/capabilities");
+  const said = await api("/api/cards/open", { set, card });
+  if (said.error) return cannotOpen("", said.error);
+  if (said.unreadable) return cannotOpen(card, said.unreadable);
+  walk = null;
+  looking = true;
+  editing = false;
+  // What the open said this card is, carried untouched. Nothing here reads
+  // it or decides anything from it — it goes back exactly as it came, and it
+  // is the only thing that says a card came off disk rather than being made.
+  state = { set: said.set, mode: "simple", card: said.card,
+            opened: said.opened };
+  viewing();
+}
+
+function cannotOpen(card, why) {
+  looking = false;
+  el(`<button class="back" onclick="mine()">← back</button>
+    <h1>This card needs the full editor</h1>
+    <p class="lead">${esc(card ? card : "That card")} says something this way
+      of looking at a card cannot show, so it is not being shown at all —
+      half a card looks like a whole one.</p>
+    <p class="problem">${esc(why)}</p>
+    <p class="muted">Nothing has been changed. The card is exactly as it was.</p>`);
+}
+
+// What the card says, in the words the metadata already carries about it.
+// The same `saidAs` a walk reads its own actions back with, over whichever
+// part of the card holds things that happen.
+function readingHtml() {
+  const shape = named(can.cards, "card") || { fields: [] };
+  return shape.fields.filter(f => f.a_list_of && shapeNamed(f.a_list_of))
+    .map(f => {
+      const parts = state.card.fields[f.id] || [];
+      if (!parts.length) return "";
+      const rows = parts.map(part => {
+        // A part that does things says them; one that only changes a number
+        // has none, and saying so with a dash would be answering a question
+        // nobody asked of it.
+        const does = doneBy(part)
+          .map(step => `<div>${saidAs(step)}${heldHtml(step)}</div>`).join("");
+        return `<li class="reads">${does}${saidOf(part)}</li>`;
+      }).join("");
+      return `<h2>${esc(sentence(asksOf(f)))}</h2><ol class="list">${rows}</ol>`;
+    }).join("");
+}
+
+// Where a part keeps the things it does, and when it does them. Both read off
+// the part's own shape, so a part the language gains reads without this
+// changing.
+function doneBy(part) {
+  const shape = shapeNamed(part.id);
+  if (!shape) return [];
+  const holds = shape.fields.find(f => f.a_list_of === "step");
+  return holds ? (part.fields[holds.id] || []) : [];
+}
+
+// What a part says about itself, apart from the things it does: when an
+// ability happens, which number a static changes and by how much. One
+// function for both, because both are answers to the part's own first
+// questions — which of them those are is the shape's answer.
+function saidOf(part) {
+  const shape = shapeNamed(part.id);
+  if (!shape) return "";
+  const said = shape.fields
+    .filter(f => f.asked === "first" && f.shown === "form" && part.fields[f.id])
+    .map(f => `${trimmed(asksOf(f)).toLowerCase()}: ${esc(meant(f, String(part.fields[f.id])))}`);
+  return said.length ? `<div class="muted">${said.join("; ")}</div>` : "";
+}
+
+function viewing(problems = [], moments = []) {
+  const kind = state.card.fields.type;
+  const kindName = can.kinds.find(k => k.id === kind)?.name || kind || "card";
+  el(`<button class="back" onclick="mine()">← back</button>
+    <h1>${esc(state.card.fields.name || "Untitled")}</h1>
+    <p class="lead">${esc(String(kindName))}. Looking only — nothing here
+      changes the card.</p>
+    ${readingHtml()}
+    <hr>
+    <div class="row">
+      ${walkable()
+        ? `<button class="go" onclick="startFrom()">Change it</button>`
+        : ""}
+      <button onclick="tryIt()">Try it in a game</button>
+    </div>
+    ${walkable() ? "" : `<p class="muted">This card says more than the
+      questions can ask about — several parts, or something they do not
+      offer — so it is shown rather than opened for changing.</p>`}
+    ${saidHtml(problems, moments)}
+    <h2>The card</h2>
+    <div id="face"></div>`);
+  face();
+}
+
+// ------------------------------------------------------- making a card
+
+async function startCard() {
+  walk = null;
+  looking = false;
+  editing = false;
+  if (!can) can = await api("/api/capabilities");
+  const { sets } = await api("/api/sets");
+  // A card is a node like every one inside it: what was typed under `fields`,
+  // what was pointed at under `groups`, and its own name so that anything
+  // asking what shape describes it can be told.
+  state = { set: sets[0]?.id || "", mode: "simple",
+            card: { id: "card", fields: {}, groups: {} } };
+  if (!sets.length) return newSet();
+  chooseKind();
+}
+
+async function newSet() {
+  el(`<button class="back" onclick="home()">← back</button>
+      <h1>Name your set</h1>
+      <p class="lead">A set is a box of cards. Call it whatever you like —
+        you can make more later.</p>
+      <label for="n">What is it called?</label>
+      <input id="n" placeholder="My First Set" autofocus>
+      <p id="err" class="problem"></p>
+      <p><button class="go" onclick="createSet()">Make it</button></p>`);
+  document.getElementById("n").addEventListener("keydown",
+    e => { if (e.key === "Enter") createSet(); });
+}
+
+async function createSet() {
+  const name = document.getElementById("n").value;
+  const made = await api("/api/sets/new", { name });
+  if (made.error) { document.getElementById("err").textContent = made.error; return; }
+  state.set = made.id;
+  chooseKind();
+}
+
+function chooseKind() {
+  el(`<button class="back" onclick="home()">← back</button>
+      <h1>What kind of card?</h1>
+      <div class="kinds">${can.kinds.map(k => `
+        <button class="task" onclick="pickKind('${k.id}')">
+          <b>${esc(k.name)}</b><span>${esc(k.about)}</span></button>`).join("")}</div>`);
+}
+
+// Choosing a kind is choosing how the card is used, where the engine settles
+// it — so a person who has said "loot card" has already answered the question
+// the editor used to ask them first.
+function pickKind(kind) {
+  state.card.fields.type = kind;
+  const of = can.kinds.find(k => k.id === kind) || {};
+  if (of.used_by) return chooseAction(of.used_by);
+  // No single moment makes this kind of card act, so the question has to be
+  // put rather than guessed. Where the engine says the walk is the one to put
+  // it, this asks; where it does not, the editor takes the card as it always
+  // did. Which kinds those are is not written here — a page that carried its
+  // own list of kinds would be a second copy of something already published.
+  if (of.moment_is_asked) return chooseMoment();
+  state.mode = "expert";
+  editor();
+}
+
+// ------------------------------------------------------- when does it happen
+//
+// The question the four settled kinds never see, because the engine answers it
+// for them. For the rest there is no one right answer, and the only honest
+// thing is to ask.
+//
+// Nothing here names a moment. The moments are the ones the ability's own
+// `trigger` field offers, each shown by the sentence the engine already
+// carries about it, and split the way every other list on this screen is split
+// — the handful somebody usually wants, and the rest a click away. A moment
+// the engine gains is offered by this without it being told.
+function chooseMoment() {
+  const one = (t) => `<button class="task" onclick="chooseAction('${t.id}')">
+      <b>${esc(sentence(t.about))}</b></button>`;
+  const common = can.triggers.filter(t => t.common);
+  const rest = can.triggers.filter(t => !t.common);
+  el(`<button class="back" onclick="chooseKind()">← back</button>
+    <h1>When should this card do it?</h1>
+    <p class="lead">A card of this kind can act at more than one moment, so
+      there is nothing to fill in for you. Pick the one it waits for.</p>
+    ${common.map(one).join("")}
+    <details class="deep"><summary>Every other moment</summary>
+      <div class="nested">${rest.map(one).join("")}</div></details>
+    <hr>
+    ${standingHtml()}
+    <p><button onclick="startBlank()">I would rather start from an empty
+      card</button></p>`);
+}
+
+// ------------------------------------------------- what should it do?
+//
+// The constructor's whole difference is this screen. It asks what somebody
+// came to make rather than what a card is made of, and it is built from the
+// same catalogue the editor offers — every action here is an effect the engine
+// already has, shown by the sentence the effect already carries about itself.
+function chooseAction(how) {
+  // What may be done here is asked of the part in hand. An effect that edits
+  // the event an ability was handed is offered inside an ability that is
+  // handed one, and nowhere else — which is the same condition the checker
+  // applies, read from the same place the checker reads it.
+  const doing = actionsIn(walk && walk.where ? at(walk.where) : null);
+  const one = (e) => `<button class="task" onclick="pickAction('${e.id}','${how}')">
+      <b>${esc(sentence(e.about))}</b></button>`;
+  const common = doing.filter(e => e.common);
+  const rest = doing.filter(e => !e.common);
+  // Choosing the first action is one step on from choosing a kind; choosing a
+  // later one is one step on from the list of what the card already does.
+  const back = walk ? "sofar()" : "chooseKind()";
+  const more = walk && at(walk.list, []).length;
+  el(`<button class="back" onclick="${back}">← back</button>
+    <h1>${more ? "What else should it do?" : "What should this card do?"}</h1>
+    <p class="lead">${more
+      ? "It happens after the ones already on the card."
+      : `Pick the main thing. You can add more, and change everything about it,
+         once it exists.`}</p>
+    ${common.map(one).join("")}
+    <details class="deep"><summary>Everything else it could do</summary>
+      <div class="nested">${rest.map(one).join("")}</div></details>
+    <hr>
+    ${standingHtml()}
+    <p><button onclick="${more ? "sofar()" : "startBlank()"}">${more
+      ? "Never mind"
+      : "I would rather start from an empty card"}</button></p>`);
+}
+
+// Where on a card a moment is reacted to, and where inside that the things
+// that happen go. Both are read off the shapes: the list of parts one of whose
+// fields offers this moment, and inside such a part the list whose catalogue
+// holds this action. Nothing here is named, so a card that grows another kind
+// of part, or a part that moves its lists about, still lands in the right box.
+function reactingTo(how, action) {
+  const card = named(can.cards, "card") || { fields: [] };
+  const holds = (f) => f.a_list_of
+    && ((kindOf(f.a_list_of) || { of: () => null }).of() || [])
+         .some(one => one.id === action);
+  for (const list of card.fields) {
+    const part = list.a_list_of && shapeNamed(list.a_list_of);
+    if (!part) continue;
+    const when = part.fields.find(f => (f.choices || []).includes(how));
+    const then = part.fields.find(holds);
+    if (when && then) return { list, part, when, then };
+  }
+  return null;
+}
+
+// The action becomes an ordinary effect node inside an ordinary ability, in
+// the place the editor keeps them. Nothing about this node says it was made
+// here, which is the point: the two ways in produce one card.
+function pickAction(effect, how) {
+  const where = reactingTo(how, effect);
+  // The shapes do not say where this would go. Rather than guess a place for
+  // it, hand the person the editor with the kind they picked already set.
+  if (!where) return startBlank();
+  // The first action makes the ability; every one after it is one more item in
+  // the list that ability already holds. There is no second case in the card
+  // for a second action, so there is none here either.
+  if (!walk) {
+    const part = { id: where.part.id, fields: {}, groups: {} };
+    part.fields[where.when.id] = how;
+    part.fields[where.then.id] = [];
+    state.card.fields[where.list.id] = [part];
+    state.mode = "simple";
+    walk = {
+      how,
+      part: where.part,
+      list: `state.card.fields.${where.list.id}[0].fields.${where.then.id}`,
+    };
+  }
+  const doing = at(walk.list, []);
+  walk.doing = doing.length;
+  doing.push({ id: effect, fields: {}, groups: {} });
+  ask(0);
+}
+
+// ------------------------------------------- a rule that waits for nothing
+//
+// Not everything a card does is a reaction. A card may also change a number
+// for as long as it is in play — and such a rule has no moment to wait for
+// and nothing that happens in it, so no question about an action will ever
+// reach one. Until now the walk could only make the reacting sort, because
+// picking an effect was the only way a part of a card came into being.
+//
+// Nothing here is named. A card's parts are the fields of the card that are
+// lists of something the page has a shape for, which is what `partsOf` reads;
+// the reacting sort are the ones that hold a list of steps, which is what
+// `doesIn` reads. Both were already written. This is the other side of that
+// same test, and a part the language gains lands on whichever side it belongs.
+
+// The shapes of rule a card may hold that are not made of things that happen.
+function standingShapes() {
+  const card = named(can.cards, "card") || { fields: [] };
+  return card.fields
+    .map(list => ({ list, part: shapeNamed(list.a_list_of || "") }))
+    .filter(one => one.part
+      && !one.part.fields.some(f => f.a_list_of === "step"));
+}
+
+// Offered wherever somebody is being asked what their card does, in the words
+// the shape carries about itself. One button where there is one such shape,
+// and one each where the language grows more.
+function standingHtml() {
+  return standingShapes().map(one =>
+    `<p><button onclick="pickShape('${one.part.id}')">Or: ${
+      esc(sentence(one.part.about))}</button></p>`).join("");
+}
+
+// The part comes into being the way the reacting sort does — the same node,
+// in the list the card keeps that sort in — and then the walk asks about the
+// part itself, because there is nothing inside it to ask about instead. That
+// is the branch `openPart` has always taken for a card read off disk; this
+// gives a card being written now the same one.
+function pickShape(which) {
+  const where = standingShapes().find(one => one.part.id === which);
+
+  if (!where) return startBlank();
+
+  const held = state.card.fields[where.list.id]
+    || (state.card.fields[where.list.id] = []);
+  held.push({ id: where.part.id, fields: {}, groups: {} });
+  state.mode = "simple";
+  // `how` is carried over untouched where a moment was already picked: it
+  // belongs to the reacting sort, and a second rule of that sort would still
+  // want it. This rule simply has nowhere to put one.
+  walk = {
+    how: (walk && walk.how) || "",
+    part: where.part,
+    where: `state.card.fields.${where.list.id}[${held.length - 1}]`,
+    doing: 0,
+    list: "",
+  };
+  ask(0);
+}
+
+// ------------------------------------------------- answering the action
+//
+// One question on screen at a time, every one of them drawn by the controls
+// the editor draws and written into the same card. What is asked, in what
+// order, and what may be answered are the shapes' answers throughout; the only
+// thing decided here is how many are put at once.
+
+// The questions this walk puts.
+//
+// An ability says what it picks out before it says what happens, so the aim
+// comes before the action's own values — read off the ability's own field
+// order rather than settled here. Which values are worth putting to somebody
+// is `asked`, which is the metadata's answer and not a list kept here.
+const stepPath = () => `${walk.list}[${walk.doing}]`;
+
+// What the questions are about, and what describes it. One of the things a
+// part does, or the part itself — both are nodes with fields, which is why one
+// set of screens serves both and neither is named here.
+function asking() {
+  if (walk.list) {
+    const path = stepPath();
+    const node = at(path);
+    return { path, node, shape: named(can.effects, node.id) };
+  }
+  return { path: walk.where, node: at(walk.where), shape: walk.part };
+}
+
+function questions() {
+  const { shape } = asking();
+  if (!shape) return [];
+  const values = (shape.fields || []).filter(asks);
+  // Only something that happens is aimed at anything. A part is not, and says
+  // so by not carrying the answer at all.
+  const aim = shape.needs_target ? [{ aim: true }] : [];
+  return picksFirst(walk.part) ? aim.concat(values.map(f => ({ f })))
+                               : values.map(f => ({ f })).concat(aim);
+}
+
+// Whether an ability names what it picks out before what it does. The two
+// lists are found by what they are lists of, the way everything else here
+// finds them, so the order follows the language.
+function picksFirst(part) {
+  if (!part || !part.fields) return true;
+  const where = (kind) => part.fields.findIndex(f => f.a_list_of === kind);
+  const picks = where("target");
+  const does = where("step");
+  return picks >= 0 && does >= 0 ? picks < does : true;
+}
+
+// A field whose answer is one plain value, and can therefore be read back as
+// a word inside a sentence. Not the same question as whether the walk asks it:
+// a list of steps is asked and is not a word.
+function sayable(f) {
+  return f.asked !== "never" && f.shown === "form";
+}
+
+// The three ways of showing a field that are not a question this walk puts.
+// `given` is answered by the engine or by whatever writes the card; `spelling`
+// is the same question under a second name and is asked under the first; and
+// `group` is what aiming an action asks, which the walk puts as its own step.
+// Said as the three exceptions rather than as a list of the rest, so a control
+// the language gains is asked without this being told about it.
+const ANSWERED_ELSEWHERE = ["given", "spelling", "group"];
+
+// Whether the walk puts this question. Read off the same routing the editor
+// draws by, so a field that changes how it is written changes how it is asked.
+//
+// `asked` says how prominent a question is in a *form* — straight away, behind
+// "more options", behind "advanced". A walk has no "advanced": it puts one
+// question after another until the action is finished. So a required answer is
+// asked wherever the shape puts it, and an optional one waits for the editor.
+function asks(f) {
+  if (f.asked === "never" || ANSWERED_ELSEWHERE.includes(f.shown)) return false;
+  return f.asked === "first" || f.required;
+}
+
+// An action a walk can finish: everything the engine insists on is something
+// this walk asks. The same predicate `questions` filters by, so the two cannot
+// come apart — an action is offered exactly when answering everything it puts
+// finishes it. Offering one whose required answer is never put would be a card
+// the checker refuses, made by somebody who answered every question shown.
+function finishable(e) {
+  return e.fields.every(f => !f.required || asks(f));
+}
+
+function ask(n, problems = [], moments = []) {
+  const all = questions();
+  if (n >= all.length) return answered(problems, moments);
+  walk.on = "ask";
+  walk.at = n;
+  const { path: here, node, shape } = asking();
+  const one = all[n];
+  const asked = one.aim
+    ? aimHtml(shape, node, here)
+    : oneByOne([one.f], node.fields, node.groups,
+               `${here}.fields`, `${here}.groups`, shape.id);
+  // Back from a question is the question before it. Back from the first one is
+  // wherever this node was reached from: the list of what a part does, the
+  // list of the card's parts, or out of the walk altogether while the card
+  // still holds only the one action being answered.
+  const only = walk.list && at(walk.list, []).length < 2 && !walk.doing;
+  const back = n ? `ask(${n - 1})`
+    : !walk.list ? "chooseWhich()"
+    : only && !editing ? "chooseKind()"
+    : only ? "chooseWhich()"
+    : "sofar()";
+  el(`<button class="back" onclick="${back}">← back</button>
+    <p class="muted">${esc(sentence(shape.about))}</p>
+    <h1>Question ${n + 1} of ${all.length}</h1>
+    <div class="nested">${asked}</div>
+    <hr>
+    <div class="row">
+      <button class="go" onclick="ask(${n + 1})">Next</button>
+      <button onclick="startBlank()">Fill the rest in myself</button>
+    </div>
+    ${saidHtml(problems, moments)}`);
+}
+
+// Where a walk goes when the questions about one node run out: to the things
+// a part does, if the node was one of them, and otherwise back out to the part
+// it was.
+function answered(problems = [], moments = []) {
+  return walk.list ? sofar(problems, moments) : chooseWhich(problems, moments);
+}
+
+// ------------------------------------------------------ what it does so far
+//
+// Between one action and the next. Deliberately not the editor: no controls,
+// no shapes, no boxes — the card read back as sentences, so somebody can see
+// what they have said before deciding whether it is everything.
+
+// One action in words, built out of what the metadata already says about it:
+// the sentence the effect carries, then each answer under the question that
+// asked for it. Nothing here knows what any effect is.
+function saidAs(step) {
+  // Wherever it is described. A step may be an action, or one of the things
+  // that hold other things, and those are published in different catalogues —
+  // so the lookup that searches all of them is the one to ask. Naming a
+  // catalogue here is how a card came to show a bare identifier and nothing
+  // it holds.
+  const doing = shapeNamed(step.id);
+  if (!doing) return step.id || "something";
+  const answers = doing.fields
+    .filter(f => sayable(f))
+    .map(f => [f, (step.fields || {})[f.id]])
+    .filter(([, v]) => v !== undefined && v !== null && v !== "" && v !== false)
+    .map(([f, v]) => `${trimmed(asksOf(f)).toLowerCase()}: ${esc(meant(f, String(v)))}`);
+  const aim = can.targets.find(t => t.id === step.aim);
+  if (aim) answers.push(`to ${esc(aim.about)}`);
+  return esc(sentence(doing.about))
+    + (answers.length ? ` <span class="muted">— ${answers.join("; ")}</span>` : "");
+}
+
+// What a step holds, and under which of its own questions.
+//
+// Read off the shape, exactly as a card's parts are: a field that is a list
+// of things, whose things the catalogue describes, is a list of nodes. No
+// node is named here — a structure the engine gains is drawn by this without
+// it changing, which is the whole reason it is written this way.
+function heldBy(node) {
+  const shape = shapeNamed(node.id);
+  if (!shape) return [];
+  return shape.fields
+    .filter(f => f.a_list_of)
+    .map(f => ({
+      f,
+      nodes: ((node.fields || {})[f.id] || []).filter(o => o && shapeNamed(o.id)),
+    }))
+    .filter(one => one.nodes.length);
+}
+
+// Every action that would have to be walked to fill a node in: the steps it
+// holds, and the steps held by whatever those hold. A mode is a node of its
+// own, so its steps are found under it rather than beside them.
+//
+// Read off `a_list_of`, so a structure the engine gains is followed by this
+// without it changing.
+function stepsUnder(node) {
+  const found = [];
+  for (const { f, nodes } of heldBy(node)) {
+    for (const one of nodes) {
+      if (f.a_list_of === "step") found.push(one);
+      found.push(...stepsUnder(one));
+    }
+  }
+  return found;
+}
+
+// What a thing offered in a list is called.
+//
+// The answer to whichever of its own questions the metadata gives the naming
+// role. A thing offered has a name; it does not need describing, and
+// describing it puts the same sentence in front of every row — six options
+// once read as six copies of what an option is, before the words that
+// differed. Nothing is named here: which field names a node is the shape's
+// answer, so a thing the engine gains later is named by this too.
+function nameOf(node) {
+  const shape = shapeNamed(node.id);
+  const naming = (shape ? shape.fields : []).find(
+    f => f.role === "names" && sayable(f));
+  const said = naming && (node.fields || {})[naming.id];
+  return said ? esc(String(said)) : saidAs(node);
+}
+
+// The lists of steps a node holds, each with the words to call it by and the
+// path it lives at. A list of steps is an arm as it stands; a list of
+// anything else holds its steps one level further in, and is named by what it
+// says of itself.
+function armsOf(node, path) {
+  const found = [];
+  for (const { f, nodes } of heldBy(node)) {
+    if (f.a_list_of === "step") {
+      found.push({ asks: trimmed(asksOf(f)), list: `${path}.fields.${f.id}` });
+      continue;
+    }
+    // A thing offered in a list is offered whether or not it does anything:
+    // it is written on the card either way, and one shipped option means "do
+    // none of the others" by holding nothing at all. So its arms come from
+    // its shape rather than from what it happens to hold — unlike an arm of
+    // the node itself, which exists only when the card writes it, and is why
+    // a branch with no second arm asks nobody which.
+    nodes.forEach((one, i) => {
+      const shape = shapeNamed(one.id);
+      for (const g of (shape ? shape.fields : [])) {
+        if (g.a_list_of !== "step") continue;
+        found.push({
+          asks: nameOf(one),
+          list: `${path}.fields.${f.id}[${i}].fields.${g.id}`,
+        });
+      }
+    });
+  }
+  return found;
+}
+
+// And the same, drawn: each list under the words its own field asks, in the
+// card's language rather than this page's.
+function heldHtml(node) {
+  return heldBy(node).map(({ f, nodes }) =>
+    `<div class="held"><span class="muted">${esc(trimmed(asksOf(f)))}</span>
+       <ul class="list">${nodes.map(one =>
+         `<li>${saidAs(one)}${heldHtml(one)}</li>`).join("")}</ul></div>`
+  ).join("");
+}
+
+function sofar(problems = [], moments = []) {
+  walk.on = "sofar";
+  const doing = at(walk.list, []);
+  const rows = doing.map((step, i) => `<li>${saidAs(step)}
+      <button onclick="openStep(${i})">change</button>
+      ${doing.length > 1
+          ? `<button onclick="dropAction(${i})">remove</button>` : ""}
+    </li>`).join("");
+  const out = (walk.trail || []).length
+    ? "outOfArm()"
+    : partsOf().length > 1
+    ? "chooseWhich()"
+    : `editAction(${Math.max(0, doing.length - 1)})`;
+  el(`<button class="back" onclick="${out}">← back</button>
+    <h1>What this card does</h1>
+    <ol class="list">${rows}</ol>
+    <hr>
+    <div class="row">
+      <button class="go" onclick="finish()">That is everything</button>
+      <button onclick="addAction()">Add another thing it does</button>
+    </div>
+    ${saidHtml(problems, moments)}`);
+}
+
+// Adding one is choosing one, from the same list, for the same moment. That
+// the ability may hold more than one is the metadata's word — `effects` is
+// declared a list — and not a permission written here.
+function addAction() { chooseAction(walk.how); }
+
+// Changing a step is asking about it, unless it is something that holds other
+// steps — then there is nothing to ask about the thing itself, because every
+// question it has is a list rather than a box. So the walk goes into it.
+//
+// One arm and there is no choice to put to anybody, which is 57 of the 74
+// cards that branch: it goes straight in. More than one, and which of them is
+// a question like any other.
+function openStep(i) {
+  const step = at(walk.list, [])[i];
+  const arms = armsOf(step, `${walk.list}[${i}]`);
+  if (!arms.length) return editAction(i);
+  if (arms.length === 1) return intoArm(arms[0]);
+  return whichArm(arms, step);
+}
+
+function intoArm(arm) {
+  walk.trail = (walk.trail || []).concat([{ list: walk.list, doing: walk.doing }]);
+  walk.list = arm.list;
+  walk.doing = 0;
+  return sofar();
+}
+
+function outOfArm() {
+  const back = (walk.trail || []).pop();
+  if (!back) return sofar();
+  walk.list = back.list;
+  walk.doing = back.doing;
+  return sofar();
+}
+
+function whichArm(arms, step) {
+  walk.on = "arms";
+  // Said once, at the top, in the node's own words — not repeated in front of
+  // every option, which is what naming an option by describing it did.
+  const within = shapeNamed(step.id);
+  const rows = arms.map(arm =>
+    `<li class="reads"><button class="plain" onclick="intoArm(${JSON.stringify(arm)
+      .replace(/"/g, "&quot;")})">${arm.asks}</button></li>`).join("");
+  el(`<button class="back" onclick="sofar()">← back</button>
+    <h1>Which of these?</h1>
+    <p class="lead">${esc(sentence(within ? within.about : ""))}. Pick the one
+      to change.</p>
+    <ol class="list">${rows}</ol>`);
+}
+
+function editAction(i) { walk.doing = i; ask(0); }
+function dropAction(i) {
+  at(walk.list, []).splice(i, 1);
+  if (walk.doing >= at(walk.list, []).length) walk.doing = 0;
+  sofar();
+}
+
+// What the engine said about the card, wherever it is being said.
+function saidHtml(problems, moments) {
+  return `<div id="says">
+    ${(problems || []).map(p => `<p class="problem">${esc(p)}</p>`).join("")}
+    ${(moments || []).map(m => `<p class="moment">${esc(m.what)}</p>`).join("")}
+  </div>`;
+}
+
+// The card, finished. It is checked and played by the same two endpoints the
+// editor uses, so what is said about it here is what the engine says about it.
+async function done(problems = [], moments = []) {
+  walk.on = "done";
+  // Back is the screen this was reached from, which is the numbers where the
+  // kind has any and the list of what the card does where it has none.
+  const out = printedFields().length ? "numbers()"
+    : partsOf().length > 1 || !walk.list ? "chooseWhich()" : "sofar()";
+  el(`<button class="back" onclick="${out}">← back</button>
+    <h1>Your card</h1>
+    <label for="name">What is it called?</label>
+    <input id="name" value="${esc(state.card.fields.name || "")}"
+           placeholder="Lucky Penny"
+           oninput="setField('state.card.fields','name',this.value,false)">
+    <hr>
+    <div class="row">
+      <button class="go" onclick="save()">${editing
+        ? "Keep this change" : "Save this card"}</button>
+      <button onclick="tryIt()">Try it in a game</button>
+      <button onclick="startBlank()">Change anything else</button>
+    </div>
+    ${editing ? `<p class="muted">This writes over the card you opened. Its
+      file is written out again the way this writes every card, so a file
+      somebody laid out by hand comes back laid out this way — the card is
+      the same one either way.</p>` : ""}
+    ${saidHtml(problems, moments)}
+    <h2>The card</h2>
+    <div id="face"></div>`);
+  face();
+}
+
+// --------------------------------------------------- what is printed on it
+//
+// The numbers a card carries because of the kind of card it is: a monster's
+// hit points, what it hits for and the roll needed to hit it; a treasure's
+// price. Not the same species of question as everything before this screen —
+// those are things the card *does*, and these are things it *is*.
+//
+// Which numbers those are is not decided here. Each kind publishes what it
+// carries, and the fields themselves carry the wording, the shape and the
+// domain, so this screen names no number and no kind of card. A kind for
+// which nobody has said carries none as far as this is concerned, and gets
+// no screen at all — asking somebody how many hit points their loot card has
+// is asking them to invent a fact about it.
+
+// The card's own fields, in its own order, kept to the ones this kind prints.
+function printedFields() {
+  const card = named(can.cards, "card") || { fields: [] };
+  const of = can.kinds.find(k => k.id === state.card.fields.type) || {};
+  const carries = of.printed || [];
+  return card.fields.filter(f => carries.includes(f.id));
+}
+
+// Between the last thing a card does and the card itself. Put here rather
+// than at the start because until an action exists there is no card to write
+// them on, and skipped where there is nothing to put.
+function finish(problems = [], moments = []) {
+  return printedFields().length ? numbers(problems, moments)
+                                : done(problems, moments);
+}
+
+function numbers(problems = [], moments = []) {
+  walk.on = "numbers";
+  const back = walk.list ? "sofar()" : "chooseWhich()";
+  el(`<button class="back" onclick="${back}">← back</button>
+    <h1>What is printed on it?</h1>
+    <p class="lead">The numbers this kind of card carries. They are what it is
+      rather than what it does, so nothing before now has asked for them.</p>
+    <div class="nested">${oneByOne(printedFields(), state.card.fields,
+      state.card.groups, "state.card.fields", "state.card.groups", "card")}</div>
+    <hr>
+    <div class="row">
+      <button class="go" onclick="done()">Next</button>
+      <button onclick="startBlank()">Fill the rest in myself</button>
+    </div>
+    ${saidHtml(problems, moments)}`);
+}
+
+function startBlank() { walk = null; state.mode = "expert"; editor(); }
+
+// ------------------------------------------------- changing one that exists
+//
+// A card read off disk is already the thing a card being made is, so there is
+// nothing to convert: the walk is pointed at the parts it already has and
+// every screen works as it does for a card being written now.
+
+// Every part this card has, wherever the card keeps them. Found by asking the
+// card's shape which of its fields are lists of something the page has a shape
+// for, so a card that grew a third kind of part is walked without this
+// changing — and in the order the card declares them.
+function partsOf() {
+  const card = named(can.cards, "card") || { fields: [] };
+  const found = [];
+  for (const list of card.fields) {
+    const shape = shapeNamed(list.a_list_of || "");
+    if (!shape) continue;
+    (state.card.fields[list.id] || []).forEach((node, index) => {
+      found.push({ list, shape, index, node,
+                   path: `state.card.fields.${list.id}[${index}]` });
+    });
+  }
+  return found;
+}
+
+// What one part holds that happens, if it holds anything. A part says where by
+// calling one of its fields a list of steps; a part with no such field does
+// nothing and only changes a number.
+function doesIn(part) {
+  const holds = part.shape.fields.find(f => f.a_list_of === "step");
+  return holds ? { key: holds.id, steps: part.node.fields[holds.id] || [] } : null;
+}
+
+// Whether the walk can show this whole card. It puts questions about a part
+// and about each thing that part does, so a card doing something it would not
+// offer is one it would show half of — and half a card looks exactly like a
+// whole one. How many parts there are is no longer a reason: it asks about
+// each in turn.
+function walkable() {
+  const parts = partsOf();
+  if (!parts.length) return false;
+  const known = (step, offered) => offered.some(e => e.id === step.id);
+  // An action the walk can finish, or something holding only such actions.
+  // The rule is the same rule, asked one level further down — and asked of
+  // what it holds in the same way, because a branch inside a branch is not an
+  // action either. Asking only whether each held thing is an action turned
+  // down three cards that read perfectly.
+  const reachable = (step, offered) => {
+    if (known(step, offered)) return true;
+    const under = stepsUnder(step);
+    return under.length > 0 && under.every(one => reachable(one, offered));
+  };
+  return parts.every(part => {
+    const does = doesIn(part);
+    if (!does) return true;
+    // What may be done is asked of the part being judged: an effect that only
+    // works where an event is being changed is offered where one is.
+    const offered = actionsIn(part.node);
+    return does.steps.every(step => reachable(step, offered));
+  });
+}
+
+// The walk, pointed at a card that already exists. `state.card` is untouched:
+// it was already this shape, which is the whole reason any of this works.
+function startFrom() {
+  const parts = partsOf();
+  if (!parts.length) return startBlank();
+  looking = false;
+  editing = true;
+  state.mode = "simple";
+  walk = { doing: 0 };
+  // One part is not a choice, so it is not put as one.
+  return parts.length === 1 ? openPart(0) : chooseWhich();
+}
+
+// One part of the card, opened for its questions. Nothing is copied: the walk
+// is given the path to the part the card already holds.
+function openPart(which) {
+  const parts = partsOf();
+  const part = parts[which];
+  if (!part) return chooseWhich();
+  const does = doesIn(part);
+  const when = part.shape.fields.find(f => f.asked === "first" && (f.choices || []).length);
+  walk = {
+    which,
+    where: part.path,
+    part: part.shape,
+    how: when ? part.node.fields[when.id] || "" : "",
+    doing: 0,
+    list: does ? `${part.path}.fields.${does.key}` : "",
+  };
+  // A part that does things is shown as the things it does; one that only
+  // changes a number has none, so its own questions are what there is to ask.
+  return does ? sofar() : ask(0);
+}
+
+// ------------------------------------------------------- which part of it
+//
+// Only for a card that has more than one. The lists are the card's own, under
+// the card's own words for them, and each part is read back by the same two
+// functions the reading screen uses.
+function chooseWhich(problems = [], moments = []) {
+  walk.on = "parts";
+  const card = named(can.cards, "card") || { fields: [] };
+  const parts = partsOf();
+  let at = 0;
+  const sections = card.fields.filter(f => shapeNamed(f.a_list_of || "")).map(list => {
+    const mine = parts.filter(p => p.list.id === list.id);
+    if (!mine.length) return "";
+    const rows = mine.map(part => {
+      const does = doesIn(part);
+      const said = (does ? does.steps.map(step => saidAs(step)).join("<br>") : "")
+        + saidOf(part.node);
+      return `<li><button class="plain" onclick="openPart(${parts.indexOf(part)})"
+        >${said || esc(part.shape.about)}</button></li>`;
+    }).join("");
+    return `<h2>${esc(sentence(asksOf(list)))}</h2><ol class="list">${rows}</ol>`;
+  }).join("");
+  el(`<button class="back" onclick="viewing()">← back</button>
+    <h1>What would you change?</h1>
+    <p class="lead">Pick the part of the card to look at. Everything else stays
+      as it is.</p>
+    ${sections}
+    <hr>
+    <div class="row">
+      <button class="go" onclick="finish()">That is everything</button>
+    </div>
+    ${saidHtml(problems, moments)}`);
+}
+
+// What "draw it again" means depends on which way in is open. Every setter
+// calls this one thing, so neither screen has to know about the other.
+function drawn(problems = [], moments = []) {
+  if (looking) return viewing(problems, moments);
+  if (!walk) return editor(problems, moments);
+  if (walk.on === "parts") return chooseWhich(problems, moments);
+  if (walk.on === "sofar") return sofar(problems, moments);
+  if (walk.on === "numbers") return numbers(problems, moments);
+  if (walk.on === "done") return done(problems, moments);
+  return ask(walk.at, problems, moments);
+}
+
+// ------------------------------------------------------------- the editor
+
+function editor(problems = [], moments = []) {
+  const kind = state.card.fields.type;
+  const kindName = can.kinds.find(k => k.id === kind)?.name || kind || "card";
+  el(`<button class="back" onclick="home()">← back</button>
+    <h1>Your ${esc(String(kindName).toLowerCase())}</h1>
+
+    <label for="name">What is it called?</label>
+    <input id="name" value="${esc(state.card.fields.name || "")}"
+           placeholder="Lucky Penny"
+           oninput="setField('state.card.fields','name',this.value,false)">
+
+    <label for="text">What does the card say?</label>
+    <textarea id="text" placeholder="Gain 3¢."
+      oninput="setNote(this.value,false)"
+      onchange="setNote(this.value,true)">${esc(printed())}</textarea>
+
+    <h2>What it does</h2>
+    <div id="parts">${cardHtml()}</div>
+
+    <p class="muted">${state.mode === "simple"
+      ? `Showing what this card does. <button onclick="setMode('expert')">Show
+         everything a card may say</button>`
+      : `Showing everything a card may say. <button onclick="setMode('simple')">
+         Show just what it does</button>`}</p>
+
+    <hr>
+    <div class="row">
+      <button class="go" onclick="save()">Save this card</button>
+      <button onclick="tryIt()">Try it in a game</button>
+    </div>
+    <div id="says">
+      ${problems.map(p => `<p class="problem">${esc(p)}</p>`).join("")}
+      ${moments.map(m => `<p class="moment">${esc(m.what)}</p>`).join("")}
+    </div>
+
+    <h2>The card</h2>
+    <div id="face"></div>`);
+  face();
+}
+
+// The card itself, drawn from the shape the engine describes it with. Nothing
+// here names a part: what a card contains is what the metadata says it
+// contains, so a card that grows a third kind of part grows a third section
+// without this changing. The one below is the only question the form above
+// asks whole, in a person's own words.
+// The two the form above asks whole, in a person's own words. Everything else
+// a card may say is drawn from the shape, and when it is drawn — straight
+// away, behind "more options", behind "advanced" — is the shape's answer too.
+const FEATURED = ["name", "metadata"];
+
+function cardHtml() {
+  const shape = named(can.cards, "card");
+  if (!shape) return "";
+  // Two views of one card. The simple one asks what a card is mostly about;
+  // the expert one asks everything a card may say. Which fields those are is
+  // the metadata's answer — `asked` — and not a list kept here, so a field the
+  // engine gains appears in whichever view its own shape puts it in.
+  const fields = shape.fields
+    .filter(f => !FEATURED.includes(f.id))
+    .filter(f => state.mode !== "simple" || f.asked === "first");
+  return fieldsHtml(fields, state.card.fields, state.card.groups,
+                    "state.card.fields", "state.card.groups", shape.id);
+}
+
+// The same card, looked at differently. Nothing is converted and nothing is
+// kept twice: the card being built does not know which view made it.
+function setMode(which) { walk = null; state.mode = which; editor(); }
+
+// What is printed on the card. The engine keeps it among the card's own notes,
+// which is a set of named values a card may put anything in; a person types a
+// sentence. Both ways of saying it are offered — the sentence here, the notes
+// in full below — so the box up top is a shortcut into one of them and never
+// the only way in. It redraws when it is finished with so that the two cannot
+// come to disagree.
+function printed() { return (state.card.fields.metadata || {}).text || ""; }
+
+function setNote(text, redraw) {
+  const notes = at("state.card.fields.metadata");
+  if (text.trim()) notes.text = text; else delete notes.text;
+  if (redraw) return drawn();
+  face();
+}
+
+
+// ------------------------------------------------------- more of the language
+//
+// Three primitives, and between them they draw everything the metadata
+// describes that is not a single answer.
+//
+//   a body    — a list of nodes of a known kind. Add, remove, keep the order.
+//   a node    — one of those, whatever kind it is.
+//   a nested  — one node of a named shape, drawn by the ordinary field renderer.
+//
+// None of them knows the name of an effect, a condition, a target or a control
+// node. What they know is the four kinds the metadata says a list may be of,
+// and where to look each kind up.
+
+// Where a node of each kind is described, and what it is called on the page.
+// Three of them are chosen out of a list of the engine's own; anything else a
+// list may be of is one named shape, and is found by that name.
+const KINDS = {
+  step:      { of: () => can.effects.concat(
+                 can.structures.filter(x => x.a_step && drawable(x))),
+               says: "Add something that happens" },
+  condition: { of: () => can.conditions, says: "Add a condition" },
+  target:    { of: () => can.targets,    says: "Add something to pick out" },
+};
+
+// A mode, an ability, a static: a node of exactly one shape, which is why
+// there is nothing to choose. Its own words are what the metadata calls it,
+// so a kind the language gains draws itself without being listed here.
+function kindOf(kind) {
+  if (KINDS[kind]) return KINDS[kind];
+  const shape = shapeNamed(kind);
+  return shape ? { of: () => null, says: "Add " + shape.about, shape } : null;
+}
+
+// Every shape the catalogue publishes, wherever it publishes it. A section is
+// a list of things with fields; the two that are not — the kinds of card, and
+// the moments a card may react to — describe no node.
+function catalogues() {
+  return Object.values(can).filter(list =>
+    Array.isArray(list) && list.length && list.every(one => one && one.fields));
+}
+const shapeNamed = (id) => catalogues().flat().find(x => x.id === id);
+
+// What a part in hand says about where it is.
+//
+// Some effects only work somewhere particular and say so; which of a part's
+// own answers settles that is the part's shape's answer, published as
+// `allows`. So the pairing is read rather than known, and a requirement the
+// engine gains later is honoured by this without it changing.
+function allowedIn(node) {
+  const shape = node && shapeNamed(node.id);
+  const said = {};
+  for (const f of (shape ? shape.fields : []))
+    if (f.allows) said[f.allows] = (node.fields || {})[f.id] === true;
+  return said;
+}
+
+// Every requirement any part is able to answer at all. An effect asking for
+// one nobody can answer is offered nowhere, which is what used to be written
+// out by hand for the only requirement there was.
+function requirements() {
+  const found = new Set();
+  for (const shape of catalogues().flat())
+    for (const f of (shape.fields || [])) if (f.allows) found.add(f.allows);
+  return found;
+}
+
+// The actions on offer inside one part: those this walk can finish, whose
+// every requirement that part answers.
+function actionsIn(node) {
+  const allowed = allowedIn(node);
+  const asked = [...requirements()];
+  return can.effects.filter(e => !e.a_step && finishable(e)
+    && asked.every(need => !e[need] || allowed[need] === true));
+}
+
+// A structure the page can draw is one whose every own field lands somewhere
+// this renderer has a control for. Nothing is listed by name.
+function drawable(node) {
+  return node.fields.every(f => DRAWS.includes(f.shown));
+}
+const DRAWS = ["form", "group", "advanced", "given", "spelling", "body",
+               "named", "nested"];
+
+function bodyHtml(kind, list, path) {
+  // A kind this renderer has no component for is said, never drawn as a box.
+  const of = kindOf(kind);
+  if (!of) {
+    return `<p class="muted">The engine describes this as a list of
+      ${esc(kind)} nodes, and this editor cannot build one yet.</p>`;
+  }
+  const held = list || [];
+  const rows = held.map((node, i) =>
+    `<div class="node">
+       <div class="head">
+         ${chooserHtml(kind, node, path, i)}
+         <button onclick="dropNode('${path}',${i})">remove</button>
+         ${i ? `<button onclick="moveNode('${path}',${i},-1)">↑</button>` : ""}
+         ${i < held.length - 1
+             ? `<button onclick="moveNode('${path}',${i},1)">↓</button>` : ""}
+       </div>
+       ${nodeHtml(kind, node, `${path}[${i}]`)}
+     </div>`).join("");
+  return `<div class="body">${rows}
+    <button onclick="addNode('${kind}','${path}')">${esc(of.says)}</button>
+  </div>`;
+}
+
+// The list a node of this kind is chosen from — the engine's own, in its own
+// words. A mode is not chosen from anything: a mode is a mode.
+function chooserHtml(kind, node, path, index) {
+  const offered = kindOf(kind).of();
+  if (!offered) return "";
+  const one = (x) => `<option value="${x.id}" ${x.id === node.id ? "selected" : ""}
+      >${esc(x.about)}</option>`;
+  // Three groups, and the third is the one that matters: a branch and a loop
+  // are not things that happen, they are shapes the things that happen go in.
+  // Mixed into one list of seventy-two sentences they read as effects, and an
+  // author looking for "deal damage" scrolls past "depending on something".
+  const shaping = offered.filter(x => x.a_step);
+  const doing = offered.filter(x => !x.a_step);
+  const common = doing.filter(x => x.common);
+  const rest = doing.filter(x => !x.common);
+  const group = (label, list) => list.length
+    ? `<optgroup label="${esc(label)}">${list.map(one).join("")}</optgroup>` : "";
+  return `<select onchange="setNode('${kind}','${path}',${index},this.value)">
+      <option value="">— choose —</option>
+      ${common.length ? group("common", common) + group("everything else", rest)
+                      : rest.map(one).join("")}
+      ${group("ways of shaping what happens", shaping)}
+    </select>`;
+}
+
+function nodeHtml(kind, node, path) {
+  const of = kindOf(kind);
+  const offered = of.of();
+  const shape = offered ? named(offered, node.id) : of.shape;
+  if (!shape) return "";
+  // Whether anything is aimed is the shape's own answer, not the kind's: an
+  // effect says it acts on something and nothing else does.
+  return shapeHtml(shape, node, path) + aimHtml(shape, node, path);
+}
+
+// One shape's fields, wherever they are being drawn.
+function shapeHtml(shape, holder, path) {
+  return fieldsHtml(shape.fields, holder.fields, holder.groups,
+                    `${path}.fields`, `${path}.groups`, shape.id);
+}
+
+// One node of a named shape — a cost, a mode, a way of working a number out.
+// The renderer does not know what is in one: it asks the metadata.
+// Several nodes of one kind, each under a name the card chooses. `promise`
+// owes a change per value of the event it waits for, and which values those
+// are is not a list anything here has: `compost` changes `source`, which no
+// event is proposed with and only a replacement ever writes. So the name is a
+// box and never a menu, and what goes under it is the ordinary form for
+// whatever `each_shaped_like` says it is.
+function namedHtml(field, values, path) {
+  const shape = shapeNamed(field.each_shaped_like);
+  if (!shape) return unsupportedHtml(field);
+  const held = values[field.id] || {};
+  const where = `${path}.${field.id}`;
+  const rows = Object.keys(held).map(name => `
+    <div class="node">
+      <div class="head">
+        <input value="${esc(name)}" placeholder="which value of the event"
+               onchange="renameEntry('${where}','${esc(name)}',this.value)">
+        <button onclick="dropEntry('${where}','${esc(name)}')">remove</button>
+      </div>
+      ${fieldsHtml(shape.fields, held[name].fields || {}, held[name].groups || {},
+                   `${where}.${esc(name)}.fields`,
+                   `${where}.${esc(name)}.groups`, shape.id)}
+    </div>`).join("");
+  return `<label>${esc(asksOf(field))}${needed(field)}</label>
+    <div class="body">${rows}
+      <button onclick="addEntry('${where}','${field.each_shaped_like}')"
+        >Add ${esc(shape.about)}</button>
+    </div>`;
+}
+
+// A name is the key, so changing one moves what is under it. Order is kept
+// because a person reading the form back should find their entries where they
+// left them, and an object that rebuilds itself in a different order every
+// keystroke is not a form anybody can use.
+function renameEntry(path, was, now) {
+  const held = at(path);
+  const wanted = now.trim();
+  if (!wanted || wanted === was || wanted in held) return drawn();
+  const rebuilt = {};
+  for (const key of Object.keys(held)) rebuilt[key === was ? wanted : key] = held[key];
+  for (const key of Object.keys(held)) delete held[key];
+  Object.assign(held, rebuilt);
+  drawn();
+}
+
+function dropEntry(path, name) { delete at(path)[name]; drawn(); }
+
+function addEntry(path, kind) {
+  const held = at(path);
+  let name = "";
+  for (let n = 1; !name || name in held; n++) name = `value ${n}`;
+  held[name] = { id: kind, fields: {}, groups: {} };
+  drawn();
+}
+
+function nestedHtml(field, values, path) {
+  const shape = shapeNamed(field.shaped_like);
+  if (!shape) return unsupportedHtml(field);
+  const inside = values[field.id] || {};
+  return `<details class="deep">
+    <summary>${esc(asksOf(field))}${needed(field)}</summary>
+    <div class="nested">${fieldsHtml(shape.fields, inside, inside.groups,
+        `${path}.${field.id}`, `${path}.${field.id}.groups`, shape.id)}</div>
+  </details>`;
+}
+
+const named = (list, id) => list.find(x => x.id === id);
+
+// How the metadata spells "the name of a value an earlier step stored". The
+// page compares against it rather than deciding for itself which fields are
+// references.
+const STORED = "the name of a value an earlier step stored";
+
+// Said, never drawn as a box. A capability the engine has and this editor
+// cannot yet build is a sentence saying so — an empty field pretending to be
+// the answer is worse than no field at all.
+function unsupportedHtml(field) {
+  return `<p class="muted"><b>${esc(asksOf(field))}</b> — the engine can do this
+    and this editor cannot build it yet.</p>`;
+}
+
+// "Who does this happen to?" — offered only for effects that act on
+// something, with the engine's own words for each choice.
+function aimHtml(chosen, step, path) {
+  if (!chosen || !chosen.needs_target) return "";
+  if (!canChoose(path)) return cannotChooseHtml({ about: "what it happens to" });
+  // Only what this effect acts on. Offering the rest offered a card the engine
+  // refuses the moment somebody plays it.
+  const options = can.targets.filter(t => t.aimable && fits(t, chosen.hits));
+  const common = options.filter(t => t.common && !t.after);
+  const rest = options.filter(t => !t.common && !t.after);
+  // Ones that mean nothing on their own. Offered, because the engine resolves
+  // them like any other — "destroy what you just damaged" is one of these —
+  // and offered apart, because picking one first would mean nothing.
+  const after = options.filter(t => t.after);
+  const one = (t) => `<option value="${t.id}" ${t.id === step.aim ? "selected" : ""}>
+      ${esc(t.about)}</option>`;
+  const picked = can.targets.find(t => t.id === step.aim);
+  return `<label>Who or what does this happen to?</label>
+    <select onchange="setAim('${path}', this.value)">
+      <option value="">— the usual one for this card —</option>
+      ${common.map(one).join("")}
+      <optgroup label="everything else">${rest.map(one).join("")}</optgroup>
+      <optgroup label="what an earlier step chose">${after.map(one).join("")}</optgroup>
+    </select>
+    ${picked ? fieldsHtml(picked.fields, step.aim_fields, step.aim_groups,
+        `${path}.aim_fields`, `${path}.aim_groups`, picked.id) : ""}`;
+}
+
+// ------------------------------------------------------------- the values
+//
+// Three things the metadata says about a value that the controls above could
+// not draw: that it may be given more than one way, that it may be the name of
+// something an earlier step made, and that its choices wait on another answer.
+
+// Parameters of which a card may write exactly one. Asked as one choice and
+// then the chosen one's own control — offering all of them would be offering
+// a card that says two things and gets one, which is what the engine refuses.
+function oneOfHtml(group, siblings, values, path, owner) {
+  const ways = siblings.filter(f => f.one_of === group);
+  const chosen = ways.find(f => values[f.id] !== undefined) || {};
+  const one = (f) => `<option value="${f.id}" ${f.id === chosen.id ? "selected" : ""}
+      >${esc(f.about)}</option>`;
+  return `<label>${esc(sentence(group))}</label>
+    <select onchange="setOneOf('${path}','${group}',this.value,'${owner}')">
+      <option value="">— choose —</option>
+      ${ways.map(one).join("")}
+    </select>
+    ${chosen.id
+        ? fieldsHtml([{ ...chosen, one_of: "" }], values, {}, path, path, owner)
+        : ""}`;
+}
+
+// A parameter with more than one way of being written asks which way first,
+// and then draws that way with the ordinary controls. Nothing here knows what
+// the ways are — `also` says.
+function waysHtml(f, values, siblings, path, owner) {
+  const ways = [f, ...f.also];
+  const chosen = ways.findIndex(way => writtenThisWay(way, values[f.id]));
+  // The first way is the parameter itself, and naming it by its description
+  // prints the question twice — once as the label above and once as an option
+  // underneath. What distinguishes the ways is what each one *is*, so the
+  // first is named by its kind and the rest by what they say about themselves.
+  const one = (way, i) => `<option value="${i}" ${i === chosen ? "selected" : ""}
+      >${esc(i === 0 ? (way.kind || wayNamed(way)) : wayNamed(way))}</option>`;
+  const way = ways[chosen] || ways[0];
+  const drawn = way.shaped_like
+    ? nestedHtml({ ...f, about: wayNamed(way), shaped_like: way.shaped_like },
+                 values, path)
+    : way.a_list_of
+    ? bodyHtml(way.a_list_of, values[f.id], `${path}.${f.id}`)
+    : valueHtml({ ...f, ...only(way), also: [], bare: true },
+                values, siblings, path);
+  return `<label>${esc(asksOf(f))}${needed(f)}</label>
+    ${drawn}
+    <select class="way"
+      onchange="setWay('${path}','${f.id}',this.value,'${owner}')">
+      ${ways.map(one).join("")}
+    </select>`;
+}
+
+// Which way a value already written is written in. Read off the value's own
+// shape, so nothing has to be remembered beside the card.
+function writtenThisWay(way, value) {
+  if (way.shaped_like) return value !== null && typeof value === "object"
+                              && !Array.isArray(value);
+  if (way.a_list_of) return Array.isArray(value);
+  return value === undefined || typeof value !== "object";
+}
+
+function wayNamed(way) {
+  return way.about || way.kind || way.shaped_like || way.a_list_of;
+}
+
+// What a way says about itself, over what the parameter said first.
+function only(way) {
+  const said = {};
+  if (way.kind) said.kind = way.kind;
+  if (way.choices && way.choices.length) said.choices = way.choices;
+  if (way.least !== null && way.least !== undefined) said.least = way.least;
+  said.shaped_like = ""; said.a_list_of = "";
+  return said;
+}
+
+// A name an earlier step made, chosen rather than typed. What names there are
+// is read off the card: every field the metadata says *defines* one, and every
+// effect the metadata says keeps its result under one.
+function referenceHtml(f, values, path) {
+  const known = definedNames(f.picks, path);
+  const value = values[f.id] ?? "";
+  if (!known.length) {
+    return `<label>${esc(asksOf(f))}${needed(f)}</label>
+      <p class="muted">Nothing earlier in this card remembers a value yet.
+        ${esc(whatWouldMakeOne(f.picks))}</p>`;
+  }
+  // An answer the engine reads as one name or as several says so, and one
+  // box for it is how "if the two rolls match" becomes a comparison of one
+  // roll, which is never true and which nothing complains about.
+  if (f.picks_at_least) {
+    const chosen = Array.isArray(value) ? value.map(String) : value ? [String(value)] : [];
+    return `<label>${esc(asksOf(f))}${needed(f)}</label>
+      <select multiple size="${Math.min(known.length, 5)}"
+        onchange="setMany('${path}','${f.id}',this)">
+        ${known.map(n => `<option ${chosen.includes(n) ? "selected" : ""}
+          >${esc(n)}</option>`).join("")}
+      </select>
+      <p class="muted">Hold ctrl to name more than one.</p>`;
+  }
+  return `<label>${esc(asksOf(f))}${needed(f)}</label>
+    <select onchange="setField('${path}','${f.id}',this.value,false)">
+      <option value="">${esc(fallback(f))}</option>
+      ${known.map(n => `<option ${n === value ? "selected" : ""}>${esc(n)}</option>`)
+             .join("")}
+    </select>`;
+}
+
+// Every name one part of a card has made of one kind, found by walking what
+// has been filled in and asking the metadata of each node what it defines.
+//
+// One part, never the whole card. The engine builds a context per ability and
+// contexts share nothing, so a roll stored in one ability is not there for the
+// next one to read; offering it would offer a name that reads as nothing. The
+// parts that work that way are the ones the metadata calls `own_names`.
+function definedNames(kind, path) {
+  const found = new Set();
+  const walk = (node) => {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== "object") return;
+    const shape = shapeNamed(node.id);
+    if (shape) {
+      if (shape.stores && kind === "values") found.add(shape.stores);
+      for (const f of shape.fields) {
+        if (f.defines === kind && (node.fields || {})[f.id]) {
+          found.add(String(node.fields[f.id]));
+        }
+      }
+    }
+    Object.values(node).forEach(walk);
+  };
+  walk(partAt(path).node);
+  return [...found].sort();
+}
+
+// The part of the card a path is inside: the nearest thing that keeps the
+// names it makes to itself, and the shape describing it. Read off the card's
+// own fields rather than named here — a card that grows a third kind of part
+// scopes it the same way without this changing.
+function partAt(path) {
+  const card = named(can.cards, "card") || { fields: [] };
+  for (const f of card.fields) {
+    const shape = f.a_list_of && shapeNamed(f.a_list_of);
+    if (!shape || !shape.own_names) continue;
+    const found = path.match(
+      new RegExp("^state\\.card\\.fields\\." + f.id + "\\[\\d+\\]"));
+    if (found) return { node: at(found[0]), shape };
+  }
+  return { node: state.card, shape: null };
+}
+
+// Whether the part of the card being drawn can pick anything out at all.
+// An ability chooses things and binds them under names; a static chooses
+// nothing — there is nowhere in one to put a chosen group — so a question
+// naming something chosen has, there, no answer it could be given.
+function canChoose(path) {
+  const part = partAt(path).shape;
+  return !part || part.fields.some(f => f.a_list_of === "target");
+}
+
+// A choice whose list waits on another answer in the same node.
+function dependentHtml(f, values, siblings, path) {
+  const other = siblings.find(o => o.id === f.domain_from);
+  const answer = values[f.domain_from] ?? (other ? other.otherwise : "");
+  const allowed = f.domains[String(answer)];
+  if (!allowed) {
+    return `<label>${esc(asksOf(f))}${needed(f)}</label>
+      <p class="muted">Which of these are allowed depends on
+        <b>${esc(other ? other.about : f.domain_from)}</b>, and this editor
+        cannot work it out from the card alone.</p>
+      ${valueHtml({ ...f, domain_from: "" }, values, siblings, path)}`;
+  }
+  return valueHtml({ ...f, domain_from: "", choices: allowed, role: "which" },
+                   values, siblings, path);
+}
+
+
+// ------------------------------------------------------------- the fields
+//
+// One renderer for every parameter the engine has, driven entirely by what
+// `/api/capabilities` says about it. There is no list of effects here and
+// there must never be one: an effect the engine gains draws itself, and an
+// effect whose metadata changes draws itself differently, because this reads
+// `shown`, `role`, `kind`, `many`, `choices`, `required`, `unless` and `picks`
+// and nothing else.
+//
+// `values` is what the author filled in and `groups` is what they pointed at;
+// the two are kept apart because they become different things in the card.
+
+// Every parameter, sorted into when it is asked rather than all at once.
+//
+// Nothing is taken away: `more` and `deeper` are one click apart, not gone, and
+// what goes where is the metadata's own answer. A card that deals one damage
+// used to draw thirty-nine boxes because "may be written" and "worth asking
+// about now" were the same question, and only the engine had an opinion.
+function fieldsHtml(fields, values, groups, path, groupPath, owner) {
+  const all = fields || [];
+  const at = (when) => all.filter(f => f.asked === when);
+  const drawnAt = (when) =>
+    oneByOne(at(when), values, groups, path, groupPath, owner);
+
+  const more = drawnAt("more");
+  const deeper = drawnAt("deeper");
+
+  return drawnAt("first")
+    + folded("More options", more)
+    + folded("Advanced", deeper);
+}
+
+// A closed fold, or nothing at all when there is nothing behind it.
+function folded(says, inside) {
+  if (!inside.trim()) return "";
+  return `<details class="deep"><summary>${esc(says)}</summary>
+    <div class="nested">${inside}</div></details>`;
+}
+
+function oneByOne(fields, values, groups, path, groupPath, owner) {
+  const drawn = fields || [];
+  // What the neighbours are is the whole shape, not the part being drawn. A
+  // question another answer has settled is settled by that answer wherever it
+  // is asked — a card's hit points are not a loot card's question even when
+  // the kind of card is asked on a different screen.
+  const list = fieldsOf(owner).length ? fieldsOf(owner) : drawn;
+  values = values || {};
+  groups = groups || {};
+  // Parameters a card may write exactly one of are asked as one question.
+  const grouped = new Set();
+  return drawn.map(f => {
+    if (f.one_of) {
+      if (grouped.has(f.one_of)) return "";
+      grouped.add(f.one_of);
+      return oneOfHtml(f.one_of, list, values, path, owner);
+    }
+    // A second name the engine also reads for a question already asked. Asking
+    // it again would be asking the same thing twice and saying nothing about
+    // which answer wins.
+    if (f.shown === "spelling") return "";
+    // The engine answers it, or another question already did. Not a box, and
+    // not a sentence explaining why there is no box either — a person filling
+    // in a form does not need to be told about the ones that are not for them.
+    if (f.asked === "never") return "";
+    if (f.shown === "group") return groupHtml(f, groups, groupPath);
+    // More of the language: a list of nodes, or one node of a named shape.
+    if (f.shown === "body") return `<label>${esc(asksOf(f))}${needed(f)}</label>`
+      + bodyHtml(f.a_list_of, values[f.id], `${path}.${f.id}`);
+    if (f.shown === "named") return namedHtml(f, values, path);
+    if (f.shown === "nested") return nestedHtml(f, values, path);
+    if (f.shown === "advanced") return structureHtml(f, values, path);
+    // More than one way of being written, a name an earlier step made, or a
+    // list of choices that waits on another answer.
+    if (f.also.length) return waysHtml(f, values, list, path, owner);
+    if (f.picks && f.written === STORED) return referenceHtml(f, values, path);
+    if (f.domain_from) return dependentHtml(f, values, list, path);
+    return valueHtml(f, values, list, path);
+  }).join("");
+}
+
+// What to put above a control: the question, where anything has worded one.
+//
+// `about` is what the parameter *is* — a noun phrase built to sit inside a
+// sentence — and reads as a dangling clause on its own: "the rules it follows",
+// "which kind of card it is". `asks` is the question. Falling back to `about`
+// keeps anything undescribed drawable, and a test refuses new parameters that
+// need the fallback.
+function asksOf(f) { return f.asks || f.about; }
+
+// A word or phrase used as a heading.
+function sentence(said) {
+  const text = String(said || "");
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+// What an author would have to add for a reference to have something to point
+// at. Read off the metadata — every effect says whether it keeps its result
+// under a name — rather than listed here, so an effect that gains one says so
+// without this changing.
+function whatWouldMakeOne(kind) {
+  if (kind !== "values") return "";
+  const makers = can.effects.filter(e => e.stores).map(e => e.about);
+  if (!makers.length) return "";
+  return "Add one of these first: " + makers.slice(0, 3).join("; ") + ".";
+}
+
+// A parameter that names something the ability picks out. Never a text box:
+// the author chooses from the engine's own targets and the name is written
+// behind them, which is the machinery the aim already uses.
+function groupHtml(f, groups, groupPath) {
+  if (!canChoose(groupPath)) return cannotChooseHtml(f);
+  const options = can.targets.filter(t => t.aimable && fits(t, f.picks));
+
+  // One picker, drawn the same way whether the answer holds one of them or
+  // one of several. `at` is where this one is kept, which is the only thing
+  // that differs between the two.
+  const chooser = (pick, at) => {
+    const one = (t) => `<option value="${t.id}" ${
+        t.id === pick.id ? "selected" : ""}>${esc(t.about)}</option>`;
+    const picked = can.targets.find(t => t.id === pick.id);
+    const mine = `${groupPath}.${at}`;
+    return `<select onchange="setPick('${groupPath}','${at}',this.value)">
+        <option value="">${esc(nobody(f))}</option>
+        ${options.filter(t => t.common && !t.after).map(one).join("")}
+        <optgroup label="everything else"
+          >${options.filter(t => !t.common && !t.after).map(one).join("")}</optgroup>
+        <optgroup label="what an earlier step chose"
+          >${options.filter(t => t.after).map(one).join("")}</optgroup>
+      </select>
+      ${picked ? `<div class="nested">${fieldsHtml(picked.fields, pick.fields,
+          pick.groups, `${mine}.fields`, `${mine}.groups`, picked.id)}</div>` : ""}`;
+  };
+
+  // An answer the engine reads as one name or as several says so. Drawing one
+  // picker for it would let an author say half of what the card says, and the
+  // half that was dropped would pass every check there is.
+  if (f.picks_at_least) {
+    const held = Array.isArray(groups[f.id]) ? groups[f.id] : [];
+    return `<label>${esc(asksOf(f))}${needed(f)}</label>
+      ${held.map((pick, i) => `<div class="held"
+        >${chooser(pick, `${f.id}.${i}`)}</div>`).join("")}
+      <div class="held">${chooser({}, `${f.id}.${held.length}`)}</div>`;
+  }
+
+  return `<label>${esc(asksOf(f))}${needed(f)}</label>
+    ${chooser(groups[f.id] || {}, f.id)}`;
+}
+
+// Said, never drawn as a box, and not the same sentence as "not built yet":
+// this is a question the engine has no answer to here either, so offering one
+// would be offering an answer that goes nowhere.
+function cannotChooseHtml(f) {
+  return `<p class="muted"><b>${esc(asksOf(f))}</b> — nothing in this part of the
+    card picks anything out, so there is no name for this to be given.</p>`;
+}
+
+// Which of the engine's targets can answer a question that names players,
+// cards, or anything the ability has already chosen.
+//
+// The three the checker will not judge answer either: a target that hands back
+// both kinds, and one that hands back whatever it was given, cannot be told
+// apart before a game exists. Refusing them here would hide "destroy what you
+// just damaged", which is a card the engine plays perfectly well.
+const EITHER = ["mixed", "passthrough", ""];
+
+function fits(target, picks) {
+  if (!picks) return true;
+  return EITHER.includes(target.gives) || target.gives === picks;
+}
+
+function nobody(f) {
+  return f.picks === "players"
+    ? "— whoever is playing the card —"
+    : "— whatever the card is aimed at —";
+}
+
+// The effect's own nested data. Shown as what it is rather than as a string:
+// a structure typed into a text box arrives as text, and the effect is handed
+// a sentence where it wanted a list of things to do.
+function structureHtml(f, values, path) {
+  const written = values[f.id];
+  const shown = written === undefined ? "" : JSON.stringify(written, null, 1);
+  return `<details class="deep">
+    <summary>${esc(asksOf(f))}${needed(f)}</summary>
+    <p class="muted">Not a single answer: this one is a piece of the card's own
+      rules, so it is written the way a card file writes it.</p>
+    <textarea spellcheck="false" data-deep="${esc(f.id)}"
+      oninput="setStructure('${path}','${f.id}',this)">${esc(shown)}</textarea>
+    <p class="problem" id="${note(path, f.id)}"></p>
+  </details>`;
+}
+
+// Everything a person simply answers. `role` decides the control, `many`
+// decides whether one answer or several, and `unless` decides whether the
+// question is worth asking at all.
+function valueHtml(f, values, siblings, path) {
+  const value = values[f.id];
+  // Something above may have asked the question already — a way chooser, or a
+  // group of which this is the one chosen.
+  const says = f.bare ? "" : `<label>${esc(asksOf(f))}${needed(f)}</label>`;
+  const off = moot(f, values, siblings);
+  const why = off ? `<p class="muted">${esc(becauseOf(f, values, siblings))}</p>` : "";
+  const dead = off ? "disabled" : "";
+  // A field others depend on redraws the form, so the questions that no longer
+  // apply stop being asked the moment the answer changes.
+  const seen = siblings.some(o => o.unless === f.id);
+  const put = (what) => `${seen ? "onchange" : "oninput"}="setField('${path}','${
+      f.id}',${what},${seen})"`;
+
+  if (f.many) return `${says}${why}
+    <select multiple size="${Math.min(8, Math.max(2, f.choices.length))}" ${dead}
+      onchange="setMany('${path}','${f.id}',this)">
+      ${f.choices.map(c => `<option ${
+        (Array.isArray(value) ? value : []).includes(c) ? "selected" : ""
+        }>${esc(c)}</option>`).join("")}
+    </select>
+    <p class="muted">More than one may be picked; none means every one of them.</p>
+    <p class="problem" ${f.required ? 'data-needed="1"' : ""}
+       id="${note(path, f.id)}">${blank(f, value)}</p>`;
+
+  if (f.role === "switch") return `${why}<label class="flag"><input type="checkbox"
+      style="width:auto" ${value === true ? "checked" : ""} ${dead}
+      onchange="setField('${path}','${f.id}',this.checked,${seen})">
+      ${f.bare ? "yes" : esc(asksOf(f))}</label>`;
+
+  if (f.role === "which" && f.choices.length)
+    return `${says}${why}
+    <select ${dead} onchange="setField('${path}','${f.id}',this.value,${seen})">
+      <option value="">${esc(fallback(f))}</option>
+      ${f.choices.map(c => `<option value="${esc(c)}" ${c === value ? "selected" : ""}
+        >${esc(meant(f, c))}</option>`).join("")}
+    </select>
+    <p class="problem" ${f.required ? 'data-needed="1"' : ""}
+       id="${note(path, f.id)}">${blank(f, value)}</p>`;
+
+  const number = f.role === "amount";
+  const kept = value === undefined || value === null ? "" : value;
+  const read = number ? "this.valueAsNumber"
+    : f.role === "open" ? "guess(this.value)" : "this.value";
+  return `${says}${why}
+    <input ${dead} ${number
+      ? `type="number" ${f.least != null ? `min="${f.least}"` : ""}` : ""}
+      placeholder="${esc(fallback(f))}" value="${esc(kept)}" ${put(read)}>
+    ${f.role === "open"
+      ? '<p class="muted">Any value at all — a number, true or false, or words.</p>'
+      : ""}
+    <p class="problem" ${f.required ? 'data-needed="1"' : ""}
+       id="${note(path, f.id)}">${blank(f, value)}</p>`;
+}
+
+// Whether a parameter the engine says can be overridden currently is.
+//
+// A switch overrides when it is on. Anything else overrides when it holds one
+// of the values the engine named, or — where it named none — any value at all.
+// What counts as "holds" includes the effect's own default, because a box left
+// empty is not a question left open: `move_cards` puts cards on the bottom
+// unless told otherwise, and a depth from the top means nothing there.
+function moot(f, values, siblings) {
+  if (!f.unless) return false;
+  const other = siblings.find(o => o.id === f.unless);
+  if (!other) return false;
+  const written = values[other.id];
+  const now = written === undefined || written === "" ? other.otherwise : written;
+  if (other.role === "switch") return now === true;
+  if (f.unless_when.length) return f.unless_when.includes(String(now));
+  return now !== undefined && now !== null && now !== "" && now !== false;
+}
+
+// What a value says, where the engine has words for it. Sixty-six event names
+// are a list somebody has to look up; the same list with these on it is a
+// question they can answer.
+function meant(f, choice) { return (f.means || {})[choice] || choice; }
+
+// Why a question is not being asked, said with the answer that settled it.
+//
+// The old sentence put the other parameter's *description* where a subject
+// belonged and never named the answer at all, which on every loot card came
+// out as "Not used while which kind of card it is says what it says". A
+// template that needs a value has to be given one: `unless` names the other
+// question and `unless_when` names the answers, and both were already here.
+function becauseOf(f, values, siblings) {
+  const other = siblings.find(o => o.id === f.unless);
+  if (!other) return "Not used, because of another answer.";
+
+  const written = values[other.id];
+  const now = written === undefined || written === "" ? other.otherwise : written;
+  const said = meant(other, String(now));
+  const asked = trimmed(asksOf(other));
+
+  // A switch reads best quoted as the question it is. Anything else reads best
+  // as the noun phrase — which is what `describes` is for, and the reason it
+  // stayed a separate slot when `asks` was split out of it.
+  if (other.role === "switch") return `Not used while “${asked}” is ticked.`;
+  if (now === undefined || now === null || now === "")
+    return `Not used, because of ${other.about}.`;
+
+  return `Not used, because of ${other.about} — ${said}.`;
+}
+
+// A question with its mark taken off, so it can sit inside a sentence.
+function trimmed(asked) { return String(asked || "").replace(/\s*\?\s*$/, ""); }
+
+function labelOf(fields, id) {
+  const f = fields.find(o => o.id === id);
+  return f ? asksOf(f) : id;
+}
+// Said once. It used to be shouted beside the label *and* repeated underneath
+// as a sentence, so a required field carried two notices and neither said more
+// than the other.
+function needed(f) {
+  return f.required ? ' <span class="need">this one is required</span>' : "";
+}
+function blank(f, value) { return ""; }
+// What the effect does when the box is left empty, in the engine's own words.
+function fallback(f) {
+  if (f.required) return "— nothing yet —";
+  if (f.otherwise === null || f.otherwise === undefined || f.otherwise === "")
+    return "— leave it out —";
+  return `— ${f.otherwise} —`;
+}
+function note(path, id) {
+  return ("need-" + path + "-" + id).replace(/[^A-Za-z0-9_-]/g, "_");
+}
+// A parameter the engine will not judge takes any value at all, so what is
+// typed is read the way a card file would read it and kept as words otherwise.
+function guess(written) {
+  try { return JSON.parse(written); } catch (e) { return written; }
+}
+
+// -------------------------------------------------------------- editing
+
+// The object a path points at, making the way to it if it is not there yet.
+//
+// Walked from the card being made rather than from the window. `state` is a
+// script-scoped binding and not a property of anything, so starting at the
+// window used to reach a second object of the same name — every answer landed
+// in it, and the card kept none of them.
+const at = (path, empty) => {
+  const steps = path.split(/[.\[\]]+/).filter(Boolean);
+  if (steps.shift() !== "state") throw new Error("not a path into the card: " + path);
+  const last = steps.pop();
+  const holder = steps.reduce((o, k) => (o[k] ??= {}), state);
+  holder[last] ??= empty === undefined ? {} : empty;
+  return holder[last];
+};
+
+function setField(path, key, value, redraw) {
+  at(path)[key] = value;
+  if (redraw) return drawn();
+  told(path, key, value);
+  face();
+}
+
+// Several answers rather than one. A parameter the engine describes as a list
+// gets a list, even when only one thing is picked: the difference between
+// "loot" and ["loot"] is invisible in a form and fatal in a card.
+function setMany(path, key, box) {
+  const picked = Array.from(box.selectedOptions).map(o => o.value);
+  if (picked.length) at(path)[key] = picked; else delete at(path)[key];
+  told(path, key, picked.length ? picked : undefined);
+  face();
+}
+
+// Something the ability picks out, named behind the author's back.
+function setPick(groupPath, key, target) {
+  const groups = at(groupPath);
+  const made = target ? { id: target, fields: {}, groups: {} } : null;
+  const at_ = key.split(".");
+  const last = at_.length > 1 ? Number(at_[at_.length - 1]) : NaN;
+
+  // One of several, when the answer holds several. Which it is comes from the
+  // key the renderer wrote, and the renderer got it from the model.
+  if (!Number.isNaN(last)) {
+    const name = at_.slice(0, -1).join(".");
+    const held = Array.isArray(groups[name]) ? groups[name] : [];
+    if (made) held[last] = made; else held.splice(last, 1);
+    if (held.length) groups[name] = held.filter(Boolean); else delete groups[name];
+    return drawn();
+  }
+
+  if (made) groups[key] = made; else delete groups[key];
+  drawn();
+}
+
+// The effect's own nested data, kept as the structure it is. Text that is not
+// yet a structure is not stored as one: half-typed JSON is not a value, and
+// writing it into the card as a string is how a structure becomes a sentence.
+function setStructure(path, key, box) {
+  const said = document.getElementById(note(path, key));
+  const written = box.value.trim();
+  if (!written) {
+    delete at(path)[key];
+    if (said) said.textContent = "";
+    return face();
+  }
+  try {
+    at(path)[key] = JSON.parse(written);
+    if (said) said.textContent = "";
+    face();
+  } catch (e) {
+    delete at(path)[key];
+    if (said) said.textContent = "Not finished yet — " + e.message;
+  }
+}
+
+// A required box that has been emptied says so without waiting for the server.
+function told(path, key, value) {
+  const said = document.getElementById(note(path, key));
+  if (!said) return;
+  const empty = value === undefined || value === "" || value === null
+    || (Array.isArray(value) && !value.length);
+  // The label already says it is required; repeating it under the box was two
+  // notices for one fact.
+  said.textContent = "";
+}
+
+// What an effect acts on. Chosen once and written twice — the ability binds a
+// group and the effect points at it — so choosing again starts the pair over.
+function setAim(path, id) {
+  const step = at(path);
+  if (id) { step.aim = id; step.aim_fields = {}; step.aim_groups = {}; }
+  else { delete step.aim; delete step.aim_fields; delete step.aim_groups; }
+  drawn();
+}
+
+// One of a group, and only one: choosing another puts the last one away.
+// Which parameters are in the group is asked of the shape being drawn, which
+// is the one thing that knows — the same key means different things in
+// different nodes.
+function setOneOf(path, group, id, owner) {
+  const here = at(path);
+  for (const one of fieldsOf(owner)) {
+    if (one.one_of === group && one.id !== id) delete here[one.id];
+  }
+  if (id) here[id] ??= "";
+  drawn();
+}
+
+// Choosing a different way of giving a value starts that way empty, because
+// what was written for one way is not an answer to another.
+function setWay(path, key, which, owner) {
+  const f = fieldsOf(owner).find(one => one.id === key) || { id: key, also: [] };
+  const way = [f, ...f.also][Number(which)];
+  const here = at(path);
+  if (way.shaped_like) here[key] = {};
+  else if (way.a_list_of) here[key] = [];
+  else delete here[key];
+  drawn();
+}
+
+// What the shape being drawn says its fields are. The shape is carried down
+// from wherever the drawing started rather than guessed back out of the path,
+// because a path says where a value lives and not what describes it.
+const fieldsOf = (owner) => (shapeNamed(owner) || { fields: [] }).fields;
+
+// A node of a known kind, made empty and filled in afterwards. A kind chosen
+// out of a list starts with nothing chosen; a kind that is one shape is
+// already the thing it is.
+function addNode(kind, path) {
+  const list = at(path, []);
+  list.push({ id: kindOf(kind).of() ? "" : kind, fields: {}, groups: {} });
+  drawn();
+}
+function dropNode(path, index) { at(path, []).splice(index, 1); drawn(); }
+function moveNode(path, index, by) {
+  const list = at(path, []);
+  list.splice(index + by, 0, list.splice(index, 1)[0]);
+  drawn();
+}
+function setNode(kind, path, index, id) {
+  at(path, [])[index] = { id, fields: {}, groups: {} };
+  drawn();
+}
+
+// ------------------------------------------------------- the card's face
+
+async function face() {
+  const kind = state.card.fields.type;
+  const kindName = can.kinds.find(k => k.id === kind)?.name || kind || "card";
+  const holder = document.getElementById("face");
+  if (holder) {
+    holder.innerHTML = `<div class="card">
+      <div class="kind">${esc(kindName)}</div>
+      <b>${esc(state.card.fields.name || "Untitled")}</b>
+      <div class="text">${esc(printed())}</div>
+      <div class="muted" id="reads"></div></div>`;
+  }
+  const said = await api("/api/cards/check", state);
+  const reads = document.getElementById("reads");
+  if (reads) {
+    // A card too unfinished to build at all is not a ready card. Saying so
+    // matters more here than anywhere: this is the line somebody reads to
+    // decide whether they are done.
+    reads.innerHTML = said.error
+      ? `<div class="problem">${esc(said.error)}</div>`
+      : said.problems && said.problems.length
+      ? said.problems.map(p => `<div class="problem">${esc(plain(p))}</div>`).join("")
+      : '<div class="ok">This card is ready.</div>';
+  }
+}
+
+// Engine messages name a path through a file. A person did not write a file.
+function plain(message) {
+  const tail = message.split(": ").slice(-1)[0];
+  return tail.charAt(0).toUpperCase() + tail.slice(1);
+}
+
+async function save() {
+  const said = await api("/api/cards/save", state);
+  if (said.error) return drawn([said.error]);
+  // What the card is now, so keeping it again is not refused for the change
+  // this just made. A refusal says nothing new about the card, so what is
+  // held stays what it was and the person can look again.
+  if (said.saved) state.opened = said.opened;
+  const kept = editing ? "Kept" : "Saved";
+  drawn(said.changed ? said.problems : said.problems.map(plain),
+        said.saved
+          ? [{ what: `${kept}. ${state.card.fields.name} is in your set.` }] : []);
+}
+
+async function tryIt() {
+  const said = await api("/api/cards/try", state);
+  if (said.error) return drawn([said.error]);
+  drawn((said.problems || []).map(plain), said.moments || []);
+}
+
+home();
+</script>

@@ -1,0 +1,23 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-curses-warp_zone-curse_of_the_suspicious",
+      "name": "Curse of the Suspicious",
+      "type": "curse",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Other players may attack you.\nYou have 3+ DC for the attack.\n------------------------------\n-Curse-",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-warp_zone-curse_of_the_suspicious",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Among Us.\n\nUnlocked via the Static social goals to-do list during the Requiem Kickstarter."
+      }
+    }
+  ]
+}

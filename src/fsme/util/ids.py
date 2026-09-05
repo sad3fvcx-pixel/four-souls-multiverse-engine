@@ -1,17 +1,44 @@
 """
 Identifier utilities for the Four Souls Multiverse Engine.
+
+Gameplay identifiers must be deterministic: RNG.md forbids gameplay logic from
+depending on operating-system randomness, and REPLAY_SYSTEM.md requires equal
+inputs to produce equal outputs. Random UUIDs satisfy uniqueness but not
+reproducibility, so every gameplay object takes its identifier from a counter
+that lives inside GameState and is therefore saved, restored and replayed.
 """
 
 from __future__ import annotations
 
-from uuid import UUID, uuid4
+from dataclasses import dataclass
 
 # Public type alias used throughout the engine.
-EngineId = UUID
+EngineId = str
 
 
-def new_id() -> EngineId:
+@dataclass(slots=True)
+class IdSequence:
     """
-    Generate a new unique engine identifier.
+    Monotonic allocator of deterministic engine identifiers.
+
+    Identifiers are namespaced by kind so that a single counter can serve
+    every object type while remaining globally unique.
     """
-    return uuid4()
+
+    counter: int = 0
+
+    def allocate(self, kind: str) -> EngineId:
+        """
+        Return the next identifier for the given kind.
+        """
+        self.counter += 1
+        return f"{kind}:{self.counter}"
+
+    def restore(self, counter: int) -> None:
+        """
+        Restore the allocator to a previously saved position.
+        """
+        if counter < 0:
+            raise ValueError("id counter must be non-negative")
+
+        self.counter = counter

@@ -1,0 +1,377 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-star_promos-henry",
+      "name": "Henry",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 0,
+      "roll": 6,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 6 | AT: 0\n\nWhen the attacking player\nmisses an attack roll, cancel\nthe attack and put this\non the bottom of the\nmonster deck.\n------------------------------\nRewards: +1 treasure",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 2,
+        "source_id": "monster_deck-basic_enemies-star_promos-henry",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "This card is provided to all backers of the Requiem Kickstarter who backed tiers which included the Warp Zone cards."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-conquest",
+      "name": "Conquest",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nWhen this dies,\nthe active player\nmust make an\nadditional attack\n------------------------------\nRewards: 6¢\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-conquest",
+        "subcategory": "Bosses",
+        "version": "Alt Art",
+        "artist": "@Sony_Shock",
+        "notes": "This card was included with any purchase on the Maestro Media store for a period starting September 10th, 2025."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-death",
+      "name": "Death",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: +2\n\nWhen this dies,\nthe active player\nkills a player.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-death",
+        "subcategory": "Bosses",
+        "version": "Alt Art",
+        "artist": "@Sony_Shock",
+        "notes": "This card was included with any purchase on the Maestro Media store for a period starting May 19th, 2025."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-famine",
+      "name": "Famine",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nWhen this dies,\nthe active player\nskips their next\nturn.\n------------------------------\nRewards:\nLoot 3\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-famine",
+        "subcategory": "Bosses",
+        "version": "Alt Art",
+        "artist": "@Sony_Shock",
+        "notes": "This card was included with all orders of at least $25 to the Maestro Media Isaac store for a period of time after September 1st, 2023."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-mom_s_charmed_heart",
+      "name": "Mom's Charmed Heart",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 3+ | AT: 2\n\nWhen this dies, the active player\nchooses another player and puts\na HP counter on a non-eternal\nitem they control. (HP counters\ngive the ability \"You have +1 HP.\")\n------------------------------\nThis is also named Mom's Heart!\n------------------------------\nRewards: +2 treasure\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-mom_s_charmed_heart",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "To celebrate Valentine's Day, this card was included with all orders to the Maestro Media Isaac store for a period of time after January 12th, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-pestilence",
+      "name": "Pestilence",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nWhen this dies, the active\nplayer deals 2 damage\ndivided as they choose\nto any number of\nmonsters or players.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-pestilence",
+        "subcategory": "Bosses",
+        "version": "Alt Art",
+        "artist": "@Sony_Shock",
+        "notes": "This card was included with any purchase on the Maestro Media store during The Binding of Isaac: Four Souls Anniversary Sale starting September 27th, 2024.\n\nThis card behaves identically to the Pestilence card in the base game.  Due to an art mixup, the monster's stats are shown as 2/3+/1, but it is designed to be a true alt art.  Officially, this card's stats are 4/4+/1."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-rag_man",
+      "name": "Rag Man",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 2\n\nWhen this dies, after\ngaining rewards, the\nactive player rolls-\n1 or 6: Put this on top of\nthe monster deck.\nfoursouls.com\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-rag_man",
+        "subcategory": "Bosses",
+        "version": "Alt Art",
+        "artist": "@Sony_Shock",
+        "notes": "This card was given to guests of various conventions where Maestro Media was in attendance in 2025."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-the_bloat",
+      "name": "The Bloat",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 2\n\nEach time this takes\ndamage, it also deals\n1 damage to a player\nof your choosing.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-the_bloat",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@TikaratheMew",
+        "notes": "This foil card was included with all orders to the Studio71 Isaac store for a period of time between November 22nd, 2019, to December 3rd, 2019 and with purchases of Tapeworm through the Nicalis store for a period of time starting January 16, 2021."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-the_bloat-v2",
+      "name": "The Bloat",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 3+ | AT: 2\n\nWhen this is put into an\nactive slot or dies, it deals\n2 damage to another\nplayer at random.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-the_bloat",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@KrystalFlamingo",
+        "notes": "This foil card was provided to all backers of the Tapeworm Kickstarter who subscribed to the game's newsletter prior to the Kickstarter's launch.\n\nThis card features artwork that was originally found on a unplayable promotional card handed out at San Diego Comic-Con 2018, depicted here:\nhttps://i.redd.it/yhnp4vmjtgh21.png"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-the_duke_of_flies_but_really_it_s_the_bloat",
+      "name": "The Duke of Flies but Really It's The Bloat",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 2\n\nIf this would die, if it has fewer\nthan 2 counters on it, instead put\na counter on it, it heals to full HP,\nthe active player gains its rewards,\ncancels their attack, and deals 2\ndamage to a player chosen at random.\n------------------------------\nThis is named The Bloat\nwhile not in play.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-the_duke_of_flies_but_really_it_s_the_bloat",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "This bonus Star card is included with The Unboxing of Isaac #12: Isaac in Wonderland, to celebrate April Fools Day in April, 2023."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-ultra_pride",
+      "name": "Ultra Pride",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nEach time a player dies, put\n2 counters on this.\n------------------------------\nThis has +1 AT for each counter on it.\n------------------------------\nWhile this has 6+ counters on\nit, the active player must attack\nthis once each turn if able.\n------------------------------\nRewards: Loot 1\nfor each counter on this.\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-ultra_pride",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Along with Corrupted Data, this card is provided to all backers of the Requiem Kickstarter who subscribed to the expansion's newsletter prior to the Kickstarter's launch."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-star_promos-war",
+      "name": "War",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 8
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nEach time this takes damage,\nit gains +1 AT till the end of\nthe turn.\n------------------------------\nRewards: 8¢\n(+1 soul)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-star_promos-war",
+        "subcategory": "Bosses",
+        "version": "Alt Art",
+        "artist": "@Sony_Shock",
+        "notes": "This card was included with any purchase on the Maestro Media store for a period starting February 26th, 2025."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-star_promos-it_lives",
+      "name": "It Lives!",
+      "type": "monster",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 8,
+      "attack": 4,
+      "roll": 3,
+      "souls": 2,
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 8 | DC: 3+ | AT: 4\n\nWhen a player gains this\nsoul, choose a player with\nthe most souls or tied\nfor the most.  That\nplayer wins.\n------------------------------\nRewards: <3\n(+2 souls)",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-star_promos-it_lives",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "This card was included with all orders to the Studio71 Isaac store for a period of time after March 28, 2021."
+      }
+    }
+  ]
+}

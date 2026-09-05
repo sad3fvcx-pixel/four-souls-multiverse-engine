@@ -1,0 +1,71 @@
+{
+  "characters-youtooz-guppy": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "monster_deck-good_events-youtooz-devil_deal": {
+    "abilities": [
+      {
+        "trigger": "on_play",
+        "effects": [
+          {
+            "choose": [
+              {
+                "description": "Put this into discard.",
+                "effects": []
+              },
+              {
+                "description": "Loot 2. Take 1 damage.",
+                "effects": [
+                  {
+                    "draw_loot": 2
+                  },
+                  {
+                    "effect": "deal_damage",
+                    "amount": 1,
+                    "target": "controller"
+                  }
+                ]
+              },
+              {
+                "description": "Take 2 damage. Search the treasure deck for a Guppy item, gain it, then shuffle the treasure deck.",
+                "effects": [
+                  {
+                    "effect": "deal_damage",
+                    "amount": 2,
+                    "target": "controller"
+                  },
+                  {
+                    "effect": "take_card",
+                    "to": "treasures",
+                    "shuffle": "treasure",
+                    "target": {
+                      "target_deck_card": {
+                        "deck": "treasure",
+                        "tag": "guppy",
+                        "as": "found"
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "as": "devil_choice"
+          }
+        ],
+        "description": "Choose one- Put this into discard; loot 2 and take 1 damage; or take 2 damage, search the treasure deck for a Guppy item, gain it, then shuffle the treasure deck."
+      }
+    ]
+  }
+}

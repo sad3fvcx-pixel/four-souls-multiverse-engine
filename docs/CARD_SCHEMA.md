@@ -123,6 +123,75 @@ Cards never execute code directly.
 
 ---
 
+# 8.1 Ability Fields
+
+Every ability is an object with the following fields.
+
+Required:
+
+- trigger
+
+Optional:
+
+- conditions
+- targets
+- effects
+- scope
+- replacement
+- optional
+- description
+
+## scope
+
+Determines which events an ability answers.
+
+"self" reacts only when the event concerns this very card.
+
+"any" reacts to every matching event.
+
+When omitted the engine derives it from the trigger: card lifecycle and
+activation triggers are self-scoped, everything else is not.
+
+## replacement
+
+When true, the ability changes an event before it happens instead of reacting
+to one after.
+
+A replacement applies immediately and never uses the stack.
+
+A replacement is not also a trigger: an ability is one or the other.
+
+---
+
+# 8.2 Statics
+
+A card may change a value for as long as it is in play.
+
+```json
+"statics": [
+  { "stat": "attack", "amount": 1, "scope": "controller" }
+]
+```
+
+A static is not an ability. Nothing triggers it, it never reaches the stack,
+and it stops applying the moment the card leaves play. It is written separately
+because there is no moment at which it happens.
+
+Recognised stats:
+
+- attack
+- max_hp
+- attacks
+- loot_plays
+
+Scopes:
+
+- controller
+- opponents
+- all_players
+
+---
+
 # 9. Effects
 
 Effects are represented by engine primitives.
@@ -201,6 +270,75 @@ Every card is validated during loading.
 Invalid cards are rejected before the game starts.
 
 The engine must never load partially valid content.
+
+Validation covers four things, and each is checked against what the engine
+actually implements rather than against a document:
+
+1. **Structure.** Required fields, and fields of the right kind.
+2. **Names.** Every effect, trigger, condition and target the card mentions.
+3. **Arguments.** What the card gives each effect, each condition and each
+   target: the kind of value, the values allowed where only a few are, and the
+   floors below which a number means nothing. A parameter that is not taken is
+   named, with the nearest one that is offered. This matters most for conditions, which
+   ignore a parameter they do not recognise: `{"player_hp": {"operatr": "<",
+   "value": 2}}` is not a card that fails, it is a card that quietly means
+   "equal to zero" and plays a whole game that way. Conditions are checked
+   wherever they are written — on an ability, on a static, and inside `if`
+   within an ability's effects.
+4. **Values worked out while an ability runs.** `{"amount": {"from": "dice"}}`
+   is legal; there are five such forms — `from`, `count`, `from_event`,
+   `last_result`, `player_of` — and a sixth spelling is a typo rather than a
+   new one.
+
+Targets are checked the same way. A misspelt deck
+(`{"target_deck_card": {"deck": "tresure"}}`) is refused, and so is a count
+written as a word, a flag where a family name belongs, and a parameter the
+target would silently drop.
+
+5. **References.** The names an ability gives things, and the places it uses
+   them again. An ability binds a group with `as` — or with a bare target's
+   own name — and reads it back with `of`, `chooser`, `exclude`, `for_each`,
+   or an effect's `target`. Four rules:
+
+   - A name must be bound before it is read, and is visible only inside the
+     branch that bound it. `then`, `else`, `may` and a `choose` mode each keep
+     what they bind, because whether they ran is not a fact about the text.
+   - Two targets in one scope may not bind the same name. The second would
+     never run: resolution leaves an already-bound name alone, which is what
+     lets an ability be suspended and resumed.
+   - `watch_for` and `promise` begin a scope of their own. Their contents run
+     later, against a context the engine builds then, so nothing bound outside
+     is there to find.
+   - A group's kind must suit its reader. The engine tells two kinds apart —
+     players and everything else — so `chooser` and an `of` that means "whose
+     hand" want players, while `exclude` and `holder` want cards.
+
+   `of` on the `values_equal` condition is not a group at all: it names what
+   an ability *stored* with `store`. The two namespaces never meet.
+
+Nothing here asks whether a target will find anything on the table, how many
+objects it returns, or what type they are beyond those two kinds. Those need a
+board, and a description that guessed at them would be a second resolver. An
+empty group is not an error: an instruction that cannot be carried out is a
+rule of the game, not a mistake on a card.
+
+`docs/REFERENCE.md` lists what every target hands back, and is generated from
+the engine.
+
+A parameter the engine can only judge with a board in front of it — a card, a
+player, a structure, or a value an event happens to be carrying — is not
+checked here. That is not permission for anything
+to be written: the guard inside the effect stays exactly where it is and still
+refuses. It means load time is the wrong moment to ask.
+
+Every problem in a batch is reported together, with the expansion, the file,
+the card, the ability and the path inside it:
+
+```
+[semantic] example_expansion cards/loot.json: example_expansion-loot-dark_coin:
+  ability 0: effects[0].amount: 'gain_coins' takes a whole number of at least 0
+  here, and the card gives text ('lots')
+```
 
 ---
 

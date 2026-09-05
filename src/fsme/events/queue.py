@@ -7,6 +7,7 @@ Event queue for Four Souls Multiverse Engine.
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Iterator
 
 from .event import Event
 
@@ -24,6 +25,15 @@ class EventQueue:
 
     def __bool__(self) -> bool:
         return bool(self._queue)
+
+    def __iter__(self) -> Iterator[Event]:
+        """
+        Walk the pending events without consuming them.
+
+        Save and replay both need to write the queue out as it stands, so
+        reading it must not disturb it.
+        """
+        return iter(tuple(self._queue))
 
     def push(self, event: Event) -> None:
         """

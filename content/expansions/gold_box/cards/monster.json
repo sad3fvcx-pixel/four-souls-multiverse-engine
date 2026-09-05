@@ -1,0 +1,440 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-gold_box-begotten",
+      "name": "Begotten",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhile this is at 1 HP,\nit has +1 AT.\n------------------------------\nRewards: Loot 2",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-gold_box-begotten",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-gold_box-boil",
+      "name": "Boil",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nEach time this deals\ncombat damage,\nit heals 1 HP.\n------------------------------\nRewards: 3¢",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-gold_box-boil",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-gold_box-charger",
+      "name": "Charger",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 5+ | AT: 1\n\n\"Together they lie\ndown in the dust, and\nmaggots cover them.\"\nJob 21:26\n------------------------------\nRewards: 3¢",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-gold_box-charger",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-gold_box-death_s_head",
+      "name": "Death's Head",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 0,
+      "roll": 0,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 0 | AT: 0\n\nMonsters have +1 AT.\n------------------------------\nThis can't be attacked.\n------------------------------\nWhen another monster\ndies, this dies.\n------------------------------\nRewards: Loot 1",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-gold_box-death_s_head",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-gold_box-gaper",
+      "name": "Gaper",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nWhen this dies on an\nattack roll of 6, the\nactive player must make\nan additional attack\non the monster deck.\n------------------------------\nRewards: 3¢",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-gold_box-gaper",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-gold_box-imp",
+      "name": "Imp",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 5,
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 5+ | AT: 1\n\nEach time the attacking\nplayer rolls an attack\nroll of 3, this gains +1 DC\ntill end of turn.\n------------------------------\nRewards: Roll- Loot x",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-gold_box-imp",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-gold_box-knight",
+      "name": "Knight",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 6,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 6 | AT: 1\n\nThe attacking player\nalso deals combat\ndamage to this on\nattack rolls of 1.\n------------------------------\nRewards: Loot 2",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-gold_box-knight",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-gold_box-parabite",
+      "name": "Parabite",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nEach time this takes\ncombat damage, the\nattacking player has\n-1 to their next attack\nroll this turn.\n------------------------------\nRewards: Loot 1",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-gold_box-parabite",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-gold_box-ragling",
+      "name": "Ragling",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nWhen this dies, after\ngaining rewards, the\nactive player rolls-\n1 or 6: Put this on top of\nthe monster deck.\n------------------------------\nRewards: Loot 1",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-gold_box-ragling",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-gold_box-round_worm",
+      "name": "Round Worm",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "cents": 4
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 5+ | AT: 1\n\nEach time this deals\ncombat damage, the\nattacking player has\n+1 to their next attack\nroll this turn.\n------------------------------\nRewards: 4¢",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-gold_box-round_worm",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-gold_box-fistula",
+      "name": "Fistula",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 2,
+      "souls": 1,
+      "rewards": {
+        "cents": 7
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 2+ | AT: 1\n\nEach time this takes\ndamage, it gains +1 DC\ntill end of turn.\n------------------------------\nRewards: 7¢\n(+1 soul)",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-gold_box-fistula",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-gold_box-gurglings",
+      "name": "Gurglings",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 5+ | AT: 1\n\nWhen this is at 2 HP\nor less, it has -1 DC.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-gold_box-gurglings",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-gold_box-polycephalus",
+      "name": "Polycephalus",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nEach time this takes\ndamage, the next\nattack roll this\nturn has -2.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-gold_box-polycephalus",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-gold_box-steven",
+      "name": "Steven",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 2,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 2+ | AT: 1\n\nEach time the attacking player\nrolls an attack roll of 2,\nthey take 2 damage.\n------------------------------\nEach time the attacking player\nrolls an attack roll of 6, cancel\neverything that hasn't resolved\nand end the turn.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-gold_box-steven",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-gold_box-the_cage",
+      "name": "The Cage",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 4+ | AT: 1\n\n\"Behold now, Behemoth, his\nstrength in his loins and\nhis power in the muscles\nof his belly.\"\nJob 40:16\n------------------------------\nRewards: +2 treasure\n(+1 soul)",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-gold_box-the_cage",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-gold_box-hush",
+      "name": "Hush",
+      "type": "monster",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 8,
+      "attack": 2,
+      "roll": 3,
+      "souls": 2,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 8 | DC: 3+ | AT: 2\n\n\"It stood still, but I could not\ndiscern its appearance; a form was\nbefore my eyes; at first there was\na hush, and then I heard a voice.\"\nJob 4:16\n------------------------------\nRewards: +2 treasure\n(+2 souls)",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-gold_box-hush",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-cards_miscellaneous-anniversary-cracked_key",
+      "name": "Cracked Key",
+      "type": "loot",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a non-eternal item.\nIt becomes a room. Expand\nroom slots by 1 and put\nit in the new slot.\n(Its no longer an item and isn't\ncontrolled by any player. The\nactive player can activate its\nabilities. Abilities that refer to\n\"you\", or don't specify a target,\ntarget the active player.)",
+        "set": "Anniversary",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-anniversary-cracked_key",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Design by @mami_makes"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-anniversary-monster_card",
+      "name": "Monster Card",
+      "type": "loot",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "HP: 6 | DC: 6 | AT: 6\n\nWhen this is attacked, reveal the\ntop card of the monster deck.\nThis becomes a copy of that card,\nthen gains \"If this would leave\nplay, the active player puts\nit in their hand instead.\"\n------------------------------\n-Ambush-\n------------------------------\nRewards: ?",
+        "set": "Anniversary",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-anniversary-monster_card",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    }
+  ]
+}

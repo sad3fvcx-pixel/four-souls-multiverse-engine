@@ -1,0 +1,8 @@
+{
+  "id": "gish",
+  "name": "Gish",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Gish: 2 cards imported from the card database."
+}

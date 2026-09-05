@@ -1,0 +1,40 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-good_events-gold_box-i_am_error",
+      "name": "I Am Error!",
+      "type": "event",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n\n1-2: You must make\nan additional attack\non the monster deck.\n------------------------------\n3-4: Loot 3.\n------------------------------\n5-6: Gain +1 treasure.",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-gold_box-i_am_error",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-gold_box-trap_door",
+      "name": "Trap Door!",
+      "type": "event",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n\n1-3: Look at the top 3\ncards of the monster\ndeck and put them back\nin any order. You may\nattack an additional\ntime this turn.\n------------------------------\n4-6: Take 1 damage.",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-gold_box-trap_door",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

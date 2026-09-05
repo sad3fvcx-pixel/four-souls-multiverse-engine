@@ -27,7 +27,7 @@ class PluginResult:
     def ok(
         cls,
         message: str = "",
-    ) -> "PluginResult":
+    ) -> PluginResult:
         """
         Create a successful plugin result.
         """
@@ -40,7 +40,7 @@ class PluginResult:
     def failed(
         cls,
         message: str = "",
-    ) -> "PluginResult":
+    ) -> PluginResult:
         """
         Create a failed plugin result.
         """

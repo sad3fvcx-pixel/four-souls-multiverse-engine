@@ -1,0 +1,209 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-the_summer_of_isaac-blast_miner_tnt",
+      "name": "Blast Miner TNT!",
+      "type": "treasure",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Roll-\n1-2: Take 1 damage.\n------------------------------\n3-6: Deal 1 damage to\na monster or player.\n------------------------------\nEach time you gain 3 or more\n¢ at once. Recharge this.",
+        "set": "The Summer of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-the_summer_of_isaac-blast_miner_tnt",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Blast Miner.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-the_summer_of_isaac-conjoined_d6",
+      "name": "Conjoined D6",
+      "type": "treasure",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a player. The\nnext time they would\nroll a dice, they instead\nroll a D8. Rolls of 7 or 8\ncount as a roll of 6.\n------------------------------\nEach time a player rolls\na 6, recharge this.",
+        "set": "The Summer of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-the_summer_of_isaac-conjoined_d6",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Design by @blargg__\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-the_summer_of_isaac-isaac_s_last_will",
+      "name": "Isaac's Last Will",
+      "type": "treasure",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "Each time another player pays the\ndeath penalty, gain 2¢ and put their\ndeath penalty item under this.\n------------------------------\n↷: Choose one-\n•Put a card from under this\non top of its deck.\n------------------------------\n•Gain 1¢ for each card\nunder this.",
+        "set": "The Summer of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-the_summer_of_isaac-isaac_s_last_will",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@Atomicr0w",
+        "notes": "Design by @Atomicr0w\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-the_summer_of_isaac-telekinesis",
+      "name": "Telekinesis",
+      "type": "treasure",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a ↷ or $ ability\non an item another player\ncontrols. They must activate\nthat ability if able.\n------------------------------\nAt the start of your turn, you\nmay look at the top 2 cards\nof a deck. Put any number of\nthem into discard and the \nrest back in any order.",
+        "set": "The Summer of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-the_summer_of_isaac-telekinesis",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Design by @da_mous\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-the_summer_of_isaac-the_monster",
+      "name": "The Monster",
+      "type": "treasure",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "While this is charged,\nother players can't choose\nyou or something you\ncontrol as the target\nof a loot or ability.\n------------------------------\n↷: Cancel your attack and\nheal to full HP.",
+        "set": "The Summer of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-the_summer_of_isaac-the_monster",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the video game Aether.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-the_summer_of_isaac-magic_mushroom",
+      "name": "Magic Mushroom",
+      "type": "treasure",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "paid"
+      ],
+      "metadata": {
+        "text": "This starts with 3 counters.\n------------------------------\n$: Remove a counter from this:\nChoose one-\n•Gain +1 AT for your next\nattack roll this turn.\n------------------------------\n•Prevent the next 1 damage\nyou would take this turn.\n------------------------------\nYour character has \"↷: Put\na counter on an item named\nMagic Mushroom.\"",
+        "set": "The Summer of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-the_summer_of_isaac-magic_mushroom",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Design by @afunnypenguin\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-the_summer_of_isaac-tumor_ball",
+      "name": "Tumor Ball",
+      "type": "treasure",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "Each time you die, put 3\ncounters on this.\n------------------------------\n$: Remove 2 counters\nfrom this:\nChoose a player. The next\ntime that player would die\nthis turn, prevent death and\nheal them to full HP. They\nmay cancel their attack.",
+        "set": "The Summer of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-the_summer_of_isaac-tumor_ball",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game The End is Nigh.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_summer_of_isaac-karma",
+      "name": "Karma",
+      "type": "treasure",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a soul enters\nanother player's control,\nchoose 2 players. They\neach steal a shop item\nand loot 1.",
+        "set": "The Summer of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_summer_of_isaac-karma",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Design by @_ThmB_\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-soul_item-the_summer_of_isaac-a_friend",
+      "name": "A Friend",
+      "type": "treasure",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "soul_item"
+      ],
+      "metadata": {
+        "text": "Each time a soul enters\nanother player's control,\nput a counter on this. Then,\nif this has 3+ counters, it\nloses all abilities and\nbecomes a soul.\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-soul_item-the_summer_of_isaac-a_friend",
+        "subcategory": "Soul Item",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the video game The End is Nigh.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    }
+  ]
+}

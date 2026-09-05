@@ -1,0 +1,79 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-bad_events-anniversary-game_crash",
+      "name": "Game Crash!",
+      "type": "event",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Destroy each item and\nput each monster and\neach room into discard.\n------------------------------\nfoursouls.exe\n------------------------------\nfoursouls.exe has stopped working\nA problem has caused the program to stop working correctly.\nPlease contact helpcenter@maestromedia.com for support.\n------------------------------\nClose program",
+        "set": "Anniversary",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-anniversary-game_crash",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-anniversary-wrath_of_the_lamb",
+      "name": "Wrath of the Lamb",
+      "type": "event",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each player votes for\nanother player. The\nplayer with the most\nvotes may steal a soul\nfrom another player. If\nthere is a tie, the active\nplayer chooses a player\ntied for the most votes.",
+        "set": "Anniversary",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-anniversary-wrath_of_the_lamb",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "Private",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-good_events-anniversary-keeper_s_resting_place",
+      "name": "Keeper's Resting Place",
+      "type": "event",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When this enters play, the\nactive player secretly puts this\nback in the monster deck at\nleast 3 cards from the top. If\nthis is the second time a card\nnamed Keeper's Resting Place\nresolves this game, this\nbecomes a soul instead\nand the active player\ngains it.\n(+1 soul)",
+        "set": "Anniversary",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-anniversary-keeper_s_resting_place",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "Private",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-good_events-anniversary-patch_notes",
+      "name": "Patch Notes",
+      "type": "event",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose three different\nplayers at random. The first\nputs a HP counter on a non-\neternal item they control.\nThe second puts a AT counter\non a non-eternal item they\ncontrol. The third puts an\neternal counter on an\nitem they control.",
+        "set": "Anniversary",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-anniversary-patch_notes",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@Tikarathemew",
+        "effect_3p_plus": true
+      }
+    }
+  ]
+}

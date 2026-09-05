@@ -1,0 +1,225 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-g_fuel-g_fuel",
+      "name": "G Fuel!",
+      "type": "treasure",
+      "expansion": "g_fuel",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_character": {
+                "as": "woken"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "woken"
+            }
+          ],
+          "description": "Recharge a character."
+        },
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "recharge",
+                  "targets": [
+                    {
+                      "target_treasure": {
+                        "as": "revived"
+                      }
+                    }
+                  ],
+                  "target": "revived"
+                }
+              ],
+              "prompt": "Recharge an item?"
+            }
+          ],
+          "description": "At the end of your turn, you may recharge an item."
+        }
+      ],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Recharge a\ncharacter.\n------------------------------\nAt the end of your\nturn, you may\nrecharge an item.\n------------------------------\n\"Crush your competition\ntoday with G Fuel!\"",
+        "set": "G Fuel",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-g_fuel-g_fuel",
+        "subcategory": "Active Items",
+        "version": "Alt Ability",
+        "artist": "Private",
+        "notes": "Included with the Brimstone Collector's Box from G Fuel."
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-g_fuel-isaac_s_tears",
+      "name": "Isaac's Tears",
+      "type": "treasure",
+      "expansion": "g_fuel",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "tear",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time you roll a dice, put a counter on this."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "counters": {
+              "counter": "tear",
+              "amount": 6
+            }
+          },
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "opponents"
+            },
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "all_monsters"
+            }
+          ],
+          "description": "Remove 6 counters from this: deal 1 damage to each other player and each monster."
+        }
+      ],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "Each time you roll a dice,\nput a counter on this.\n------------------------------\n$: Remove 6 counters\nfrom this:\n\nDeal 1 damage to each other\nplayer and each monster.",
+        "set": "G Fuel",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-g_fuel-isaac_s_tears",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Included with the Isaac's Tears Collector's Box from G Fuel."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-g_fuel-brimstone",
+      "name": "Brimstone",
+      "type": "treasure",
+      "expansion": "g_fuel",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "controller",
+          "conditions": [
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "targets": [
+                {
+                  "target_player_or_monster": {
+                    "exclude_controller": true,
+                    "as": "struck"
+                  }
+                }
+              ],
+              "target": "struck"
+            }
+          ],
+          "description": "Each time you roll a 6, deal 1 damage to a monster or another player."
+        }
+      ],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 AT\n------------------------------\nEach time you roll\na 6, deal 1 damage\nto a monster or\nanother player.",
+        "set": "G Fuel",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-g_fuel-brimstone",
+        "subcategory": "Passive Items",
+        "version": "Alt Ability",
+        "artist": "Private",
+        "notes": "Included with the Brimstone Collector's Box from G Fuel.",
+        "effect_3p_plus": true
+      },
+      "statics": [
+        {
+          "stat": "attack",
+          "amount": 1,
+          "scope": "controller",
+          "description": "+1 AT"
+        }
+      ]
+    },
+    {
+      "id": "treasure_deck-passive_items-g_fuel-g_fuel",
+      "name": "G Fuel!",
+      "type": "treasure",
+      "expansion": "g_fuel",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "character"
+            }
+          ],
+          "description": "At the end of your turn, recharge your character."
+        }
+      ],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 HP\n------------------------------\nAt the end of your\nturn, recharge\nyour character.",
+        "set": "G Fuel",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-g_fuel-g_fuel",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Included with the Isaac's Tears Collector's Box from G Fuel."
+      },
+      "statics": [
+        {
+          "stat": "max_hp",
+          "amount": 1,
+          "scope": "controller",
+          "description": "+1 HP"
+        }
+      ]
+    }
+  ]
+}

@@ -28,7 +28,7 @@ class SerializationResult:
         cls,
         data: object | None = None,
         message: str = "",
-    ) -> "SerializationResult":
+    ) -> SerializationResult:
         """
         Create a successful result.
         """
@@ -42,7 +42,7 @@ class SerializationResult:
     def failed(
         cls,
         message: str,
-    ) -> "SerializationResult":
+    ) -> SerializationResult:
         """
         Create a failed result.
         """

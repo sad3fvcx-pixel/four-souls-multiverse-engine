@@ -1,0 +1,40 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-curses-gold_box-curse_of_fatigue",
+      "name": "Curse of Fatigue",
+      "type": "curse",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "You can't recharge\nmore than 1 item during\nyour recharge step.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-gold_box-curse_of_fatigue",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-curses-gold_box-curse_of_tiny_hands",
+      "name": "Curse of Tiny Hands",
+      "type": "curse",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Your max hand size is 2.\n(Discard down to 2 cards\nat the end of your turn.)\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
+        "set": "Gold Box",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-gold_box-curse_of_tiny_hands",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

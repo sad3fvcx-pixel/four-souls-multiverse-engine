@@ -1,0 +1,8 @@
+{
+  "id": "star",
+  "name": "Star",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Star: 1 cards imported from the card database."
+}

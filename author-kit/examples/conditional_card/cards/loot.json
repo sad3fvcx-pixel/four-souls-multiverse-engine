@@ -1,0 +1,29 @@
+{
+  "cards": [
+    {
+      "id": "example_conditional-loot-gamblers_coin",
+      "name": "Gambler's Coin",
+      "type": "loot",
+      "expansion": "example_conditional",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {"effect": "roll_dice", "sides": 6},
+            {
+              "if": [{"dice_greater": 3}],
+              "then": [{"effect": "gain_coins", "amount": 4}],
+              "else": [{"effect": "lose_coins", "amount": 1}]
+            }
+          ],
+          "description": "Roll a die. 4-6: gain 4 cents. 1-3: lose 1 cent."
+        }
+      ],
+      "metadata": {
+        "text": "Roll:\n1-3: Lose 1¢.\n4-6: Gain 4¢.",
+        "copies": 1
+      }
+    }
+  ]
+}
