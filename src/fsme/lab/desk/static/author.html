@@ -337,7 +337,9 @@ function chooseMoment() {
       <b>${esc(sentence(t.about))}</b></button>`;
   const common = can.triggers.filter(t => t.common);
   const rest = can.triggers.filter(t => !t.common);
-  el(`<button class="back" onclick="chooseKind()">← back</button>
+  // Back out of the first rule is out of the card; out of a later one is to
+  // the rules the card already has. Which it is, is what the card holds.
+  el(`<button class="back" onclick="${started()}">← back</button>
     <h1>When should this card do it?</h1>
     <p class="lead">A card of this kind can act at more than one moment, so
       there is nothing to fill in for you. Pick the one it waits for.</p>
@@ -368,7 +370,7 @@ function chooseAction(how) {
   const rest = doing.filter(e => !e.common);
   // Choosing the first action is one step on from choosing a kind; choosing a
   // later one is one step on from the list of what the card already does.
-  const back = walk ? "sofar()" : "chooseKind()";
+  const back = walk ? "sofar()" : started();
   const more = walk && at(walk.list, []).length;
   el(`<button class="back" onclick="${back}">← back</button>
     <h1>${more ? "What else should it do?" : "What should this card do?"}</h1>
@@ -385,6 +387,11 @@ function chooseAction(how) {
       ? "Never mind"
       : "I would rather start from an empty card"}</button></p>`);
 }
+
+// Where a screen that begins a rule goes back to. A card with no rules on it
+// yet is a card somebody is still choosing the kind of; one with rules is a
+// card being added to, and backing out of the addition leaves the card.
+const started = () => partsOf().length ? "chooseWhich()" : "chooseKind()";
 
 // Where on a card a moment is reacted to, and where inside that the things
 // that happen go. Both are read off the shapes: the list of parts one of whose
@@ -414,19 +421,24 @@ function pickAction(effect, how) {
   // The shapes do not say where this would go. Rather than guess a place for
   // it, hand the person the editor with the kind they picked already set.
   if (!where) return startBlank();
-  // The first action makes the ability; every one after it is one more item in
-  // the list that ability already holds. There is no second case in the card
-  // for a second action, so there is none here either.
+  // The first action makes the rule; every one after it is one more item in
+  // the list that rule already holds. Starting a rule while one is in hand is
+  // starting a second rule, so the new one is added to what the card has
+  // rather than put in its place — the card keeps a list of them and always
+  // did, and writing over it was the only reason it could hold just one.
   if (!walk) {
     const part = { id: where.part.id, fields: {}, groups: {} };
     part.fields[where.when.id] = how;
     part.fields[where.then.id] = [];
-    state.card.fields[where.list.id] = [part];
+    const held = state.card.fields[where.list.id]
+      || (state.card.fields[where.list.id] = []);
+    held.push(part);
     state.mode = "simple";
     walk = {
       how,
       part: where.part,
-      list: `state.card.fields.${where.list.id}[0].fields.${where.then.id}`,
+      list: `state.card.fields.${where.list.id}[${held.length - 1}]`
+        + `.fields.${where.then.id}`,
     };
   }
   const doing = at(walk.list, []);
@@ -449,13 +461,23 @@ function pickAction(effect, how) {
 // `doesIn` reads. Both were already written. This is the other side of that
 // same test, and a part the language gains lands on whichever side it belongs.
 
-// The shapes of rule a card may hold that are not made of things that happen.
-function standingShapes() {
+// Every shape of rule a card may hold: its own fields that are lists of
+// something the page has a shape for, which is what `partsOf` reads off a card
+// that already exists.
+function ruleShapes() {
   const card = named(can.cards, "card") || { fields: [] };
   return card.fields
     .map(list => ({ list, part: shapeNamed(list.a_list_of || "") }))
-    .filter(one => one.part
-      && !one.part.fields.some(f => f.a_list_of === "step"));
+    .filter(one => one.part);
+}
+
+// Whether a rule of this shape is made of things that happen. The same test
+// `doesIn` makes of a rule a card already has, asked of the shape instead.
+const holdsSteps = (part) => part.fields.some(f => f.a_list_of === "step");
+
+// The shapes of rule a card may hold that are not made of things that happen.
+function standingShapes() {
+  return ruleShapes().filter(one => !holdsSteps(one.part));
 }
 
 // Offered wherever somebody is being asked what their card does, in the words
@@ -594,7 +616,8 @@ function ask(n, problems = [], moments = []) {
   // wherever this node was reached from: the list of what a part does, the
   // list of the card's parts, or out of the walk altogether while the card
   // still holds only the one action being answered.
-  const only = walk.list && at(walk.list, []).length < 2 && !walk.doing;
+  const only = walk.list && at(walk.list, []).length < 2 && !walk.doing
+    && partsOf().length < 2;
   const back = n ? `ask(${n - 1})`
     : !walk.list ? "chooseWhich()"
     : only && !editing ? "chooseKind()"
@@ -759,6 +782,7 @@ function sofar(problems = [], moments = []) {
     <div class="row">
       <button class="go" onclick="finish()">That is everything</button>
       <button onclick="addAction()">Add another thing it does</button>
+      ${anotherHtml()}
     </div>
     ${saidHtml(problems, moments)}`);
 }
@@ -906,6 +930,40 @@ function numbers(problems = [], moments = []) {
     ${saidHtml(problems, moments)}`);
 }
 
+// ------------------------------------------------------- one rule more
+//
+// A card may follow more than one rule, and until now the walk could give it
+// only one — not because anything said so, but because starting a rule wrote
+// over the list instead of adding to it.
+//
+// Offered where the card's rules are already listed, one for each shape a card
+// may hold, in the words the shape carries about itself. Which sort each is
+// decides what happens next and nothing else does: a rule made of things that
+// happen needs a moment first, and one that is not is asked about directly.
+
+function anotherHtml() {
+  return ruleShapes().map(one =>
+    `<button onclick="addRule('${one.part.id}')">Add ${
+      esc(one.part.about)}</button>`).join("");
+}
+
+function addRule(which) {
+  const where = ruleShapes().find(one => one.part.id === which);
+
+  if (!where) return startBlank();
+  if (!holdsSteps(where.part)) return pickShape(which);
+  // A rule that waits for a moment is begun by asking for one, on the screen
+  // that has always asked. The rule in hand is put down first so that what
+  // comes back is a new one — which is the whole difference between another
+  // rule and another thing inside the one being written.
+  //
+  // The moment is asked even where the kind of card settles one. What that
+  // settles is how a card of the kind is used, which is its first rule; a
+  // second is a rule the card also has, and nothing says when.
+  walk = null;
+  chooseMoment();
+}
+
 function startBlank() { walk = null; state.mode = "expert"; editor(); }
 
 // ------------------------------------------------- changing one that exists
@@ -1033,6 +1091,7 @@ function chooseWhich(problems = [], moments = []) {
     <hr>
     <div class="row">
       <button class="go" onclick="finish()">That is everything</button>
+      ${anotherHtml()}
     </div>
     ${saidHtml(problems, moments)}`);
 }

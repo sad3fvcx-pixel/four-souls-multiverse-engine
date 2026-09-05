@@ -1370,14 +1370,20 @@ def test_which_rules_those_are_is_read_and_not_listed(can: dict[str, Any]) -> No
     here would be a second answer to a question already answered.
     """
     said = script()
-    where = said.index("function standingShapes()")
-    body = said[where:said.index("\n}", where)]
 
-    assert 'a_list_of === "step"' in body, "the two sorts are told apart some other way"
+    # The test itself, wherever it is kept — it is shared with the route that
+    # adds one more rule, so it is named rather than repeated.
+    assert 'a_list_of === "step"' in said, "the two sorts are told apart some other way"
+    assert "const holdsSteps = " in said
+    assert "holdsSteps(one.part)" in said
 
-    for one in parts_of(can):
-        assert f'"{one["part"]["id"]}"' not in body, one["part"]["id"]
-        assert f'"{one["list"]["id"]}"' not in body, one["list"]["id"]
+    for screen in ("standingShapes", "ruleShapes"):
+        where = said.index(f"function {screen}()")
+        body = said[where:said.index("\n}", where)]
+
+        for one in parts_of(can):
+            assert f'"{one["part"]["id"]}"' not in body, (screen, one["part"]["id"])
+            assert f'"{one["list"]["id"]}"' not in body, (screen, one["list"]["id"])
 
 
 def test_the_page_names_no_part_of_a_card(can: dict[str, Any]) -> None:
@@ -1585,3 +1591,261 @@ def every_shipped_card() -> list[dict[str, Any]]:
         found.extend(one for one in cards if isinstance(one, dict))
 
     return found
+
+
+# ----------------------------------------------------------------------
+# More than one rule
+# ----------------------------------------------------------------------
+#
+# A card may follow several rules at once — a trinket that does one thing when
+# it is played and another every turn, an item with four ways of being used.
+# The card has always kept a list of them and the writer has always written one
+# back; what the walk did was start each rule by putting it *in place of* the
+# list rather than into it, so a card could only ever come out with one.
+#
+# Nothing about the fix is about a count. Starting a rule while one is in hand
+# is starting another rule, and the card is asked which shape it should be —
+# from the shapes the card can hold, in their own words, exactly as the rule
+# that waits for nothing is offered.
+
+
+def test_a_rule_is_added_to_the_card_rather_than_put_in_its_place() -> None:
+    """
+    The line the whole thing turned on. Writing over the list is what kept a
+    card to one rule, and a card that already holds one must still hold it.
+    """
+    said = script()
+    where = said.index("function pickAction(")
+    body = said[where:said.index("\n}", where)]
+
+    assert "held.push(part)" in body, "a rule is still put in place of the list"
+    assert "held.length - 1" in body, "the walk still points at the first rule"
+
+
+def test_another_rule_is_offered_where_a_card_s_rules_are_listed() -> None:
+    """
+    Both screens that show what a card already has, because which of them a
+    person is looking at depends on how many rules there are — and needing one
+    more is not a reason to have to find the other screen first.
+    """
+    said = script()
+
+    assert "function anotherHtml()" in said
+    assert "function addRule(" in said
+
+    for screen in ("sofar", "chooseWhich"):
+        where = said.index(f"function {screen}(")
+        body = said[where:said.index("\n}", where)]
+
+        assert "anotherHtml()" in body, screen
+
+
+def test_the_shapes_offered_are_every_shape_a_card_may_hold(
+    can: dict[str, Any],
+) -> None:
+    """
+    Not the standing sort alone, which is what the screens that begin a card
+    offer — by the time a card has a rule, another of either sort is a thing
+    somebody may want.
+    """
+    said = script()
+    where = said.index("function anotherHtml()")
+    body = said[where:said.index("\n}", where)]
+
+    assert "ruleShapes()" in body, "the shapes come from somewhere narrower"
+    assert "one.part.about" in body, "the wording is written here instead"
+
+    for one in parts_of(can):
+        assert f'"{one["part"]["id"]}"' not in body, one["part"]["id"]
+
+
+def test_which_route_a_shape_takes_is_read_from_the_shape() -> None:
+    """
+    A rule made of things that happen is begun by asking for a moment; one that
+    is not is asked about directly. The same test that told the two apart for
+    the standing route tells them apart here.
+    """
+    said = script()
+    where = said.index("function addRule(")
+    body = said[where:said.index("\n}", where)]
+
+    assert "holdsSteps(where.part)" in body
+    assert "chooseMoment()" in body
+    assert "pickShape(" in body
+
+
+def test_the_page_still_names_no_part_and_no_count(can: dict[str, Any]) -> None:
+    """
+    The standing rules this has to keep: no shape of rule named, no kind of
+    card named, and nothing anywhere that counts rules.
+    """
+    runs = "\n".join(one.split("//")[0] for one in script().splitlines())
+
+    for one in parts_of(can):
+        assert f'"{one["part"]["id"]}"' not in runs, one["part"]["id"]
+        assert f'"{one["list"]["id"]}"' not in runs, one["list"]["id"]
+
+    for one in catalogue()["kinds"]:
+        assert f'"{one["id"]}"' not in runs, one["id"]
+
+
+def some_abilities(can: dict[str, Any], *moments: str) -> list[dict[str, Any]]:
+    """
+    One rule per moment, each doing one thing, the way the walk leaves them.
+    """
+    effect = next(one for one in offered(can) if one["id"] == "gain_coins")
+
+    return [
+        {"fields": {"trigger": moment, "effects": [a_step(can, effect)]}}
+        for moment in moments
+    ]
+
+
+def a_card_of_several_rules(
+    can: dict[str, Any], kind: str, *moments: str, **numbers: int
+) -> Any:
+    return build_card(
+        {
+            "set": "demo",
+            "card": {
+                "fields": {
+                    "name": "Several",
+                    "type": kind,
+                    **numbers,
+                    "abilities": some_abilities(can, *moments),
+                },
+                "groups": {},
+            },
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    ("kind", "moments", "numbers"),
+    [
+        ("loot", ("on_play", "turn_start"), {}),
+        ("monster", ("before_damage", "monster_killed"), {"health": 3}),
+        ("starting_item", ("on_activate", "on_activate"), {}),
+        ("starting_item", ("on_activate",) * 4, {}),
+        ("character", ("on_activate", "game_start"), {"health": 2}),
+    ],
+)
+def test_a_card_of_several_rules_keeps_every_one(
+    can: dict[str, Any], kind: str, moments: tuple[str, ...], numbers: dict[str, int]
+) -> None:
+    """
+    The shapes the shipped sets actually write, including the same moment more
+    than once — four ways of using one item is four rules, not one.
+    """
+    from fsme.lab.desk.author import read_card
+
+    card = a_card_of_several_rules(can, kind, *moments, **numbers)
+
+    assert len(card["abilities"]) == len(moments), card["abilities"]
+    assert [one["trigger"] for one in card["abilities"]] == list(moments)
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card, "opening it again said something else"
+
+
+def test_a_second_rule_leaves_the_first_exactly_as_it_was(
+    can: dict[str, Any],
+) -> None:
+    """
+    The failure this replaced: a card that came out holding only the rule made
+    last. Checked as the whole of the first rule, not merely its moment.
+    """
+    from fsme.lab.desk.author import read_card
+
+    one = a_card_of_several_rules(can, "monster", "before_damage", health=3)
+    two = a_card_of_several_rules(
+        can, "monster", "before_damage", "monster_killed", health=3
+    )
+
+    assert two["abilities"][0] == one["abilities"][0], "the first rule changed"
+    assert len(two["abilities"]) == 2
+    assert build_card(read_card(two)) == two
+
+
+def test_several_rules_and_a_standing_one_live_together(
+    can: dict[str, Any],
+) -> None:
+    """
+    Both routes on one card, which is how one shipped card is written.
+    """
+    from fsme.lab.desk.author import read_card
+
+    card = build_card(
+        {
+            "set": "demo",
+            "card": {
+                "fields": {
+                    "name": "Both",
+                    "type": "monster",
+                    "health": 3,
+                    "abilities": some_abilities(can, "attack_start", "turn_start"),
+                    "statics": [
+                        {
+                            "id": "static",
+                            "fields": {"scope": "self", "stat": "attack",
+                                       "amount": 1},
+                            "groups": {},
+                        }
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+    assert len(card["abilities"]) == 2
+    assert card["statics"] == [{"stat": "attack", "amount": 1, "scope": "self"}]
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card
+
+
+def test_every_shipped_card_of_several_rules_still_round_trips() -> None:
+    """
+    Over the cards themselves. The route makes what these already are.
+    """
+    from fsme.lab.desk.author import read_card
+
+    several = [
+        card
+        for card in every_shipped_card()
+        if len(card.get("abilities") or []) > 1
+    ]
+
+    assert len(several) >= 38, len(several)
+
+    for card in several:
+        once = build_card(read_card(card, set_id=str(card["expansion"])))
+
+        assert [one["trigger"] for one in once["abilities"]] == [
+            one["trigger"] for one in card["abilities"]
+        ], card["id"]
+        assert check_card(once) == [], (card["id"], check_card(once))
+        assert build_card(read_card(once, set_id=str(card["expansion"]))) == once, (
+            card["id"]
+        )
+
+
+def test_the_kinds_that_write_several_rules_are_kinds_the_walk_reaches(
+    can: dict[str, Any],
+) -> None:
+    """
+    Read off the content rather than listed here.
+    """
+    kinds = {
+        card["type"]
+        for card in every_shipped_card()
+        if len(card.get("abilities") or []) > 1
+    }
+
+    assert kinds, "no shipped card follows more than one rule"
+
+    walked = {
+        one["id"] for one in can["kinds"]
+        if one["used_by"] or one["moment_is_asked"]
+    }
+
+    assert kinds <= walked, kinds - walked
