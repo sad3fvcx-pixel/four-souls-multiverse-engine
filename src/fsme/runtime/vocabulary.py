@@ -891,14 +891,33 @@ def _control_field(node: str, key: str) -> ParamShape:
     }
 
     first, second = CONTROL_SPELLINGS.get(node, ("", ""))
-    spelling = key if key == second else ""
-    # A head that is also the second spelling has to be there to name its node
-    # and is read only when the first spelling is absent, so what it carries
-    # when the first *is* there is nothing anybody reads.
+    # Two names for one answer, and which of them is the second name is not
+    # which the interpreter reads first — it is which of them the node can do
+    # without. A node is only a `may` because it says `may`, so that key has to
+    # be written whatever else is; writing the answer anywhere else means
+    # writing both, and a card saying both is one this cannot read back.
+    #
+    # So the key that names the node is the one the answer is kept under, and
+    # its partner is the second name. Reading is unchanged — the interpreter
+    # still takes whichever it finds, in its own order — and every one of the
+    # fifty-five shipped nodes with two names already writes it this way.
+    alias = second if first == node else first
+    spelling = key if key == alias else ""
+    # The key that names the node may still be written as a bare marker by a
+    # card that keeps the answer under the other name — `{"may": true,
+    # "effects": [...]}` is a card that exists and has to keep loading. So the
+    # head accepts that too, while being the name anything writing a card
+    # writes the answer under.
+    #
+    # Only where the other name is the one the interpreter reads first, though.
+    # Where the head is itself read first the fallback is never reached, so a
+    # bare head is not a second way of writing the answer, it is an answer
+    # thrown away: `{"repeat": true, "times": 2}` repeats once. That stays a
+    # complaint.
     placeholder = (
-        (Written(kind=UNCHECKED, describes="a placeholder, when the answer is "
+        (Written(kind=UNCHECKED, describes="a marker, when the answer is "
                                            "written under its other name"),)
-        if spelling and key == node
+        if key == node and alias and alias == first
         else ()
     )
 
@@ -908,7 +927,7 @@ def _control_field(node: str, key: str) -> ParamShape:
             A_LIST,
             a_list_of=bodies[(node, key)],
             also=placeholder,
-            instead_of=first if spelling else "",
+            instead_of=node if spelling else "",
             names_the_node=key == node,
             describes=_CONTROL_WORDS.get((node, key), ""),
         )
@@ -918,8 +937,8 @@ def _control_field(node: str, key: str) -> ParamShape:
             key,
             UNCHECKED,
             shaped_like=TARGET,
-            also=A_TARGET_NAMED,
-            instead_of=first if spelling else "",
+            also=A_TARGET_NAMED + placeholder,
+            instead_of=node if spelling else "",
             names_the_node=key == node,
             describes="what to do it for each of",
         )
@@ -929,7 +948,8 @@ def _control_field(node: str, key: str) -> ParamShape:
             key,
             WHOLE,
             least=0,
-            instead_of=first if spelling else "",
+            also=placeholder,
+            instead_of=node if spelling else "",
             names_the_node=key == node,
             describes="how many times",
         )

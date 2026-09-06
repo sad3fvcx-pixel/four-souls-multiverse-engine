@@ -451,21 +451,39 @@ def test_free_text_is_still_free_text(can: dict[str, Any]) -> None:
 def test_a_control_node_written_two_ways_says_which_is_which(
     can: dict[str, Any],
 ) -> None:
+    """
+    Of the two names for one answer, the one the answer is kept under is the
+    key that names the node, and the other is the second spelling.
+
+    Not the interpreter's read order. A node is only a `may` because it says
+    `may`, so that key is written whatever else is; keeping the answer under
+    `effects` means writing both, and a node saying both is one this cannot
+    read back. So the head is where the answer goes, whether or not it is the
+    name the interpreter happens to reach for first.
+    """
     from fsme.runtime.interpreter import CONTROL_SPELLINGS
 
     shapes = {one["id"]: {f["id"]: f for f in one["fields"]}
               for one in can["structures"]}
 
     for node, (first, second) in CONTROL_SPELLINGS.items():
-        assert shapes[node][second]["instead_of"] == first, node
-        assert shapes[node][second]["shown"] == "spelling", node
-        assert not shapes[node][first]["instead_of"], node
+        alias = second if first == node else first
+
+        assert alias != node, node
+        assert shapes[node][alias]["instead_of"] == node, node
+        assert shapes[node][alias]["shown"] == "spelling", node
+        assert not shapes[node][node]["instead_of"], node
 
 
-def test_the_canonical_spelling_is_the_one_the_interpreter_reads_first() -> None:
+def test_the_interpreter_still_decides_which_wins_when_a_card_writes_both(
+) -> None:
     """
-    Not a preference: `params.get("effects", params.get("may", ()))` decides
-    which wins when a card writes both, and the metadata names that one.
+    `params.get("effects", params.get("may", ()))` is what a card writing both
+    gets, and this is here so that stays true while nothing writes both.
+
+    It is not the same question as which name to write. The metadata answers
+    that with the key that names the node, because that key cannot be left out;
+    the pair below is only the order a node written twice is read in.
     """
     import inspect
 

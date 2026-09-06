@@ -696,6 +696,24 @@ def _a_question(parameter: ParamShape) -> str:
     return said[:1].upper() + said[1:].rstrip("?") + "?"
 
 
+def _carries_an_answer(parameter: ParamShape) -> bool:
+    """
+    Whether the key that names a node is also where its answer is kept.
+
+    Most keys that name a node carry nothing: ``stop`` says the node is a stop
+    and the interpreter never looks at what is under it, so a box for it would
+    take an answer nobody reads. A few carry the node's whole content — the
+    conditions of an ``if``, the things a ``may`` may do, what a ``repeat``
+    repeats. Nothing has to say which: a key that holds a list says what the
+    list is of, a key that holds one shape says which shape, and a key that
+    holds a value says what kind of value it is. A key that says none of those
+    is holding nothing.
+    """
+    return bool(
+        parameter.a_list_of or parameter.shaped_like or parameter.kind != UNCHECKED
+    )
+
+
 def _asked_for(parameter: ParamShape) -> str:
     """
     When to ask about a parameter, where it follows from the rest of it.
@@ -708,10 +726,10 @@ def _asked_for(parameter: ParamShape) -> str:
     if (
         parameter.written_as in (BY_ENGINE, BY_BINDING)
         or parameter.instead_of
-        or parameter.names_the_node
+        or (parameter.names_the_node and not _carries_an_answer(parameter))
     ):
         # The engine answers it, FSME writes it, another parameter already
-        # asked it, or it is the key that makes the node what it is. None of
+        # asked it, or it is a bare key that makes the node what it is. None of
         # them is a question, and a box for one takes an answer that is wrong
         # or about to be overwritten.
         return NEVER

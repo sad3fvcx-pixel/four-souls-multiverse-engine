@@ -228,6 +228,12 @@ def test_a_cost_is_written_out_of_its_own_shape() -> None:
 
 
 def test_a_mode_is_a_nested_shape_inside_a_body() -> None:
+    """
+    Written under `choose` rather than `modes`, because the two are one
+    question and the key that names the node is the one it is kept under: a
+    `choose` says `choose` whatever else it says, so keeping the options
+    anywhere else means saying both.
+    """
     ability = written(
         {
             "trigger": "on_play",
@@ -235,7 +241,7 @@ def test_a_mode_is_a_nested_shape_inside_a_body() -> None:
                 {
                     "id": "choose",
                     "fields": {
-                        "modes": [
+                        "choose": [
                             {"fields": {"description": "A cent", "effects": [COIN]}},
                             {
                                 "fields": {
@@ -251,7 +257,7 @@ def test_a_mode_is_a_nested_shape_inside_a_body() -> None:
             ],
         }
     )
-    modes = ability["effects"][0]["modes"]
+    modes = ability["effects"][0]["choose"]
 
     assert [one["description"] for one in modes] == ["A cent", "Two cents"]
     assert modes[1]["effects"] == [{"effect": "gain_coins", "amount": 2}]
