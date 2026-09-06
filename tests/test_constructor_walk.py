@@ -2047,3 +2047,302 @@ def test_the_shipped_answers_are_mostly_not_what_would_be_assumed(
                 differs += 1
 
     assert differs > same, (differs, same)
+
+
+# ----------------------------------------------------------------------
+# What has to be true first
+# ----------------------------------------------------------------------
+#
+# A rule is not only the things it does. It may also say what has to be true
+# before any of them happen — seventy-seven shipped cards do — and the walk had
+# no way to say it, for two reasons that had to be settled in that order.
+#
+# The second was the harder one. A condition is a test, and most of them test
+# something against a value; leave the value out and the engine reads its own
+# fallback, so `dice_equals` compares the roll against nought and is never
+# true. An effect has long said which of its parameters is the one a person
+# must answer — the same one its shorthand fills — and nothing put the question
+# to anybody until it did. A condition could not say it at all, so every one of
+# its parameters sat behind "more options" and a condition made by a walk came
+# out with none of them.
+
+
+def test_a_condition_can_say_which_answer_it_needs() -> None:
+    """
+    The concept an effect already had. Not every condition has one: a test
+    about a player reads the ability's controller when the card names nobody,
+    and that is the right answer rather than a missing one.
+    """
+    from fsme.runtime.vocabulary import engine_vocabulary
+
+    shapes = engine_vocabulary().condition_shapes
+    said = {name: one.primary for name, one in shapes.items() if one.primary}
+
+    assert said, "no condition says which answer it needs"
+
+    for name, primary in said.items():
+        assert primary in shapes[name].params, (name, primary)
+
+
+def test_the_answer_a_condition_needs_is_the_one_it_is_asked_for(
+    can: dict[str, Any],
+) -> None:
+    """
+    Saying it is what moves the question in front of somebody. Read through the
+    published catalogue rather than the registry, because that is what the page
+    is given.
+    """
+    from fsme.runtime.vocabulary import engine_vocabulary
+
+    shapes = engine_vocabulary().condition_shapes
+    published = {one["id"]: one for one in can["conditions"]}
+
+    for name, shape in shapes.items():
+        if not shape.primary:
+            continue
+
+        field = next(
+            f for f in published[name]["fields"] if f["id"] == shape.primary
+        )
+
+        assert field["asked"] == "first", (name, field["asked"])
+
+
+def test_a_condition_that_tests_against_a_value_says_so(
+    can: dict[str, Any],
+) -> None:
+    """
+    The two halves held together. `normalise` reduces `{"dice_equals": 6}` to
+    the parameter it assumes a condition compares against, and a condition that
+    has that parameter is one whose shorthand a card may use — so that is the
+    answer it must name, or the two would mean different things by the same
+    card.
+    """
+    from fsme.runtime.condition_evaluator import normalise
+    from fsme.runtime.vocabulary import engine_vocabulary
+
+    shapes = engine_vocabulary().condition_shapes
+    checked = 0
+
+    for name, shape in shapes.items():
+        _, params = normalise({name: 1})
+        assumed = next(iter(params), "")
+
+        if assumed not in shape.params:
+            # The shorthand cannot be used on this one at all; nothing to hold
+            # together, and no shipped card writes it that way.
+            continue
+
+        assert shape.primary == assumed, (name, shape.primary, assumed)
+        checked += 1
+
+    assert checked >= 16, checked
+
+
+def test_a_test_about_somebody_needs_no_answer(can: dict[str, Any]) -> None:
+    """
+    The other side of it, so that saying which answer is needed does not become
+    saying every parameter is. A condition whose only parameter is the subject
+    reads the ability's controller, which eight shipped cards rely on by
+    writing the condition as a bare name.
+    """
+    from fsme.runtime.vocabulary import engine_vocabulary
+
+    shapes = engine_vocabulary().condition_shapes
+    subjects = [
+        name for name, one in shapes.items()
+        if set(one.params) in ({"player"}, {"monster"})
+    ]
+
+    assert subjects, "no condition is only about a subject"
+
+    for name in subjects:
+        assert not shapes[name].primary, name
+
+
+# ----------------------------------------------------------------------
+# and the route that consumes it
+# ----------------------------------------------------------------------
+
+
+def test_the_walk_can_reach_a_list_a_rule_holds() -> None:
+    """
+    The route exists, and it is reached from the screen that lists what a rule
+    does — which is where somebody is when they realise the rule needs a
+    proviso.
+    """
+    said = script()
+
+    assert "function listsOf(" in said
+    assert "function intoList(" in said
+    assert "function holding(" in said
+
+    where = said.index("function sofar(")
+    body = said[where:said.index("\n}", where)]
+
+    assert "heldHtmlButtons()" in body
+
+
+def test_which_lists_those_are_comes_from_the_rule_s_own_shape(
+    can: dict[str, Any],
+) -> None:
+    """
+    Not a list written here. A rule's shape says which of its fields are lists,
+    the page says which kinds of node it can draw, and a field whose answer is
+    given elsewhere says so itself — which is how a rule's targets stay out of
+    this, being asked as the aim of each thing it does.
+    """
+    said = script()
+    where = said.index("function listsOf(")
+    body = said[where:said.index("\n}", where)]
+
+    assert "a_list_of" in body
+    assert "KINDS[" in body
+    assert 'f.asked !== "never"' in body
+
+    ability = next(one for one in can["abilities"] if one["id"] == "ability")
+
+    for f in ability["fields"]:
+        assert f'"{f["id"]}"' not in body, f["id"]
+
+
+def test_the_question_machinery_no_longer_names_one_catalogue() -> None:
+    """
+    What kept the walk to things that happen. A list a rule holds may be of
+    things that must be true instead, and both are nodes with fields — so the
+    lookup has to be the one that searches every catalogue, as reading a node
+    back already did.
+    """
+    said = script()
+    where = said.index("function asking(")
+    body = said[where:said.index("\n}", where)]
+
+    assert "shapeNamed(node.id)" in body
+    assert "can.effects" not in body
+
+
+def a_condition(can: dict[str, Any], name: str, **fields: Any) -> dict[str, Any]:
+    return {"id": name, "fields": fields, "groups": {}}
+
+
+def a_provisional_card(can: dict[str, Any], *conditions: dict[str, Any]) -> Any:
+    effect = next(one for one in offered(can) if one["id"] == "gain_coins")
+
+    return build_card(
+        {
+            "set": "demo",
+            "card": {
+                "fields": {
+                    "name": "Provisional",
+                    "type": "loot",
+                    "abilities": [
+                        {
+                            "fields": {
+                                "trigger": "on_play",
+                                "conditions": list(conditions),
+                                "effects": [a_step(can, effect)],
+                            }
+                        }
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+
+def test_a_rule_with_one_proviso(can: dict[str, Any]) -> None:
+    """
+    The answer reaches the card, and the shorthand the writer chooses for it is
+    one the reader gives back unchanged.
+    """
+    from fsme.lab.desk.author import read_card
+
+    card = a_provisional_card(can, a_condition(can, "dice_equals", value=6))
+
+    assert card["abilities"][0]["conditions"] == [{"dice_equals": {"value": 6}}]
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card
+
+
+def test_several_provisos_keep_their_order_and_their_answers(
+    can: dict[str, Any],
+) -> None:
+    """
+    Order matters to nobody's reading of the card but to everybody's reading of
+    the file, and a walk that quietly sorted them would be changing what the
+    author wrote.
+    """
+    from fsme.lab.desk.author import read_card
+
+    card = a_provisional_card(
+        can,
+        a_condition(can, "dice_equals", value=6),
+        a_condition(can, "combat_damage"),
+        a_condition(can, "player_hp", value=2),
+    )
+
+    assert card["abilities"][0]["conditions"] == [
+        {"dice_equals": {"value": 6}},
+        "combat_damage",
+        {"player_hp": {"value": 2}},
+    ]
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card
+
+
+def test_a_rule_with_no_provisos_is_the_card_it_always_was(
+    can: dict[str, Any],
+) -> None:
+    """
+    The route must add nothing to a rule nobody gave a proviso.
+    """
+    from fsme.lab.desk.author import read_card
+
+    card = a_provisional_card(can)
+
+    assert "conditions" not in card["abilities"][0], card["abilities"][0]
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card
+
+
+def test_every_shipped_proviso_survives_being_opened_and_written() -> None:
+    """
+    Over the cards themselves: how many, in what order, and with what answers.
+
+    Compared as the walk holds them rather than as the file spells them. The
+    language accepts `{"dice_equals": 6}` and `{"dice_equals": {"value": 6}}`
+    for one test and the writer picks a spelling; what must not change is which
+    tests a rule has, in what order, and what each is testing against — which
+    is exactly what reading the card back says.
+    """
+    from fsme.lab.desk.author import read_card
+
+    seen = 0
+
+    for card in every_shipped_card():
+        if not any(
+            one.get("conditions") for one in (card.get("abilities") or [])
+        ):
+            continue
+
+        set_id = str(card["expansion"])
+        before = read_card(card, set_id=set_id)
+        after = read_card(build_card(before), set_id=set_id)
+
+        assert after == before, card["id"]
+
+        for one, other in zip(
+            before["card"]["fields"]["abilities"],
+            after["card"]["fields"]["abilities"],
+            strict=True,
+        ):
+            mine = one["fields"].get("conditions") or []
+
+            assert [c["id"] for c in mine] == [
+                c["id"] for c in (other["fields"].get("conditions") or [])
+            ], card["id"]
+
+            seen += len(mine)
+
+    assert seen >= 77, seen

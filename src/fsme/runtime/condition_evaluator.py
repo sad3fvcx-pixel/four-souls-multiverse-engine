@@ -16,12 +16,14 @@ merely being asked a question. Probabilistic behaviour belongs to an effect.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
+from dataclasses import replace
 from types import MappingProxyType
 from typing import Any
 
 from fsme.content.vocabulary import (
     A_LIST,
     CONDITION,
+    FIRST,
     OPEN,
     UNCHECKED,
     VALUES,
@@ -175,6 +177,7 @@ class ConditionEvaluator:
         function: ConditionFn,
         takes: Mapping[str, ParamShape] | None = None,
         describes: str = "",
+        primary: str = "",
     ) -> None:
         """
         Add a condition implementation, and say what it takes and asks.
@@ -188,16 +191,35 @@ class ConditionEvaluator:
         it out does not mean the condition accepts anything: it means whoever
         registered it did not say, so nothing outside a game may judge its
         parameters. Every condition the engine ships says.
+
+        ``primary`` is the one of them a person has to answer, where there is
+        one. Saying so is what moves the question in front of somebody being
+        walked through a card: a parameter nobody names is asked last or not at
+        all, which is right for a subject that defaults to the controller and
+        wrong for the number a comparison is made against.
         """
         if name in self._conditions:
             raise UnknownConditionError(f"condition '{name}' is already registered")
 
+        params = dict(takes or {})
+
+        if primary and primary not in params:
+            raise UnknownConditionError(
+                f"condition '{name}' has no parameter '{primary}' to answer first"
+            )
+
+        if primary:
+            # Asked first, the way an effect's own primary parameter is, and
+            # by the same rule read from the same word.
+            params[primary] = replace(params[primary], asked=FIRST)
+
         self._conditions[name] = function
         self._shapes[name] = ConditionShape(
             name=name,
-            params=MappingProxyType(dict(takes or {})),
+            params=MappingProxyType(params),
             open_ended=takes is None,
             describes=describes,
+            primary=primary,
         )
 
     def names(self) -> frozenset[str]:
@@ -273,23 +295,32 @@ class ConditionEvaluator:
             "player_has_coins",
             _player_has_coins, HAS_SOMETHING,
             "the player has that many cents",
+            primary="value",
         )
         register(
             "player_has_loot",
             _player_has_loot, HAS_SOMETHING,
             "the player holds that many loot cards",
+            primary="value",
         )
         register(
             "player_has_treasure",
             _player_has_treasure, HAS_TREASURE,
             "the player controls that many items",
+            primary="value",
         )
         register(
             "player_has_souls",
             _player_has_souls, HAS_SOMETHING,
             "the player has that many souls",
+            primary="value",
         )
-        register("player_hp", _player_hp, ABOUT_A_PLAYER, "the player's health compares as you say")
+        register(
+            "player_hp",
+            _player_hp, ABOUT_A_PLAYER,
+            "the player's health compares as you say",
+            primary="value",
+        )
 
         register("monster_alive", _monster_alive, SUBJECT_MONSTER, "the monster is still alive")
         register("monster_dead", _monster_dead, SUBJECT_MONSTER, "the monster is dead")
@@ -298,6 +329,7 @@ class ConditionEvaluator:
             "monster_hp",
             _monster_hp, ABOUT_A_MONSTER,
             "the monster's health compares as you say",
+            primary="value",
         )
 
         register("attack_roll", _attack_roll, NOTHING, "the roll being answered is an attack roll")
@@ -306,13 +338,20 @@ class ConditionEvaluator:
             "card_counters",
             _card_counters, COUNTERS,
             "the counters on this card compare as you say",
+            primary="value",
         )
         register(
             "player_counters",
             _player_counters, PLAYER_COUNTERS,
             "the counters on the player compare as you say",
+            primary="value",
         )
-        register("card_in_zone", _card_in_zone, IN_ZONE, "this card is in the place you name")
+        register(
+            "card_in_zone",
+            _card_in_zone, IN_ZONE,
+            "this card is in the place you name",
+            primary="zone",
+        )
         register("combat_damage", _combat_damage, NOTHING, "the damage came from an attack")
         register(
             "is_damage_source",
@@ -328,11 +367,13 @@ class ConditionEvaluator:
             "event_value",
             _event_value, EVENT_VALUE,
             "something the event carries is what you expect",
+            primary="value",
         )
         register(
             "values_equal",
             _values_equal, NAMED_VALUES,
             "two things kept earlier are the same",
+            primary="of",
         )
         register(
             "is_damage_target",
@@ -344,10 +385,20 @@ class ConditionEvaluator:
             _is_damage_actor, NOTHING,
             "this card's controller dealt the damage",
         )
-        register("dice_equals", _dice_equals, DICE, "the roll is exactly that")
-        register("dice_not_equals", _dice_not_equals, DICE, "the roll is anything but that")
-        register("dice_greater", _dice_greater, DICE, "the roll is higher than that")
-        register("dice_less", _dice_less, DICE, "the roll is lower than that")
+        register("dice_equals", _dice_equals, DICE, "the roll is exactly that", primary="value")
+        register(
+            "dice_not_equals",
+            _dice_not_equals, DICE,
+            "the roll is anything but that",
+            primary="value",
+        )
+        register(
+            "dice_greater",
+            _dice_greater, DICE,
+            "the roll is higher than that",
+            primary="value",
+        )
+        register("dice_less", _dice_less, DICE, "the roll is lower than that", primary="value")
         register("dice_even", _dice_even, NOTHING, "the roll is even")
         register("dice_odd", _dice_odd, NOTHING, "the roll is odd")
 
@@ -360,6 +411,7 @@ class ConditionEvaluator:
             "stack_size",
             _stack_size, COMPARISON,
             "the number waiting to resolve compares as you say",
+            primary="value",
         )
 
         register("first_turn", _first_turn, NOTHING, "it is the first turn of the game")
@@ -372,11 +424,13 @@ class ConditionEvaluator:
             "nth_time_this_turn",
             _nth_time_this_turn, NTH_TIME_SHAPE,
             "this is the occurrence you mean this turn",
+            primary="value",
         )
         register(
             "last_effect_did",
             _last_effect_did, COMPARISON,
             "the effect before this one did something",
+            primary="value",
         )
         register("game_finished", _game_finished, NOTHING, "the game is over")
 
@@ -511,16 +565,19 @@ JOINING = MappingProxyType(
             name="and",
             params=MappingProxyType(JOINED),
             describes="all of these are true",
+            primary="of",
         ),
         "or": ConditionShape(
             name="or",
             params=MappingProxyType(JOINED),
             describes="any of these is true",
+            primary="of",
         ),
         "not": ConditionShape(
             name="not",
             params=MappingProxyType(JOINED),
             describes="none of these is true",
+            primary="of",
         ),
     }
 )

@@ -547,7 +547,11 @@ function asking() {
   if (walk.list) {
     const path = stepPath();
     const node = at(path);
-    return { path, node, shape: named(can.effects, node.id) };
+    // Whatever describes it, wherever it is described. A list a rule holds
+    // may be of things that happen or of things that must be true, and both
+    // are nodes with fields — so the lookup that searches every catalogue is
+    // the one to ask, exactly as reading a node back already does.
+    return { path, node, shape: shapeNamed(node.id) };
   }
   return { path: walk.where, node: at(walk.where), shape: walk.part };
 }
@@ -628,6 +632,9 @@ function ask(n, problems = [], moments = []) {
   const only = walk.list && at(walk.list, []).length < 2 && !walk.doing
     && partsOf().length < 2;
   const back = n ? `ask(${n - 1})`
+    // A list the rule holds besides the things it does goes back to that list,
+    // however little is in it: it was reached from there and nowhere else.
+    : walk.holds ? "holding()"
     : !walk.list ? "chooseWhich()"
     : only && !editing ? "chooseKind()"
     : only ? "chooseWhich()"
@@ -648,6 +655,7 @@ function ask(n, problems = [], moments = []) {
 // a part does, if the node was one of them, and otherwise back out to the part
 // it was.
 function answered(problems = [], moments = []) {
+  if (walk.holds) return holding(problems, moments);
   return walk.list ? sofar(problems, moments) : chooseWhich(problems, moments);
 }
 
@@ -791,6 +799,7 @@ function sofar(problems = [], moments = []) {
     <div class="row">
       <button class="go" onclick="finish()">That is everything</button>
       <button onclick="addAction()">Add another thing it does</button>
+      ${heldHtmlButtons()}
       ${anotherHtml()}
     </div>
     ${saidHtml(problems, moments)}`);
@@ -800,6 +809,104 @@ function sofar(problems = [], moments = []) {
 // the ability may hold more than one is the metadata's word — `effects` is
 // declared a list — and not a permission written here.
 function addAction() { chooseAction(walk.how); }
+
+// ------------------------------------------------- what else a rule holds
+//
+// A rule is not only the things it does. It may also say what has to be true
+// before any of them happen, and that is a list like the other — of things
+// the engine describes, each with its own questions.
+//
+// Seventy-seven shipped cards say it. Nothing had ever asked, because the
+// walk's one list was the list of things that happen: the question machinery
+// looked its nodes up in the catalogue of effects by name, so a list of
+// anything else had nowhere to be asked about even though it was already
+// drawn, already read and already written.
+//
+// Nothing here names a list or what it is a list of. A rule's own shape says
+// which of its fields are lists, the page says which kinds of node it can
+// draw, and a field whose answer is given elsewhere says so itself.
+
+function listsOf(part) {
+  return (part ? part.fields : []).filter(
+    f => f.a_list_of && f.a_list_of !== "step"
+      && KINDS[f.a_list_of] && f.asked !== "never");
+}
+
+function heldHtmlButtons() {
+  const part = walk.part;
+  if (walk.holds || (walk.trail || []).length) return "";
+  return listsOf(part).map(f =>
+    `<button onclick="intoList('${f.id}')">${esc(trimmed(asksOf(f)))}</button>`
+  ).join("");
+}
+
+// Into one of them, by the same trail that goes into an arm — and out of it
+// the same way.
+function intoList(which) {
+  const f = listsOf(walk.part).find(one => one.id === which);
+
+  if (!f || !walk.where) return sofar();
+
+  walk.trail = (walk.trail || []).concat(
+    [{ list: walk.list, doing: walk.doing, kind: walk.kind, holds: walk.holds }]);
+  walk.list = `${walk.where}.fields.${f.id}`;
+  walk.doing = 0;
+  walk.kind = f.a_list_of;
+  walk.holds = f.id;
+  return holding();
+}
+
+// The list itself, read back the way the things a rule does are read back.
+// A different screen and not the same one because what it lists is a
+// different sort of thing: these are not steps, nothing happens in them, and
+// none of them holds anything to go into.
+function holding(problems = [], moments = []) {
+  walk.on = "holding";
+  const f = (walk.part.fields || []).find(one => one.id === walk.holds) || {};
+  const held = at(walk.list, []);
+  const rows = held.map((one, i) => `<li>${saidAs(one)}
+      <button onclick="editAction(${i})">change</button>
+      <button onclick="dropAction(${i})">remove</button>
+    </li>`).join("");
+  el(`<button class="back" onclick="outOfArm()">← back</button>
+    <h1>${esc(sentence(asksOf(f)))}</h1>
+    <p class="lead">${held.length
+      ? "The rule waits for all of these before it happens."
+      : "Nothing yet, which means the rule happens whenever its moment does."}
+      </p>
+    <ol class="list">${rows}</ol>
+    <hr>
+    <div class="row">
+      <button class="go" onclick="outOfArm()">That is everything</button>
+      <button onclick="addHeld()">${esc(KINDS[walk.kind].says)}</button>
+    </div>
+    ${saidHtml(problems, moments)}`);
+}
+
+// What may be added is what the kind of list says it is a list of, split the
+// way every other list of the engine's own is split.
+function addHeld() {
+  walk.on = "adding";
+  const of = KINDS[walk.kind].of() || [];
+  const one = (x) => `<button class="task" onclick="pickHeld('${x.id}')">
+      <b>${esc(sentence(x.about))}</b></button>`;
+  const common = of.filter(x => x.common);
+  const rest = of.filter(x => !x.common);
+  el(`<button class="back" onclick="holding()">← back</button>
+    <h1>${esc(KINDS[walk.kind].says)}</h1>
+    ${common.map(one).join("")}
+    <details class="deep" ${common.length ? "" : "open"}><summary>Everything
+      else</summary><div class="nested">${rest.map(one).join("")}</div></details>
+    <hr>
+    <p><button onclick="holding()">Never mind</button></p>`);
+}
+
+function pickHeld(which) {
+  const held = at(walk.list, []);
+  walk.doing = held.length;
+  held.push({ id: which, fields: {}, groups: {} });
+  return ask(0);
+}
 
 // Changing a step is asking about it, unless it is something that holds other
 // steps — then there is nothing to ask about the thing itself, because every
@@ -817,9 +924,12 @@ function openStep(i) {
 }
 
 function intoArm(arm) {
-  walk.trail = (walk.trail || []).concat([{ list: walk.list, doing: walk.doing }]);
+  walk.trail = (walk.trail || []).concat(
+    [{ list: walk.list, doing: walk.doing, kind: walk.kind, holds: walk.holds }]);
   walk.list = arm.list;
   walk.doing = 0;
+  walk.kind = "step";
+  walk.holds = null;
   return sofar();
 }
 
@@ -828,7 +938,9 @@ function outOfArm() {
   if (!back) return sofar();
   walk.list = back.list;
   walk.doing = back.doing;
-  return sofar();
+  walk.kind = back.kind;
+  walk.holds = back.holds;
+  return back.holds ? holding() : sofar();
 }
 
 function whichArm(arms, step) {
@@ -1173,6 +1285,8 @@ function drawn(problems = [], moments = []) {
   if (walk.on === "sofar") return sofar(problems, moments);
   if (walk.on === "numbers") return numbers(problems, moments);
   if (walk.on === "assuming") return assuming(problems, moments);
+  if (walk.on === "holding") return holding(problems, moments);
+  if (walk.on === "adding") return addHeld();
   if (walk.on === "done") return done(problems, moments);
   return ask(walk.at, problems, moments);
 }

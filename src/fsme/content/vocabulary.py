@@ -777,8 +777,12 @@ class ConditionShape:
     target — things only a game can supply. A condition is asked whether
     something is true and is handed a comparison: a number, an operator, the
     name of a counter. Almost all of that can be read before a game exists,
-    which is why this has no shorthand key and no literal parameters. There is
-    one spelling, and ``normalise`` turns every accepted form into it.
+    which is why this has no literal parameters: there is one spelling, and
+    ``normalise`` turns every accepted form into it.
+
+    It does say which parameter a card writing the short form is filling —
+    ``primary``, below — because that is also the one a person has to answer,
+    and until it was said nothing asking an author knew to ask for it.
     """
 
     name: str
@@ -799,6 +803,25 @@ class ConditionShape:
     describes: str = ""
     """
     What this condition asks, in a person's words.
+    """
+
+    primary: str = ""
+    """
+    The parameter a person has to answer, where one of them is.
+
+    A condition is a test, and most of them test something *against* a value:
+    ``dice_equals`` reads what the roll should be, ``card_in_zone`` reads which
+    pile to look in. Left out, the engine reads its own fallback — the roll is
+    compared against nought, a comparison is made against nought — and the
+    condition is written, saved and never true. Nothing said which parameter
+    that was, so nothing putting questions to an author knew to put it, and the
+    parameter sat behind "more options" with the rest.
+
+    An effect says the same thing under the same name, and for the same reason:
+    it is the one the shorthand form fills, and the one a person is asked about
+    first. Empty where every parameter has a working answer of its own — a
+    condition naming no player means the ability's controller, which is what it
+    should mean.
     """
 
 
