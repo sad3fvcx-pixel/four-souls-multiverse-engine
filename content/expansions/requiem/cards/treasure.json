@@ -1,0 +1,1146 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-requiem-auction_gavel",
+      "name": "Auction Gavel",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a shop item.\nOther players may\nbid ¢ for it, starting at\n1 or more ¢. In turn order,\nother players may top the\nhigh bid. Bidding ends when\nthe high bid stands. The high\nbidder pays you the number\nof ¢ they bid and steals\nthe chosen item.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-auction_gavel",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-birthright",
+      "name": "Birthright",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: This becomes a\ncopy of an eternal\nitem you control.\nThis loses eternal.\n(This change is indefinite.)",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-birthright",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-book_of_the_dead",
+      "name": "Book of the Dead",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Put a non-\nevent monster\ncard in discard\nin a monster slot\nnot being attacked.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-book_of_the_dead",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-eternal_d6",
+      "name": "Eternal D6",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active",
+        "paid"
+      ],
+      "metadata": {
+        "text": "↷: Put a counter\non this.\n------------------------------\n$: Remove 2 counters\nfrom this:\nTill end of turn, if a player\nwould roll a 2 or 3, it\nbecomes a 1 instead.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-eternal_d6",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-friendly_ball",
+      "name": "Friendly Ball",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Put a monster not\nbeing attacked under\nthis if there are no\ncards under this.\n------------------------------\n↷: Put a monster from\nunder this in a monster\nslot not being attacked.\nThe active player must make\nan additional attack\non it this turn.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-friendly_ball",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-friendly_sack",
+      "name": "Friendly Sack",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Look at the top 3\ncards of the loot\ndeck. Put one in your\nhand and put the rest in\nanother player's hand.\n------------------------------\n\"Thanks be unto God for\nHis unspeakable gift.\"\n2 Corinthians 9:15",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-friendly_sack",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-hand_me_downs",
+      "name": "Hand-Me-Downs",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Each other player\nmay choose to\nloot 1. Each player\nthat does gives you\na loot card.\n------------------------------\n\"If one of you says to them,\n'Go in peace; keep warm and well\nfed,' but does nothing about their\nphysical needs, what good is it?\"\nJames 2:16",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-hand_me_downs",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-jar_of_flies",
+      "name": "Jar of Flies",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "Each time a monster dies,\nput a counter on this.\n------------------------------\n↷: Remove 1 or more\ncounters from this:\nLoot 1. If 3+ counters were\nremoved, deal 1 damage\nto a monster instead.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-jar_of_flies",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-keeper_s_penny",
+      "name": "Keeper's Penny",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "When you gain or\npurchase this, gain 9¢.\n------------------------------\n↷: Put a counter on\nthis. Gain ¢ equal\nto the number of\ncounters on this,\nthen give this card\nto another player.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-keeper_s_penny",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-magic_skin",
+      "name": "Magic Skin",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Gain +1 treasure,\nput a counter on\nthis, then give this\nto another player.\n------------------------------\nAt the start of your turn,\nroll- If the result is less\nthan the number of counters\non this, destroy it and all\nother items you control.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-magic_skin",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-marbles",
+      "name": "Marbles",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a\nnon-eternal card\nin play. Put a counter\non it of a type already\non it or remove a\ncounter from it.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-marbles",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-member_card",
+      "name": "Member Card",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Look at the top 3\ncards of the treasure\ndeck. Put them back in any\norder, then put a shop\nitem into discard.\n------------------------------\nShop items you purchase\ncost 4¢ less.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-member_card",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-red_key",
+      "name": "Red Key",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Look at the top 3\ncards of the room or\nmonster deck. You may put\none of those in a slot and\nthe rest back. This can't be\nactivated during an attack.\n------------------------------\n\"And I will give unto thee the\nkeys of the kingdom of heaven\"\nMatthew 16:19",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-red_key",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@NY_Sagittarius"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-undefined",
+      "name": "Undefined",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a shop\nitem. This becomes\na copy of that item\ntill the start of\nyour next turn.\nRecharge this.\n------------------------------\nAt the start of your turn,\nyou may put a shop item\ninto discard.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-undefined",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-requiem-x_ray_vision",
+      "name": "X-Ray Vision",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Look at a player's\nhand and the top\ncard of a deck. You\nmay put the top card\nof a deck into\ndiscard.\n------------------------------\nAt the end of your\nturn, recharge this.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-requiem-x_ray_vision",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-requiem-mama_mega",
+      "name": "Mama Mega",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "↷: Destroy this.\nIf you do,\ndeal 3 damage\nto each monster\nand player.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-requiem-mama_mega",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-requiem-pageant_boy",
+      "name": "Pageant Boy",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "one_use",
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Destroy this: Roll-\nGain x¢, where x is\n4 times the result.\n------------------------------\n\"A woman shall not be clothed\nwith man's apparel, neither shall\na man use woman's apparel: For\nhe that doeth these things is\nabominable before God.\"\nDeuteronomy 22:5",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-requiem-pageant_boy",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-requiem-r_key",
+      "name": "R Key",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "This enters play deactivated.\n------------------------------\n↷: Destroy this. If\nyou do, destroy\nall souls. Each player\ndiscards their hand\nand loots 3.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-requiem-r_key",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@NY_Sagittarius"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-requiem-the_clicker",
+      "name": "The Clicker",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "↷: Destroy this.\nIf you do, choose\na character card from\noutside the game. Replace\nyour character with it and\nyour starting item with\nthe chosen card's\nstarting item.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-requiem-the_clicker",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-requiem-battery_pack",
+      "name": "Battery Pack",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "At the end of your\nturn, put a counter\non this.\n------------------------------\n$: Remove 2 counters\nfrom this:\nRecharge each item\na player controls.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-requiem-battery_pack",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-requiem-car_battery",
+      "name": "Car Battery",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "paid"
+      ],
+      "metadata": {
+        "text": "This can't be recharged\nexcept by its own abilities.\n------------------------------\n↷: Recharge up to 3\nother items in play.\n------------------------------\n$: Pay 7¢: Recharge this.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-requiem-car_battery",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-requiem-hallowed_ground",
+      "name": "Hallowed Ground",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 2, put a\ncounter on this.\n------------------------------\n$: Remove 3 counters\nfrom this:\nPut the top card of the\nloot discard into your hand.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-requiem-hallowed_ground",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-requiem-keeper_s_sack",
+      "name": "Keeper's Sack",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "When you gain or\npurchase this, gain 14¢.\n------------------------------\n$: Pay 4¢: Give this\nto another player.\n------------------------------\nAt the end of your turn, discard a\nloot card. If you can't, take 2 damage.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-requiem-keeper_s_sack",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-requiem-sacrificial_dagger",
+      "name": "Sacrificial Dagger",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 1, put a\ncounter on this.\n------------------------------\n$: Remove 3 counters\nfrom this:\nDeal 1 damage to\na monster or player.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-requiem-sacrificial_dagger",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-requiem-the_jar",
+      "name": "The Jar",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 4¢:\nChoose a player or\nmonster. Prevent\nthe next 1 damage\nthey would take\nthis turn.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-requiem-the_jar",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-abel",
+      "name": "Abel",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you deal combat\ndamage to a monster, roll-\n4-6: Deal 1 damage to\nanother monster or player.\n------------------------------\n\"And He said, what hast thou done?\nThe voice of thy brother's blood\ncrieth unto Me from the ground.\"\nGenesis 4:10",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-abel",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "Private",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-alabaster_box",
+      "name": "Alabaster Box",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of your turn,\nput a counter on this.\n------------------------------\nWhen the 2nd counter is\nput on this, gain 10¢.\n------------------------------\nWhen the 4th counter is\nput on this, loot 4.\n------------------------------\nWhen the 6th counter is\nput on this, gain +2 treasure.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-alabaster_box",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@NY_Sagittarius"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-backstabber",
+      "name": "Backstabber",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You may attack players\nwho control more souls\nthan you. They have 3+ DC\nfor the attack.\n------------------------------\nEach time you kill a\nplayer, loot 1.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-backstabber",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-ball_of_bandages",
+      "name": "Ball of Bandages",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You take no combat\ndamage on attack\nrolls of 3.\n------------------------------\n\"Come, let us return to the\nLord. For He has torn us, but He\nwill heal us; He has wounded\nus, but He will bandage us.\"\nHosea 6:1",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-ball_of_bandages",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-blood_puppy",
+      "name": "Blood Puppy",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player dies,\nthis levels up.\n------------------------------\nLevel 4+: You have +1 AT.\n------------------------------\nLevel 8+: At the start of your\nturn, deal 1 damage to\na monster or player.\n------------------------------\nLevel 10+: At the start of your\nturn, roll- 1-3: You die.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-blood_puppy",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-bobby_bomb",
+      "name": "Bobby Bomb",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "When you gain or purchase\nthis, reveal the top 10 cards\nof the loot deck. Put each\ncard with \"Bomb\" in its name\nin your hand and the rest on\nthe bottom of the loot deck.\n------------------------------\nAt the start of your turn,\nput a card with \"Bomb\" in its\nname from the loot discard\ninto your hand.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-bobby_bomb",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-chocolate_milk",
+      "name": "Chocolate Milk",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of your turn,\nput a counter on this. Then,\nif this has 3+ counters,\nremove all counters from\nthis and deal 1 damage to\na monster or player.\n------------------------------\nWhile this has 2 counters\non it, you have +1 AT.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-chocolate_milk",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-consolation_prize",
+      "name": "Consolation Prize",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, loot x, where x\nis the number of souls\nthe player with the\nmost souls controls\nminus the number of\nsouls you control.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-consolation_prize",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-damocles",
+      "name": "Damocles",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "If you would\ngain any number of\ntreasures, instead\ngain that many +1.\n------------------------------\nWhen you die, before paying\npenalties, destroy this.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-damocles",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-fetal_haunt",
+      "name": "Fetal Haunt",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the end of your turn,\ngive another player\na loot card.\n------------------------------\nWhen you die, before\npaying penalties,\ngive this to another\nplayer.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-fetal_haunt",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-fire_mind",
+      "name": "Fire Mind",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Combat damage you\ndeal is doubled on\nattack rolls of 6.\n------------------------------\nCombat damage you\ntake is doubled on\nattack rolls of 1.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-fire_mind",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-gnawed_leaf",
+      "name": "Gnawed Leaf",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Prevent all damage\nyou would take while\nit's not your turn.\n------------------------------\nThe first time each turn\nanother player plays a loot\ncard that targets you or\nsomething you control,\nyou may cancel it.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-gnawed_leaf",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-halo_of_flies",
+      "name": "Halo of Flies",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You take no combat\ndamage on attack\nrolls of 1 or 6.\n------------------------------\n\"And there were gnats on\nman and beast. All the dust\nof the Earth became gnats\"\nExodus 8:17",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-halo_of_flies",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-handicapped_placard",
+      "name": "Handicapped Placard",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Monsters have -x DC\non your turn, where x\nis the number of souls\nthe player with the\nmost souls controls\nminus the number of\nsouls you control.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-handicapped_placard",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-judas_shadow",
+      "name": "Judas' Shadow",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you die,\nbefore paying penalties,\nput 2 counters on this.\n------------------------------\nWhen this is destroyed,\ngain x¢ and loot x, where\nx is equal to the number\nof counters on this.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-judas_shadow",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-keeper_s_box",
+      "name": "Keeper's Box",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "When this enters play,\nexpand shop slots by 2.\n------------------------------\nEach time another\nplayer purchases a shop\nitem, gain 2¢ and loot 1.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-keeper_s_box",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-lil_chest",
+      "name": "Lil Chest",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you kill a\nmonster, roll-\n1-2: Gain 2¢.\n------------------------------\n3-4: Loot 2, then put a loot\ncard from your hand on\ntop of the loot deck.\n------------------------------\n5-6: Recharge each item\nyou control.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-lil_chest",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-lodestone",
+      "name": "Lodestone",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 3, choose a\nmonster. It gains -1 DC\ntill end of turn.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-lodestone",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-lunch",
+      "name": "Lunch",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 HP\n------------------------------\n\"For I was hungry and you\ngave Me something to eat...\"\nMatthew 25:35",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-lunch",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-mom_s_bottle_of_pills",
+      "name": "Mom's Bottle of Pills",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "When you gain or purchase\nthis, reveal the top 10 cards\nof the loot deck. Put each\ncard named Pills! in your hand\nand the rest on the bottom\nof the loot deck.\n------------------------------\nAt the start of your turn,\nput a card named Pills!\nfrom the loot discard\ninto your hand.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-mom_s_bottle_of_pills",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-playdough_cookie",
+      "name": "Playdough Cookie",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, you may choose a\nnon-eternal item. Put\na counter on that item\nor remove one from it.\nOtherwise, gain 1¢.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-playdough_cookie",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-punching_bag",
+      "name": "Punching Bag",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 5+ | AT: 1\n\nYou have +2 HP.\n------------------------------\nThis item can\nbe attacked.\n------------------------------\nRewards: 5¢",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-punching_bag",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-rock_bottom",
+      "name": "Rock Bottom",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "When you gain or purchase\nthis, put counters on it equal\nto the number of loot cards\nin your hand.\n------------------------------\nAt the end of your turn, if\nyou have fewer loot cards in\nyour hand than there are\ncounters on this, loot 2.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-rock_bottom",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-spelunker_hat",
+      "name": "Spelunker Hat",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of\nyour turn, you may\nlook at the top 3\ncards of a deck and\nput them back in\nany order.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-spelunker_hat",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-requiem-trick_penny",
+      "name": "Trick Penny",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid",
+        "passive"
+      ],
+      "metadata": {
+        "text": "Shop items you purchase\ncost 1¢ less.\n------------------------------\n$ items you control cost\n1¢ less to activate.\n------------------------------\nEach time you purchase from the\nshop or treasure deck, gain 1¢.\n------------------------------\nAt the end of your\nturn, gain 1¢.",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-requiem-trick_penny",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-soul_item-requiem-cursed_soul",
+      "name": "Cursed Soul",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "soul_item"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, take 1 damage and\nput a counter on this. Then,\nif this has 6+ counters,\nit becomes a soul and\nloses all abilities.\n------------------------------\nAt the end of your\nturn, give this to\nanother player.\n\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-soul_item-requiem-cursed_soul",
+        "subcategory": "Soul Item",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "treasure_deck-soul_item-requiem-experimental_treatment",
+      "name": "Experimental Treatment",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid",
+        "soul_item"
+      ],
+      "metadata": {
+        "text": "$: Destroy this: Roll-\n1: You die.  2: Loot 3.\n------------------------------\n3: Gain 9¢.\n------------------------------\n4: Gain +1 treasure.\n------------------------------\n5: Gain +2 treasure.\n------------------------------\n6: This becomes\na soul. Gain it.\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-soul_item-requiem-experimental_treatment",
+        "subcategory": "Soul Item",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-soul_item-requiem-ultra_flesh_kid",
+      "name": "Ultra Flesh Kid!",
+      "type": "treasure",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "soul_item"
+      ],
+      "metadata": {
+        "text": "Each time a monster\nor player dies, put a\ncounter on this.\n------------------------------\nAt the end of your turn,\nif this has 12+ counters,\nit becomes a soul\nand loses all\nabilities.\n\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-soul_item-requiem-ultra_flesh_kid",
+        "subcategory": "Soul Item",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    }
+  ]
+}

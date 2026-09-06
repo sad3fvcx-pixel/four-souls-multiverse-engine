@@ -1,0 +1,8 @@
+{
+  "id": "anniversary",
+  "name": "Anniversary",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Anniversary: 16 cards imported from the card database."
+}

@@ -1,0 +1,28 @@
+{
+  "cards": [
+    {
+      "id": "example_reference-loot-pickpocket",
+      "name": "Pickpocket",
+      "type": "loot",
+      "expansion": "example_reference",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {"target_player": {"exclude_controller": true, "as": "mark"}},
+            {"target_loot": {"of": "mark", "chooser": "mark", "as": "taken"}}
+          ],
+          "effects": [
+            {"effect": "take_card", "to": "hand", "target": "taken"}
+          ],
+          "description": "Choose another player. They choose a loot card from their hand; you take it."
+        }
+      ],
+      "metadata": {
+        "text": "Choose another player.\nThey give you a loot card\nof their choice.",
+        "copies": 1
+      }
+    }
+  ]
+}

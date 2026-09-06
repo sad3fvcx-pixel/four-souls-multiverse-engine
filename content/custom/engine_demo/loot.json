@@ -1,0 +1,120 @@
+{
+  "cards": [
+    {
+      "id": "engine_demo.copper_coin",
+      "name": "Copper Coin",
+      "type": "loot",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [{ "gain_coins": 1 }],
+          "description": "Gain 1 cent."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.silver_coin",
+      "name": "Silver Coin",
+      "type": "loot",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [{ "gain_coins": 3 }],
+          "description": "Gain 3 cents."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.bandage",
+      "name": "Bandage",
+      "type": "loot",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [{ "heal": 1 }],
+          "description": "Heal 1."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.sharp_rock",
+      "name": "Sharp Rock",
+      "type": "loot",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            { "effect": "deal_damage", "amount": 1, "target": "target_monster" }
+          ],
+          "description": "Deal 1 damage to a monster."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.pickpocket",
+      "name": "Pickpocket",
+      "type": "loot",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            { "effect": "lose_coins", "amount": 2, "target": "target_player" },
+            { "gain_coins": 2 }
+          ],
+          "description": "A player loses 2 cents. Gain 2 cents."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.scavenge",
+      "name": "Scavenge",
+      "type": "loot",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [{ "draw_loot": 2 }],
+          "description": "Draw 2 loot cards."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.share_the_wealth",
+      "name": "Share the Wealth",
+      "type": "loot",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "for_each": "all_players",
+              "effects": [{ "gain_coins": 1 }]
+            }
+          ],
+          "description": "Every player gains 1 cent."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.gut_punch",
+      "name": "Gut Punch",
+      "type": "loot",
+      "expansion": "engine_demo",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            { "effect": "deal_damage", "amount": 1, "target": "target_player" }
+          ],
+          "description": "Deal 1 damage to a player."
+        }
+      ]
+    }
+  ]
+}

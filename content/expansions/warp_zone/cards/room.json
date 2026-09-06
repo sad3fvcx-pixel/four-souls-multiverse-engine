@@ -1,0 +1,23 @@
+{
+  "cards": [
+    {
+      "id": "room_deck-warp_zone-the_isaac_of_isaac_re_isaac",
+      "name": "The Isaac of Isaac: Re-Isaac",
+      "type": "room",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "Each character is named Isaac, and each\nitem has \"↷: Choose a dice roll. Its\ncontroller rerolls it\" and eternal and\nloses all other abilities.\n------------------------------\n\"Isaac was simple, and they were\nboth Isaac.\"",
+        "set": "Warp Zone",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-warp_zone-the_isaac_of_isaac_re_isaac",
+        "notes": "Art by @LeatherIceCream\n\nUnlocked via The Closet social goals to-do list during the Requiem Kickstarter."
+      }
+    }
+  ]
+}

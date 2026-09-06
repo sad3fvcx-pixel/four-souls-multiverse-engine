@@ -1,0 +1,59 @@
+{
+  "monster_deck-basic_enemies-dick_knots-dick_knot": {
+    "abilities": [
+      {
+        "trigger": "attack_start",
+        "scope": "any",
+        "effects": [
+          {
+            "effect": "add_counter",
+            "counter": "knot",
+            "amount": 1,
+            "target": "self"
+          }
+        ],
+        "description": "Each time a player makes an attack, add a counter to this."
+      },
+      {
+        "trigger": "turn_start",
+        "scope": "any",
+        "conditions": [
+          {
+            "card_counters": {
+              "counter": "knot",
+              "operator": ">=",
+              "value": 6
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "kill",
+            "target": "self"
+          },
+          {
+            "effect": "kill",
+            "target": "active_player"
+          }
+        ],
+        "description": "At the start of the turn, if this has 6+ counters, kill it and the active player."
+      }
+    ],
+    "statics": [
+      {
+        "stat": "difficulty",
+        "amount": 1,
+        "per_counter": "knot",
+        "scope": "self",
+        "description": "This gains +1 DC for each counter it has."
+      },
+      {
+        "stat": "attack",
+        "amount": 1,
+        "per_counter": "knot",
+        "scope": "self",
+        "description": "This gains +1 AT for each counter it has."
+      }
+    ]
+  }
+}

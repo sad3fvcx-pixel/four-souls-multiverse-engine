@@ -1,0 +1,23 @@
+{
+  "cards": [
+    {
+      "id": "room_deck-star-black_market",
+      "name": "Black Market",
+      "type": "room",
+      "expansion": "star",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 2 HP:\n\nSteal an item from the shop.\n------------------------------\n\"And said unto them, It is written, My house shall\nbe called the house of prayer; but ye have\nmade it a den of thieves.\" Matthew 21:13",
+        "set": "Star",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-star-black_market",
+        "notes": "Art by @Tikarathemew\n\nThis card is included with The Unboxing of Isaac #7: Binding Pale Kid, to celebrate Black Friday in November, 2022."
+      }
+    }
+  ]
+}

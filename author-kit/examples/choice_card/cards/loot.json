@@ -1,0 +1,27 @@
+{
+  "cards": [
+    {
+      "id": "example_choice-loot-shared_burden",
+      "name": "Shared Burden",
+      "type": "loot",
+      "expansion": "example_choice",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {"target_player": {"exclude_controller": true, "as": "victim"}}
+          ],
+          "effects": [
+            {"effect": "deal_damage", "amount": 1, "target": "victim"}
+          ],
+          "description": "Deal 1 damage to another player of your choice."
+        }
+      ],
+      "metadata": {
+        "text": "Deal 1 damage to another player.",
+        "copies": 1
+      }
+    }
+  ]
+}

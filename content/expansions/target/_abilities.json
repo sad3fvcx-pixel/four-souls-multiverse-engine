@@ -1,0 +1,66 @@
+{
+  "treasure_deck-active_items-target-epic_fetus": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "targets": [
+              {
+                "target_monster": {
+                  "as": "struck_monster"
+                }
+              }
+            ],
+            "target": "struck_monster"
+          },
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "targets": [
+              {
+                "target_player": {
+                  "as": "struck_player"
+                }
+              }
+            ],
+            "target": "struck_player"
+          },
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "controller"
+          }
+        ],
+        "description": "Deal 1 damage to a monster, player and yourself."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-target-dead_eye": {
+    "abilities": [
+      {
+        "trigger": "damage_dealt",
+        "scope": "any",
+        "conditions": [
+          "is_damage_actor",
+          {
+            "event_value": {
+              "key": "target_kind",
+              "value": "monster"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "attack",
+            "amount": 1
+          }
+        ],
+        "description": "Each time you deal damage to a monster gain +1 AT till the end of turn."
+      }
+    ]
+  }
+}

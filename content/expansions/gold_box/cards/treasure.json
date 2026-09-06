@@ -1,0 +1,434 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-gold_box-crooked_penny",
+      "name": "Crooked Penny",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose a player\nthen roll-\n1-3: Double the number\nof ¢ they have.\n------------------------------\n4-6: That player\nloses all ¢.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-gold_box-crooked_penny",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-gold_box-fruitcake",
+      "name": "Fruitcake",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Roll-\n1: Loot 1.  2-3: Gain 1¢.\n------------------------------\n4-6: Look at the top\ncard of a deck.\n------------------------------\nEach time a player rolls the\nsame result twice in a row on\nthe same turn, recharge this.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-gold_box-fruitcake",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-gold_box-i_can_t_believe_it_s_not_butter_bean",
+      "name": "I Can't Believe It's Not Butter Bean",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Cancel the\n↷ or $ ability\nof an item or a loot\nbeing played that\ntargets an item\nor dice roll you\ncontrol.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-gold_box-i_can_t_believe_it_s_not_butter_bean",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-gold_box-lemon_mishap",
+      "name": "Lemon Mishap",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Till end of\nturn, each\ntime a player rolls\nan attack roll of 1\nor 2, deal 1 damage\nto each monster.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-gold_box-lemon_mishap",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-gold_box-library_card",
+      "name": "Library Card",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Play an\nadditional\nloot card\nthis turn.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-gold_box-library_card",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-gold_box-ouija_board",
+      "name": "Ouija Board",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Reveal the top 4\ncards of the monster\ndeck. You may put an event\ncard revealed this way in\na monster slot not being\nattacked. Put the rest on\nthe bottom of the dek\nin a random order.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-gold_box-ouija_board",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-gold_box-the_bible",
+      "name": "The Bible",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose one-\n•Destroy a curse.\n------------------------------\n•Cancel your attack.\n------------------------------\n•Kill a monster named\nMom!, Mom's Heart!,\nor It Lives!",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-gold_box-the_bible",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-gold_box-the_butter_bean",
+      "name": "The Butter Bean",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Roll-\n6: Recharge this.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-gold_box-the_butter_bean",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-gold_box-plan_c",
+      "name": "Plan C",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "↷: Destroy this.\nIf you do, kill\na monster. At the\nend of the turn,\nkill all players.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-gold_box-plan_c",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-gold_box-dad_s_key",
+      "name": "Dad's Key",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard a\nloot card:\nPut the top card of\nthe monster deck in\na monster slot not\nbeing attacked.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-gold_box-dad_s_key",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-gold_box-succubus",
+      "name": "Succubus",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 3¢:\nYou may play up\nto 2 additional\nloot cards\nthis turn.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-gold_box-succubus",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-gold_box-9_volt",
+      "name": "9 Volt",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the end of\nyour turn, you may\nrecharge up to 2\nitems you control.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-gold_box-9_volt",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-gold_box-guppy_s_tail",
+      "name": "Guppy's Tail",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Loot +1 during\nyour loot step.\n------------------------------\nAt the end of your\nturn, discard a\nloot card.\n------------------------------\n-Guppy-",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-gold_box-guppy_s_tail",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked by the community through an ARG played before the game's launch, along with Guppy's Head and Guppy's Paw."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-gold_box-infamy",
+      "name": "Infamy",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You take no\ncombat damage on\nattack rolls of 1.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-gold_box-infamy",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-gold_box-mom_s_knife",
+      "name": "Mom's Knife",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 AT\n------------------------------\nEach time you deal combat\ndamage to a monster on\nan attack roll of 6,\ndeal 1 damage to each\nother monster.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-gold_box-mom_s_knife",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-gold_box-more_options",
+      "name": "More Options",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, you may look\nat the top 2 cards\nof the treasure deck.\n------------------------------\nYou may purchase an\nadditional time on\nyour turn.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-gold_box-more_options",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-gold_box-placenta",
+      "name": "Placenta",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 HP\n------------------------------\nYou take no combat\ndamage on attack\nrolls of 4.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-gold_box-placenta",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-gold_box-skeleton_key",
+      "name": "Skeleton Key",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You may attack up\nto 99 times on\nyour turn.\n------------------------------\n\"A star fell from Heaven unto\nthe Earth: And the key to the\nbottomless pit was given.\"\nRevelation 9:1",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-gold_box-skeleton_key",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-gold_box-soy_milk",
+      "name": "Soy Milk",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Monsters have\n+1 DC on your turn.\n------------------------------\nEach time you deal combat\ndamage to a monster,\ndeal 1 damage to each\nother monster.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-gold_box-soy_milk",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-gold_box-the_missing_page",
+      "name": "The Missing Page",
+      "type": "treasure",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nwould roll a 5,\nyou may force that\nplayer to reroll it.",
+        "set": "Gold Box",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-gold_box-the_missing_page",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    }
+  ]
+}

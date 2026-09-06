@@ -1,0 +1,556 @@
+# src/fsme/lab/desk/capabilities.py
+
+"""
+What FSME can do, in a form a page can render.
+
+An author should not have to find out what the engine supports by guessing, by
+reading source, or by searching documentation. So the engine is asked, and what
+comes back is the whole vocabulary with the words already on it: every effect
+with what it does and what it takes, every condition, every target, every
+moment a card can react to.
+
+Nothing here decides anything. Every name, every parameter, every domain and
+every sentence comes from the registries — the same ones validation checks
+against — so a page built from this cannot offer a card the loader would
+refuse, and cannot fall out of step with the engine without the engine
+changing first. There is no second list.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any
+
+from fsme.content.vocabulary import (
+    A_LIST,
+    BY_BINDING,
+    BY_ENGINE,
+    BY_NAME,
+    BY_PLAYER_OF,
+    CARD,
+    STRUCTURE,
+)
+from fsme.events.types import WHEN_IT_HAPPENS, EventType
+from fsme.runtime.interpreter import CONTROL_NAMES
+from fsme.runtime.vocabulary import engine_vocabulary
+
+COMMON_EFFECTS = (
+    "gain_coins",
+    "draw_loot",
+    "deal_damage",
+    "heal",
+    "roll_dice",
+    "lose_coins",
+    "add_modifier",
+    "discard_loot",
+    "gain_treasure",
+    "destroy_treasure",
+)
+"""
+The effects to show first.
+
+Measured across the 352 cards that have rules: a short list covers most of
+what real cards do, and a list of sixty-three sorted alphabetically is a wall.
+Everything else is still there, one click further on.
+"""
+
+COMMON_TRIGGERS = (
+    "on_play",
+    "on_activate",
+    "turn_start",
+    "turn_end",
+    "monster_killed",
+    "player_died",
+    "damage_dealt",
+    "after_roll",
+)
+"""
+The moments real cards react to most, for the same reason.
+"""
+
+COMMON_TARGETS = (
+    "target_player",
+    "another_player",
+    "all_players",
+    "controller",
+    "target_treasure",
+    "target_monster",
+    "current_monster",
+    "target_loot",
+    "random_player",
+    "self",
+)
+"""
+The things a card most often acts on, shown before the rest.
+
+An ordering over the registry's own list, like the two above — not a list of
+what exists. Everything the engine has is still offered; this decides what a
+person sees without opening "everything else".
+"""
+
+MOMENT_IS_ASKED = ("curse", "character", "monster")
+"""
+The kinds the walk asks the moment of, of those the engine settles none for.
+
+Not a statement about the language. The question is put by one piece of code
+that knows nothing about kinds, offering the moments the engine has; every
+kind here could already be given any of those moments by hand in the editor.
+This is how far the walk has been taken and checked, and it is written here
+rather than in the page so that the page carries no list of kinds at all.
+
+It shrinks as the rest are checked. A monster joined it once the walk learned
+to ask what is printed on a card, which was the thing it was waiting for — the
+moment was never the difficulty. What the rest are waiting for is not one
+question: a room and a soul do their work in ways the walk has no screen for
+yet.
+"""
+
+NEEDS_SOMETHING_EARLIER = "passthrough"
+"""
+Targets that hand back whatever they were given.
+
+`group`, `most_common`, `previous_target` and the rest mean nothing on their
+own — they refer to something the ability already chose. That does not make
+them un-aimable: "deal 1 damage, then destroy what you damaged" points an
+effect straight at `previous_target`, and the engine resolves it like any
+other. It makes them *second*, so they are offered apart and said to need
+something before them. Read off `yields` rather than listed.
+"""
+
+
+def catalogue() -> dict[str, Any]:
+    """
+    Everything a page needs in order to offer the engine's whole vocabulary.
+    """
+    vocabulary = engine_vocabulary()
+
+    return {
+        "kinds": _kinds(vocabulary),
+        "triggers": _triggers(vocabulary),
+        "effects": _effects(vocabulary),
+        "conditions": _conditions(vocabulary),
+        "targets": _targets(vocabulary),
+        "cards": _nodes(vocabulary, CARD_NODES),
+        "abilities": _nodes(vocabulary, ABILITY_NODES),
+        "statics": _nodes(vocabulary, STATIC_NODES),
+        "structures": _nodes(vocabulary, STRUCTURE_NODES),
+    }
+
+
+CARD_NODES = ("card",)
+"""
+What a whole card is made of.
+
+The top of a card is a composition — several rules, several things it changes
+while it is in play, and the printed numbers beside them — and until this was
+published nothing could find that out except by assuming it. An interface that
+assumes gets one ability and no statics, which is what happened.
+"""
+
+ABILITY_NODES = ("ability", "cost")
+"""
+What describes a card's ability: the ability itself, and the shape of what it
+charges. ``mode`` is not here — it belongs to ``choose``, which is a structure.
+"""
+
+STRUCTURE_NODES = (
+    *sorted(CONTROL_NAMES), "mode", "worked_out", "named_count", "change"
+)
+"""
+The nodes that shape what happens, and the one small shape they refer to.
+
+``mode``, ``worked_out``, ``named_count`` and ``change`` are published beside
+them rather than on their own because none of them is a thing a card writes by
+itself: one is what a ``choose`` is a list of, two are the second way of writing
+a value somewhere else, and a change is what a ``promise`` owes to one value an
+event carries. A name in ``a_list_of`` or ``shaped_like`` that nothing describes
+would be a promise this layer cannot keep.
+"""
+
+STATIC_NODES = ("static",)
+"""
+What describes a value a card changes while it is in play.
+
+Separate from an ability on purpose. A static has no trigger, no effects and
+nothing that resolves; sharing a section would suggest a kinship that does not
+exist, and the two words a card writes on both — ``scope`` and ``conditions``
+— do not even mean quite the same thing.
+"""
+
+
+def _nodes(vocabulary: Any, names: Any) -> list[dict[str, Any]]:
+    """
+    The shapes that describe the parts of the language that are not effects.
+
+    An ability, a static, a control node, and the two small shapes those refer
+    to. They are published on exactly the terms an effect is: a list of fields
+    with everything the engine says about each. Whatever draws one draws them
+    all, which is the whole reason for putting them here rather than inventing
+    somewhere else to put them.
+
+    ``bodies`` says where a node keeps the things it does, so that anything
+    reading this can tell a node with nothing in it from one that works.
+    """
+    found = []
+
+    for name in names:
+        shape = vocabulary.node_shape(name)
+
+        if shape is None:
+            continue
+
+        found.append(
+            {
+                "id": name,
+                "about": ABOUT_NODES.get(name, name.replace("_", " ")),
+                "bodies": list(shape.bodies),
+                # Whether the names written inside this node stay inside it.
+                # An ability's stored roll is not there for the next ability to
+                # read, so nothing may offer it one.
+                "own_names": shape.own_names,
+                # Whether a card may write this among the things that happen.
+                # A control node may; a cost, a mode and a way of working a
+                # number out are described here too and are not steps, and
+                # anything offering a list of steps has to be able to tell.
+                "a_step": name in CONTROL_NAMES,
+                "fields": _fields(shape),
+            }
+        )
+
+    return found
+
+
+ABOUT_NODES = {
+    "card": "everything one card is made of",
+    "ability": "a rule the card follows",
+    "static": "a number this card changes while it is in play",
+    "cost": "what a player pays to use an ability",
+    "mode": "one option of a choice",
+    "worked_out": "a value the ability works out while it runs",
+    "named_count": "a price paid in counters of a named kind",
+    "change": "one change to a value an event carries",
+    "if": "depending on something",
+    "may": "the controller may choose to",
+    "choose": "one of several options",
+    "for_each": "once for each of them",
+    "repeat": "several times over",
+    "sequence": "these, in order",
+    "stop": "nothing further happens",
+}
+"""
+What each part of the language is, in the words a person would use for it.
+
+The parameters inside them describe themselves; this is the sentence for the
+node, which is the one thing a shape read off a dataclass cannot carry.
+"""
+
+
+def _kinds(vocabulary: Any) -> list[dict[str, Any]]:
+    """
+    Every kind of card there is, named, described, and in the order to offer.
+
+    All four things are read: the kinds are the ones the card's own ``type``
+    field offers, the sentence is what that field says each one means, the name
+    and the order are the engine's, and how a kind is used comes from beside
+    the rule that uses it. There is no list here, which is the point — a kind
+    the engine gains is offered without this being told about it.
+
+    A kind nobody has named still appears, under its identifier. Losing it
+    would be worse than naming it badly, and the test that every kind has a
+    name is what stops it happening quietly.
+    """
+    card = vocabulary.node_shape(CARD)
+    kinds = card.params["type"] if card is not None else None
+    named = vocabulary.type_labels
+    order = list(named)
+
+    def met(kind: str) -> int:
+        return order.index(kind) if kind in named else len(order)
+
+    if kinds is None:
+        return []
+
+    said = dict(kinds.values_mean)
+
+    return [
+        {
+            "id": kind,
+            "name": named.get(kind, kind),
+            "about": said.get(kind, ""),
+            # What a card of this kind does to do its thing, where the engine
+            # settles it. Anything putting an action on a card can then stop
+            # asking about triggers; where it is empty there is no single
+            # answer and the question has to be put.
+            "used_by": vocabulary.used_by.get(kind, ""),
+            # And, where it is empty, whether the walk is the one to put it.
+            "moment_is_asked": kind in MOMENT_IS_ASKED,
+            # What a card of this kind has printed on it, so that whatever
+            # asks knows which numbers to put and — where this is empty —
+            # that there are none to put. The fields themselves say which
+            # kinds do *not* carry them; this is the half that says which do.
+            "printed": list(vocabulary.printed_numbers.get(kind, ())),
+        }
+        for kind in sorted((str(value) for value in kinds.values), key=met)
+    ]
+
+
+def _triggers(vocabulary: Any) -> list[dict[str, Any]]:
+    """
+    Every moment a card can react to, and what reacting to it means by default.
+
+    ``scope`` is what an ability listening for this trigger listens to when it
+    does not say — the engine's own answer, not a rule invented here. It is
+    published because leaving it out is not leaving the question open: for all
+    but fourteen triggers the unwritten answer is the whole table, and a card
+    meaning "when *you* take damage" gets "when anybody does" in silence.
+    """
+    return [
+        {
+            "id": str(event),
+            "about": WHEN_IT_HAPPENS.get(event, str(event).replace("_", " ")),
+            "common": str(event) in COMMON_TRIGGERS,
+            "scope": vocabulary.trigger_scopes.get(str(event), ""),
+        }
+        for event in EventType
+    ]
+
+
+def _effects(vocabulary: Any) -> list[dict[str, Any]]:
+    found = []
+
+    for name in sorted(vocabulary.effects):
+        shape = vocabulary.shape(name)
+
+        if shape is None:
+            # A control node — `if`, `may`, `choose`. They are offered as their
+            # own shapes on the page rather than as effects, because a person
+            # does not think of "if" as a thing that happens.
+            continue
+
+        found.append(
+            {
+                "id": name,
+                "about": _sentence(name, shape),
+                "needs_target": bool(getattr(shape, "primary", None) is not None)
+                or _wants_target(shape),
+                "common": name in COMMON_EFFECTS,
+                # The name it keeps its result under, for a later step to read.
+                "stores": getattr(shape, "stores", ""),
+                # The kind of thing it acts on. Anything offering it a target
+                # has to offer one of these, because the engine refuses the
+                # rest when the card is played.
+                "hits": getattr(shape, "hits", ""),
+                # Whether it only works inside a replacement ability. A walk
+                # that does not ask that question has no business offering it.
+                "replacing": bool(getattr(shape, "replacing", False)),
+                # The parameter the short spelling fills. A card file may say
+                # `{"gain_coins": 3}`, and without this nothing outside the
+                # engine can tell what the 3 was an answer to — which is what
+                # reading a card back needs before anything else.
+                "primary": getattr(shape, "primary", None) or "",
+                "fields": _fields(shape),
+            }
+        )
+
+    return found
+
+
+def _conditions(vocabulary: Any) -> list[dict[str, Any]]:
+    return [
+        {
+            "id": name,
+            "about": shape.describes or name.replace("_", " "),
+            "fields": _fields(shape),
+        }
+        for name in sorted(vocabulary.conditions)
+        if (shape := vocabulary.condition_shape(name)) is not None
+    ]
+
+
+def _targets(vocabulary: Any) -> list[dict[str, Any]]:
+    return [
+        {
+            "id": name,
+            "about": shape.describes or name.replace("_", " "),
+            "gives": shape.yields,
+            "common": name in COMMON_TARGETS,
+            "aimable": True,
+            "after": shape.yields == NEEDS_SOMETHING_EARLIER,
+            "fields": _fields(shape),
+        }
+        for name in sorted(vocabulary.targets)
+        if (shape := vocabulary.target_shape(name)) is not None
+    ]
+
+
+def _fields(shape: Any) -> list[dict[str, Any]]:
+    """
+    One entry per thing a person may be asked, and how to ask it.
+
+    Every parameter appears with everything the engine says about it, and
+    nothing is dropped for being hard to render: a parameter the engine
+    understands and the interface omits is a capability quietly taken away.
+
+    ``shown`` is the one thing decided here rather than read, and it is decided
+    from the metadata alone — never from which effect the parameter belongs to.
+    Four answers, because there are four different questions:
+
+    - ``form`` — a value somebody gives. ``role`` says which control.
+    - ``group`` — the name of something the ability picks out. Not a box: the
+      page offers the engine's own targets and writes the name behind it.
+    - ``advanced`` — the effect's own nested data. Shown as what it is.
+    - ``given`` — not a question. Either no card can answer it or whatever is
+      writing the card answers it, and a box would take an answer that is
+      about to be overwritten.
+    - ``spelling`` — the same question as another parameter, under a second
+      name the engine also reads. Asked once, under the first.
+    - ``body`` — more of the language, listed. ``a_list_of`` says of what, and
+      whatever draws one list of effects draws every one of them.
+    - ``named`` — more of the language, several of them, each under a name the
+      card chooses. ``each_shaped_like`` says what each one is. The names are
+      not offered from anywhere: a promise changes the values of an event, and
+      one of the four in the shipped sets changes a value nothing proposes.
+    - ``nested`` — more of the language, once. ``shaped_like`` says which.
+
+    ``also`` carries the other ways the same parameter may be written, on the
+    same terms, because a parameter that takes a number *or* a way of working
+    one out is not two parameters and must not be drawn as one question with
+    half its answers refused.
+    """
+    found = []
+
+    # In the order they were declared, which is the order somebody would ask
+    # them in: an ability says trigger, conditions, targets, effects; a static
+    # says which number before by how much. Sorting threw that away and put
+    # `attack` first on every card and "by how much" before "which number",
+    # which is how the form came to read like a dictionary.
+    for name, parameter in shape.params.items():
+        entry: dict[str, Any] = {
+            "id": name,
+            "about": parameter.describes or name.replace("_", " "),
+            # The question a person is put, as against what the parameter is.
+            # Whatever draws a label reads this; `about` is for sentences built
+            # around it and reads as a fragment on its own.
+            "asks": parameter.asks,
+            # And when to put it: straight away, behind one click, behind
+            # "advanced", or not at all.
+            "asked": parameter.asked,
+            "role": parameter.role,
+            "kind": parameter.kind,
+            "choices": [str(value) for value in parameter.values],
+            # What each of those choices means, where anything has said. A list
+            # of identifiers is a list somebody has to look up.
+            "means": dict(parameter.values_mean),
+            "least": parameter.least,
+            "otherwise": _plainly(parameter.default),
+            "required": parameter.required,
+            "unless": parameter.unless,
+            "unless_when": [str(value) for value in parameter.unless_when],
+            "written": parameter.written_as,
+            "instead_of": parameter.instead_of,
+            "picks": parameter.refers_to,
+            # How few of them the answer may hold, where it holds several.
+            # Separate from `picks`, which says which namespace: one box for
+            # an answer that names two is how a comparison of two rolls
+            # becomes a comparison of one.
+            "picks_at_least": parameter.names_at_least,
+            "a_list_of": parameter.a_list_of,
+            "shaped_like": parameter.shaped_like,
+            # Several nodes of one kind under names the card chooses.
+            # What each one is; never which names there may be.
+            "each_shaped_like": parameter.each_shaped_like,
+            "defines": parameter.defines,
+            "one_of": parameter.one_of,
+            "domain_from": parameter.domain_from,
+            "domains": {
+                answer: [str(one) for one in allowed]
+                for answer, allowed in parameter.domains.items()
+            },
+            # Which requirement of an effect this answer satisfies, so a page
+            # offering effects can ask the shape instead of knowing the field.
+            "allows": parameter.allows,
+            "names_the_node": parameter.names_the_node,
+            "also": [
+                {
+                    "kind": way.kind,
+                    "choices": [str(v) for v in way.values],
+                    "least": way.least,
+                    "shaped_like": way.shaped_like,
+                    "a_list_of": way.a_list_of,
+                    "about": way.describes,
+                }
+                for way in parameter.also
+            ],
+            # Several answers out of a known set — which is a control the
+            # page has. A list with nothing to choose from is the effect's own
+            # data and goes to the advanced view instead.
+            "many": parameter.kind == A_LIST and bool(parameter.values),
+        }
+
+        entry["shown"] = (
+            "spelling"
+            if parameter.instead_of
+            else "given"
+            if parameter.written_as in (BY_ENGINE, BY_BINDING)
+            else "group"
+            if parameter.written_as in (BY_NAME, BY_PLAYER_OF)
+            else "body"
+            if parameter.a_list_of
+            else "named"
+            if parameter.each_shaped_like
+            else "nested"
+            if parameter.shaped_like
+            else "advanced"
+            if parameter.role == STRUCTURE
+            else "form"
+        )
+
+        found.append(entry)
+
+    return found
+
+
+def _plainly(value: Any) -> Any:
+    """
+    A default, in something a page can be sent.
+
+    A card's ``tags`` default to an empty set of family names, which is a
+    perfectly good answer and not a thing JSON has. Nothing is lost saying it
+    as a list: what a set means is its members, and what an unordered one means
+    is any order at all.
+    """
+    if isinstance(value, (frozenset, set)):
+        return sorted(str(one) for one in value)
+
+    if isinstance(value, (tuple, list)):
+        return list(value)
+
+    if isinstance(value, Mapping):
+        return dict(value)
+
+    return value
+
+
+def _wants_target(shape: Any) -> bool:
+    """
+    Whether this effect acts on something rather than on the game at large.
+
+    Read off the shape: an effect written to work on its targets declares no
+    parameters of its own, which is exactly what `open_ended` records.
+    """
+    return bool(getattr(shape, "open_ended", False))
+
+
+def _sentence(name: str, shape: Any) -> str:
+    """
+    What an effect does, in the engine's own words.
+
+    Every effect has carried a description since it was written; this is that
+    sentence, and there is nowhere else it could come from.
+    """
+    from fsme.effects import builtin_registry
+
+    try:
+        return builtin_registry().spec(name).description or name.replace("_", " ")
+    except Exception:
+        return name.replace("_", " ")

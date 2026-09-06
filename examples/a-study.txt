@@ -1,0 +1,86 @@
+What 120 games say about the game itself.
+
+$ fsme study --games 120 --players 3 --bot-seats 0
+
+==============================================================================
+FSME study — 120 games, 119 of them finished
+==============================================================================
+
+------------------------------------------------------------------------------
+Where souls came from
+------------------------------------------------------------------------------
+
+  card               215 (25% of all souls)   winners: 99 (19%)
+  monster            649 (75% of all souls)   winners: 413 (81%)
+  unnamed              1 (0% of all souls)   winners: 0 (0%)
+
+------------------------------------------------------------------------------
+What went with winning
+------------------------------------------------------------------------------
+(winners against everybody else. These went with winning; a player who
+ killed four monsters won partly because of it and killed the fourth
+ partly because they were winning. Read them as symptoms.)
+
+                         winners    others             gap
+  moves made               114.9     126.3    -11.4 ± 24.1
+  coins gained              23.5      15.2      +8.3 ± 1.5  *
+  cards used                30.6      25.5      +5.1 ± 1.6  *
+  monsters killed            5.3       2.7      +2.6 ± 0.2  *
+  times died                10.1      12.4      -2.3 ± 4.6
+  items bought               0.2       0.6      -0.4 ± 0.1  *
+  attacks made              13.6      13.6      -0.0 ± 4.6
+
+  * bigger than twice its own uncertainty.
+
+------------------------------------------------------------------------------
+Cards that travelled together
+------------------------------------------------------------------------------
+(used by the same player in the same game, at least 5 times.
+ Lift is how much more often than chance would have them meet.
+
+ With hundreds of cards there are tens of thousands of pairs, so the
+ top of this table is striking by arithmetic alone. Every row here is
+ a hypothesis to test with `fsme test-card`, not a synergy.)
+
+                                                  together    lift     won
+  The Forgotten + The Bone                               5    51.4     20%
+  Judas + Book of Belial                                 6    40.0     50%
+  Hagalaz + Mom's Bra                                    5     5.0     20%
+  Stacy 704891 + 2 Cents!                                5     4.4     20%
+  Guppy + IX. The Hermit                                 5     4.4      0%
+  Lil Battery + The Bone                                 5     4.2     40%
+  Guppy + Bomb!                                          5     4.1     20%
+  4 Cents! + Forever Alone                               5     3.9     20%
+  A Nickel! + Forever Alone                              5     3.7     20%
+  Jester + Book of Belial                                5     3.6     40%
+
+------------------------------------------------------------------------------
+The bot
+------------------------------------------------------------------------------
+
+  seats played      120
+  games won         95 (79%)
+  moves made        19613
+  forced moves      153 (1%) — the engine offered one thing
+
+------------------------------------------------------------------------------
+Games worth a look
+------------------------------------------------------------------------------
+(each flagged by a named rule; `fsme explain` the seed to see why)
+
+  seed 79       length                       258 turns against a usual 87
+  seed 112      unfinished                   nobody won within 6000 commands
+
+------------------------------------------------------------------------------
+Worth testing next
+------------------------------------------------------------------------------
+(cards a named rule picked out, each used by at least 10 seats.
+ Nothing here is a finding. A card test plays the game with the card
+ and without it, and that is what decides whether there is an
+ effect.)
+
+  Hagalaz (loot_deck-pills_runes-requiem-hagalaz) — top of the pair table
+    met Mom's Bra 5 times, 5.0× what chance would have
+    $ fsme test-card loot_deck-pills_runes-requiem-hagalaz --games 200
+
+120 games in 39.4s

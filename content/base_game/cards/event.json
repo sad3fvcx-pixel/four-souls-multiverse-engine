@@ -1,0 +1,976 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-bad_events-base_game-ambush",
+      "name": "Ambush!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "require_attack",
+              "what": "monster_deck",
+              "times": 2
+            }
+          ],
+          "description": "The active player must attack the monster deck 2 times this turn."
+        }
+      ],
+      "metadata": {
+        "text": "The active player\nmust attack the\nmonster deck 2\ntimes this turn.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-base_game-ambush",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-base_game-cursed_chest",
+      "name": "Cursed Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "controller"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 3
+                    },
+                    {
+                      "dice_less": 6
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "controller"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 6
+                }
+              ],
+              "then": [
+                {
+                  "effect": "take_card",
+                  "to": "treasures",
+                  "shuffle": "treasure",
+                  "target": {
+                    "target_deck_card": {
+                      "deck": "treasure",
+                      "tag": "guppy",
+                      "as": "guppy"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-3 take 1 damage, 4-5 take 2 damage, 6 search the treasure deck for a Guppy item, gain it, then shuffle the treasure deck."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1-3: Take 1 damage.\n------------------------------\n4-5: Take 2 damage.\n------------------------------\n6: Search the treasure\ndeck for a Guppy item,\ngain it, then shuffle\nthe treasure deck.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-base_game-cursed_chest",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The Dark Room stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-base_game-greed",
+      "name": "Greed!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "most": "coins",
+                "as": "richest"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "set_coins",
+              "amount": 0,
+              "target": "richest"
+            }
+          ],
+          "description": "Choose a player with the most ¢ or tied for the most. That player loses all their ¢."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player\nwith the most ¢ or\ntied for the most.\nThat player loses\nall their ¢.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-base_game-greed",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-base_game-mega_troll_bomb",
+      "name": "Mega Troll Bomb!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 2,
+              "target": "all_players"
+            }
+          ],
+          "description": "Each player take 2 damage!"
+        }
+      ],
+      "metadata": {
+        "text": "Each player\ntake 2 damage!",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-base_game-mega_troll_bomb",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-base_game-troll_bombs",
+      "name": "Troll Bombs",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 2,
+              "target": "controller"
+            }
+          ],
+          "description": "Take 2 damage!"
+        }
+      ],
+      "metadata": {
+        "text": "Take\n2 damage!",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-base_game-troll_bombs",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-chest",
+      "name": "Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 3
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 6
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 gain 1¢, 3-4 gain 3¢, 5-6 gain 6¢."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1-2: Gain 1¢.\n------------------------------\n3-4: Gain 3¢.\n------------------------------\n5-6: Gain 6¢.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-chest-v2",
+      "name": "Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 2
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 3
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 loot 1, 3-4 loot 2, 5-6 loot 3."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1-2: Loot 1.\n------------------------------\n3-4: Loot 2.\n------------------------------\n5-6: Loot 3.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-dark_chest",
+      "name": "Dark Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 2
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "controller"
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 gain 1¢, 3-4 loot 2, 5-6 take 2 damage."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1-2: Gain 1¢.\n------------------------------\n3-4: Loot 2.\n------------------------------\n5-6: Take 2 damage.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-dark_chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-dark_chest-v2",
+      "name": "Dark Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 3
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "controller"
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 loot 1, 3-4 gain 3¢, 5-6 take 2 damage."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1-2: Loot 1.\n------------------------------\n3-4: Gain 3¢.\n------------------------------\n5-6: Take 2 damage.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-dark_chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-devil_deal",
+      "name": "Devil Deal",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Put this into discard.",
+                  "effects": []
+                },
+                {
+                  "description": "Loot 2. Take 1 damage.",
+                  "effects": [
+                    {
+                      "draw_loot": 2
+                    },
+                    {
+                      "effect": "deal_damage",
+                      "amount": 1,
+                      "target": "controller"
+                    }
+                  ]
+                },
+                {
+                  "description": "Take 2 damage. Search the treasure deck for a Guppy item, gain it, then shuffle the treasure deck.",
+                  "effects": [
+                    {
+                      "effect": "deal_damage",
+                      "amount": 2,
+                      "target": "controller"
+                    },
+                    {
+                      "effect": "take_card",
+                      "to": "treasures",
+                      "shuffle": "treasure",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "treasure",
+                          "tag": "guppy",
+                          "as": "guppy"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Choose one: put this into discard; loot 2 and take 1 damage; or take 2 damage and search the treasure deck for a Guppy item."
+        }
+      ],
+      "metadata": {
+        "text": "Choose one-\n•Put this into discard.\n------------------------------\n•Loot 2. Take 1 damage.\n------------------------------\n•Take 2 damage. Search\nthe treasure deck for a\nGuppy item, gain it, then\nshuffle the treasure deck.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-devil_deal",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Unlocked via the Sheol stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-gold_chest",
+      "name": "Gold Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "gain_treasure": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 5
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 7
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 gain +1 treasure, 3-4 gain 5¢, 5-6 gain 7¢."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1-2: Gain\n+1 treasure.\n------------------------------\n3-4: Gain 5¢.\n------------------------------\n5-6: Gain 7¢.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-gold_chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-gold_chest-v2",
+      "name": "Gold Chest",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "gain_treasure": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 2
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 gain +1 treasure, 3-4 loot 1, 5-6 loot 2."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1-2: Gain\n+1 treasure.\n------------------------------\n3-4: Loot 1.\n------------------------------\n5-6: Loot 2.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-gold_chest",
+        "subcategory": "Good Events",
+        "version": "Alt Ability",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-i_can_see_forever",
+      "name": "I Can See Forever!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "loot",
+                "from_top": 6,
+                "minimum": 6,
+                "maximum": 6,
+                "as": "ordered",
+                "prompt": "Put the top 6 cards of the loot deck back in any order, last chosen on top."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "loot",
+              "position": "top",
+              "target": "ordered"
+            },
+            {
+              "draw_loot": 1
+            }
+          ],
+          "description": "Look at the top 6 cards of the loot deck. Put them back in any order, then loot 1."
+        }
+      ],
+      "metadata": {
+        "text": "Look at the top 6\ncards of the loot\ndeck. Put them back\nin any order, then\nloot 1.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-i_can_see_forever",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-secret_room",
+      "name": "Secret Room!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 1
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 3,
+                  "target": "controller"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 1
+                    },
+                    {
+                      "dice_less": 4
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "discard_loot": 2
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 3
+                    },
+                    {
+                      "dice_less": 6
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 7
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 6
+                }
+              ],
+              "then": [
+                {
+                  "gain_treasure": 1
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1 take 3 damage, 2-3 discard 2 loot cards, 4-5 gain 7¢, 6 gain +1 treasure."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1: Take 3 damage.\n------------------------------\n2-3: Discard 2 loot cards.\n------------------------------\n4-5: Gain 7¢.\n------------------------------\n6: Gain +1 treasure.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-secret_room",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-shop_upgrade",
+      "name": "Shop Upgrade!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "expand_slots",
+              "area": "shop",
+              "amount": 2
+            },
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "Expand shop slots by 2. The active player may attack an additional time this turn."
+        }
+      ],
+      "metadata": {
+        "text": "Expand shop\nslots by 2.\n------------------------------\nThe active player may\nattack an additional\ntime this turn.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-shop_upgrade",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-we_need_to_go_deeper",
+      "name": "We Need to Go Deeper!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "monster",
+                "pile": "discard",
+                "exclude_type": "event",
+                "minimum": 0,
+                "maximum": 20,
+                "as": "raised",
+                "prompt": "Put any number of monster cards on top of the monster deck."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "monster",
+              "position": "top",
+              "target": "raised"
+            },
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "Put any number of non-event monster cards in discard on top of the monster deck. The active player may attack an additional time this turn."
+        }
+      ],
+      "metadata": {
+        "text": "Put any number of\nnon-event monster\ncards in discard on top\nof the monster deck.\n------------------------------\nThe active player may\nattack an additional\ntime this turn.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-we_need_to_go_deeper",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-base_game-xl_floor",
+      "name": "XL Floor!",
+      "type": "event",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "expand_slots",
+              "area": "monster",
+              "amount": 1
+            },
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "Expand monster slots by 1. The active player may attack an additional time this turn."
+        }
+      ],
+      "metadata": {
+        "text": "Expand monster\nslots by 1.\n------------------------------\nThe active player may\nattack an additional\ntime this turn.",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-base_game-xl_floor",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

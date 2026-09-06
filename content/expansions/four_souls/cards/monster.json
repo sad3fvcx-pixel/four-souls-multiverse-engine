@@ -1,0 +1,602 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-four_souls-bony",
+      "name": "Bony",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nEach time the attacking\nplayer rolls an attack\nroll of 1, this gains +2 AT\ntill end of turn.\n------------------------------\nRewards: Loot 1",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-four_souls-bony",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-four_souls-brain",
+      "name": "Brain",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nEach time the\nattacking player rolls\nan attack roll of 6,\nthey take 1 damage.\n------------------------------\nRewards: Loot 1",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-four_souls-brain",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-four_souls-flaming_hopper",
+      "name": "Flaming Hopper",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 2,
+      "roll": 4,
+      "rewards": {
+        "cents": 4
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 2\n\nThis takes no combat\ndamage on attack\nrolls of 6.\n------------------------------\nRewards: 4¢",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-four_souls-flaming_hopper",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-four_souls-globin",
+      "name": "Globin",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nWhen this reaches 1 HP,\nthe active player rolls-\n\n1-4: This takes 1 damage.\n------------------------------\n5-6: This heals 2 HP.\n------------------------------\nRewards: Loot 3",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-four_souls-globin",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-four_souls-nerve_ending",
+      "name": "Nerve Ending",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 2,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 2+ | AT: 1\n\n\"Strain every nerve to\nforce your way in through\nthe narrow gate; for many, I\ntell you, will seek to enter\nand will not be able.\"\nLuke 13:24\n------------------------------\nRewards: 3¢",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-four_souls-nerve_ending",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-four_souls-roundy",
+      "name": "Roundy",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 2,
+      "roll": 4,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 2\n\nEach time this deals\ncombat damage, it\ndeals 1 damage to\neach other monster.\n------------------------------\nRewards: 6¢",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-four_souls-roundy",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-four_souls-sucker",
+      "name": "Sucker",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 3+ | AT: 1\n\nWhen this dies,\nit deals 1 damage\nto each player.\n------------------------------\nRewards: Loot 1",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-four_souls-sucker",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-four_souls-swarmer",
+      "name": "Swarmer",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 3,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 2\n\nWhen this dies,\nexpand monster\nslots by 2.\n------------------------------\nRewards: +1 treasure",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-four_souls-swarmer",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-four_souls-tumor",
+      "name": "Tumor",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 2,
+      "roll": 5,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 5+ | AT: 2\n\nEach time this takes\ndamage, it deals 1\ndamage to each\nnon-active player.\n------------------------------\nRewards: 6¢",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-four_souls-tumor",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-four_souls-blastocyst",
+      "name": "Blastocyst",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 1\n\nWhen this dies, expand\nmonster slots by 2. The\nactive player may attack\nthe monster deck an\nadditional time.\n------------------------------\nRewards: Loot 1\n(+1 soul)",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-four_souls-blastocyst",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-four_souls-dingle",
+      "name": "Dingle",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nEach time the active player\ndeals damage to this, they roll-\n1-2: They take 1 damage.\n------------------------------\n3-4: Each player takes 1 damage.\n------------------------------\n5-6: This takes 1 damage.\n------------------------------\nRewards: 6¢\n(+1 soul)",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-four_souls-dingle",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-four_souls-headless_horseman",
+      "name": "Headless Horseman",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 2\n\nThe first time this would\ndie each turn, prevent\ndeath.  This heals 2 HP\nand gains +1 DC and -1 AT\ntill end of turn.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-four_souls-headless_horseman",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-four_souls-krampus",
+      "name": "Krampus",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 2\n\nThe active player must\nattack this once each\nturn if able.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-four_souls-krampus",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-four_souls-monstro_ii",
+      "name": "Monstro II",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 1\n\nEach time this deals combat\ndamage, the active player rolls-\n1-3: Deal 1 damage to\nthe player to your right.\n------------------------------\n4-6: Deal 1 damage to\nthe player to your left.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-four_souls-monstro_ii",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-bosses-four_souls-the_fallen",
+      "name": "The Fallen",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 5+ | AT: 2\n\nWhen this dies, look\nat the top 5 cards of\nthe monster deck and\nput them back in\nany order.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-four_souls-the_fallen",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-four_souls-widow",
+      "name": "Widow",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\n\"Their confidence hangs by\na thread. They are leaning on\na spider's web.\"\nJob 8:14\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-four_souls-widow",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-four_souls-cursed_globin",
+      "name": "Cursed Globin",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEach time a player\nrolls a 3, each\nmonster heals 2 HP.\n------------------------------\nRewards: Roll- Loot x",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-four_souls-cursed_globin",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-four_souls-cursed_tumor",
+      "name": "Cursed Tumor",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEach time a player\nrolls a 4, each\nplayer takes 1\ndamage.\n------------------------------\nRewards: Roll- Gain x¢",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-four_souls-cursed_tumor",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-four_souls-isaac",
+      "name": "Isaac!",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 7,
+      "attack": 1,
+      "roll": 3,
+      "souls": 2,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 7 | DC: 3+ | AT: 1\n\nEach time this takes damage,\nthe active player chooses a\nliving player. This deals 1\ndamage to that player.\n------------------------------\nRewards: +1 treasure\n(+2 souls)",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-four_souls-isaac",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@rojen241",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-four_souls-mom_s_heart",
+      "name": "Mom's Heart!",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 8,
+      "attack": 2,
+      "roll": 4,
+      "souls": 2,
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 8 | DC: 4+ | AT: 2\n\nWhen a player gains this\nsoul, choose a player who\ncontrols the most souls\nor tied for the most.\nThat player wins.\n------------------------------\nRewards: <3\n(+2 souls)",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-four_souls-mom_s_heart",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-four_souls-holy_bony",
+      "name": "Holy Bony",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 3+ | AT: 1\n\nEach time a player\nrolls a 6, they may\nlook at the top 3 cards\nof any deck and put them\nback in any order.\n------------------------------\nRewards: Loot 2",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-four_souls-holy_bony",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-four_souls-holy_mulligan",
+      "name": "Holy Mulligan",
+      "type": "monster",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 3+ | AT: 1\n\nWhen this dies, expand\nmonster slots by 2.\nThe active player may\nattack an additional\ntime this turn.\n------------------------------\nRewards: 3¢",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-four_souls-holy_mulligan",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    }
+  ]
+}

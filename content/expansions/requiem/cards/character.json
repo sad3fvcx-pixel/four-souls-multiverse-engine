@@ -1,0 +1,491 @@
+{
+  "cards": [
+    {
+      "id": "characters-requiem-bethany",
+      "name": "Bethany",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nBook of Virtues",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-bethany",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-book_of_virtues"
+      }
+    },
+    {
+      "id": "characters-requiem-eden",
+      "name": "Eden",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\n------------------------------\nWhen you start the game, look at\nthe top 3 cards of the treasure\ndeck and choose one. It becomes\nyour starting item and gains\neternal. Put the rest on the\nbottom of the treasure deck.",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 2,
+        "source_id": "characters-requiem-eden",
+        "version": "Alt Art",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "characters-requiem-flash_isaac",
+      "name": "Flash Isaac",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nClassic Roller",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-flash_isaac",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter.",
+        "effect_3p_plus": true,
+        "starting_item": "starting_items-requiem-classic_roller"
+      }
+    },
+    {
+      "id": "characters-requiem-jacob_esau",
+      "name": "Jacob & Esau",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nSibling Rivalry",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-jacob_esau",
+        "version": "Original",
+        "artist": "@rojen241",
+        "effect_3p_plus": true,
+        "starting_item": "starting_items-requiem-sibling_rivalry"
+      }
+    },
+    {
+      "id": "characters-requiem-the_baleful",
+      "name": "The Baleful",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 1 | AT: 1\n\n↷: Play an additional\nloot card this turn.\n------------------------------\nWhile you control 1 or 2 souls,\nyou have +1 AT. If you control 3+\nsouls, you have +2 AT instead.\n------------------------------\nStarting item:\nSoulbond",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_baleful",
+        "version": "Original",
+        "artist": "@rojen241",
+        "effect_3p_plus": true,
+        "starting_item": "starting_items-requiem-soulbond"
+      }
+    },
+    {
+      "id": "characters-requiem-the_benighted",
+      "name": "The Benighted",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nHemoptysis",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_benighted",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-hemoptysis"
+      }
+    },
+    {
+      "id": "characters-requiem-the_broken",
+      "name": "The Broken",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nSpindown Dice",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_broken",
+        "version": "Original",
+        "artist": "@rojen241",
+        "effect_3p_plus": true,
+        "starting_item": "starting_items-requiem-spindown_dice"
+      }
+    },
+    {
+      "id": "characters-requiem-the_capricious",
+      "name": "The Capricious",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Choose one-\n•Play an additional\nloot card this turn.\n------------------------------\n•Put a shop item into discard.\n------------------------------\nStarting item:\nGlitch",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_capricious",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-glitch"
+      }
+    },
+    {
+      "id": "characters-requiem-the_curdled",
+      "name": "The Curdled",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nSumptorium",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_curdled",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-sumptorium"
+      }
+    },
+    {
+      "id": "characters-requiem-the_dauntless",
+      "name": "The Dauntless",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 1 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nHypercoagulation",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_dauntless",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-hypercoagulation"
+      }
+    },
+    {
+      "id": "characters-requiem-the_deceiver",
+      "name": "The Deceiver",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nCeremonial Blade",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_deceiver",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-ceremonial_blade"
+      }
+    },
+    {
+      "id": "characters-requiem-the_deserter",
+      "name": "The Deserter",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nAnima Sola",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_deserter",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-anima_sola_the_revenant"
+      }
+    },
+    {
+      "id": "characters-requiem-the_empty",
+      "name": "The Empty",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nAbyss",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_empty",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-abyss"
+      }
+    },
+    {
+      "id": "characters-requiem-the_enigma_amgine_eht",
+      "name": "The Enigma // amginE ehT",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nFlip\n\n//\n\nHP: 1 | AT: 2\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nDo not start the game\nwith this side face up.",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_enigma_amgine_eht",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-flip"
+      }
+    },
+    {
+      "id": "characters-requiem-the_fettered",
+      "name": "The Fettered",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nDead Weight",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_fettered",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-dead_weight"
+      }
+    },
+    {
+      "id": "characters-requiem-the_harlot",
+      "name": "The Harlot",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nGello",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_harlot",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-gello"
+      }
+    },
+    {
+      "id": "characters-requiem-the_hoarder",
+      "name": "The Hoarder",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nBag of Crafting",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_hoarder",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-bag_of_crafting"
+      }
+    },
+    {
+      "id": "characters-requiem-the_miser",
+      "name": "The Miser",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nKeeper's Bargain",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_miser",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-keeper_s_bargain"
+      }
+    },
+    {
+      "id": "characters-requiem-the_savage",
+      "name": "The Savage",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nBerserk",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_savage",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-berserk"
+      }
+    },
+    {
+      "id": "characters-requiem-the_soiled",
+      "name": "The Soiled",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nIBS",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_soiled",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-ibs"
+      }
+    },
+    {
+      "id": "characters-requiem-the_zealot",
+      "name": "The Zealot",
+      "type": "character",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nLemegeton",
+        "set": "Requiem",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-requiem-the_zealot",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-requiem-lemegeton"
+      }
+    }
+  ]
+}

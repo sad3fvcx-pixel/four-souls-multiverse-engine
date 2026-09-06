@@ -1,0 +1,112 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-bad_events-four_souls-boss_rush",
+      "name": "Boss Rush!",
+      "type": "event",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Reveal cards from the top\nof the monster deck till you\nreveal 2 boss cards. Put them in\none or more monster slots not\nbeing attacked and the rest into\ndiscard. The active player must\nmake an additional attack on\none of them this turn.",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-four_souls-boss_rush",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-four_souls-head_trauma",
+      "name": "Head Trauma",
+      "type": "event",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Discard 2\nloot cards.",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-four_souls-head_trauma",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-four_souls-troll_bombs",
+      "name": "Troll Bombs",
+      "type": "event",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Take\n2 damage!",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-four_souls-troll_bombs",
+        "subcategory": "Bad Events",
+        "version": "Alt Art",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-four_souls-angel_room",
+      "name": "Angel Room",
+      "type": "event",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1: Gain +2 treasure.\n------------------------------\n2-3: Gain +1 treasure.\n------------------------------\n4-6: Loot 2.",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-four_souls-angel_room",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-four_souls-holy_chest",
+      "name": "Holy Chest",
+      "type": "event",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Prevent the next 2\ndamage you would take this\nturn. You may attack an\nadditional time this turn.\n------------------------------\n3-5: Gain 7¢.\n------------------------------\n6: This becomes\na soul. Gain it.\n(+1 soul)",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-four_souls-holy_chest",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-four_souls-spiked_chest",
+      "name": "Spiked Chest",
+      "type": "event",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Take 1 damage.\n------------------------------\n3-4: Take 1 damage.\nLoot 1.\n------------------------------\n5-6: Take 1 damage.\nGain +1 treasure.",
+        "set": "Four Souls+",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-four_souls-spiked_chest",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    }
+  ]
+}

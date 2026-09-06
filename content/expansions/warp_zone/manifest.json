@@ -1,0 +1,8 @@
+{
+  "id": "warp_zone",
+  "name": "Warp Zone",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Warp Zone: 99 cards imported from the card database."
+}

@@ -1,0 +1,629 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-1-requiem-a_lucky_penny",
+      "name": "A Lucky Penny!",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 1¢.\n------------------------------\nRewards are doubled\ntill end of turn.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-1-requiem-a_lucky_penny",
+        "subcategory": "1¢",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-2-requiem-2_cents",
+      "name": "2 Cents!",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 2¢.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 5,
+        "source_id": "loot_deck-2-requiem-2_cents",
+        "subcategory": "2¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-3-requiem-3_cents",
+      "name": "3 Cents!",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 3¢.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 6,
+        "source_id": "loot_deck-3-requiem-3_cents",
+        "subcategory": "3¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-4-requiem-4_cents",
+      "name": "4 Cents!",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 4¢.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 4,
+        "source_id": "loot_deck-4-requiem-4_cents",
+        "subcategory": "4¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-batteries-requiem-lil_battery",
+      "name": "Lil Battery",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Recharge\nan item.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 2,
+        "source_id": "loot_deck-batteries-requiem-lil_battery",
+        "subcategory": "Batteries",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-bombs-requiem-bomb",
+      "name": "Bomb!",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Deal 1 damage\nto a monster\nor player.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 3,
+        "source_id": "loot_deck-bombs-requiem-bomb",
+        "subcategory": "Bombs",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-bombs-requiem-mega_bomb",
+      "name": "Mega Bomb!",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Deal 2 damage\nto a monster\nor player.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-bombs-requiem-mega_bomb",
+        "subcategory": "Bombs",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-butter_beans-requiem-butter_bean",
+      "name": "Butter Bean!",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "Cancel the ↷ or $\nability of an item\nor a loot being\nplayed.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 3,
+        "source_id": "loot_deck-butter_beans-requiem-butter_bean",
+        "subcategory": "Butter Beans",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-requiem-a_sack",
+      "name": "A Sack",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Loot 3.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-requiem-a_sack",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-requiem-ace_of_diamonds",
+      "name": "Ace of Diamonds",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain x¢, where x\nis the number of\nmonster slots plus\nthe number of loot\ncards in your hand.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-requiem-ace_of_diamonds",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-requiem-dad_s_note",
+      "name": "Dad's Note",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose up to 3\nnon-event monster\ncards in discard. Put\nthem in one or more\nmonster slots not\nbeing attacked.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-requiem-dad_s_note",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-requiem-emergency_contact",
+      "name": "Emergency Contact",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Cancel an attack\non a monster and put\nthat monster card on\nthe bottom of the\nmonster deck.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-requiem-emergency_contact",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-requiem-key",
+      "name": "Key",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose one-\n•The active player may\nattack an additional\ntime this turn.\n------------------------------\n•Put the top card\nof the monster deck\nin a monster slot\nnot being attacked.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-requiem-key",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked on the seventh roll against The Beast during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-requiem-magic_marker",
+      "name": "Magic Marker",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Change a number in\nthe effect text of\na card in play or\nloot being played by\n1 till end of turn.\nThe number can't go\nbelow 1 or above 6.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-requiem-magic_marker",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-requiem-two_of_spades",
+      "name": "Two of Spades",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose another player.\nLoot x, where x is the\nnumber of loot cards\nin that player's hand.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-requiem-two_of_spades",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-dice_shards_soul_hearts-requiem-black_heart",
+      "name": "Black Heart",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player. Prevent\nthe next 1 damage they\nwould take this turn. Till\nend of turn, when that\nplayer dies, deal 2 damage\nto each other player other than\nthat player and you.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 2,
+        "source_id": "loot_deck-dice_shards_soul_hearts-requiem-black_heart",
+        "subcategory": "Dice Shards / Soul Hearts",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-dice_shards_soul_hearts-requiem-dice_shard",
+      "name": "Dice Shard",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a dice roll.\nIts controller\nrerolls it.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 3,
+        "source_id": "loot_deck-dice_shards_soul_hearts-requiem-dice_shard",
+        "subcategory": "Dice Shards / Soul Hearts",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-dice_shards_soul_hearts-requiem-soul_heart",
+      "name": "Soul Heart",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player.\nPrevent the next 1\ndamage they would\ntake this turn.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 2,
+        "source_id": "loot_deck-dice_shards_soul_hearts-requiem-soul_heart",
+        "subcategory": "Dice Shards / Soul Hearts",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-nickels-requiem-a_nickel",
+      "name": "A Nickel!",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 5¢.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-nickels-requiem-a_nickel",
+        "subcategory": "Nickels",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-nickels-requiem-sticky_nickel",
+      "name": "Sticky Nickel",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-3: Give this to the\nplayer to your left.\n------------------------------\n4-6: Gain 5¢.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-nickels-requiem-sticky_nickel",
+        "subcategory": "Nickels",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-requiem-algiz",
+      "name": "Algiz",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player.\nEach item they control\ngains eternal till\nend of turn.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-requiem-algiz",
+        "subcategory": "Pills / Runes",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-requiem-berkano",
+      "name": "Berkano",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Destroy an item.\nIf that item was\ncontrolled by a\nplayer, they steal\nan item from\nthe shop.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-requiem-berkano",
+        "subcategory": "Pills / Runes",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-requiem-hagalaz",
+      "name": "Hagalaz",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Look at the top 5\ncards of the monster\nor room deck and put\nthem back in any order,\nthen put a room or\nmonster not being\nattacked into discard.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-requiem-hagalaz",
+        "subcategory": "Pills / Runes",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-requiem-pills",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll 3 times!-\n1-2: You gain +1 AT\ntill end of turn!\n------------------------------\n3-4: You gain +1 HP\ntill end of turn!\n------------------------------\n5-6: You take 1 damage!",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-requiem-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-requiem-pills-v2",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Loot 3, then put 3 cards\nfrom your hand on top of the\nloot deck in any order.\n------------------------------\n3-4: Loot 3, then put 1\ncard from your hand on\ntop of the loot deck.\n------------------------------\n5-6: Loot 3.",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-requiem-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-requiem-bag_lunch",
+      "name": "Bag Lunch",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "If this would be destroyed,\nif it has no counters on it,\nput a counter on it instead.\n------------------------------\nYou have +1 HP while this\nhas a counter on it.\n------------------------------\n-Trinket-",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-requiem-bag_lunch",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-requiem-broken_remote",
+      "name": "Broken Remote",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "Each time you activate\nan item, you may put a\nroom or monster not\nbeing attacked into\ndiscard.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-requiem-broken_remote",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-requiem-callus",
+      "name": "Callus",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "Prevent all\nnon-combat damage\nyou would take.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-requiem-callus",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-requiem-golden_trinket",
+      "name": "Golden Trinket",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "When this enters play, put\na gold counter on another\nnon-eternal item you control.\n------------------------------\nThis has the abilities of\nother items with gold\ncounters on them.\n------------------------------\n-Trinket-",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-requiem-golden_trinket",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-requiem-lucky_toe",
+      "name": "Lucky Toe",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "If you would loot,\nexcept during the loot\nstep, instead loot that\nmuch +1.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-requiem-lucky_toe",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-requiem-rib_of_greed",
+      "name": "Rib of Greed",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "Abilities and the death\npenalty can't make you\ndiscard loot cards\nor lose ¢.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-requiem-rib_of_greed",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-requiem-tick",
+      "name": "Tick",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "The first time you kill\na monster on your turn,\nheal 1 HP and you may\nattack an additional\ntime this turn.\n------------------------------\n-Eternal, Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-requiem-tick",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-requiem-wishbone",
+      "name": "Wishbone",
+      "type": "loot",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "When this is\ndestroyed, gain\n+1 treasure.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Requiem",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-requiem-wishbone",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

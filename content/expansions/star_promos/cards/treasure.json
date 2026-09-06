@@ -1,0 +1,137 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-one_use_items-star_promos-mystery_gift",
+      "name": "Mystery Gift",
+      "type": "treasure",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "one_use",
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Destroy this:\nChoose any number of players.\nLook at the top x cards of the\ntreasure deck, where x is the\nnumber of chosen players, and\nput any of them back or on the\nbottom of the deck in any order.\nGain +1 treasure, then each\nchosen player gains +1 treasure.",
+        "set": "Star Promos",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-star_promos-mystery_gift",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with all orders on the Maestro Media website during the Isaac Anniversary Sale in November, 2024."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-star_promos-dad_s_ring",
+      "name": "Dad's Ring",
+      "type": "treasure",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you\ndeclare an attack\non a monster, roll-\n5-6: That monster\ngains -1 DC till end\nof turn.",
+        "set": "Star Promos",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-star_promos-dad_s_ring",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "This bonus Star card is included with The Unboxing of Isaac #2: Rainbow Blight, to celebrate Father's Day in June, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-star_promos-lump_of_coal",
+      "name": "Lump of Coal",
+      "type": "treasure",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "After the third\nattack roll you\nmake each turn,\nyou gain +1 AT till\nend of turn.",
+        "set": "Star Promos",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-star_promos-lump_of_coal",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "This bonus Star card is included with The Unboxing of Isaac #8: Delirious, to celebrate Christmas in December, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-star_promos-mom_s_ring",
+      "name": "Mom's Ring",
+      "type": "treasure",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 AT\n------------------------------\nWhen you gain\nor purchase\nthis, loot 1.",
+        "set": "Star Promos",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-star_promos-mom_s_ring",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "This bonus Star card is included with The Unboxing of Isaac #1: Dogma, to celebrate Mother's Day in May, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-star_promos-pumpkin_mask",
+      "name": "Pumpkin Mask",
+      "type": "treasure",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "When you gain or purchase\nthis, destroy it. If you do,\nlook at the top 10 cards\nof the treasure deck and\ngain 1. Put the rest on the\nbottom of the deck in a\nrandom order.",
+        "set": "Star Promos",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-star_promos-pumpkin_mask",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "This bonus Star card is included with The Unboxing of Isaac #6: The Bloat!!!!, to celebrate Halloween in October, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-star_promos-pyromaniac",
+      "name": "Pyromaniac",
+      "type": "treasure",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "When you gain this, search the\nloot deck for up to 2 cards named\nBomb!. Reveal them, put them in\nyour hand, then shuffle the deck.\n------------------------------\nIf you would deal any amount\nof non-combat damage, deal\nthat much damage +1 instead.",
+        "set": "Star Promos",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-star_promos-pyromaniac",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "This bonus Star card is included with The Unboxing of Isaac #9: Isaac is Doomed!, to celebrate New Years in January, 2023."
+      }
+    }
+  ]
+}

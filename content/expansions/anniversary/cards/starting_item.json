@@ -1,0 +1,46 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-anniversary-bag_o_holes",
+      "name": "Bag-o-Holes",
+      "type": "starting_item",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Play an additional\nloot card this turn.\n------------------------------\nIf you would loot, instead\nloot that much +1.\n------------------------------\nAs your turn starts,\ndiscard your hand.\n------------------------------\n-Eternal-",
+        "set": "Anniversary",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-anniversary-bag_o_holes",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "starting_items-anniversary-game_squid",
+      "name": "Game Squid",
+      "type": "starting_item",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "When you delcare an attack on\na monster, you may give it +1 HP\nand +1 AT till end of turn. If you do,\nyou may choose another player. They\nmay team up for the attack. If that\nmonster dies this turn, each player\nthat made an attack roll against it\nthis turn puts a HP counter on an item\nthey control without a HP counter.\n------------------------------\n-Eternal-",
+        "set": "Anniversary",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-anniversary-game_squid",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "effect_3p_plus": true
+      }
+    }
+  ]
+}

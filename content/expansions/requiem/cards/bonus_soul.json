@@ -1,0 +1,84 @@
+{
+  "cards": [
+    {
+      "id": "bonus_souls-requiem-soul_of_envy",
+      "name": "Soul of Envy",
+      "type": "bonus_soul",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The first time a player\ncontrols their 3rd soul,\nthe active player chooses a\nplayer who controls the\nfewest souls or tied for\nfewest. That player\ngains this soul.\n\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Bonus Souls",
+        "copies": 1,
+        "source_id": "bonus_souls-requiem-soul_of_envy",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "bonus_souls-requiem-soul_of_lust",
+      "name": "Soul of Lust",
+      "type": "bonus_soul",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player\nkills a monster, put\na counter on this.\n------------------------------\nWhen the 6th counter\nis put on this, the\nactive player\ngains this soul.\n\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Bonus Souls",
+        "copies": 1,
+        "source_id": "bonus_souls-requiem-soul_of_lust",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "bonus_souls-requiem-soul_of_pride",
+      "name": "Soul of Pride",
+      "type": "bonus_soul",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player\ngains a treasure, put\na counter on this.\n------------------------------\nWhen the 6th counter\nis put on this, the\nactive player\ngains this soul.\n\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Bonus Souls",
+        "copies": 1,
+        "source_id": "bonus_souls-requiem-soul_of_pride",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "bonus_souls-requiem-soul_of_sloth",
+      "name": "Soul of Sloth",
+      "type": "bonus_soul",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The first time a player\ncontrols 4 items, the\nactive player chooses a\nplayer who controls the\nfewest items for tied for\nfewest. That player\ngains this soul.\n\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Bonus Souls",
+        "copies": 1,
+        "source_id": "bonus_souls-requiem-soul_of_sloth",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "bonus_souls-requiem-soul_of_wrath",
+      "name": "Soul of Wrath",
+      "type": "bonus_soul",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player dies,\nput a counter on this.\n------------------------------\nWhen the 6th counter\nis put on this, the\nactive player\ngains this soul.\n\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Bonus Souls",
+        "copies": 1,
+        "source_id": "bonus_souls-requiem-soul_of_wrath",
+        "notes": "Art by @TikaratheMew"
+      }
+    }
+  ]
+}

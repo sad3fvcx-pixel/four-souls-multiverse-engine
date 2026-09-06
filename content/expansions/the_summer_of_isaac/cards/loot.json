@@ -1,0 +1,108 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-butter_beans-the_summer_of_isaac-mega_bean",
+      "name": "Mega Bean!",
+      "type": "loot",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "Cancel the ↷, $, or\ntriggered ability of an item\nor a loot being played that\ntargets you or something\nyou control. If you do, deal\n2 damage to the player\nwho controlled the item\nor loot being played.",
+        "set": "The Summer of Isaac",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-butter_beans-the_summer_of_isaac-mega_bean",
+        "subcategory": "Butter Beans",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Design by @DreamsAxolotl\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "loot_deck-butter_beans-the_summer_of_isaac-mugger_bean",
+      "name": "Mugger Bean!",
+      "type": "loot",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Cancel a loot being\nplayed and put it\nin your hand.",
+        "set": "The Summer of Isaac",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-butter_beans-the_summer_of_isaac-mugger_bean",
+        "subcategory": "Butter Beans",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Design by @TripleTheAny\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-the_summer_of_isaac-era_walk",
+      "name": "Era Walk",
+      "type": "loot",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\nChange the result of\nthe next 4 dice rolls\nmade this turn to\nthis result.",
+        "set": "The Summer of Isaac",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-the_summer_of_isaac-era_walk",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Design by @Quinbo51\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-the_summer_of_isaac-found_soul",
+      "name": "Found Soul",
+      "type": "loot",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "+1 AT\n------------------------------\nWhen a soul enters\nyour control, give this\nitem to another player.\n------------------------------\n-Trinket-",
+        "set": "The Summer of Isaac",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-the_summer_of_isaac-found_soul",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Design by @MitBoy_\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-the_summer_of_isaac-recycling_sticker",
+      "name": "Recycling Sticker",
+      "type": "loot",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "Shop items you\npurchase cost 1¢ less.\n------------------------------\nYou may purchase the\ntop card of the treasure\ndiscard as though it\nwere a shop item.\n------------------------------\n-Trinket-",
+        "set": "The Summer of Isaac",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-the_summer_of_isaac-recycling_sticker",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@ThisGuy_000",
+        "notes": "Design by @ThisGuy_000\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    }
+  ]
+}

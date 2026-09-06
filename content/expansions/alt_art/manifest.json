@@ -1,0 +1,8 @@
+{
+  "id": "alt_art",
+  "name": "Alt Art",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Alt Art: 62 cards imported from the card database."
+}

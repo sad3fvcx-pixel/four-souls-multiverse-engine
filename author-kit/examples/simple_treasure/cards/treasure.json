@@ -1,0 +1,25 @@
+{
+  "cards": [
+    {
+      "id": "example_simple_treasure-treasure-heavy_boot",
+      "name": "Heavy Boot",
+      "type": "treasure",
+      "expansion": "example_simple_treasure",
+      "schema_version": "1",
+      "abilities": [],
+      "statics": [
+        {
+          "stat": "attack",
+          "amount": 1,
+          "scope": "controller",
+          "description": "You have +1 attack."
+        }
+      ],
+      "tags": ["passive"],
+      "metadata": {
+        "text": "You have +1 attack.",
+        "copies": 1
+      }
+    }
+  ]
+}

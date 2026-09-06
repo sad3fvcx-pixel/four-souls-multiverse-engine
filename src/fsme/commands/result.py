@@ -1,44 +1,57 @@
 # src/fsme/commands/result.py
 
 """
-Command execution result for Four Souls Multiverse Engine.
+Command results for Four Souls Multiverse Engine.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+
+from fsme.events import Event
+
+from .command import Command
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(frozen=True, slots=True)
 class CommandResult:
     """
-    Result returned after executing a command.
+    The outcome of submitting a command.
+
+    Every API operation returns either success or a structured error, and a
+    rejected command leaves GameState untouched, so a caller can retry or
+    report without first having to repair anything.
     """
 
-    success: bool
-    value: Any = None
-    message: str | None = None
+    command: Command
+
+    accepted: bool
+
+    reason: str = ""
+
+    events: tuple[Event, ...] = field(default_factory=tuple)
 
     @classmethod
-    def ok(cls, value: Any = None) -> "CommandResult":
-        """
-        Create a successful result.
-        """
-        return cls(
-            success=True,
-            value=value,
-        )
+    def accept(
+        cls,
+        command: Command,
+        events: tuple[Event, ...] = (),
+    ) -> CommandResult:
+        return cls(command=command, accepted=True, events=events)
 
     @classmethod
-    def fail(cls, message: str) -> "CommandResult":
-        """
-        Create a failed result.
-        """
-        return cls(
-            success=False,
-            message=message,
-        )
+    def reject(cls, command: Command, reason: str) -> CommandResult:
+        return cls(command=command, accepted=False, reason=reason)
+
+    @property
+    def rejected(self) -> bool:
+        return not self.accepted
 
     def __bool__(self) -> bool:
-        return self.success
+        return self.accepted
+
+    def __str__(self) -> str:
+        if self.accepted:
+            return f"{self.command} accepted"
+
+        return f"{self.command} rejected: {self.reason}"

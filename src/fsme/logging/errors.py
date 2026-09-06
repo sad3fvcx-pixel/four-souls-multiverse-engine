@@ -47,4 +47,3 @@ class LogReadError(LoggingError):
     """
     Raised when a log source cannot be read.
     """
-}

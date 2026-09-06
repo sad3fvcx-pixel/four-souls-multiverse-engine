@@ -1,0 +1,87 @@
+name: Something went wrong
+description: A game, a report or a command did not do what it should
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time.
+
+        **The single most useful thing you can give us is the seed.** Every
+        game FSME plays is reproducible from one, so a seed turns "it crashed
+        sometimes" into a game we can watch happen.
+
+        Before filing: [docs/LIMITATIONS.md](../blob/main/docs/LIMITATIONS.md)
+        lists what FSME knowingly cannot do. Two thirds of the cards have no
+        rules yet, and some pairs of cards can loop for ever — those are known,
+        and an issue about them is not needed.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: The command you ran
+      description: Copy it exactly, with its flags.
+      render: shell
+      placeholder: fsme report my-game.json --decisions 5
+    validations:
+      required: true
+
+  - type: input
+    id: seed
+    attributes:
+      label: Seed
+      description: >
+        From the command, or the "Seed" line of a report. If the game came
+        from the desk or from `fsme demo`, the journal file has it too.
+      placeholder: "7"
+
+  - type: textarea
+    id: output
+    attributes:
+      label: What it printed
+      description: The whole message, including any traceback.
+      render: text
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The output of `fsme --version`.
+      placeholder: fsme 0.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: how
+    attributes:
+      label: How you installed it
+      options:
+        - pip install from a clone
+        - pip install -e (editable)
+        - the single executable (no Python)
+        - something else
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Operating system and Python
+      placeholder: Windows 11, Python 3.12.4
+
+  - type: textarea
+    id: content
+    attributes:
+      label: Custom cards
+      description: >
+        If you were using cards of your own, the card JSON helps more than a
+        description of it. `fsme cards` says what is loaded.

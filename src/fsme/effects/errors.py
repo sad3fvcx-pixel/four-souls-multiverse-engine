@@ -1,5 +1,3 @@
-# src/fsme/effects/errors.py
-
 """
 Exceptions for the effect subsystem.
 """
@@ -36,4 +34,13 @@ class InvalidEffectError(EffectError):
 class UnknownEffectError(EffectError):
     """
     Raised when no handler exists for an effect.
+    """
+
+
+class EffectRegistrationError(EffectError):
+    """
+    Raised when an effect cannot be registered.
+
+    Registering a name twice is the usual cause: effect definitions are
+    immutable once registered.
     """

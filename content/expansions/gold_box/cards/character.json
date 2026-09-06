@@ -1,0 +1,96 @@
+{
+  "cards": [
+    {
+      "id": "characters-gold_box-apollyon",
+      "name": "Apollyon",
+      "type": "character",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nVoid",
+        "set": "Gold Box",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-gold_box-apollyon",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-gold_box-void"
+      }
+    },
+    {
+      "id": "characters-gold_box-azazel",
+      "name": "Azazel",
+      "type": "character",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nLord of the Pit",
+        "set": "Gold Box",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-gold_box-azazel",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-gold_box-lord_of_the_pit"
+      }
+    },
+    {
+      "id": "characters-gold_box-the_keeper",
+      "name": "The Keeper",
+      "type": "character",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nWooden Nickel",
+        "set": "Gold Box",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-gold_box-the_keeper",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-gold_box-wooden_nickel"
+      }
+    },
+    {
+      "id": "characters-gold_box-the_lost",
+      "name": "The Lost",
+      "type": "character",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 1 | AT: 1\n\n↷: Play an additional\nloot card this turn.\n------------------------------\nAt the end of your turn,\nrecharge up to 1 character.\n------------------------------\nStarting item:\nHoly Mantle\n(+1 soul)",
+        "set": "Gold Box",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-gold_box-the_lost",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-gold_box-holy_mantle"
+      }
+    }
+  ]
+}

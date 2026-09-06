@@ -1,0 +1,646 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-four_souls-20_20",
+      "name": "20/20",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Add up to 2 to\nan attack roll.\n------------------------------\n\"The eye is the lamp of the body.\nIf your vision is clear, your whole\nbody will be full of light.\"\nMatthew 6:22",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-four_souls-20_20",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-four_souls-black_candle",
+      "name": "Black Candle",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Reveal the top 6\ncards of the monster\ndeck. Give any curse cards\nrevealed to the player or\nplayers of your choosing.\nPut the rest on the bottom\nof the deck in any order.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-four_souls-black_candle",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-four_souls-distant_admiration",
+      "name": "Distant Admiration",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose another\nplayer. They give\nyou a loot card, reveal\nit, then you must play\nthat loot card if able.\nThis doesn't use a\nloot play.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-four_souls-distant_admiration",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-four_souls-head_of_krampus",
+      "name": "Head of Krampus",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Roll-\n1-3: Deal 1 damage\nto each player.\n------------------------------\n4-6: Deal 1 damage\nto each monster.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-four_souls-head_of_krampus",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-four_souls-libra",
+      "name": "Libra",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Change the\nresult of a dice\nroll to a 3.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-four_souls-libra",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-four_souls-mutant_spider",
+      "name": "Mutant Spider",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: The next time a\nplayer would roll a\ndice, they instead roll\n4 dice. You choose\none of the rolls\nas the result.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-four_souls-mutant_spider",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-four_souls-rainbow_baby",
+      "name": "Rainbow Baby",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose one-\n•Each player loots 1.\n------------------------------\n•Each player gains 2¢.\n------------------------------\n•Each player takes\n1 damage.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-four_souls-rainbow_baby",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-four_souls-red_candle",
+      "name": "Red Candle",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Before a dice is\nrolled, choose\na number. Till end\nof turn, each time\nthat number is rolled,\ndeal 1 damage to a\nmonster or player.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-four_souls-red_candle",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-four_souls-smart_fly",
+      "name": "Smart Fly",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Look at the top\ncard of a deck. You\nmay put it into discard\nor put it back on top.\n------------------------------\nEach time you take\ndamage, you may\nrecharge this.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-four_souls-smart_fly",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-four_souls-divorce_papers",
+      "name": "Divorce Papers",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "↷: Destroy this.\nIf you do,\nchoose another player.\nThey give you half of\ntheir ¢ and loot cards\nrounded down, then\ngive you an item.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-four_souls-divorce_papers",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-four_souls-forget_me_now",
+      "name": "Forget Me Now",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "↷: Destroy this.\nIf you do, each\nplayer destroys a\nsoul they control.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-four_souls-forget_me_now",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-four_souls-athame",
+      "name": "Athame",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard a\nloot card:\nForce a player\nto discard 2\nloot cards.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-four_souls-athame",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-1_up",
+      "name": "1-Up",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "When you would die on\nyour turn, destroy this.\nIf you do, prevent death,\nheal to full HP, and cancel\nyour attack. You may\nattack an additional\ntime this turn.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-1_up",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-abaddon",
+      "name": "Abaddon",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+3 AT\n------------------------------\nEach time you take\ndamage, die!",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-abaddon",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-cursed_eye",
+      "name": "Cursed Eye",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Combat damage you\ndeal on attack rolls\nof 6 is increased by 3.\n------------------------------\nWhen you roll an attack\nroll of 1, end your turn.\nCancel everything that\nhasn't resolved.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-cursed_eye",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-daddy_long_legs",
+      "name": "Daddy Long Legs",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, deal 1 damage\nto a monster or\nplayer.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-daddy_long_legs",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-euthanasia",
+      "name": "Euthanasia",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you roll\nthe same result twice\nin a row on an attack\nroll on the same turn,\nkill the monster\nyou're attacking.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-euthanasia",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-game_breaking_bug",
+      "name": "Game Breaking Bug!",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 1, you may\nreroll an item\nthey control.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-game_breaking_bug",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-guppy_s_eye",
+      "name": "Guppy's Eye",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each other player\nplays with their\nhand revealed.\n------------------------------\n-Guppy-",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-guppy_s_eye",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-head_of_the_keeper",
+      "name": "Head of the Keeper",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you deal\ndamage, gain 1¢.\n------------------------------\nEach time you kill a\nmonster or player,\ngain 2¢.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-head_of_the_keeper",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-hourglass",
+      "name": "Hourglass",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 2, you may\ndeactivate an item.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-hourglass",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-lard",
+      "name": "Lard",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+2 HP\n------------------------------\nEach time you take\ndamage, discard a\nloot card.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-lard",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-magnet",
+      "name": "Magnet",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time another\nplayer gains ¢, they\nmust give you 1¢.\n------------------------------\n\"The rich rules over the\npoor, and the borrower is\nthe slave of the lender.\"\nProverbs 22:7",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-magnet",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-mama_haunt",
+      "name": "Mama Haunt",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Your character\ndoesn't recharge during\nyour recharge step.\n------------------------------\nWhen you die, before\npaying penalties, give\nthis to another player.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-mama_haunt",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-mom_s_eye_shadow",
+      "name": "Mom's Eye Shadow",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "If another player\ndeclares an attack\non a monster, you may\nchoose which monster\nthey attack.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-mom_s_eye_shadow",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-p_h_d",
+      "name": "P.H.D.",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You may add or\nsubtract 1 from any\nof your non-attack\nrolls.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-p_h_d",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-polyphemus",
+      "name": "Polyphemus",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+2 AT\n------------------------------\nMonsters have\n+1 DC on your turn.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-polyphemus",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-rubber_cement",
+      "name": "Rubber Cement",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you miss an\nattack roll, roll-\n1-3: Deal 1 damage\nto a monster\nor player.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-rubber_cement",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-telepathy_for_dummies",
+      "name": "Telepathy for Dummies",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, roll-\nYou may change the\nresult of your next\nroll this turn to\nthis result.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-telepathy_for_dummies",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-four_souls-the_wiz",
+      "name": "The Wiz",
+      "type": "treasure",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Monsters have\n+1 DC on your turn.\n------------------------------\nEach time you deal\ncombat damage, deal\n1 damage to another\nmonster or player.",
+        "set": "Four Souls+",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-four_souls-the_wiz",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    }
+  ]
+}
