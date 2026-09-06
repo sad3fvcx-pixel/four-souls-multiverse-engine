@@ -421,6 +421,7 @@ function pickAction(effect, how) {
   // The shapes do not say where this would go. Rather than guess a place for
   // it, hand the person the editor with the kind they picked already set.
   if (!where) return startBlank();
+  const made = !walk;
   // The first action makes the rule; every one after it is one more item in
   // the list that rule already holds. Starting a rule while one is in hand is
   // starting a second rule, so the new one is added to what the card has
@@ -437,6 +438,12 @@ function pickAction(effect, how) {
     walk = {
       how,
       part: where.part,
+      // Where the rule itself is, beside where the things it does are. The
+      // rule has questions of its own, and until now nothing asked them.
+      where: `state.card.fields.${where.list.id}[${held.length - 1}]`,
+      // And where the card keeps rules of its sort, so that a rule just made
+      // can be un-made by whoever backs out of it.
+      held: `state.card.fields.${where.list.id}`,
       list: `state.card.fields.${where.list.id}[${held.length - 1}]`
         + `.fields.${where.then.id}`,
     };
@@ -444,7 +451,9 @@ function pickAction(effect, how) {
   const doing = at(walk.list, []);
   walk.doing = doing.length;
   doing.push({ id: effect, fields: {}, groups: {} });
-  ask(0);
+  // A rule's own questions belong to the rule, so they are put when it is
+  // made and not again for every further thing it does.
+  return made ? assuming() : ask(0);
 }
 
 // ------------------------------------------- a rule that waits for nothing
@@ -930,6 +939,65 @@ function numbers(problems = [], moments = []) {
     ${saidHtml(problems, moments)}`);
 }
 
+// --------------------------------------------- what would be assumed of it
+//
+// A rule that does not say whose actions it reacts to still reacts to
+// somebody's. The engine has an answer, and it publishes that answer for every
+// moment — under the name of the rule's own field that settles it. For most
+// moments the answer is "anybody", so a card meaning "when *you* take damage",
+// written without saying so, means "when anybody does" and nothing on the card
+// says otherwise. A hundred and twenty-five shipped cards say it explicitly.
+//
+// So it is asked, once, when the rule is made. Nothing here names the question
+// or its answers: what to put is whatever the moment has an opinion about that
+// the rule's own shape describes and the walk does not already ask, and the
+// wording, the choices and what each one means are the field's own.
+
+function assumedOf(part, how) {
+  const moment = can.triggers.find(t => t.id === how) || {};
+  return (part ? part.fields : []).filter(f => f.id in moment && !asks(f));
+}
+
+function assuming(problems = [], moments = []) {
+  const fields = assumedOf(walk.part, walk.how);
+
+  if (!fields.length) return ask(0);
+
+  walk.on = "assuming";
+  const node = at(walk.where);
+  const moment = can.triggers.find(t => t.id === walk.how) || {};
+  // What is already true if this is left alone, said in the words the field
+  // uses for that answer rather than in the engine's name for it.
+  const otherwise = fields
+    .map(f => `<p class="muted">Leave it alone and this is
+      ${esc(meant(f, String(moment[f.id])))}.</p>`).join("");
+  el(`<button class="back" onclick="unmake()">← back</button>
+    <h1>Whose is it?</h1>
+    <p class="lead">A rule reacts to something happening. This says to whom it
+      has to happen — and it is the one thing the engine answers for you if you
+      say nothing.</p>
+    <div class="nested">${oneByOne(fields, node.fields, node.groups,
+      `${walk.where}.fields`, `${walk.where}.groups`, walk.part.id)}</div>
+    ${otherwise}
+    <hr>
+    <div class="row">
+      <button class="go" onclick="ask(0)">Next</button>
+      <button onclick="startBlank()">Fill the rest in myself</button>
+    </div>
+    ${saidHtml(problems, moments)}`);
+}
+
+// Backing out of a rule's own question is backing out of the rule: it was made
+// by picking the action, so leaving it behind would have the next action land
+// inside it rather than start afresh. The rule just made is the last of its
+// sort the card holds, and the walk is put down with it.
+function unmake() {
+  const how = walk.how;
+  at(walk.held, []).pop();
+  walk = null;
+  chooseAction(how);
+}
+
 // ------------------------------------------------------- one rule more
 //
 // A card may follow more than one rule, and until now the walk could give it
@@ -1104,6 +1172,7 @@ function drawn(problems = [], moments = []) {
   if (walk.on === "parts") return chooseWhich(problems, moments);
   if (walk.on === "sofar") return sofar(problems, moments);
   if (walk.on === "numbers") return numbers(problems, moments);
+  if (walk.on === "assuming") return assuming(problems, moments);
   if (walk.on === "done") return done(problems, moments);
   return ask(walk.at, problems, moments);
 }

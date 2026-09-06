@@ -1849,3 +1849,201 @@ def test_the_kinds_that_write_several_rules_are_kinds_the_walk_reaches(
     }
 
     assert kinds <= walked, kinds - walked
+
+
+# ----------------------------------------------------------------------
+# Whose actions a rule reacts to
+# ----------------------------------------------------------------------
+#
+# A rule that does not say whose actions it reacts to still reacts to
+# somebody's. The engine has an answer and publishes it for every moment, and
+# for most moments that answer is "anybody" — so a card meaning "when *you*
+# take damage", written without saying so, means "when anybody does", and
+# nothing on the card says otherwise. A hundred and twenty-five shipped cards
+# say it explicitly, and until now the walk gave nobody a way to.
+#
+# It is not made compulsory. Leaving it alone is a real answer and stays one;
+# what changes is that it is now an answer somebody gives rather than one they
+# find out about later.
+
+
+def test_the_engine_publishes_what_silence_means(can: dict[str, Any]) -> None:
+    """
+    The fact the question is built on. Every moment says what an ability
+    listening for it hears when the ability does not say.
+    """
+    said = {one["scope"] for one in can["triggers"]}
+
+    assert said, "no moment says what it assumes"
+    assert said <= {"any", "self", "controller"}, said
+
+
+def test_the_walk_puts_the_question_the_moment_answers(can: dict[str, Any]) -> None:
+    """
+    The screen exists, and the rule is asked about when it is made.
+    """
+    said = script()
+
+    assert "function assumedOf(" in said
+    assert "function assuming(" in said
+
+    where = said.index("function pickAction(")
+    body = said[where:said.index("\n}", where)]
+
+    assert "assuming()" in body, "a rule is made without its own question"
+    assert "const made = !walk" in body, "the question is put for every action"
+
+
+def test_which_question_that_is_comes_from_the_two_shapes(
+    can: dict[str, Any],
+) -> None:
+    """
+    Not a field named here. What is put is whatever a moment has an opinion
+    about that the rule's own shape describes and the walk does not already
+    ask — which today is one field, and would be two if the engine ever
+    published a second assumption.
+    """
+    said = script()
+    where = said.index("function assumedOf(")
+    body = said[where:said.index("\n}", where)]
+
+    assert "can.triggers" in body, "the assumptions come from somewhere else"
+    assert "part.fields" in body, "the rule's own shape is not consulted"
+    assert "asks(f)" in body, "a question already put would be put twice"
+
+    ability = next(one for one in can["abilities"] if one["id"] == "ability")
+    moment = can["triggers"][0]
+    shared = {f["id"] for f in ability["fields"]} & set(moment)
+
+    assert shared == {"scope"}, shared
+
+    for name in shared:
+        assert f'"{name}"' not in body, name
+
+
+def test_the_question_is_worded_by_the_field(can: dict[str, Any]) -> None:
+    """
+    The question, the answers and what each answer means are the field's own,
+    so nothing here has to be kept in step with the engine.
+    """
+    ability = next(one for one in can["abilities"] if one["id"] == "ability")
+    scope = next(f for f in ability["fields"] if f["id"] == "scope")
+
+    assert scope["asks"], "the field words no question"
+    assert scope["choices"], "the field offers no answers"
+    assert set(scope["choices"]) <= set(scope["means"]), "an answer means nothing"
+
+    said = script()
+    where = said.index("function assuming(")
+    body = said[where:said.index("\n}", where)]
+
+    for choice in scope["choices"]:
+        assert f'"{choice}"' not in body, choice
+
+
+def an_ability(can: dict[str, Any], moment: str, **fields: Any) -> dict[str, Any]:
+    effect = next(one for one in offered(can) if one["id"] == "gain_coins")
+
+    return {
+        "fields": {"trigger": moment, **fields, "effects": [a_step(can, effect)]}
+    }
+
+
+def a_scoped_card(can: dict[str, Any], moment: str, **fields: Any) -> Any:
+    return build_card(
+        {
+            "set": "demo",
+            "card": {
+                "fields": {
+                    "name": "Scoped",
+                    "type": "loot",
+                    "abilities": [an_ability(can, moment, **fields)],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+
+@pytest.mark.parametrize("scope", ["self", "controller", "any"])
+def test_an_answer_given_is_an_answer_kept(can: dict[str, Any], scope: str) -> None:
+    """
+    Every answer the field offers, written, checked and opened again.
+    """
+    from fsme.lab.desk.author import read_card
+
+    card = a_scoped_card(can, "turn_end", scope=scope)
+
+    assert card["abilities"][0]["scope"] == scope
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card, "opening it again said something else"
+
+
+def test_leaving_it_alone_writes_nothing(can: dict[str, Any]) -> None:
+    """
+    The answer that must stay possible. A card that says nothing about this is
+    a card the engine has always accepted, and making the walk ask must not
+    make the field compulsory — 54 shipped abilities leave it alone on purpose.
+    """
+    from fsme.lab.desk.author import read_card
+
+    card = a_scoped_card(can, "turn_end")
+
+    assert "scope" not in card["abilities"][0], card["abilities"][0]
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card)) == card
+
+
+def test_every_shipped_ability_keeps_the_answer_it_gave() -> None:
+    """
+    Over the cards themselves, both ways: an ability that says a scope keeps
+    it, and one that says nothing gains nothing.
+    """
+    from fsme.lab.desk.author import read_card
+
+    said = silent = 0
+
+    for card in every_shipped_card():
+        if not (card.get("abilities") or []):
+            continue
+
+        once = build_card(read_card(card, set_id=str(card["expansion"])))
+
+        for before, after in zip(
+            card["abilities"], once["abilities"], strict=True
+        ):
+            assert before.get("scope") == after.get("scope"), card["id"]
+
+            if before.get("scope"):
+                said += 1
+            else:
+                silent += 1
+
+    assert said >= 180, said
+    assert silent, "no shipped ability leaves it alone"
+
+
+def test_the_shipped_answers_are_mostly_not_what_would_be_assumed(
+    can: dict[str, Any],
+) -> None:
+    """
+    Why the question is worth putting at all, measured rather than asserted: an
+    explicit scope usually says something other than what the silence would
+    have said, so a walk that never asked was quietly writing the other thing.
+    """
+    assumed = {one["id"]: one["scope"] for one in can["triggers"]}
+    same = differs = 0
+
+    for card in every_shipped_card():
+        for ability in (card.get("abilities") or []):
+            scope = ability.get("scope")
+
+            if scope is None:
+                continue
+
+            if scope == assumed.get(ability.get("trigger")):
+                same += 1
+            else:
+                differs += 1
+
+    assert differs > same, (differs, same)
