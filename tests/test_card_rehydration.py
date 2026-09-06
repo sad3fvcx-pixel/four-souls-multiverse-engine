@@ -3239,16 +3239,22 @@ def test_an_option_that_does_nothing_is_still_offered() -> None:
     card, so it is one of the things being chosen between, and a screen
     showing two of its three options would be describing a different card.
 
-    An arm of the node itself is the opposite case: a branch with no second
-    arm has not written one, and asks nobody which.
+    So an option's arms are taken from what the node holds. A node's own arms
+    are the other case and are read off its shape instead, which is not the
+    same rule and used not to be a different one: while the walk could only
+    read a branch, an arm nobody had written was an arm nobody needed, and it
+    was left out. A walk that can make a branch has to be able to put
+    something in the arm that is not there yet — a branch made a moment ago
+    has written none of them.
     """
     arms = body_of("armsOf")
-    before, after = arms.split("nodes.forEach", 1)
 
-    assert "shape ? shape.fields : []" in after, (
-        "an option's arms are still taken from what it holds"
+    assert "shape ? shape.fields : []" in arms, (
+        "a node's own arms are no longer read off its shape"
     )
-    assert "heldBy(node)" in before, "the node's own arms are no longer its own"
+    assert arms.index("(node.fields || {})[f.id]") > arms.index("KINDS["), (
+        "an option's arms are no longer taken from what it holds"
+    )
 
 
 # ----------------------------------------------------------------------

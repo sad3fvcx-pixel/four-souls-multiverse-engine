@@ -366,8 +366,16 @@ function chooseAction(how) {
   const doing = actionsIn(walk && walk.where ? at(walk.where) : null);
   const one = (e) => `<button class="task" onclick="pickAction('${e.id}','${how}')">
       <b>${esc(sentence(e.about))}</b></button>`;
-  const common = doing.filter(e => e.common);
-  const rest = doing.filter(e => !e.common);
+  // Three groups, and the third is the one that is not an action at all: a
+  // branch and a loop are not things that happen, they are the shapes the
+  // things that happen go in. The editor's list of nodes is split the same
+  // way and for the same reason — mixed in among sixty sentences they read as
+  // effects, and somebody looking for "deal damage" scrolls past "depending
+  // on something". Which are which is the metadata's answer.
+  const shaping = doing.filter(e => e.a_step);
+  const acting = doing.filter(e => !e.a_step);
+  const common = acting.filter(e => e.common);
+  const rest = acting.filter(e => !e.common);
   // Choosing the first action is one step on from choosing a kind; choosing a
   // later one is one step on from the list of what the card already does.
   const back = walk ? "sofar()" : started();
@@ -381,6 +389,9 @@ function chooseAction(how) {
     ${common.map(one).join("")}
     <details class="deep"><summary>Everything else it could do</summary>
       <div class="nested">${rest.map(one).join("")}</div></details>
+    ${shaping.length ? `<details class="deep"><summary>Or shape what happens
+      — a branch, a choice, a loop</summary>
+      <div class="nested">${shaping.map(one).join("")}</div></details>` : ""}
     <hr>
     ${standingHtml()}
     <p><button onclick="${more ? "sofar()" : "startBlank()"}">${more
@@ -453,7 +464,7 @@ function pickAction(effect, how) {
   doing.push({ id: effect, fields: {}, groups: {} });
   // A rule's own questions belong to the rule, so they are put when it is
   // made and not again for every further thing it does.
-  return made ? assuming() : ask(0);
+  return made ? assuming() : openStep(walk.doing);
 }
 
 // ------------------------------------------- a rule that waits for nothing
@@ -738,34 +749,54 @@ function nameOf(node) {
   return said ? esc(String(said)) : saidAs(node);
 }
 
-// The lists of steps a node holds, each with the words to call it by and the
-// path it lives at. A list of steps is an arm as it stands; a list of
-// anything else holds its steps one level further in, and is named by what it
-// says of itself.
+// The lists one node holds, each with the words to call it by, the kind of
+// thing it is a list of, and where it lives.
+//
+// Two sorts, and the difference between them is the whole of this. A node's
+// own lists are the ones its shape declares, because a list it could hold and
+// has not been given anything for yet is still somewhere to go — and that is
+// what makes a structure something to fill in rather than only to look at. A
+// branch made a moment ago holds nothing at all, and a walk that read its arms
+// off its contents would have made a branch it could not finish.
+//
+// The lists inside the things it holds are the other sort, and those are taken
+// from what is there. An option written on the card is one of the things being
+// chosen between whether or not it does anything — one shipped option means
+// "do none of the others" by holding nothing — so an option that exists has
+// its arms and an option that does not exist has none.
+//
+// Nothing is named here. Which of a node's fields are lists, of what, and
+// under which words, are the shape's own answers.
 function armsOf(node, path) {
+  const shape = shapeNamed(node.id);
   const found = [];
-  for (const { f, nodes } of heldBy(node)) {
-    if (f.a_list_of === "step") {
-      found.push({ asks: trimmed(asksOf(f)), list: `${path}.fields.${f.id}` });
+
+  for (const f of (shape ? shape.fields : [])) {
+    // Not a list, or the same list under its second name, which is asked
+    // under the first.
+    if (!f.a_list_of || f.asked === "never") continue;
+
+    const where = `${path}.fields.${f.id}`;
+
+    // A list this walk has a screen for is somewhere to go as it stands.
+    if (KINDS[f.a_list_of]) {
+      found.push({ id: f.id, kind: f.a_list_of, owner: shape.id,
+                   asks: trimmed(asksOf(f)), list: where });
       continue;
     }
-    // A thing offered in a list is offered whether or not it does anything:
-    // it is written on the card either way, and one shipped option means "do
-    // none of the others" by holding nothing at all. So its arms come from
-    // its shape rather than from what it happens to hold — unlike an arm of
-    // the node itself, which exists only when the card writes it, and is why
-    // a branch with no second arm asks nobody which.
-    nodes.forEach((one, i) => {
-      const shape = shapeNamed(one.id);
-      for (const g of (shape ? shape.fields : [])) {
-        if (g.a_list_of !== "step") continue;
-        found.push({
-          asks: nameOf(one),
-          list: `${path}.fields.${f.id}[${i}].fields.${g.id}`,
-        });
+
+    // And one it has not is a list of things with shapes of their own, whose
+    // steps are one level further in.
+    ((node.fields || {})[f.id] || []).forEach((one, i) => {
+      const held = shapeNamed(one.id);
+      for (const g of (held ? held.fields : [])) {
+        if (g.a_list_of !== "step" || g.asked === "never") continue;
+        found.push({ id: g.id, kind: "step", owner: held.id, asks: nameOf(one),
+                     list: `${where}[${i}].fields.${g.id}` });
       }
     });
   }
+
   return found;
 }
 
@@ -782,6 +813,13 @@ function heldHtml(node) {
 function sofar(problems = [], moments = []) {
   walk.on = "sofar";
   const doing = at(walk.list, []);
+  // Whether this is the list of what the card does, or one arm of something
+  // the card does. Inside an arm, what a person is finished with is the arm —
+  // saying so and being handed the finished card instead is being taken
+  // somewhere they did not ask to go, and the list they were filling in is
+  // two screens behind them. The list that is not a step reads itself back
+  // this way already, and for the same reason.
+  const inside = (walk.trail || []).length;
   const rows = doing.map((step, i) => `<li>${saidAs(step)}
       <button onclick="openStep(${i})">change</button>
       ${doing.length > 1
@@ -793,11 +831,12 @@ function sofar(problems = [], moments = []) {
     ? "chooseWhich()"
     : `editAction(${Math.max(0, doing.length - 1)})`;
   el(`<button class="back" onclick="${out}">← back</button>
-    <h1>What this card does</h1>
+    <h1>${esc(sentence(inside ? walk.asks || "" : "what this card does"))}</h1>
     <ol class="list">${rows}</ol>
     <hr>
     <div class="row">
-      <button class="go" onclick="finish()">That is everything</button>
+      <button class="go" onclick="${inside ? "outOfArm()" : "finish()"}"
+        >That is everything</button>
       <button onclick="addAction()">Add another thing it does</button>
       ${heldHtmlButtons()}
       ${anotherHtml()}
@@ -841,19 +880,17 @@ function heldHtmlButtons() {
 }
 
 // Into one of them, by the same trail that goes into an arm — and out of it
-// the same way.
+// the same way, because it is the same way. A rule's own list and a list held
+// by one of the things the rule does are the same sort of place, reached from
+// two screens.
 function intoList(which) {
   const f = listsOf(walk.part).find(one => one.id === which);
 
   if (!f || !walk.where) return sofar();
 
-  walk.trail = (walk.trail || []).concat(
-    [{ list: walk.list, doing: walk.doing, kind: walk.kind, holds: walk.holds }]);
-  walk.list = `${walk.where}.fields.${f.id}`;
-  walk.doing = 0;
-  walk.kind = f.a_list_of;
-  walk.holds = f.id;
-  return holding();
+  return intoArm({ id: f.id, kind: f.a_list_of, owner: walk.part.id,
+                   asks: trimmed(asksOf(f)),
+                   list: `${walk.where}.fields.${f.id}` });
 }
 
 // The list itself, read back the way the things a rule does are read back.
@@ -862,7 +899,12 @@ function intoList(which) {
 // none of them holds anything to go into.
 function holding(problems = [], moments = []) {
   walk.on = "holding";
-  const f = (walk.part.fields || []).find(one => one.id === walk.holds) || {};
+  // Whose list this is. A rule's own, or one held by something the rule does —
+  // the words are the field's, and the field belongs to whichever of them it
+  // was reached from.
+  const owner = shapeNamed(walk.owner) || walk.part;
+  const f = ((owner && owner.fields) || []).find(one => one.id === walk.holds)
+    || {};
   const held = at(walk.list, []);
   const rows = held.map((one, i) => `<li>${saidAs(one)}
       <button onclick="editAction(${i})">change</button>
@@ -871,8 +913,8 @@ function holding(problems = [], moments = []) {
   el(`<button class="back" onclick="outOfArm()">← back</button>
     <h1>${esc(sentence(asksOf(f)))}</h1>
     <p class="lead">${held.length
-      ? "The rule waits for all of these before it happens."
-      : "Nothing yet, which means the rule happens whenever its moment does."}
+      ? `All of these before ${esc(sentence(owner ? owner.about : "").toLowerCase())}.`
+      : `Nothing yet, which means nothing is waited for.`}
       </p>
     <ol class="list">${rows}</ol>
     <hr>
@@ -923,14 +965,24 @@ function openStep(i) {
   return whichArm(arms, step);
 }
 
+// Into one of them. A list of things that happen is read back on the walk's
+// own screen; a list of anything else has the screen that reads a list back,
+// and that screen has to know which list it is looking at to say so. Both are
+// entered and left the same way, which is why there is one of this and not
+// two.
 function intoArm(arm) {
   walk.trail = (walk.trail || []).concat(
-    [{ list: walk.list, doing: walk.doing, kind: walk.kind, holds: walk.holds }]);
+    [{ list: walk.list, doing: walk.doing, kind: walk.kind,
+       holds: walk.holds, owner: walk.owner, asks: walk.asks }]);
   walk.list = arm.list;
   walk.doing = 0;
-  walk.kind = "step";
-  walk.holds = null;
-  return sofar();
+  walk.kind = arm.kind;
+  walk.holds = arm.kind === "step" ? null : arm.id;
+  walk.owner = arm.owner;
+  // What this list was called where it was offered, so the screen that reads
+  // it back is headed by the question it answers rather than by the card's.
+  walk.asks = arm.asks;
+  return walk.holds ? holding() : sofar();
 }
 
 function outOfArm() {
@@ -940,6 +992,8 @@ function outOfArm() {
   walk.doing = back.doing;
   walk.kind = back.kind;
   walk.holds = back.holds;
+  walk.owner = back.owner;
+  walk.asks = back.asks;
   return back.holds ? holding() : sofar();
 }
 
@@ -1073,7 +1127,7 @@ function assumedOf(part, how) {
 function assuming(problems = [], moments = []) {
   const fields = assumedOf(walk.part, walk.how);
 
-  if (!fields.length) return ask(0);
+  if (!fields.length) return openStep(walk.doing);
 
   walk.on = "assuming";
   const node = at(walk.where);
@@ -1093,7 +1147,7 @@ function assuming(problems = [], moments = []) {
     ${otherwise}
     <hr>
     <div class="row">
-      <button class="go" onclick="ask(0)">Next</button>
+      <button class="go" onclick="openStep(${walk.doing})">Next</button>
       <button onclick="startBlank()">Fill the rest in myself</button>
     </div>
     ${saidHtml(problems, moments)}`);
@@ -1187,15 +1241,20 @@ function walkable() {
   const parts = partsOf();
   if (!parts.length) return false;
   const known = (step, offered) => offered.some(e => e.id === step.id);
-  // An action the walk can finish, or something holding only such actions.
-  // The rule is the same rule, asked one level further down — and asked of
-  // what it holds in the same way, because a branch inside a branch is not an
-  // action either. Asking only whether each held thing is an action turned
-  // down three cards that read perfectly.
+  // Something that holds things is shown when everything it holds is; a thing
+  // that holds nothing is shown when the walk offers it. The rule is the same
+  // rule, asked one level further down, because a branch inside a branch is
+  // not an action either — asking only whether each held thing is an action
+  // turned down three cards that read perfectly.
+  //
+  // What it holds is asked first, and not only when the walk does not offer
+  // it. The walk now offers the structures themselves, and stopping at the
+  // branch would be calling a card walkable for the shape of it while the
+  // thing inside was one no screen could put.
   const reachable = (step, offered) => {
-    if (known(step, offered)) return true;
     const under = stepsUnder(step);
-    return under.length > 0 && under.every(one => reachable(one, offered));
+    return under.length ? under.every(one => reachable(one, offered))
+                        : known(step, offered);
   };
   return parts.every(part => {
     const does = doesIn(part);
@@ -1445,10 +1504,17 @@ function requirements() {
 
 // The actions on offer inside one part: those this walk can finish, whose
 // every requirement that part answers.
+//
+// What may go in a list of steps is one question, and the editor's own answer
+// to it is the one asked here. It used to be asked twice — the editor of the
+// kind, the walk of the catalogue of effects — and the two answers differed by
+// exactly the structures, which is why a walk could look at a branch and never
+// make one. A structure is a thing that happens like any other; what it does
+// is hold the rest.
 function actionsIn(node) {
   const allowed = allowedIn(node);
   const asked = [...requirements()];
-  return can.effects.filter(e => !e.a_step && finishable(e)
+  return (kindOf("step").of() || []).filter(e => finishable(e)
     && asked.every(need => !e[need] || allowed[need] === true));
 }
 

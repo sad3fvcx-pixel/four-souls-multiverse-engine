@@ -2346,3 +2346,366 @@ def test_every_shipped_proviso_survives_being_opened_and_written() -> None:
             seen += len(mine)
 
     assert seen >= 77, seen
+
+
+# ----------------------------------------------------------------------
+# 16. One name per structure
+# ----------------------------------------------------------------------
+
+
+TWO_NAMED = ("may", "choose", "sequence")
+
+
+def a_structure(node: str) -> dict[str, Any]:
+    """
+    A card whose one rule is a control node holding one step.
+    """
+    held: Any = [{"id": "gain_coins", "fields": {"amount": 1}, "groups": {}}]
+
+    if node == "choose":
+        held = [
+            {
+                "id": "mode",
+                "fields": {"description": "A cent", "effects": held},
+                "groups": {},
+            }
+        ]
+
+    return build_card(
+        {
+            "set": "demo",
+            "card": {
+                "id": "card",
+                "fields": {
+                    "name": "Held",
+                    "type": "loot",
+                    "abilities": [
+                        {
+                            "id": "ability",
+                            "fields": {
+                                "trigger": USED_BY["loot"],
+                                "effects": [
+                                    {"id": node, "fields": {node: held}, "groups": {}}
+                                ],
+                            },
+                            "groups": {},
+                        }
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+
+def test_a_structure_is_written_under_one_name_only() -> None:
+    """
+    The defect this closes: the contents of a `may` went under `effects` while
+    the node still said `may`, so the card said both. It loaded, it checked
+    clean, and opening it again refused it.
+
+    Under the key that names the node there is nothing to disagree with — the
+    node says `may`, and what it holds is what `may` holds.
+    """
+    for node in TWO_NAMED:
+        card = a_structure(node)
+        written = card["abilities"][0]["effects"][0]
+
+        assert set(written) == {node}, (node, written)
+        assert written[node], node
+        assert check_card(card) == [], (node, check_card(card))
+
+
+def test_a_structure_saved_and_opened_says_the_same_thing() -> None:
+    """
+    Save, open, save. A card that came back spelled differently is a card an
+    author cannot edit twice.
+    """
+    from fsme.lab.desk.author import read_card
+
+    for node in TWO_NAMED:
+        card = a_structure(node)
+
+        assert build_card(read_card(card, set_id="demo")) == card, node
+
+
+def test_a_structure_that_says_both_names_is_refused_rather_than_guessed_at() -> None:
+    """
+    A node saying both is one the engine reads by dropping one of them, so an
+    editor that opened it would drop it too — quietly, and on save.
+
+    Nothing writes this any more, and no shipped card ever did. It is refused
+    with the two names in the message rather than half-read.
+    """
+    from fsme.lab.desk.author import UnreadableCard, read_card
+    from fsme.runtime.interpreter import CONTROL_SPELLINGS
+
+    for node in TWO_NAMED:
+        first, second = CONTROL_SPELLINGS[node]
+        alias = second if first == node else first
+        held = a_structure(node)["abilities"][0]["effects"][0][node]
+        card = a_structure(node)
+        card["abilities"][0]["effects"][0] = {node: True, alias: held}
+
+        with pytest.raises(UnreadableCard) as said:
+            read_card(card, set_id="demo")
+
+        assert node in str(said.value) and alias in str(said.value), node
+
+
+def test_every_shipped_structure_is_written_back_exactly() -> None:
+    """
+    Over the cards themselves rather than made-up ones: every shipped card
+    holding a control node that has two names, opened and written again.
+
+    The count is here so that a change which quietly stopped finding them
+    would fail rather than pass over nothing.
+    """
+    from fsme.lab.desk.author import read_card
+    from fsme.runtime.interpreter import CONTROL_SPELLINGS
+
+    two_named = set(CONTROL_SPELLINGS)
+    seen = 0
+
+    def structures(node: Any) -> int:
+        if isinstance(node, Mapping):
+            return sum(
+                (1 if key in two_named else 0) + structures(value)
+                for key, value in node.items()
+            )
+
+        if isinstance(node, list):
+            return sum(structures(one) for one in node)
+
+        return 0
+
+    for card in every_shipped_card():
+        found = structures(card.get("abilities") or [])
+
+        if not found:
+            continue
+
+        seen += found
+        set_id = str(card["expansion"])
+        before = read_card(card, set_id=set_id)
+
+        assert read_card(build_card(before), set_id=set_id) == before, card["id"]
+
+    assert seen >= 55, seen
+
+
+# ----------------------------------------------------------------------
+# 17. Making a branch, not only reading one
+# ----------------------------------------------------------------------
+#
+# A hundred and eight branches in the shipped content, across forty-nine
+# cards, and the walk could open every one of them and make none. Not because
+# a branch was hard: because the list of things a walk offered was the
+# catalogue of effects, and a branch is not an effect. The editor's own list —
+# what may go in a list of steps — had always included them.
+#
+# So the question "what may go here" is asked once now, of the editor's answer,
+# and the screens that fill a node in are the ones that were already there.
+# Nothing below names `if`.
+
+
+def body_of(name: str) -> str:
+    """
+    One function out of the page, opening line to the `}` that ends it.
+    """
+    said = script()
+    start = said.index(f"function {name}(")
+
+    return said[start : said.index("\n}\n", start)]
+
+
+def a_branch(
+    can: dict[str, Any],
+    conditions: Sequence[Mapping[str, Any]],
+    otherwise: bool = False,
+) -> dict[str, Any]:
+    """
+    The card a walk leaves behind after making a branch: the rule it made, the
+    branch it put in it, the conditions it was given and one thing in each arm.
+
+    Built as author state and written by the writer, which is what the walk
+    does — the screens decide what is asked and in what order, and the card
+    that comes out is this one either way.
+    """
+    coins = lambda n: [  # noqa: E731
+        {"id": "gain_coins", "fields": {"amount": n}, "groups": {}}
+    ]
+    branch: dict[str, Any] = {
+        "id": "if",
+        "fields": {"if": list(conditions), "then": coins(1)},
+        "groups": {},
+    }
+
+    if otherwise:
+        branch["fields"]["else"] = coins(3)
+
+    return build_card(
+        {
+            "set": "demo",
+            "card": {
+                "id": "card",
+                "fields": {
+                    "name": "Branched",
+                    "type": "loot",
+                    "abilities": [
+                        {
+                            "id": "ability",
+                            "fields": {
+                                "trigger": USED_BY["loot"],
+                                "effects": [branch],
+                            },
+                            "groups": {},
+                        }
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+
+A_PLAIN = {"id": "combat_damage", "fields": {}, "groups": {}}
+AN_ANSWERED = {"id": "dice_equals", "fields": {"value": 6}, "groups": {}}
+
+
+def test_the_walk_offers_what_the_editor_offers(can: dict[str, Any]) -> None:
+    """
+    One question, asked once. The two lists differed by exactly the
+    structures, which is the whole of why a walk could read a branch and never
+    write one.
+    """
+    said = body_of("actionsIn")
+
+    assert 'kindOf("step")' in said, "the walk answers this its own way again"
+    assert "a_step" not in said, "the walk still turns the structures down"
+
+
+def test_every_structure_the_walk_offers_is_one_it_can_finish(
+    can: dict[str, Any],
+) -> None:
+    """
+    The same predicate everything else is offered by. A structure whose
+    required answer the walk never puts would be a card the checker refuses,
+    made by somebody who answered every question shown.
+    """
+    shaping = [one for one in can["structures"] if one["a_step"]]
+
+    assert shaping, "no structures are published at all"
+    assert [one["id"] for one in shaping if not finishable(one)] == []
+
+
+def test_a_branch_is_somewhere_to_go_before_anything_is_in_it() -> None:
+    """
+    Where a node's arms come from, which is the whole difference between
+    reading a branch and writing one. Its own lists are the ones its shape
+    declares, so a branch made a moment ago has all of them to go into; the
+    lists inside the things it holds are taken from what is there, because an
+    option written on the card is one of the things being chosen between
+    whether or not it does anything.
+    """
+    said = body_of("armsOf")
+
+    assert "shape ? shape.fields : []" in said, (
+        "a node's own arms are not read off its shape"
+    )
+    assert said.index("(node.fields || {})[f.id]") > said.index("KINDS["), (
+        "an option's arms are no longer taken from what it holds"
+    )
+
+
+def test_making_a_branch_names_no_structure() -> None:
+    """
+    The same rule as everywhere else, over every function this stage touched.
+    """
+    said = "".join(
+        body_of(name)
+        for name in ("actionsIn", "armsOf", "intoArm", "intoList", "openStep",
+                     "holding", "sofar", "chooseAction", "pickAction")
+    )
+    said = "\n".join(
+        line.split("//")[0] for line in said.splitlines()
+    )
+
+    for one in ("if", "may", "choose", "for_each", "repeat", "sequence",
+                "then", "else", "modes", "conditions"):
+        assert f'"{one}"' not in said, one
+        assert f"'{one}'" not in said, one
+
+
+def test_a_blank_card_can_be_given_a_branch(can: dict[str, Any]) -> None:
+    """
+    One condition, one thing in the arm, and the card the engine reads.
+    """
+    card = a_branch(can, [A_PLAIN])
+    branch = card["abilities"][0]["effects"][0]
+
+    assert set(branch) == {"if", "then"}, branch
+    assert branch["then"] == [{"effect": "gain_coins", "amount": 1}]
+    assert check_card(card) == [], check_card(card)
+
+
+def test_a_branch_may_be_given_a_condition_with_an_answer(
+    can: dict[str, Any],
+) -> None:
+    card = a_branch(can, [AN_ANSWERED])
+    kept = card["abilities"][0]["effects"][0]["if"]
+
+    assert kept == [{"dice_equals": {"value": 6}}], kept
+    assert check_card(card) == [], check_card(card)
+
+
+def test_a_branch_may_be_given_several_conditions(can: dict[str, Any]) -> None:
+    """
+    In the order they were given, which is the order they were asked in.
+    """
+    card = a_branch(can, [A_PLAIN, AN_ANSWERED])
+    kept = card["abilities"][0]["effects"][0]["if"]
+
+    assert len(kept) == 2, kept
+    assert check_card(card) == [], check_card(card)
+
+
+def test_a_branch_may_be_given_its_other_arm(can: dict[str, Any]) -> None:
+    """
+    The arm a card has not written is still one of the branch's own, so it is
+    somewhere the walk can go — which is what the arms being read off the
+    shape is for.
+    """
+    card = a_branch(can, [A_PLAIN], otherwise=True)
+    branch = card["abilities"][0]["effects"][0]
+
+    assert set(branch) == {"if", "then", "else"}, branch
+    assert branch["else"] == [{"effect": "gain_coins", "amount": 3}]
+    assert check_card(card) == [], check_card(card)
+
+
+def test_every_branch_a_walk_could_make_opens_again_the_same(
+    can: dict[str, Any],
+) -> None:
+    """
+    Save, open, save, over each of them.
+    """
+    from fsme.lab.desk.author import read_card
+
+    for conditions in ([A_PLAIN], [AN_ANSWERED], [A_PLAIN, AN_ANSWERED]):
+        for otherwise in (False, True):
+            card = a_branch(can, conditions, otherwise)
+
+            assert build_card(read_card(card, set_id="demo")) == card, conditions
+
+
+def test_a_branch_a_walk_made_is_one_the_engine_plays(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    Not only written and read back: handed to the engine, which says which
+    moments it would act at.
+    """
+    card = a_branch(can, [AN_ANSWERED], otherwise=True)
+
+    assert [one["what"] for one in bench.show_card(card)]
