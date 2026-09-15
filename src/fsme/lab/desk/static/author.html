@@ -570,7 +570,14 @@ function asking() {
 function questions() {
   const { shape } = asking();
   if (!shape) return [];
-  const values = (shape.fields || []).filter(asks);
+  // Somewhere the walk goes is not somewhere it asks. A branch's arms and the
+  // things a "you may" may do are lists it walks into, and drawing them as
+  // boxes here would put the editor inside the walk and ask the same thing
+  // twice. What is left is what the node asks besides what it holds — for
+  // most things that is everything, and for a node that puts a question to a
+  // player it is the words of the question.
+  const goes = new Set(ownLists(shape).map(f => f.id));
+  const values = (shape.fields || []).filter(f => asks(f) && !goes.has(f.id));
   // Only something that happens is aimed at anything. A part is not, and says
   // so by not carrying the answer at all.
   const aim = shape.needs_target ? [{ aim: true }] : [];
@@ -667,7 +674,15 @@ function ask(n, problems = [], moments = []) {
 // it was.
 function answered(problems = [], moments = []) {
   if (walk.holds) return holding(problems, moments);
-  return walk.list ? sofar(problems, moments) : chooseWhich(problems, moments);
+  if (!walk.list) return chooseWhich(problems, moments);
+
+  // Answering the last of a node's own questions leaves whatever it holds
+  // still to fill in, so that is where this goes. A node holding nothing has
+  // nowhere to go and the list it is in is the answer, as it always was.
+  const step = at(walk.list, [])[walk.doing];
+  const arms = step ? armsOf(step, `${walk.list}[${walk.doing}]`) : [];
+
+  return arms.length ? intoStep(step, arms) : sofar(problems, moments);
 }
 
 // ------------------------------------------------------ what it does so far
@@ -767,9 +782,19 @@ function nameOf(node) {
 //
 // Nothing is named here. Which of a node's fields are lists, of what, and
 // under which words, are the shape's own answers.
+// Which of a shape's own fields are lists this walk goes into. Asked in two
+// places — where the walk goes, and what it asks about instead — and they have
+// to be the same answer: a list somebody is walked into is not also a box they
+// fill in, and one that is neither is a question nobody is ever put.
+function ownLists(shape) {
+  return (shape ? shape.fields : []).filter(
+    f => f.a_list_of && f.asked !== "never" && KINDS[f.a_list_of]);
+}
+
 function armsOf(node, path) {
   const shape = shapeNamed(node.id);
   const found = [];
+  const goes = new Set(ownLists(shape).map(f => f.id));
 
   for (const f of (shape ? shape.fields : [])) {
     // Not a list, or the same list under its second name, which is asked
@@ -779,7 +804,7 @@ function armsOf(node, path) {
     const where = `${path}.fields.${f.id}`;
 
     // A list this walk has a screen for is somewhere to go as it stands.
-    if (KINDS[f.a_list_of]) {
+    if (goes.has(f.id)) {
       found.push({ id: f.id, kind: f.a_list_of, owner: shape.id,
                    asks: trimmed(asksOf(f)), list: where });
       continue;
@@ -961,8 +986,17 @@ function openStep(i) {
   const step = at(walk.list, [])[i];
   const arms = armsOf(step, `${walk.list}[${i}]`);
   if (!arms.length) return editAction(i);
-  if (arms.length === 1) return intoArm(arms[0]);
-  return whichArm(arms, step);
+  // Something that holds other things may still have an answer of its own to
+  // give — a node that is going to ask a player something has to be told what
+  // to ask them. Those come first, and going in is what happens when they run
+  // out, which is what `answered` does for every other node too.
+  walk.doing = i;
+  if (questions().length) return ask(0);
+  return intoStep(step, arms);
+}
+
+function intoStep(step, arms) {
+  return arms.length === 1 ? intoArm(arms[0]) : whichArm(arms, step);
 }
 
 // Into one of them. A list of things that happen is read back on the walk's

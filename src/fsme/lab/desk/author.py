@@ -20,6 +20,7 @@ import json
 import os
 import re
 import shutil
+from collections import Counter
 from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,7 @@ from fsme.cards import validate_card
 from fsme.cards.references import NEW_SCOPE
 from fsme.content.vocabulary import (
     ABILITY,
+    ANSWER,
     BY_BINDING,
     BY_PLAYER_OF,
     CARD,
@@ -35,6 +37,7 @@ from fsme.content.vocabulary import (
     COST,
     MODE,
     NAMED_COUNT,
+    NEVER,
     STATIC,
     STEP,
     TARGET,
@@ -756,7 +759,12 @@ def _written_node(
             continue
 
         if parameter.a_list_of:
-            body = _written_body(parameter.a_list_of, given.get(name), aimed)
+            body = _written_body(
+                parameter.a_list_of,
+                given.get(name),
+                aimed,
+                _alternatives(shape, parameter),
+            )
 
             if body or parameter.names_the_node:
                 written[name] = body
@@ -806,12 +814,19 @@ def _written_body(
     kind: str,
     described: Any,
     aimed: _Chosen | None,
+    alternatives: bool = False,
 ) -> list[Any]:
     """
     A list of nodes of one kind, written out.
 
     Four kinds, and each of them is a thing the catalogue already describes,
     so the only thing decided here is which description to look the node up in.
+
+    ``alternatives`` says whether what is in this list runs instead of what is
+    beside it rather than after it — the options of a choice, one arm of a
+    branch. It decides nothing about what is written and everything about what
+    two nodes in it can be said to share: two questions that never both get
+    asked are not one question, however alike their names.
     """
     if not isinstance(described, (list, tuple)):
         return []
@@ -822,11 +837,17 @@ def _written_body(
     mark = aimed.opened() if aimed is not None and kind == STEP else None
     written: list[Any] = []
 
+    if aimed is not None:
+        aimed.enter(alternatives)
+
     for one in described:
         node = _written_one(kind, one, aimed)
 
         if node is not None:
             written.append(node)
+
+    if aimed is not None:
+        aimed.leave()
 
     if mark is not None and aimed is not None:
         aimed.shut(mark)
@@ -963,6 +984,47 @@ def _declared(
             into.append(written)
 
 
+def _alternatives(shape: Any, parameter: Any) -> bool:
+    """
+    Whether the things in one of a node's lists run instead of one another.
+
+    Two ways a node says so, and it says both by its shape. A list of options
+    is one: a choice runs the option taken and none of the others. Several
+    bodies of its own is the other: a branch has two, and a card goes down one
+    of them. A node with one body runs it, and a node with one body inside
+    another runs both.
+
+    Nothing here is named. A structure the engine gains that holds its steps
+    one way or the other is read by this without being told which it is.
+    """
+    if parameter.a_list_of == MODE:
+        return True
+
+    arms = [
+        one
+        for one in shape.params.values()
+        if one.a_list_of == STEP and one.asked != NEVER
+    ]
+
+    return len(arms) > 1
+
+
+def _answers_under(shape: Any) -> str:
+    """
+    Where a node keeps the reply to the question it puts, if it puts one.
+
+    Empty for everything that asks nobody anything, which is nearly all of it.
+    """
+    return next(
+        (
+            one.name
+            for one in shape.params.values()
+            if one.defines == ANSWER and one.written_as == BY_BINDING
+        ),
+        "",
+    )
+
+
 def _chooses(shape: Any) -> str:
     """
     Where this part of a card keeps the things it picks out, if it picks any.
@@ -991,7 +1053,23 @@ def _written_step(name: str, described: Any, aimed: Any) -> Any:
     control = vocabulary.node_shape(name)
 
     if control is not None:
+        # Claimed before what is inside it is written, because what is inside
+        # may ask the same question again: a "you may" holding a "you may" is
+        # two questions, and the inner one has to see that the name it would
+        # have taken is already spoken for.
+        answers = _answers_under(control)
+        given = described.get("fields") if isinstance(described, dict) else None
+        already = (given or {}).get(answers) if answers else None
+        binding = (
+            aimed.answering(name)
+            if answers and not already and aimed is not None
+            else ""
+        )
         inside = _written_node(control, described, aimed)
+
+        if binding:
+            inside[answers] = binding
+
         head = next(
             (
                 parameter
@@ -1408,6 +1486,11 @@ class _Chosen:
         self._root = root
         self._open: list[list[dict[str, Any]]] = [root]
         self._made = 0
+        # And, quite separately, the questions already put where the next one
+        # can see them. A name here is not something a step points at — it is
+        # which question a reply belongs to, and two questions sharing one are
+        # one question asked once.
+        self._asking: list[Counter[str]] = [Counter()]
         self._later: list[int] = []
 
     def opened(self) -> int:
@@ -1447,6 +1530,38 @@ class _Chosen:
         Back out to the ability's own time. The body ending is that.
         """
         self._later.pop()
+
+    def enter(self, alternatives: bool) -> None:
+        """
+        Start a body. What it can see is what its holder could, unless what is
+        in it runs instead of what is beside it — then it starts afresh, the
+        way two branches each get to call a choice `top` and mean two things.
+        """
+        self._asking.append(
+            Counter() if alternatives else Counter(self._asking[-1])
+        )
+
+    def leave(self) -> None:
+        """
+        End it, and with it everything it was the only one to have asked.
+        """
+        if len(self._asking) > 1:
+            self._asking.pop()
+
+    def answering(self, kind: str) -> str:
+        """
+        The name this node's reply goes under, or nothing where it needs none.
+
+        The first of its sort to ask here needs none: a node that writes no
+        name is read under the one the engine keeps for that sort, and one
+        question under one name is exactly right. It is the second that has to
+        say which it is, and the name it is given has to be the same every time
+        this card is written — so it is counted, not invented.
+        """
+        seen = self._asking[-1][kind]
+        self._asking[-1][kind] = seen + 1
+
+        return f"{kind}_{seen + 1}" if seen else ""
 
     def _floor(self) -> int:
         """

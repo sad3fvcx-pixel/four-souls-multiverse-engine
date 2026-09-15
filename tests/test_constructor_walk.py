@@ -23,10 +23,11 @@ from typing import Any
 import pytest
 
 from fsme.api import load_content
+from fsme.content.vocabulary import ANSWER, FIRST
 from fsme.lab.desk import Workbench
 from fsme.lab.desk.author import build_card, check_card
 from fsme.lab.desk.capabilities import catalogue
-from fsme.runtime.vocabulary import USED_BY
+from fsme.runtime.vocabulary import USED_BY, engine_vocabulary
 
 CONTENT = Path(__file__).resolve().parents[1] / "content"
 PAGE = (
@@ -2608,12 +2609,12 @@ def test_a_branch_is_somewhere_to_go_before_anything_is_in_it() -> None:
     option written on the card is one of the things being chosen between
     whether or not it does anything.
     """
-    said = body_of("armsOf")
+    said = body_of("armsOf") + body_of("ownLists")
 
     assert "shape ? shape.fields : []" in said, (
         "a node's own arms are not read off its shape"
     )
-    assert said.index("(node.fields || {})[f.id]") > said.index("KINDS["), (
+    assert "(node.fields || {})[f.id]" in said, (
         "an option's arms are no longer taken from what it holds"
     )
 
@@ -2709,3 +2710,293 @@ def test_a_branch_a_walk_made_is_one_the_engine_plays(
     card = a_branch(can, [AN_ANSWERED], otherwise=True)
 
     assert [one["what"] for one in bench.show_card(card)]
+
+
+# ----------------------------------------------------------------------
+# 18. Two questions are not one question
+# ----------------------------------------------------------------------
+#
+# A node that puts a question to a player keeps the reply under a name, and
+# reaching that name again is how the question survives being asked: the
+# ability is suspended, the player answers, and resolution starts over and
+# finds the reply waiting instead of asking twice. Two such nodes that both
+# leave the name out are read under the same one — so the second never asks,
+# and does what it does anyway. The checker calls that card clean, the reader
+# reads it back unchanged, and only a game shows it.
+#
+# So a name is written where one is needed and nowhere else. Needed means two
+# of them can be asked in one resolution: side by side in a list, or one
+# inside what the other holds. Two in different arms of a branch, or in
+# different options of a choice, are two questions that never both happen —
+# and naming those apart would rewrite cards that have been right all along.
+#
+# Nothing below names a structure.
+
+
+def answers_under(node: str) -> str:
+    """
+    Where a node of this sort keeps the reply to the question it puts.
+    """
+    shape = engine_vocabulary().node_shape(node)
+
+    return next(
+        (
+            one.name
+            for one in (shape.params.values() if shape else ())
+            if one.defines == ANSWER
+        ),
+        "",
+    )
+
+
+def asking_nodes() -> list[str]:
+    """
+    Every node the engine says puts a question to a player.
+    """
+    return [
+        one
+        for one in engine_vocabulary().node_shapes
+        if answers_under(one)
+    ]
+
+
+def one_asking(node: str, held: Any, **also: Any) -> dict[str, Any]:
+    return {"id": node, "fields": {node: held, **also}, "groups": {}}
+
+
+def holds_steps_itself(node: str) -> bool:
+    """
+    Whether what this node holds is things that happen, rather than options
+    with things that happen inside them. One can be put straight inside
+    another; the other needs an option to put it in.
+    """
+    shape = engine_vocabulary().node_shape(node)
+
+    return any(
+        one.a_list_of == "step" and one.name == node
+        for one in (shape.params.values() if shape else ())
+    )
+
+
+def a_coin(amount: int = 1) -> dict[str, Any]:
+    return {"id": "gain_coins", "fields": {"amount": amount}, "groups": {}}
+
+
+def holding(effects: Sequence[Any], name: str = "Asking") -> dict[str, Any]:
+    return build_card(
+        {
+            "set": "demo",
+            "card": {
+                "id": "card",
+                "fields": {
+                    "name": name,
+                    "type": "loot",
+                    "abilities": [
+                        {
+                            "id": "ability",
+                            "fields": {
+                                "trigger": USED_BY["loot"],
+                                "effects": list(effects),
+                            },
+                            "groups": {},
+                        }
+                    ],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+
+def test_the_engine_says_which_nodes_put_a_question(can: dict[str, Any]) -> None:
+    """
+    Not a list kept here. A node that asks somebody something is one whose own
+    expander reads both the words to ask and where to keep the reply, and the
+    metadata publishes that rather than restating it.
+    """
+    asking = asking_nodes()
+
+    assert asking, "nothing in the language asks a player anything"
+
+    for node in asking:
+        shape = engine_vocabulary().node_shape(node)
+        words = [
+            one
+            for one in (shape.params.values() if shape else ())
+            if one.asked == FIRST and one.kind == "text"
+        ]
+
+        assert words, f"{node} keeps a reply and never says what it asked"
+
+
+def test_one_question_needs_no_name(can: dict[str, Any]) -> None:
+    """
+    The name is what tells two questions apart. One of them has nothing to be
+    told apart from, and a card that wrote one would be saying something no
+    shipped card says.
+    """
+    for node in asking_nodes():
+        card = holding([one_asking(node, [a_coin()])])
+        written = card["abilities"][0]["effects"][0]
+
+        assert answers_under(node) not in written, (node, written)
+
+
+def test_two_questions_side_by_side_are_told_apart(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    And told apart in a game, which is the only place it shows: two of them
+    sharing a name are asked once and both happen anyway.
+    """
+    for node in asking_nodes():
+        card = holding(
+            [one_asking(node, [a_coin(1)]), one_asking(node, [a_coin(5)])],
+            name=f"Two {node}",
+        )
+        kept = answers_under(node)
+        first, second = card["abilities"][0]["effects"]
+
+        assert kept not in first, (node, first)
+        assert second.get(kept), (node, second)
+        assert check_card(card) == [], check_card(card)
+
+        asked = [
+            one for one in bench.show_card(card) if "chose" in one["what"]
+        ]
+
+        assert len(asked) == 2, (node, asked)
+
+
+def test_a_question_inside_another_is_told_apart(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    One holding another is two questions as well: the outer is asked, says
+    yes, and the inner is opened while the reply is still there to be found.
+
+    Only over the nodes that hold things that happen directly. One whose list
+    is of options holds no step of its own, and putting a node in it would be
+    writing an option that is not one.
+    """
+    for node in asking_nodes():
+        if not holds_steps_itself(node):
+            continue
+
+        held = one_asking(node, [a_coin()])
+        card = holding([one_asking(node, [held])], name=f"Nested {node}")
+        kept = answers_under(node)
+        outer = card["abilities"][0]["effects"][0]
+        inner = outer[node][0]
+
+        assert kept not in outer, (node, outer)
+        assert inner.get(kept), (node, inner)
+
+        asked = [
+            one for one in bench.show_card(card) if "chose" in one["what"]
+        ]
+
+        assert len(asked) == 2, (node, asked)
+
+
+def test_questions_that_never_both_happen_keep_their_names(
+    can: dict[str, Any],
+) -> None:
+    """
+    The other half of the rule, and the half that keeps the shipped cards as
+    they are: two arms of a branch are two ways one card can go, so a question
+    in each is one question either way.
+    """
+    for node in asking_nodes():
+        branch = {
+            "id": "if",
+            "fields": {
+                "if": [A_PLAIN],
+                "then": [one_asking(node, [a_coin(1)])],
+                "else": [one_asking(node, [a_coin(5)])],
+            },
+            "groups": {},
+        }
+        card = holding([branch], name=f"Arms {node}")
+        kept = answers_under(node)
+        written = card["abilities"][0]["effects"][0]
+
+        for arm in ("then", "else"):
+            assert kept not in written[arm][0], (node, arm, written)
+
+
+def test_a_name_the_card_gave_is_the_name_it_keeps(can: dict[str, Any]) -> None:
+    for node in asking_nodes():
+        kept = answers_under(node)
+        card = holding(
+            [
+                one_asking(node, [a_coin(1)], **{kept: "mine"}),
+                one_asking(node, [a_coin(5)]),
+            ],
+            name=f"Named {node}",
+        )
+        first, second = card["abilities"][0]["effects"]
+
+        assert first[kept] == "mine", (node, first)
+        assert check_card(card) == [], check_card(card)
+
+
+def test_what_a_question_asks_is_asked(can: dict[str, Any]) -> None:
+    """
+    A node that is going to ask a player something and does not say what it is
+    asking hands the client a blank, and the client shows whatever it was
+    handed. Every shipped node of this sort says it, and now the walk does.
+    """
+    for node in asking_nodes():
+        shape = next(one for one in can["structures"] if one["id"] == node)
+        words = [f for f in shape["fields"] if f["kind"] == "text" and asks(f)]
+
+        assert words, f"{node} never asks what to ask"
+
+
+def test_every_shipped_question_is_written_back_exactly() -> None:
+    """
+    Over the cards themselves. A name minted where a shipped card needed none
+    would be a corpus this stage had quietly rewritten.
+    """
+    from fsme.lab.desk.author import read_card
+
+    kept = {node: answers_under(node) for node in asking_nodes()}
+    seen = 0
+    # Compared as the walk holds the card rather than as the file spells it,
+    # which is how every other round trip over the corpus is compared here: a
+    # card carries the identifier it was given, and building one derives it
+    # from the set and the name.
+
+    def asking(node: Any) -> int:
+        if isinstance(node, Mapping):
+            return sum(
+                (1 if key in kept else 0) + asking(value)
+                for key, value in node.items()
+            )
+
+        if isinstance(node, list):
+            return sum(asking(one) for one in node)
+
+        return 0
+
+    for card in every_shipped_card():
+        found = asking(card.get("abilities") or [])
+
+        if not found:
+            continue
+
+        seen += found
+        set_id = str(card["expansion"])
+        before = read_card(card, set_id=set_id)
+        written = build_card(before)
+
+        assert read_card(written, set_id=set_id) == before, card["id"]
+
+        for node, key in kept.items():
+            assert json.dumps(written).count(f'"{key}": "{node}_') == 0, (
+                card["id"],
+                "a name was minted where the card needed none",
+            )
+
+    assert seen >= 55, seen

@@ -2960,11 +2960,17 @@ def test_a_branch_with_one_arm_is_not_asked_about(can: dict[str, Any]) -> None:
     Fifty-seven of the 74 branching cards have every node with exactly one
     arm. There is no choice to put to anybody, so none is put: the walk goes
     straight into the arm.
-    """
-    opening = body_of("openStep")
 
-    assert "length === 1" in opening or "length < 2" in opening, opening[:200]
-    assert "intoArm(" in opening
+    Going in is now reached from two places — opening a node, and running out
+    of the questions the node itself puts — so the rule lives in the one both
+    of them go through rather than in either of them.
+    """
+    going = body_of("intoStep")
+
+    assert "length === 1" in going or "length < 2" in going, going[:200]
+    assert "intoArm(" in going
+    assert "intoStep(" in body_of("openStep")
+    assert "intoStep(" in body_of("answered")
 
 
 def test_a_step_inside_a_branch_is_reached_by_a_path_like_any_other() -> None:
@@ -3249,10 +3255,11 @@ def test_an_option_that_does_nothing_is_still_offered() -> None:
     """
     arms = body_of("armsOf")
 
-    assert "shape ? shape.fields : []" in arms, (
+    assert "ownLists(shape)" in arms, (
         "a node's own arms are no longer read off its shape"
     )
-    assert arms.index("(node.fields || {})[f.id]") > arms.index("KINDS["), (
+    assert "shape ? shape.fields : []" in body_of("ownLists")
+    assert "(node.fields || {})[f.id]" in arms, (
         "an option's arms are no longer taken from what it holds"
     )
 

@@ -380,6 +380,16 @@ def test_a_nonsense_condition_inside_a_tree_is_still_refused(vocabulary) -> None
 
 
 def test_a_parameter_that_invents_a_name_says_so(can: dict[str, Any]) -> None:
+    """
+    Three kinds of name, and the third is the one nobody points at.
+
+    ``values`` is what an ability stored and ``any`` is a group it chose, and
+    both are there for a later step to name. ``answer`` is not: it is what a
+    node that asks a player something keeps the reply under, and its whole use
+    is that asking the same question twice under one name is asking it once.
+    """
+    from fsme.content.vocabulary import ANSWER
+
     defining = {
         f"{one['id']}.{f['id']}": f["defines"]
         for group in ("abilities", "statics", "structures")
@@ -390,7 +400,7 @@ def test_a_parameter_that_invents_a_name_says_so(can: dict[str, Any]) -> None:
 
     assert defining
     assert all(name.endswith((".store", ".as")) for name in defining), defining
-    assert set(defining.values()) == {VALUES, ANY_GROUP}
+    assert set(defining.values()) == {VALUES, ANY_GROUP, ANSWER}
 
 
 def test_defining_and_reading_are_different_roles(can: dict[str, Any]) -> None:

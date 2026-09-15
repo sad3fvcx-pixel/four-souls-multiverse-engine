@@ -11,7 +11,7 @@ content passes validation for effects nobody wrote.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import Field, fields
+from dataclasses import Field, fields, replace
 from types import MappingProxyType
 from typing import Any
 
@@ -23,6 +23,7 @@ from fsme.content.vocabulary import (
     A_LIST,
     A_MAPPING,
     ABILITY,
+    ANSWER,
     ANY_GROUP,
     BY_BINDING,
     BY_ENGINE,
@@ -954,6 +955,18 @@ def _control_field(node: str, key: str) -> ParamShape:
             describes="how many times",
         )
 
+    if key in _ANY_NODE and key in CONTROL_KEYS.get(node, ()):
+        # A key a node reads itself, rather than one the executor takes off
+        # every node before the node is looked at. The two overlap, and where
+        # they do it is the node that means something by it.
+        #
+        # `CONTROL_KEYS` is that list, read off the expanders — exactly the
+        # keys each `params.get` is called with. So the nodes that put a
+        # question to a player are the ones whose entry names the words of the
+        # question, and the ones that keep a reply are the ones whose entry
+        # names where it is kept. Neither is written down here.
+        return _asking(node, key)
+
     if (node, key) == ("stop", "stop"):
         # The head names the node and carries nothing: the interpreter reads
         # `op.name` and never looks at the value.
@@ -966,6 +979,35 @@ def _control_field(node: str, key: str) -> ParamShape:
         )
 
     return _ANY_NODE.get(key, ParamShape(key, TEXT))
+
+
+def _asking(node: str, key: str) -> ParamShape:
+    """
+    One of the two halves of a question a node puts to a player.
+
+    The words of it are a question like any other and are asked first, because
+    a node that asks a person something and does not say what it is asking has
+    a question nobody can read: the client shows whatever it was handed, and
+    what it was handed is a blank. Every shipped node of this sort carries one.
+
+    Where the reply is kept is not asked at all — FSME writes it, as it always
+    said it would — but it is no longer described as a name later steps point
+    at, because nothing points at it. It is the identity of the question, and
+    saying so is what lets a writer see that two of them are one.
+    """
+    # `asks` and `asked` are worked out from the rest of a parameter when it is
+    # built, so both are cleared here and worked out again from what this says.
+    generic = _ANY_NODE[key]
+
+    if generic.defines:
+        return replace(
+            generic,
+            defines=ANSWER,
+            describes="the name this question's answer is kept under",
+            asks="",
+        )
+
+    return replace(generic, asked=FIRST)
 
 
 _CONTROL_WORDS = {

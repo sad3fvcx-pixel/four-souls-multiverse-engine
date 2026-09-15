@@ -849,6 +849,7 @@ MIXED = "mixed"
 PASSTHROUGH = "passthrough"
 ANY_GROUP = "any"
 VALUES = "values"
+ANSWER = "answer"
 """
 The words a reference is described with.
 
@@ -862,6 +863,15 @@ back whatever it was given. Neither can be judged, and neither is refused.
 
 ``any`` is a reference that does not care. ``values`` is a reference into the
 other namespace entirely — what an ability stored, not what it chose.
+
+``answer`` is the one of these nobody points *at*. A node that puts a question
+to a player keeps the reply under a name, and reaching that name again is how
+the question survives being asked: the ability is suspended, the player
+answers, and resolution starts over and finds the reply waiting instead of
+asking twice. So the name is not a handle for later steps — it is the identity
+of one question, and two questions sharing it are one question. Which nodes
+have one is the engine's own answer, read off the keys their expanders call
+``params.get`` with.
 """
 
 
