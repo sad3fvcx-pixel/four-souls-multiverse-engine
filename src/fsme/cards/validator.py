@@ -625,11 +625,94 @@ def _one_node(
         errors.extend(
             _one_value(parameter, value, card_id, f"{path}.{key}", nodes)
         )
+        errors.extend(
+            _each_one(parameter, value, card_id, f"{path}.{key}", nodes)
+        )
 
     errors.extend(_only_one(node, shape, card_id, path))
     errors.extend(_the_right_domain(node, shape, card_id, path))
 
     return errors
+
+
+def _each_one(
+    parameter: Any,
+    value: Any,
+    card_id: str,
+    path: str,
+    nodes: Mapping[str, Any] | None,
+) -> list[str]:
+    """
+    A list of one named shape, checked element by element.
+
+    A node is found by a key that names its shape. An element of a list has no
+    such key — it is found by where it is — so the walker that goes by keys
+    steps straight past it, and the only thing that knows what it should be is
+    the list that holds it. That is what a parameter means by ``a_list_of``,
+    and until this read it the answer was written down and never used: a mode
+    could be the word "A", or an empty object, and the card checked clean and
+    then stopped the game after the player had already chosen.
+
+    Only where the named kind is a shape. ``a_list_of: "step"`` names a
+    catalogue, and what is in such a list is walked by whatever walks that
+    kind, which is why asking again here would say one thing twice.
+
+    Asked here rather than beside the other ways a value may be written,
+    because a value may be written several ways and only one of them is a
+    list. Whether it *is* a list is not a matter of which way was taken.
+    """
+    inside = (nodes or {}).get(getattr(parameter, "a_list_of", ""))
+
+    if inside is None or not isinstance(value, (list, tuple)):
+        return []
+
+    errors: list[str] = []
+
+    for index, item in enumerate(value):
+        spot = f"{path}[{index}]"
+
+        if not isinstance(item, Mapping):
+            errors.append(
+                f"{card_id}: {spot}: this is a {parameter.a_list_of}, "
+                f"and the card gives {_kind_written(item)}"
+            )
+
+            continue
+
+        errors.extend(_one_node(item, inside, card_id, spot, nodes))
+        errors.extend(_needs_answering(item, inside, card_id, spot))
+
+    return errors
+
+
+def _needs_answering(
+    node: Mapping[str, Any],
+    shape: Any,
+    card_id: str,
+    path: str,
+) -> list[str]:
+    """
+    The keys a shape says it cannot do without.
+
+    `_one_node` reads what a node wrote; this reads what it did not. The two
+    are asked separately because most nodes are reached by a key that names
+    their shape, and reaching one that way says nothing about whether it is
+    finished — an ability with no trigger is already told so once, and saying
+    it twice is how a list of problems stops being read.
+
+    An element of a list is not reached that way and nothing else says it, so
+    a mode with no words to offer used to save cleanly and then be offered to
+    a player as "mode 1".
+
+    Absent or blank, and nothing else. A key holding the wrong sort of thing
+    is a different mistake and is already named as one; calling it missing as
+    well would be one violation and two complaints.
+    """
+    return [
+        f"{card_id}: {path}: a {shape.name} needs '{key}'"
+        for key, parameter in shape.params.items()
+        if parameter.required and (key not in node or node[key] == "")
+    ]
 
 
 def _only_one(

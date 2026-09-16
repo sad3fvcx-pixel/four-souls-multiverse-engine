@@ -2959,7 +2959,7 @@ def test_two_questions_side_by_side_are_told_apart(
     """
     for node in asking_nodes():
         card = holding(
-            [one_asking(node, [a_coin(1)]), one_asking(node, [a_coin(5)])],
+            [offering(node, [a_coin(1)]), offering(node, [a_coin(5)])],
             name=f"Two {node}",
         )
         kept = answers_under(node)
@@ -3038,8 +3038,8 @@ def test_a_name_the_card_gave_is_the_name_it_keeps(can: dict[str, Any]) -> None:
         kept = answers_under(node)
         card = holding(
             [
-                one_asking(node, [a_coin(1)], **{kept: "mine"}),
-                one_asking(node, [a_coin(5)]),
+                offering(node, [a_coin(1)], **{kept: "mine"}),
+                offering(node, [a_coin(5)]),
             ],
             name=f"Named {node}",
         )
@@ -3136,18 +3136,19 @@ def a_mode(description: str, effects: Sequence[Any]) -> dict[str, Any]:
     }
 
 
-def offering(name: str, held: Sequence[Any]) -> dict[str, Any]:
+def offering(name: str, held: Sequence[Any], **also: Any) -> dict[str, Any]:
     """
     One node that asks a player something, holding what it holds the way its
     own shape says to hold it: options where it offers options, steps where it
     holds steps.
     """
     if holds_steps_itself(name):
-        return one_asking(name, list(held))
+        return one_asking(name, list(held), **also)
 
     return one_asking(
-        name, [a_mode(f"{name} option {i + 1}", [one])
-               for i, one in enumerate(held)]
+        name,
+        [a_mode(f"{name} option {i + 1}", [one]) for i, one in enumerate(held)],
+        **also,
     )
 
 

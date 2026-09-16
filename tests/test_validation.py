@@ -102,6 +102,26 @@ def complaints(vocabulary: Vocabulary, *effects: Any) -> list[str]:
     )
 
 
+def wholly(vocabulary: Vocabulary, *effects: Any) -> list[str]:
+    """
+    `complaints`, plus what the engine says about the shape of a node itself.
+
+    The loader and the desk both hand these over; the checks that read a
+    node's own description are the ones that need them.
+    """
+    return validate_card(
+        a_card(*effects),
+        known_effects=vocabulary.effects,
+        known_triggers=vocabulary.triggers,
+        known_conditions=vocabulary.conditions,
+        known_targets=vocabulary.targets,
+        shapes=vocabulary.shapes,
+        condition_shapes=vocabulary.condition_shapes,
+        target_shapes=vocabulary.target_shapes,
+        node_shapes=vocabulary.node_shapes,
+    )
+
+
 def a_set(tmp_path: Path, *cards: dict) -> Path:
     """
     A one-set content tree, built where a test may write.
@@ -912,6 +932,201 @@ def test_nothing_here_knows_the_name_of_a_card_or_an_effect() -> None:
     # Which keys are bodies is asked of the list that says so, not spelled
     # again here: a body the language gains is covered without this changing.
     assert "_BODY_KEYS" in said
+
+
+# ----------------------------------------------------------------------
+# A list says what is in it
+# ----------------------------------------------------------------------
+#
+# A node is found by a key that names its shape. An element of a list has no
+# such key — it is found by where it is — so the walker that goes by keys steps
+# straight past it, and `a_list_of` was an answer written down and never read.
+#
+# A choice is the one place in the language that holds such a list today. Its
+# options could be the word "A", or an empty object, and the card checked clean,
+# loaded into a game, offered the choice to a player and only then stopped:
+# `InterpreterError: invalid mode: 'A'`, after somebody had already answered.
+
+
+def a_mode(**fields: Any) -> dict:
+    """One option of a choice, with whatever this probe wants to say about it."""
+    return {"description": "Take a coin", "effects": [{"gain_coins": 1}], **fields}
+
+
+def test_a_choice_made_of_proper_options_is_left_alone(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    One, several, and under either spelling of the key that holds them.
+    """
+    one, two = a_mode(), a_mode(description="Heal instead")
+
+    assert wholly(vocabulary, {"choose": [one]}) == []
+    assert wholly(vocabulary, {"choose": [one, two]}) == []
+    assert wholly(vocabulary, {"choose": True, "modes": [one, two]}) == []
+
+
+@pytest.mark.parametrize(
+    "option",
+    ["A", 1, None, ["A"], 2.5],
+    ids=["text", "number", "nothing", "a list", "a fraction"],
+)
+def test_an_option_that_is_not_an_option_is_refused(
+    vocabulary: Vocabulary, option: Any
+) -> None:
+    """
+    Whatever it is, it is not a mode, and the engine cannot be handed it.
+    """
+    said = wholly(vocabulary, {"choose": [option]})
+
+    assert len(said) == 1, said
+    assert "this is a mode" in said[0], said
+
+
+def test_only_the_option_that_is_wrong_is_named(vocabulary: Vocabulary) -> None:
+    """
+    A list with one bad option in it is one complaint, at the right index.
+    """
+    said = wholly(vocabulary, {"choose": ["A", a_mode()]})
+
+    assert len(said) == 1, said
+    assert "choose[0]" in said[0], said
+
+
+def test_an_option_with_nothing_to_offer_is_refused(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    The words of an option are what a player is shown. Without them the engine
+    offers "mode 1", which is not what anybody wrote, and the metadata has
+    always said the description is required — nothing read it.
+    """
+    for option in ({}, {"effects": [{"gain_coins": 1}]}, a_mode(description="")):
+        said = wholly(vocabulary, {"choose": [option]})
+
+        assert len(said) == 1, (option, said)
+        assert "needs 'description'" in said[0], (option, said)
+
+
+@pytest.mark.parametrize("wrong", [0, False, None, [], {}], ids=str)
+def test_an_option_whose_words_are_not_words_is_one_complaint(
+    vocabulary: Vocabulary, wrong: Any
+) -> None:
+    """
+    Holding the wrong sort of thing is a different mistake from holding
+    nothing, and is already named as one. Saying it is missing as well would
+    be one violation and two complaints.
+    """
+    said = wholly(vocabulary, {"choose": [a_mode(description=wrong)]})
+
+    assert len(said) == 1, said
+    assert "takes text" in said[0], said
+
+
+def test_an_option_is_checked_against_its_whole_shape(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    Not only that it is an object — everything the shape says about one.
+    """
+    said = wholly(vocabulary, {"choose": [a_mode(efffects=[])]})
+
+    assert len(said) == 1, said
+    assert "not part of a mode" in said[0], said
+
+
+def test_what_a_list_holds_is_asked_of_the_metadata() -> None:
+    """
+    Only where the named kind is a shape this layer has.
+
+    `a_list_of: "step"` names a catalogue, and what is in such a list is walked
+    by whatever walks that kind; asking again here would say one thing twice.
+    Which lists are which is the metadata's answer, so a list the language
+    gains of either sort is covered without this changing.
+    """
+    from fsme.cards import validator
+
+    # What it does, not what it says about itself: the prose may name a kind
+    # as an example, and does.
+    said = inspect.getsource(validator._each_one)
+    said = said.split('"""')[2]
+    said = "\n".join(line.split("#")[0] for line in said.splitlines())
+
+    for named in ("choose", "modes", "mode", "step", "condition", "target"):
+        assert f'"{named}"' not in said, named
+        assert f"'{named}'" not in said, named
+
+    assert "a_list_of" in said
+
+
+def test_the_lists_a_card_walks_itself_are_not_walked_twice(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    `abilities` and `statics` are lists of a named shape too, and they are
+    walked by name from the top of the card rather than found in a node. They
+    reach that walk without passing this one — the card's own shape is never
+    applied as a node — so an ability with no trigger is still told so once.
+    """
+    said = validate_card(
+        {
+            "id": "example_expansion-loot-dark_coin",
+            "name": "Dark Coin",
+            "type": "loot",
+            "expansion": EXPANSION,
+            "schema_version": "1",
+            "abilities": [{"effects": [{"gain_coins": 1}]}],
+        },
+        known_effects=vocabulary.effects,
+        known_triggers=vocabulary.triggers,
+        known_conditions=vocabulary.conditions,
+        known_targets=vocabulary.targets,
+        shapes=vocabulary.shapes,
+        node_shapes=vocabulary.node_shapes,
+    )
+
+    assert [one for one in said if "trigger" in one] == [
+        "example_expansion-loot-dark_coin: ability 0: missing 'trigger'"
+    ], said
+
+
+def test_an_effect_that_keeps_its_own_list_is_untouched(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    `watch_for` keeps what it will do under `effects` and `promise` keeps its
+    changes under `changes`. Both are lists or sets of their own, neither is a
+    list of a named node shape, and both were clean before this and stay clean.
+    """
+    assert complaints(
+        vocabulary,
+        {
+            "effect": "watch_for",
+            "event": "after_roll",
+            "conditions": [{"dice_equals": 1}],
+            "effects": [{"draw_loot": 1}],
+        },
+    ) == []
+
+    assert complaints(
+        vocabulary,
+        {
+            "effect": "promise",
+            "event": "roll_modified",
+            "when": {"attack": True},
+            "changes": {"value": {"flip": 7}},
+        },
+    ) == []
+
+
+def test_a_body_key_with_no_head_is_still_refused(vocabulary: Vocabulary) -> None:
+    """
+    The rule the commit before this one added, unchanged by this one.
+    """
+    for key in ("effects", "then", "else", "modes"):
+        said = wholly(vocabulary, {key: [{"gain_coins": 1}]})
+
+        assert any(f"unknown effect '{key}'" in one for one in said), key
 
 
 # ----------------------------------------------------------------------
