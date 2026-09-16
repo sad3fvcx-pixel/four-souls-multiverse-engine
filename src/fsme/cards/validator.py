@@ -274,7 +274,7 @@ def _validate_arguments(
                 )
             )
 
-        for branch in _BRANCH_KEYS:
+        for branch in _BODY_KEYS:
             inside = node.get(branch)
 
             if isinstance(inside, (list, tuple)):
@@ -1554,7 +1554,7 @@ def _effect_aliases(nodes: Any) -> set[str]:
         if isinstance(target, Mapping):
             names |= _declared_target_names({"targets": [target]})
 
-        for branch in _BRANCH_KEYS:
+        for branch in _BODY_KEYS:
             names |= _effect_aliases(node.get(branch, ()))
 
         for mode in _modes(node):
@@ -1663,7 +1663,7 @@ def _inline_targets(nodes: Any) -> list[str]:
             if isinstance(value, str):
                 names.append(value)
 
-        for branch in _BRANCH_KEYS:
+        for branch in _BODY_KEYS:
             names.extend(_inline_targets(node.get(branch, ())))
 
         for mode in _modes(node):
@@ -1691,6 +1691,33 @@ _MODIFIER_KEYS = frozenset(
 )
 
 _BRANCH_KEYS = ("effects", "then", "else", "may")
+"""
+Keys that are a body rather than the name of an effect.
+
+Read negatively, and only negatively: ``{"may": [...], "prompt": "..."}`` is a
+``may`` with a modifier, not a ``may`` and an effect called ``prompt``, and
+these are the keys a node may carry without one of them being what the node
+*is*. Widening it changes what counts as a misspelled effect, which is why it
+is not the list anything is walked by — ``_BODY_KEYS`` is.
+"""
+
+_BODY_KEYS = ("effects", "sequence", "then", "else", "may")
+"""
+Every key under which a control node keeps steps, and the list to walk by.
+
+Together with ``_MODE_KEYS`` — which holds modes rather than steps, and so is
+walked one level differently — this is the same set as
+``runtime.interpreter.CONTROL_BODIES``, the table read off the expanders
+themselves. It is pinned to that table by a test rather than derived by an
+import, because this module is handed what an engine knows as plain data and
+never reaches for an engine.
+
+Walking by the negative filter instead left one key out. ``{"sequence": [...]}``
+was the only body in the card language where an unknown effect, a mistyped
+argument and an undeclared name all went unread: the checker passed the card
+and the runtime then raised ``UnknownEffectError`` — or, for an argument,
+a bare ``TypeError`` that is not an engine error at all and so reached nobody.
+"""
 
 
 def _effect_names(nodes: Any) -> list[str]:
@@ -1720,7 +1747,7 @@ def _effect_names(nodes: Any) -> list[str]:
                     names.append(str(key))
                     break
 
-        for branch in _BRANCH_KEYS:
+        for branch in _BODY_KEYS:
             branch_value = node.get(branch)
 
             if isinstance(branch_value, (list, tuple)):

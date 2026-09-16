@@ -69,6 +69,13 @@ Their contents share the context at run time, but *whether they ran* is not a
 fact about the text. So a name bound inside one is visible inside it and after
 it there, and not outside — which is the strictest reading, and the one every
 shipped card already obeys.
+
+Deliberately narrower than ``runtime.interpreter.CONTROL_BODIES``, which lists
+every body there is. This one answers a different question — which bodies might
+not run — and ``sequence`` is missing because it always does: it groups steps
+and asks nothing, so a name bound inside one is still bound after it. Anything
+not listed here is walked with the enclosing context rather than a copy of it,
+which is what keeps that true. Adding ``sequence`` would quietly tighten it.
 """
 
 PLAYERS = "players"

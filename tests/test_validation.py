@@ -585,6 +585,163 @@ def test_a_domain_named_for_a_parameter_that_does_not_exist_is_refused() -> None
 
 
 # ----------------------------------------------------------------------
+# Every body, checked the same
+# ----------------------------------------------------------------------
+#
+# A control node keeps what it does under a key, and there are seven such keys.
+# The walkers that look for unknown effects, mistyped arguments and undeclared
+# names used to walk by four of them, because the list they walked by was the
+# one that answers a different question — which keys are *not* an effect name.
+# So `{"sequence": [...]}` was a body nothing looked inside: the checker passed
+# the card and the runtime raised on it. These say every body is walked, that
+# the list is still the whole list, and that `sequence` groups steps without
+# putting a wall around the names bound in it.
+
+
+UNKNOWN = {"effect": "summon_a_dragon"}
+"""A step naming an effect the engine has never heard of."""
+
+MISTYPED = {"effect": "gain_coins", "amount": "lots"}
+"""A step giving an effect text where it takes a number."""
+
+BINDS = {
+    "effect": "deal_damage",
+    "amount": 1,
+    "targets": [{"target_player": {"as": "victim"}}],
+    "target": "victim",
+}
+"""A step that binds a name."""
+
+USES = {"effect": "deal_damage", "amount": 1, "target": "victim"}
+"""A step that reads one."""
+
+
+def holding(*steps: Any) -> dict[str, dict[str, Any]]:
+    """
+    One well-formed node of every control kind, each holding the given steps.
+
+    Written out rather than generated so that a node whose shape changes fails
+    here as a wrong expectation instead of quietly becoming a different probe.
+    Both spellings appear wherever the interpreter reads two.
+    """
+    body = list(steps)
+
+    return {
+        "sequence": {"sequence": body},
+        "if.then": {"if": [{"condition": "has_coins", "amount": 1}], "then": body},
+        "if.else": {"if": [{"condition": "has_coins", "amount": 1}],
+                    "then": [{"effect": "gain_coins", "amount": 1}], "else": body},
+        "may": {"may": body, "prompt": "Well?"},
+        "choose.modes": {"modes": [{"description": "A", "effects": body}]},
+        "choose.choose": {"choose": [{"description": "A", "effects": body}]},
+        "repeat": {"repeat": 2, "effects": body},
+        "for_each": {"for_each": "all_players", "effects": body},
+    }
+
+
+@pytest.mark.parametrize("wrong", [UNKNOWN, MISTYPED], ids=["unknown", "mistyped"])
+def test_every_control_body_is_looked_inside(
+    vocabulary: Vocabulary, wrong: dict
+) -> None:
+    """
+    The same mistake, once under each key a control node keeps steps under.
+
+    `sequence` is the one that used to pass. The other seven are here so that
+    walking by a wider list cannot quietly stop walking by part of it.
+    """
+    missed = [
+        where
+        for where, node in holding(wrong).items()
+        if not complaints(vocabulary, node)
+    ]
+
+    assert missed == [], missed
+
+
+@pytest.mark.parametrize("wrong", [UNKNOWN, MISTYPED], ids=["unknown", "mistyped"])
+def test_a_mistake_is_found_however_deep_the_bodies_go(
+    vocabulary: Vocabulary, wrong: dict
+) -> None:
+    """
+    Nested both ways round: everything inside a sequence, a sequence inside
+    everything. A walker that stops one level down passes the test above and
+    fails this one.
+    """
+    missed: list[str] = []
+
+    for where, node in holding(wrong).items():
+        # The mistake is already inside `node`; putting `node` in a sequence
+        # adds a level above it.
+        if not complaints(vocabulary, {"sequence": [node]}):
+            missed.append(f"{where} inside a sequence")
+
+        # And the other way round: a sequence carrying the mistake, inside
+        # each control node in turn.
+        if not complaints(vocabulary, holding({"sequence": [wrong]})[where]):
+            missed.append(f"a sequence inside {where}")
+
+    assert missed == [], missed
+
+
+def test_a_sequence_does_not_wall_off_the_names_bound_in_it(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    `sequence` groups steps and asks nothing, so it always runs, so a name
+    bound inside one is still bound after it — which is what the runtime does
+    and what the reference checker has always done. Looking inside a body must
+    not have turned looking into fencing.
+    """
+    assert complaints(vocabulary, {"sequence": [BINDS]}, USES) == []
+    assert complaints(vocabulary, BINDS, {"sequence": [USES]}) == []
+    assert complaints(vocabulary, {"sequence": [BINDS, USES]}) == []
+
+
+def test_a_name_that_was_never_bound_is_still_refused_inside_a_sequence(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    The other half of the rule above: sharing the context is not accepting
+    anything.
+    """
+    assert complaints(vocabulary, {"sequence": [USES]}) != []
+
+
+def test_the_bodies_walked_are_the_bodies_there_are() -> None:
+    """
+    The list the validator walks by against the table read off the expanders.
+
+    `CONTROL_BODIES` is where the interpreter says what each control node keeps
+    its contents under, and it is the only place that knows. This module is
+    handed what an engine knows as plain data and never imports one, so the
+    two cannot be one object — but they can be required to agree, which is the
+    part that was missing when `sequence` was left out of one of them.
+    """
+    from fsme.cards.validator import _BODY_KEYS, _MODE_KEYS
+    from fsme.runtime.interpreter import CONTROL_BODIES
+
+    every = {key for keys in CONTROL_BODIES.values() for key in keys}
+
+    assert set(_BODY_KEYS) | set(_MODE_KEYS) == every
+
+
+def test_what_is_not_an_effect_name_is_asked_separately() -> None:
+    """
+    Two questions that happen to have similar answers.
+
+    `_BRANCH_KEYS` says which keys on a node are a body rather than the name of
+    an effect, so that `{"may": [...], "prompt": "..."}` is one misspelling and
+    not two complaints. `_BODY_KEYS` says which keys to walk. Reading the first
+    as the second is what left `sequence` unwalked, and widening the first to
+    fix it would change what counts as a mistyped effect.
+    """
+    from fsme.cards.validator import _BODY_KEYS, _BRANCH_KEYS
+
+    assert _BRANCH_KEYS != _BODY_KEYS
+    assert set(_BRANCH_KEYS) < set(_BODY_KEYS)
+
+
+# ----------------------------------------------------------------------
 # The one that decides whether the design was right
 # ----------------------------------------------------------------------
 
