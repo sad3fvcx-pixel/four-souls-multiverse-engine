@@ -673,16 +673,24 @@ function ask(n, problems = [], moments = []) {
 // a part does, if the node was one of them, and otherwise back out to the part
 // it was.
 function answered(problems = [], moments = []) {
-  if (walk.holds) return holding(problems, moments);
   if (!walk.list) return chooseWhich(problems, moments);
 
   // Answering the last of a node's own questions leaves whatever it holds
   // still to fill in, so that is where this goes. A node holding nothing has
   // nowhere to go and the list it is in is the answer, as it always was.
-  const step = at(walk.list, [])[walk.doing];
-  const arms = step ? armsOf(step, `${walk.list}[${walk.doing}]`) : [];
+  //
+  // Whichever sort of list it was added to. This used to go back to a list of
+  // things that are not steps without looking, on the grounds that nothing in
+  // such a list held anything — which was true while the only one was a list
+  // of conditions. An option of a choice is in one and holds what that option
+  // does, so a person naming one was handed back the list and no way to say
+  // what it did.
+  const node = at(walk.list, [])[walk.doing];
+  const arms = node ? armsOf(node, `${walk.list}[${walk.doing}]`) : [];
 
-  return arms.length ? intoStep(step, arms) : sofar(problems, moments);
+  if (arms.length) return intoStep(node, arms);
+
+  return walk.holds ? holding(problems, moments) : sofar(problems, moments);
 }
 
 // ------------------------------------------------------ what it does so far
@@ -786,9 +794,16 @@ function nameOf(node) {
 // places — where the walk goes, and what it asks about instead — and they have
 // to be the same answer: a list somebody is walked into is not also a box they
 // fill in, and one that is neither is a question nobody is ever put.
+//
+// A list is one of them when this page can describe what it is a list of, and
+// `kindOf` is what knows that. It used to ask the shorter list instead — the
+// three kinds that are chosen from a catalogue — which quietly meant that a
+// list of something there is only one of was no kind at all. The options of a
+// choice are such a list, and were drawn as a box in the middle of a walk
+// because of it.
 function ownLists(shape) {
   return (shape ? shape.fields : []).filter(
-    f => f.a_list_of && f.asked !== "never" && KINDS[f.a_list_of]);
+    f => f.a_list_of && f.asked !== "never" && kindOf(f.a_list_of));
 }
 
 function armsOf(node, path) {
@@ -945,22 +960,31 @@ function holding(problems = [], moments = []) {
     <hr>
     <div class="row">
       <button class="go" onclick="outOfArm()">That is everything</button>
-      <button onclick="addHeld()">${esc(KINDS[walk.kind].says)}</button>
+      <button onclick="addHeld()">${esc(kindOf(walk.kind).says)}</button>
     </div>
     ${saidHtml(problems, moments)}`);
 }
 
 // What may be added is what the kind of list says it is a list of, split the
 // way every other list of the engine's own is split.
+//
+// Unless it says there is one. A kind that is already a shape has nothing to
+// choose between, so asking would be a screen with one button on it, and the
+// thing is made and asked about instead. Which of the two a list is, is the
+// kind's own answer and not a list of names kept here.
 function addHeld() {
+  const kind = kindOf(walk.kind);
+  const of = kind.of();
+
+  if (of === null) return pickHeld(walk.kind);
+
   walk.on = "adding";
-  const of = KINDS[walk.kind].of() || [];
   const one = (x) => `<button class="task" onclick="pickHeld('${x.id}')">
       <b>${esc(sentence(x.about))}</b></button>`;
   const common = of.filter(x => x.common);
   const rest = of.filter(x => !x.common);
   el(`<button class="back" onclick="holding()">← back</button>
-    <h1>${esc(KINDS[walk.kind].says)}</h1>
+    <h1>${esc(kind.says)}</h1>
     ${common.map(one).join("")}
     <details class="deep" ${common.length ? "" : "open"}><summary>Everything
       else</summary><div class="nested">${rest.map(one).join("")}</div></details>

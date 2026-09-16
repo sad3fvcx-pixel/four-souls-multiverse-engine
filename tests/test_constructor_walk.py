@@ -23,7 +23,7 @@ from typing import Any
 import pytest
 
 from fsme.api import load_content
-from fsme.content.vocabulary import ANSWER, FIRST
+from fsme.content.vocabulary import ANSWER, CARD, FIRST, NEVER, STEP
 from fsme.lab.desk import Workbench
 from fsme.lab.desk.author import build_card, check_card
 from fsme.lab.desk.capabilities import catalogue
@@ -3182,3 +3182,250 @@ def _every_node(held: Any) -> list[dict[str, Any]]:
             found.extend(_every_node(one))
 
     return found
+
+
+# ----------------------------------------------------------------------
+# 20. A list of something there is only one of
+# ----------------------------------------------------------------------
+#
+# What a list is a list of is the metadata's answer, and the page has always
+# had one function for it. Three of the kinds are chosen from a catalogue —
+# seventy things that happen, forty-four tests, forty-six things to pick out —
+# and the rest are a single shape, which is why the same function says there
+# is nothing to choose between.
+#
+# The walk asked the shorter list. A list of something there is only one of
+# was therefore no kind at all: no screen to add to it, no walking into it,
+# and its contents drawn as a box in the middle of a walk instead. The options
+# of a choice are such a list.
+#
+# Nothing below names a structure. Which lists are of one shape and which of
+# many is read off the catalogue, and a list the language gains of either sort
+# is covered by this without it changing.
+
+
+def one_of_each_kind(can: dict[str, Any]) -> dict[str, list[str]]:
+    """
+    Every list any published shape holds, split by whether what it is a list
+    of is one shape or a catalogue of them.
+    """
+    shapes = {
+        one["id"]: one
+        for group in ("structures", "abilities", "statics", "cards")
+        for one in can.get(group, [])
+    }
+    single: list[str] = []
+    many: list[str] = []
+
+    for one in shapes.values():
+        for f in one["fields"]:
+            kind = f["a_list_of"]
+
+            if not kind or f["asked"] == "never":
+                continue
+
+            where = many if kind in ("step", "condition", "target") else single
+            where.append(f"{one['id']}.{f['id']}")
+
+    return {"single": single, "many": many}
+
+
+def test_the_language_has_lists_of_both_sorts(can: dict[str, Any]) -> None:
+    """
+    The split this rests on is real and published, not invented here.
+    """
+    both = one_of_each_kind(can)
+
+    assert both["many"], both
+    assert both["single"], both
+
+
+def test_a_list_of_one_shape_is_somewhere_the_walk_goes(
+    can: dict[str, Any],
+) -> None:
+    """
+    Which lists the walk goes into is one reading, and it asks what a list is
+    a list of rather than which of the three catalogues it is.
+    """
+    said = body_of("ownLists")
+
+    assert "kindOf(" in said, "the walk decides this its own way again"
+    assert "KINDS[" not in said, "the walk still asks the shorter list"
+
+
+def test_nothing_is_chosen_where_there_is_one_thing_to_choose(
+    can: dict[str, Any],
+) -> None:
+    """
+    A screen with one button on it is not a question. What tells the two apart
+    is the kind's own answer about what may go in it.
+    """
+    said = body_of("addHeld")
+
+    assert "kindOf(" in said and "KINDS[" not in said
+    assert "=== null" in said, "nothing distinguishes the two sorts of list"
+
+
+def test_filling_one_in_goes_on_to_what_it_holds(can: dict[str, Any]) -> None:
+    """
+    Running out of a node's own questions leaves whatever it holds still to
+    fill in — whichever sort of list the node was added to. Before this, a
+    node in a list of things that are not steps was handed straight back.
+    """
+    said = body_of("answered")
+
+    assert "armsOf(" in said, "what a node holds is no longer looked at"
+    assert said.index("armsOf(") < said.index("holding("), (
+        "a node is handed back before what it holds is looked at"
+    )
+
+
+def an_option(description: str, effects: Sequence[Any]) -> dict[str, Any]:
+    return {
+        "id": _one_shape_lists()[0][1],
+        "fields": {_naming_field(): description, _body_field(): list(effects)},
+        "groups": {},
+    }
+
+
+def _one_shape_lists() -> list[tuple[str, str]]:
+    """
+    Every (owner, element) pair whose list holds one shape, asked of the
+    engine rather than written down.
+    """
+    said = engine_vocabulary()
+
+    return [
+        (owner, parameter.a_list_of)
+        for owner in said.node_shapes
+        for parameter in (said.node_shape(owner) or _NO_SHAPE).params.values()
+        if parameter.a_list_of
+        and parameter.asked != NEVER
+        and said.node_shape(parameter.a_list_of) is not None
+        and owner != CARD
+    ]
+
+
+class _NO_SHAPE:
+    params: Mapping[str, Any] = {}
+
+
+def _naming_field() -> str:
+    shape = engine_vocabulary().node_shape(_one_shape_lists()[0][1])
+
+    return next(
+        f.name for f in shape.params.values() if f.required and not f.a_list_of
+    )
+
+
+def _body_field() -> str:
+    shape = engine_vocabulary().node_shape(_one_shape_lists()[0][1])
+
+    return next(f.name for f in shape.params.values() if f.a_list_of == STEP)
+
+
+def test_the_engine_describes_a_list_of_one_shape(can: dict[str, Any]) -> None:
+    """
+    And it is a shape with a name of its own and a body of its own, which is
+    what makes it something a walk can put a question about and then go into.
+    """
+    found = _one_shape_lists()
+
+    assert found, "no list of a single shape is published at all"
+
+    for _owner, element in found:
+        shape = engine_vocabulary().node_shape(element)
+
+        assert shape is not None, element
+        assert any(f.required and not f.a_list_of for f in shape.params.values()), (
+            f"{element} has nothing to call one by"
+        )
+        assert any(f.a_list_of == STEP for f in shape.params.values()), (
+            f"{element} holds nothing that happens"
+        )
+
+
+def test_one_of_them_is_written_and_read_back_whole(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    Named, holding what it holds, in the order it was given — over every list
+    of a single shape the language has.
+    """
+    from fsme.lab.desk.author import read_card
+
+    for owner, element in _one_shape_lists():
+        held = [
+            an_option("first", [a_coin(1)]),
+            an_option("second", [a_coin(5)]),
+            an_option("third", [a_coin(9)]),
+        ]
+        node = one_asking(owner, held) if answers_under(owner) else {
+            "id": owner, "fields": {_list_on(owner, element): held}, "groups": {},
+        }
+        card = holding([node], name=f"Three {element}")
+        written = card["abilities"][0]["effects"][0]
+        options = written[_list_on(owner, element)]
+
+        assert [one[_naming_field()] for one in options] == [
+            "first", "second", "third"
+        ], options
+        assert check_card(card) == [], check_card(card)
+        assert build_card(read_card(card, set_id="demo")) == card
+        assert chosen_in(bench, card), element
+
+
+def _list_on(owner: str, element: str) -> str:
+    shape = engine_vocabulary().node_shape(owner)
+
+    return next(
+        f.name
+        for f in (shape.params.values() if shape else ())
+        if f.a_list_of == element and f.asked != NEVER
+    )
+
+
+def test_what_an_option_holds_may_itself_hold_more(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    An option is not a leaf. What it does is a list of things that happen, and
+    a thing that happens may be one that holds others — which is the whole
+    reason going into it had to come before going back.
+    """
+    for owner, element in _one_shape_lists():
+        for inner in asking_nodes():
+            if not holds_steps_itself(inner):
+                continue
+
+            held = [an_option("only", [one_asking(inner, [a_coin(2)])])]
+            node = {"id": owner, "fields": {_list_on(owner, element): held},
+                    "groups": {}}
+            card = holding([node], name=f"{element} of {inner}")
+
+            assert check_card(card) == [], check_card(card)
+            assert len(chosen_in(bench, card)) == 2, (owner, inner)
+
+
+def test_one_of_them_inside_another_is_two_questions(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    And the binding rule already settled in the commit before this keeps them
+    apart, now that the walk can make the shape that needed it.
+    """
+    for owner, element in _one_shape_lists():
+        if not answers_under(owner):
+            continue
+
+        deep = one_asking(owner, [an_option("inner", [a_coin(1)])])
+        card = holding(
+            [one_asking(owner, [an_option("outer", [deep])])],
+            name=f"{element} in {element}",
+        )
+        kept = answers_under(owner)
+        inside = card["abilities"][0]["effects"][0][owner][0]["effects"][0]
+
+        assert inside.get(kept), (owner, inside)
+        assert check_card(card) == [], check_card(card)
+        assert len(chosen_in(bench, card)) == 2, owner
