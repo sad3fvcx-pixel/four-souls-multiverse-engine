@@ -18,6 +18,7 @@ already decided was correct — if a check here is wrong, that is where it shows
 
 from __future__ import annotations
 
+import inspect
 import json
 from pathlib import Path
 from typing import Any
@@ -739,6 +740,178 @@ def test_what_is_not_an_effect_name_is_asked_separately() -> None:
 
     assert _BRANCH_KEYS != _BODY_KEYS
     assert set(_BRANCH_KEYS) < set(_BODY_KEYS)
+
+
+# ----------------------------------------------------------------------
+# A body key with no head is not a node
+# ----------------------------------------------------------------------
+#
+# A node is named by `effect`, by a control head, or by its one remaining key.
+# A body key is none of those: it is where a head keeps what it does, and the
+# head is what reads it. Written on its own it names nothing that can run, and
+# the interpreter says so — `unknown effect 'then'` — but only once somebody
+# plays the card. The checker used to pass it, because the key it would have
+# been named after is one the name-finder steps over on the way past.
+#
+# It steps over it for a good reason, which is why the fix is not to stop:
+# beside a head the same key is a body, and on a node written the short way it
+# is a parameter. Only when nothing else named the node is the key all there is.
+
+
+HEADLESS = ("effects", "then", "else")
+"""The body keys that are not also a control head. `modes` is the fourth."""
+
+
+@pytest.mark.parametrize("key", HEADLESS)
+@pytest.mark.parametrize("held", [[{"gain_coins": 1}], []], ids=["holding", "empty"])
+def test_a_body_key_written_without_a_head_is_refused(
+    vocabulary: Vocabulary, key: str, held: list
+) -> None:
+    """
+    Full or empty makes no difference: there is no head to read either.
+    """
+    said = complaints(vocabulary, {key: held})
+
+    assert any(f"unknown effect '{key}'" in one for one in said), (key, said)
+
+
+def test_a_body_key_with_no_head_is_refused_like_modes_always_was(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    `modes` is the one of the four that was always refused — it is not in the
+    list the name-finder steps over. The other three now read the same way.
+    """
+    for key in (*HEADLESS, "modes"):
+        said = complaints(vocabulary, {key: [{"gain_coins": 1}]})
+
+        assert any(f"unknown effect '{key}'" in one for one in said), key
+
+
+@pytest.mark.parametrize(
+    "node",
+    [
+        {"effects": [{"gain_coins": 1}], "draw_loot": 3},
+        {"draw_loot": 3, "effects": [{"gain_coins": 1}]},
+    ],
+    ids=["body first", "effect first"],
+)
+def test_a_short_node_carrying_a_body_key_is_still_named_by_its_effect(
+    vocabulary: Vocabulary, node: dict
+) -> None:
+    """
+    Whichever order it is written in.
+
+    This is what the name-finder steps over a body key *for*, and it is why
+    the three above are answered by asking again afterwards rather than by
+    taking those keys out of the list it steps over.
+    """
+    assert complaints(vocabulary, node) == [], complaints(vocabulary, node)
+
+
+def test_the_effects_an_effect_takes_are_still_its_own(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    `effects` is a control body and also a parameter of a real effect.
+
+    `watch_for` keeps what it will do under that name, and fourteen shipped
+    nodes are written that way. Such a node says `effect`, so it is named
+    before any of this is reached — but it is the case a rule about body keys
+    would break first, so it is pinned here.
+
+    `promise` is the other effect that runs something later; it keeps its own
+    answer under `changes` rather than `effects`, so it is not a case of this.
+    """
+    assert complaints(
+        vocabulary,
+        {
+            "effect": "watch_for",
+            "event": "after_roll",
+            "conditions": [{"dice_equals": 1}],
+            "effects": [{"draw_loot": 1}],
+        },
+    ) == []
+
+
+def test_a_head_with_a_misspelled_key_is_still_one_complaint(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    `{"may": [...], "promt": "..."}` is a `may` with a typo, not a `may` and an
+    effect called `promt`. A node with a head never reaches the new question.
+    """
+    said = complaints(vocabulary, {"may": [{"gain_coins": 1}], "promt": "x"})
+
+    assert not [one for one in said if "unknown effect" in one], said
+
+
+@pytest.mark.parametrize(
+    "node",
+    [
+        {"if": ["first_turn"], "then": [{"gain_coins": 1}]},
+        {"if": ["first_turn"], "then": [{"gain_coins": 1}],
+         "else": [{"gain_coins": 2}]},
+        {"may": [{"gain_coins": 1}], "prompt": "Well?"},
+        {"sequence": [{"gain_coins": 1}]},
+        {"repeat": 2, "effects": [{"gain_coins": 1}]},
+        {"for_each": "all_players", "effects": [{"gain_coins": 1}]},
+        {"choose": [{"description": "A", "effects": [{"gain_coins": 1}]}]},
+    ],
+)
+def test_a_body_beside_its_head_is_a_body(
+    vocabulary: Vocabulary, node: dict
+) -> None:
+    """
+    Every control node as a card may write it. None is a headless anything,
+    and none of them changed.
+    """
+    assert complaints(vocabulary, node) == [], complaints(vocabulary, node)
+
+
+@pytest.mark.parametrize(
+    "node",
+    [
+        {"conditions": ["first_turn"], "then": [{"gain_coins": 1}]},
+        {"times": 2, "effects": [{"gain_coins": 1}]},
+        {"of": "all_players", "effects": [{"gain_coins": 1}]},
+    ],
+    ids=["conditions", "times", "of"],
+)
+def test_a_second_spelling_is_not_a_head_either(
+    vocabulary: Vocabulary, node: dict
+) -> None:
+    """
+    `conditions`, `times` and `of` are the other name for a key a head reads,
+    not another name for the head. A node written with one and no head names
+    nothing, and the interpreter says the same — `effect node must name exactly
+    one effect`. Refusing it is older than this rule and is pinned here because
+    a rule about what names a node is exactly what could stop it happening.
+    """
+    said = complaints(vocabulary, node)
+
+    assert any("unknown effect" in one for one in said), said
+
+
+def test_nothing_here_knows_the_name_of_a_card_or_an_effect() -> None:
+    """
+    The rule is about what names a node, so it is written in the words the
+    language already has for that: the keys a head keeps its contents under.
+    A list of effects that are special would be a second copy of the engine.
+    """
+    from fsme.cards import validator
+
+    said = inspect.getsource(validator._effect_names)
+    said = "\n".join(line.split("#")[0] for line in said.splitlines())
+
+    for named in ("gain_coins", "draw_loot", "watch_for", "promise",
+                  "then", "else", "modes"):
+        assert f'"{named}"' not in said, named
+        assert f"'{named}'" not in said, named
+
+    # Which keys are bodies is asked of the list that says so, not spelled
+    # again here: a body the language gains is covered without this changing.
+    assert "_BODY_KEYS" in said
 
 
 # ----------------------------------------------------------------------

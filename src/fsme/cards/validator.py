@@ -1746,6 +1746,24 @@ def _effect_names(nodes: Any) -> list[str]:
                 if key not in _MODIFIER_KEYS and key not in _BRANCH_KEYS:
                     names.append(str(key))
                     break
+            else:
+                # Nothing named it. A body key is where a control node keeps
+                # what it does, and it is read by the head that owns it — so
+                # on its own it names nothing that can run, which is what the
+                # interpreter says on reaching one: `unknown effect 'then'`.
+                #
+                # The loop above steps over it on the way past, because the
+                # same key beside a head is a body and not a mistake, and
+                # because a node written the short way may carry one:
+                # `{"effects": [...], "draw_loot": 3}` is `draw_loot` whichever
+                # order it is written in. Here there is no head for it to
+                # belong to and no other key to be the name, so the key is all
+                # the node is, and saying so is the only way this is refused
+                # before somebody plays it.
+                body = next((key for key in node if key in _BODY_KEYS), "")
+
+                if body:
+                    names.append(str(body))
 
         for branch in _BODY_KEYS:
             branch_value = node.get(branch)
