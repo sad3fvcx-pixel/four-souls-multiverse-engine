@@ -1705,9 +1705,26 @@ function addEntry(path, kind) {
   drawn();
 }
 
-function nestedHtml(field, values, path) {
+// One more node, inside this one. What shape it is, is the field's answer —
+// and that answer may name a shape or it may name a kind. Naming a shape means
+// there is exactly one thing it could be, so it is drawn straight away. Naming
+// a kind means there is a catalogue of them, so there is a choice to put first
+// — which is the same choice the control below already puts, and it keeps what
+// it picks where everything picked out is kept.
+//
+// This used to read the answer as a shape and say so when it was not one. The
+// kinds are the answer for every field that holds one thing out of many, so
+// every one of them was a sentence explaining that the engine could do it.
+function nestedHtml(field, values, path, groups, groupPath) {
   const shape = shapeNamed(field.shaped_like);
-  if (!shape) return unsupportedHtml(field);
+
+  if (!shape) {
+    const of = kindOf(field.shaped_like);
+
+    return of && of.of() ? groupHtml(field, groups || {}, groupPath)
+                         : unsupportedHtml(field);
+  }
+
   const inside = values[field.id] || {};
   return `<details class="deep">
     <summary>${esc(asksOf(field))}${needed(field)}</summary>
@@ -2004,7 +2021,8 @@ function oneByOne(fields, values, groups, path, groupPath, owner) {
     if (f.shown === "body") return `<label>${esc(asksOf(f))}${needed(f)}</label>`
       + bodyHtml(f.a_list_of, values[f.id], `${path}.${f.id}`);
     if (f.shown === "named") return namedHtml(f, values, path);
-    if (f.shown === "nested") return nestedHtml(f, values, path);
+    if (f.shown === "nested")
+      return nestedHtml(f, values, path, groups, groupPath);
     if (f.shown === "advanced") return structureHtml(f, values, path);
     // More than one way of being written, a name an earlier step made, or a
     // list of choices that waits on another answer.

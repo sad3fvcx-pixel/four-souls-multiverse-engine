@@ -210,7 +210,14 @@ def test_a_body_of_conditions_and_a_body_of_targets_are_the_same_component(
 
 
 def test_the_page_asks_the_metadata_what_a_cost_holds(page: str) -> None:
-    assert "function nestedHtml(field, values, path)" in page
+    """
+    One component for every field that holds one more node, and it asks the
+    field what shape goes in it. What it is handed to draw with has grown —
+    a field may name a catalogue rather than a shape, and picking one out
+    needs somewhere to keep what was picked — but what it asks has not.
+    """
+    assert page.count("function nestedHtml(") == 1
+    assert "function nestedHtml(field, values, path" in page
     assert "field.shaped_like" in page
     assert "cost" not in page.split("function nestedHtml")[1][:400]
 

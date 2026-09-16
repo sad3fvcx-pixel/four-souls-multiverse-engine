@@ -739,8 +739,14 @@ def _asked_for(parameter: ParamShape) -> str:
         # rare, and no use to somebody who has never seen a card file.
         return DEEPER
 
-    if parameter.required or parameter.a_list_of:
-        # It has to be answered, or it is what the card does.
+    if parameter.required or parameter.a_list_of or parameter.names_the_node:
+        # It has to be answered, or it is what the card does — or it is the key
+        # that makes the node what it is and keeps its answer there. That last
+        # one reached here as an afterthought: a key holding a list was asked
+        # because it is a list, and the two that hold something else were left
+        # behind "more options" beside the trimmings. A loop with nothing to
+        # loop over is refused by the engine and a repeat of no times does
+        # nothing, so neither is a trimming — they are the question.
         return FIRST
 
     return MORE

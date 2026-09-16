@@ -537,6 +537,114 @@ def test_a_walk_offers_nothing_it_cannot_finish(can: dict[str, Any]) -> None:
     assert "deal_damage" not in held
 
 
+def a_walked_one(can: dict[str, Any], shape: Mapping[str, Any]) -> dict[str, Any]:
+    """
+    The node somebody is left holding after answering everything a walk puts
+    to them about one structure, and nothing else.
+
+    What the walk asks is `asks`, minus the lists it walks into rather than
+    draws; what it walks into gets one thing put in it, because a person who
+    walked in would have put something there. A question that picks one thing
+    out of a catalogue is answered where everything picked out is kept.
+
+    Nothing is named: what to put in a list, and what a question picks from,
+    are the field's own answers.
+    """
+    inside: dict[str, Any] = {}
+    picked: dict[str, Any] = {}
+
+    for f in shape["fields"]:
+        if not asks(f):
+            continue
+
+        if f["shaped_like"] and not any(
+            one["id"] == f["shaped_like"]
+            for group in ("structures", "abilities", "statics")
+            for one in can[group]
+        ):
+            picked[f["id"]] = {
+                "id": can[f["shaped_like"] + "s"][0]["id"],
+                "fields": {}, "groups": {},
+            }
+            continue
+
+        if f["a_list_of"] == "step":
+            inside[f["id"]] = [{"id": "gain_coins", "fields": {"amount": 1},
+                                "groups": {}}]
+        elif f["a_list_of"] == "condition":
+            inside[f["id"]] = [{"id": "dice_even", "fields": {}, "groups": {}}]
+        elif f["a_list_of"]:
+            held = engine_vocabulary().node_shape(f["a_list_of"])
+            inside[f["id"]] = [
+                {
+                    "id": f["a_list_of"],
+                    "fields": {
+                        one.name: ("an option" if not one.a_list_of else [
+                            {"id": "gain_coins", "fields": {"amount": 1},
+                             "groups": {}}
+                        ])
+                        for one in (held.params.values() if held else ())
+                        if one.required or one.a_list_of == STEP
+                    },
+                    "groups": {},
+                }
+            ]
+
+    return {"id": shape["id"], "fields": inside, "groups": picked}
+
+
+def test_every_structure_a_walk_offers_can_be_finished(
+    can: dict[str, Any],
+) -> None:
+    """
+    The same promise as the one above, over the other half of what a walk
+    offers. Answering every question it puts has to leave a card the engine
+    takes — a walk that offers an action and then refuses to save it is worse
+    than one that never offered it.
+
+    Whatever a structure cannot be finished without, it has to ask for. Not
+    "required", which is a word about forms: the engine's own answer is whether
+    it takes the card, so that is what is asked here.
+    """
+    shaping = [one for one in can["structures"] if one["a_step"]]
+
+    assert shaping, "no structures are offered at all"
+
+    for shape in shaping:
+        if not finishable(shape):
+            continue
+
+        card = holding([a_walked_one(can, shape)],
+                       name=f"Walked {shape['id']}")
+        said = check_card(card)
+
+        assert said == [], (shape["id"], said, card["abilities"])
+
+
+def test_what_a_structure_cannot_be_finished_without_is_asked_first(
+    can: dict[str, Any],
+) -> None:
+    """
+    The key that makes a node what it is and keeps its answer there is the
+    question, not a trimming behind "more options". Two of them used to be
+    left there — the one that says what to do a thing for each of, and the one
+    that says how many times — and the first of those made a card the engine
+    refuses.
+    """
+    for shape in can["structures"]:
+        for f in shape["fields"]:
+            if not f["names_the_node"]:
+                continue
+
+            carries = bool(f["a_list_of"] or f["shaped_like"]
+                           or f["kind"] != "anything the engine can only judge"
+                           " during a game")
+
+            assert f["asked"] == ("first" if carries else "never"), (
+                shape["id"], f["id"], f["asked"]
+            )
+
+
 # ----------------------------------------------------------------------
 # 5. The page draws it, and names none of it
 # ----------------------------------------------------------------------
@@ -3429,3 +3537,244 @@ def test_one_of_them_inside_another_is_two_questions(
         assert inside.get(kept), (owner, inside)
         assert check_card(card) == [], check_card(card)
         assert len(chosen_in(bench, card)) == 2, owner
+
+
+# ----------------------------------------------------------------------
+# 21. One thing out of a catalogue, in a field that holds one
+# ----------------------------------------------------------------------
+#
+# A field says what shape goes in it, and that answer may name a shape or it
+# may name a kind. Naming a shape means there is exactly one thing it could
+# be; naming a kind means there is a catalogue of them and a choice to put
+# first. The page could draw the first and not the second, so every field that
+# holds one thing out of many said "the engine can do this and this editor
+# cannot build it yet" — including the one that says what a loop runs over,
+# which the engine refuses a card without.
+#
+# Nothing below names a structure or a card.
+
+
+def catalogue_shaped(can: dict[str, Any]) -> list[tuple[str, str, str]]:
+    """
+    Every field holding one node whose shape is a catalogue rather than a
+    single shape: (owner, field, kind).
+    """
+    shapes = {
+        one["id"]
+        for group in ("structures", "abilities", "statics", "cards")
+        for one in can.get(group, [])
+    }
+
+    return [
+        (one["id"], f["id"], f["shaped_like"])
+        for group in ("structures", "abilities", "statics", "cards")
+        for one in can.get(group, [])
+        for f in one["fields"]
+        if f["shaped_like"] and f["shaped_like"] not in shapes
+    ]
+
+
+def test_the_language_holds_one_thing_out_of_many_somewhere(
+    can: dict[str, Any],
+) -> None:
+    """
+    The case this rests on is real and published.
+    """
+    found = catalogue_shaped(can)
+
+    assert found, "no field holds one node chosen from a catalogue"
+
+    for _owner, _field, kind in found:
+        assert can.get(kind + "s"), f"{kind} names no catalogue"
+
+
+def test_a_field_holding_one_of_many_is_drawn_from_the_catalogue() -> None:
+    """
+    Drawn, rather than said to be impossible. Which control draws it is
+    decided by whether the shape it names is one thing or a catalogue.
+    """
+    said = body_of("nestedHtml")
+
+    assert "kindOf(" in said, "the two cases are told apart some other way"
+    assert "groupHtml(" in said, "a catalogue is not drawn by the catalogue"
+    assert "unsupportedHtml(" in said, "the third case stopped being said"
+
+
+def a_loop(subject: Any, held: Sequence[Any], *, group: Any = None,
+           ) -> dict[str, Any]:
+    """
+    A node that runs its body once for each of something, built the way the
+    walk builds one: the thing picked out where picked-out things are kept.
+    """
+    owner, field, _kind = _looping()
+    node: dict[str, Any] = {"id": owner, "fields": {}, "groups": {}}
+
+    for f in (engine_vocabulary().node_shape(owner) or _NO_SHAPE).params.values():
+        if f.a_list_of == STEP and f.asked != NEVER:
+            node["fields"][f.name] = list(held)
+
+    if group is not None:
+        node["groups"][field] = group
+    elif subject is not None:
+        node["fields"][field] = subject
+
+    return node
+
+
+def _looping() -> tuple[str, str, str]:
+    """
+    The node whose own key holds one thing out of a catalogue and whose body
+    is a list of steps — asked of the engine, not written down.
+    """
+    said = engine_vocabulary()
+
+    for owner in said.node_shapes:
+        shape = said.node_shape(owner)
+        params = (shape.params.values() if shape else ())
+        head = next(
+            (
+                f
+                for f in params
+                if f.names_the_node
+                and f.shaped_like
+                and said.node_shape(f.shaped_like) is None
+            ),
+            None,
+        )
+
+        if head and any(f.a_list_of == STEP for f in params):
+            return owner, head.name, head.shaped_like
+
+    raise AssertionError("nothing in the language loops over a catalogue")
+
+
+def test_the_engine_has_something_that_runs_once_for_each(
+    can: dict[str, Any],
+) -> None:
+    owner, field, kind = _looping()
+
+    assert owner and field and kind
+    assert can.get(kind + "s"), kind
+
+
+def test_it_is_written_with_a_plain_name(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    The shorter of the two ways a card already says it.
+    """
+    _owner, _field, kind = _looping()
+    name = can[kind + "s"][0]["id"]
+    card = holding([a_loop(name, [a_coin(1)])], name="Named subject")
+
+    assert check_card(card) == [], check_card(card)
+    assert [one["what"] for one in bench.show_card(card)]
+
+
+def test_it_is_written_from_something_picked_out(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    And the longer: the thing is picked out, named behind the author's back,
+    and the loop points at the name — which is what the walk now builds.
+    """
+    from fsme.lab.desk.author import read_card
+
+    _owner, field, kind = _looping()
+    picked = {"id": can[kind + "s"][0]["id"], "fields": {}, "groups": {}}
+    card = holding([a_loop(None, [a_coin(1)], group=picked)],
+                   name="Picked subject")
+    rule = card["abilities"][0]
+
+    assert rule.get("targets"), rule
+    assert rule["effects"][0][field] == rule["targets"][0][
+        can[kind + "s"][0]["id"]
+    ]["as"]
+    assert check_card(card) == [], check_card(card)
+    assert build_card(read_card(card, set_id="demo")) == card
+    assert [one["what"] for one in bench.show_card(card)]
+
+
+def test_it_may_point_at_something_the_rule_already_picked(
+    can: dict[str, Any],
+) -> None:
+    """
+    The form one shipped card uses: the rule picks somebody out, and the loop
+    runs over what that somebody has.
+
+    Compared as the walk holds the card, the way every other round trip over
+    the corpus is compared here — a card carries the identifier it was given,
+    and building one derives it from the set and the name.
+    """
+    from fsme.lab.desk.author import read_card
+
+    _owner, field, _kind = _looping()
+    seen = 0
+
+    for card in every_shipped_card():
+        if f'"{field}"' not in json.dumps(card.get("abilities") or []):
+            continue
+
+        seen += 1
+        set_id = str(card["expansion"])
+        before = read_card(card, set_id=set_id)
+        written = build_card(before)
+
+        assert read_card(written, set_id=set_id) == before, card["id"]
+        assert check_card(written) == [], card["id"]
+
+        # and what it runs over says the same thing it said on disk
+        def subjects(node: Any) -> list[Any]:
+            if isinstance(node, Mapping):
+                return ([node[field]] if field in node and "effect" not in node
+                        else []) + [
+                    one for value in node.values() for one in subjects(value)
+                ]
+
+            if isinstance(node, list):
+                return [one for value in node for one in subjects(value)]
+
+            return []
+
+        assert subjects(written["abilities"]) == subjects(
+            card["abilities"]
+        ), card["id"]
+
+    assert seen, "no shipped card has one"
+
+
+def test_what_it_runs_may_itself_hold_more(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    Its body is a list of things that happen like any other, so a thing that
+    holds others goes in it without anything being said.
+    """
+    _owner, _field, kind = _looping()
+    name = can[kind + "s"][0]["id"]
+
+    for inner in asking_nodes():
+        if not holds_steps_itself(inner):
+            continue
+
+        card = holding([a_loop(name, [one_asking(inner, [a_coin(1)])])],
+                       name=f"Loop of {inner}")
+
+        assert check_card(card) == [], check_card(card)
+        assert [one["what"] for one in bench.show_card(card)]
+
+
+def test_it_may_sit_inside_a_branch(bench: Workbench, can: dict[str, Any]) -> None:
+    """
+    Which is where the one shipped card that has it keeps it.
+    """
+    _owner, _field, kind = _looping()
+    name = can[kind + "s"][0]["id"]
+    branch = {
+        "id": "if",
+        "fields": {"if": [A_PLAIN], "then": [a_loop(name, [a_coin(1)])]},
+        "groups": {},
+    }
+    card = holding([branch], name="Loop in a branch")
+
+    assert check_card(card) == [], check_card(card)
