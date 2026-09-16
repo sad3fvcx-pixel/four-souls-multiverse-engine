@@ -37,7 +37,6 @@ from fsme.content.vocabulary import (
     COST,
     MODE,
     NAMED_COUNT,
-    NEVER,
     STATIC,
     STEP,
     TARGET,
@@ -759,12 +758,7 @@ def _written_node(
             continue
 
         if parameter.a_list_of:
-            body = _written_body(
-                parameter.a_list_of,
-                given.get(name),
-                aimed,
-                _alternatives(shape, parameter),
-            )
+            body = _written_body(parameter.a_list_of, given.get(name), aimed)
 
             if body or parameter.names_the_node:
                 written[name] = body
@@ -814,19 +808,12 @@ def _written_body(
     kind: str,
     described: Any,
     aimed: _Chosen | None,
-    alternatives: bool = False,
 ) -> list[Any]:
     """
     A list of nodes of one kind, written out.
 
     Four kinds, and each of them is a thing the catalogue already describes,
     so the only thing decided here is which description to look the node up in.
-
-    ``alternatives`` says whether what is in this list runs instead of what is
-    beside it rather than after it — the options of a choice, one arm of a
-    branch. It decides nothing about what is written and everything about what
-    two nodes in it can be said to share: two questions that never both get
-    asked are not one question, however alike their names.
     """
     if not isinstance(described, (list, tuple)):
         return []
@@ -838,7 +825,7 @@ def _written_body(
     written: list[Any] = []
 
     if aimed is not None:
-        aimed.enter(alternatives)
+        aimed.enter()
 
     for one in described:
         node = _written_one(kind, one, aimed)
@@ -982,31 +969,6 @@ def _declared(
 
         if written is not None:
             into.append(written)
-
-
-def _alternatives(shape: Any, parameter: Any) -> bool:
-    """
-    Whether the things in one of a node's lists run instead of one another.
-
-    Two ways a node says so, and it says both by its shape. A list of options
-    is one: a choice runs the option taken and none of the others. Several
-    bodies of its own is the other: a branch has two, and a card goes down one
-    of them. A node with one body runs it, and a node with one body inside
-    another runs both.
-
-    Nothing here is named. A structure the engine gains that holds its steps
-    one way or the other is read by this without being told which it is.
-    """
-    if parameter.a_list_of == MODE:
-        return True
-
-    arms = [
-        one
-        for one in shape.params.values()
-        if one.a_list_of == STEP and one.asked != NEVER
-    ]
-
-    return len(arms) > 1
 
 
 def _answers_under(shape: Any) -> str:
@@ -1531,15 +1493,24 @@ class _Chosen:
         """
         self._later.pop()
 
-    def enter(self, alternatives: bool) -> None:
+    def enter(self) -> None:
         """
-        Start a body. What it can see is what its holder could, unless what is
-        in it runs instead of what is beside it — then it starts afresh, the
-        way two branches each get to call a choice `top` and mean two things.
+        Start a body. What it can see is what its holder could.
+
+        Every body, including one that runs instead of the body beside it. A
+        branch's two arms are two ways one card can go and a choice's options
+        are two things it may do, so a question in each is one question either
+        way — but that is already true of them without anything being said,
+        because a body is left when it ends and what it asked is left with it.
+        Two arms are two bodies, and neither is open while the other is.
+
+        Saying it twice was the bug. A body that started afresh forgot not
+        only what its neighbours had asked but what everything holding it had,
+        so a question inside an option could not see the question that had
+        offered the option — and two of them took one name, one reply and one
+        answer between them.
         """
-        self._asking.append(
-            Counter() if alternatives else Counter(self._asking[-1])
-        )
+        self._asking.append(Counter(self._asking[-1]))
 
     def leave(self) -> None:
         """

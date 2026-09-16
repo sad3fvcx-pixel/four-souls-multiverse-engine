@@ -3000,3 +3000,185 @@ def test_every_shipped_question_is_written_back_exactly() -> None:
             )
 
     assert seen >= 55, seen
+
+
+# ----------------------------------------------------------------------
+# 19. A question inside an option is still inside the question that offered it
+# ----------------------------------------------------------------------
+#
+# Two questions that never both get asked are not one question, and a body
+# that ends takes what it asked with it — so two options of one choice, or two
+# arms of one branch, each get to ask the same thing and mean their own.
+#
+# That much was right. What was wrong was saying it twice: a body whose
+# neighbours run instead of it was started empty, which forgot not only what
+# its neighbours had asked but everything holding it. A choice inside an
+# option could not see the choice that had offered the option, so the two took
+# one name between them — and the inner one, resuming, found the outer one's
+# reply waiting and looked for it among its own options.
+#
+# Nothing below names a structure.
+
+
+def a_mode(description: str, effects: Sequence[Any]) -> dict[str, Any]:
+    return {
+        "id": "mode",
+        "fields": {"description": description, "effects": list(effects)},
+        "groups": {},
+    }
+
+
+def offering(name: str, held: Sequence[Any]) -> dict[str, Any]:
+    """
+    One node that asks a player something, holding what it holds the way its
+    own shape says to hold it: options where it offers options, steps where it
+    holds steps.
+    """
+    if holds_steps_itself(name):
+        return one_asking(name, list(held))
+
+    return one_asking(
+        name, [a_mode(f"{name} option {i + 1}", [one])
+               for i, one in enumerate(held)]
+    )
+
+
+def chosen_in(bench: Workbench, card: Mapping[str, Any]) -> list[str]:
+    """
+    What the player was asked, in order, playing the card for real.
+    """
+    return [
+        str(one["what"]) for one in bench.show_card(card)
+        if "chose" in str(one["what"])
+    ]
+
+
+def test_a_question_inside_an_option_keeps_its_own_reply(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    The regression. One of these inside an option of another is two questions,
+    and before this the inner one went looking for its reply and found the
+    outer one's.
+    """
+    for node in asking_nodes():
+        if holds_steps_itself(node):
+            continue
+
+        inner = offering(node, [a_coin(1)])
+        card = holding([offering(node, [inner])], name=f"Inside {node}")
+        kept = answers_under(node)
+        outer = card["abilities"][0]["effects"][0]
+        held = outer[node][0]["effects"][0]
+
+        assert kept not in outer, (node, outer)
+        assert held.get(kept), (node, held)
+        assert check_card(card) == [], check_card(card)
+        assert len(chosen_in(bench, card)) == 2, node
+
+
+def test_three_of_them_one_inside_another_stay_three(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    And it does not stop at two: each one further in is one more question, and
+    the names have to go on being different all the way down.
+    """
+    for node in asking_nodes():
+        if holds_steps_itself(node):
+            continue
+
+        deepest = offering(node, [a_coin(1)])
+        middle = offering(node, [deepest])
+        card = holding([offering(node, [middle])], name=f"Deep {node}")
+        kept = answers_under(node)
+        names = [
+            one[kept]
+            for one in _every_node(card["abilities"][0]["effects"])
+            if node in one and one.get(kept)
+        ]
+
+        assert len(names) == 2, (node, names)
+        assert len(set(names)) == 2, (node, names)
+        assert check_card(card) == [], check_card(card)
+        assert len(chosen_in(bench, card)) == 3, node
+
+
+def test_a_question_in_each_option_is_one_question(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    The other half, and the half the corpus depends on: one shipped card asks
+    the same thing in each of three options and names none of them, because
+    only one option is ever taken.
+    """
+    for offers in asking_nodes():
+        if holds_steps_itself(offers):
+            continue
+
+        for asks_again in asking_nodes():
+            if not holds_steps_itself(asks_again):
+                continue
+
+            card = holding(
+                [
+                    one_asking(
+                        offers,
+                        [
+                            a_mode("one", [one_asking(asks_again, [a_coin(1)])]),
+                            a_mode("two", [one_asking(asks_again, [a_coin(5)])]),
+                        ],
+                    )
+                ],
+                name=f"{offers} of {asks_again}",
+            )
+            kept = answers_under(asks_again)
+            written = json.dumps(card["abilities"][0]["effects"])
+
+            assert f'"{kept}"' not in written, (offers, asks_again, written)
+            assert check_card(card) == [], check_card(card)
+            assert len(chosen_in(bench, card)) == 2, (offers, asks_again)
+
+
+def test_one_sort_inside_another_needs_no_name(
+    bench: Workbench, can: dict[str, Any]
+) -> None:
+    """
+    Two questions of different sorts keep their replies apart without being
+    told to: each sort has a name of its own to fall back on.
+    """
+    kinds = asking_nodes()
+
+    if len(kinds) < 2:
+        pytest.skip("only one sort of question in the language")
+
+    for outer in kinds:
+        for inner in kinds:
+            if outer == inner or not holds_steps_itself(outer):
+                continue
+
+            card = holding(
+                [one_asking(outer, [offering(inner, [a_coin(1)])])],
+                name=f"{outer} then {inner}",
+            )
+            written = json.dumps(card["abilities"][0]["effects"])
+
+            for one in kinds:
+                assert f'"{answers_under(one)}"' not in written, written
+
+            assert check_card(card) == [], check_card(card)
+            assert len(chosen_in(bench, card)) == 2, (outer, inner)
+
+
+def _every_node(held: Any) -> list[dict[str, Any]]:
+    found: list[dict[str, Any]] = []
+
+    if isinstance(held, Mapping):
+        found.append(dict(held))
+        for one in held.values():
+            found.extend(_every_node(one))
+    elif isinstance(held, list):
+        for one in held:
+            found.extend(_every_node(one))
+
+    return found
