@@ -78,6 +78,37 @@ require one of every parameter. Anything showing a parameter to a person reads
 this to decide *how*; ``describes`` refines *what it is called*.
 """
 
+COUNTER_POOL = "counters"
+TAG_POOL = "tags"
+CARD_NAME_POOL = "card_names"
+
+POOLS = (COUNTER_POOL, TAG_POOL, CARD_NAME_POOL)
+"""
+The open vocabularies, named so that a parameter can say it belongs to one.
+
+Some words a card writes are not the engine's to know. A counter is whatever
+somebody called it — ``charge``, ``egg``, ``knot`` — and the engine keeps them
+in a bare ``dict[str, int]`` that any word opens. A tag is a family somebody
+invented. A card's name is a card's name. There is no list to declare and there
+never will be, because the next set writes the next word.
+
+That is not the same as having nothing to offer. Every word of these three is
+written down somewhere in the content already loaded, and an author typing into
+an empty box is being made to remember a spelling the machine is holding. So
+what is declared is the *pool* a parameter draws from — a name, not a list —
+and whoever has the content works out the words.
+
+- ``counters`` — one flat namespace. A counter put on by one effect is the
+  counter another condition asks about, so everything that writes or reads one
+  draws from the same pool.
+- ``tags`` — the families a card declares in its own ``tags``, which is what
+  every parameter matching a tag is matched against.
+- ``card_names`` — what cards are called. Twelve cards are called "Pills!";
+  that is ordinary, and it is exactly why the spelling is worth offering.
+
+A pool is a suggestion and never a domain. See ``ParamShape.suggest_from``.
+"""
+
 BY_NAME = "the name of something the ability chose"
 BY_PLAYER_OF = "player_of"
 BY_STORED = "the name of a value an earlier step stored"
@@ -411,6 +442,22 @@ class ParamShape:
     saying, and much better than a list that is right half the time.
     """
 
+    suggest_from: str = ""
+    """
+    An open vocabulary this answer belongs to — one of ``POOLS``.
+
+    The difference from ``values`` and ``domain_from`` is the whole reason this
+    exists, and it is not a shade of meaning: those two say what a value *may*
+    be, and anything else is refused. This says where words like this one have
+    been written before, and refuses nothing. A counter nobody has ever used is
+    a correct card, and must stay one.
+
+    So nothing validating reads this. It is declared on both ends of a pool —
+    on the parameters that write a word into it and on the parameters that read
+    one back — because they are the same namespace, and a mechanism that told
+    them apart would be a mechanism with a list in it.
+    """
+
     domain_from: str = ""
     """
     Another answer in this node that decides which values are allowed.
@@ -564,6 +611,22 @@ class ParamShape:
         that is either the effect's own nested data or something a game hands
         over, and only whoever wrote the effect knows which.
         """
+        if self.suggest_from and self.values:
+            # A closed list and an open pool are opposite answers to the same
+            # question, and a parameter holding both says the engine knows
+            # every word and also that it does not. Refused where it is written
+            # rather than reported later: there is no reading of it to keep.
+            raise ValueError(
+                f"'{self.name}' cannot have both values and "
+                f"suggest_from='{self.suggest_from}'"
+            )
+
+        if self.suggest_from and self.suggest_from not in POOLS:
+            raise ValueError(
+                f"'{self.name}' draws from no such pool: "
+                f"'{self.suggest_from}'"
+            )
+
         if not self.written_as:
             object.__setattr__(self, "written_as", _written_as_for(self))
 

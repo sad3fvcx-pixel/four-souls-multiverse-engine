@@ -29,10 +29,12 @@ from fsme.content.vocabulary import (
     BY_ENGINE,
     BY_PLAYER_OF,
     CARD,
+    CARD_NAME_POOL,
     CARDS,
     CHANGE,
     CONDITION,
     COST,
+    COUNTER_POOL,
     DEEPER,
     FIRST,
     MODE,
@@ -45,6 +47,7 @@ from fsme.content.vocabulary import (
     STATIC,
     STEP,
     STRUCTURE,
+    TAG_POOL,
     TARGET,
     UNCHECKED,
     VALUES,
@@ -401,6 +404,11 @@ def _card_field(field: Field[Any]) -> ParamShape:
     # with no closed set, what a monster pays out, and the card's own notes.
     # None of them is a value anybody types into a box.
     theirs = ("tags", "rewards", "metadata")
+    # Where two of the open vocabularies come from. A card's name and the
+    # families it declares are not answers drawn from a pool, they *are* the
+    # pool — and saying so here is what lets one mechanism gather the words and
+    # offer them back, with nothing anywhere holding a list of either.
+    pools = {"name": CARD_NAME_POOL, "tags": TAG_POOL}
 
     return ParamShape(
         field.name,
@@ -424,6 +432,7 @@ def _card_field(field: Field[Any]) -> ParamShape:
             if field.name == "type"
             else MappingProxyType({})
         ),
+        suggest_from=pools.get(field.name, ""),
         describes=CARD_WORDS.get(field.name, ""),
         asks=CARD_ASKS.get(field.name, ""),
         asked=CARD_ASKED.get(field.name, ""),
@@ -781,7 +790,10 @@ _NAMED_COUNT = NodeShape(
     params=MappingProxyType(
         {
             "counter": ParamShape(
-                "counter", TEXT, describes="which counter to spend"
+                "counter",
+                TEXT,
+                suggest_from=COUNTER_POOL,
+                describes="which counter to spend",
             ),
             "amount": ParamShape(
                 "amount", WHOLE, least=0, describes="how many of them"
@@ -1147,6 +1159,7 @@ def _shape_of(spec: EffectSpec) -> EffectShape:
                     nullable=param.nullable,
                     values=param.values,
                     least=param.least,
+                    suggest_from=param.suggest_from,
                     default=param.default,
                     # The one an effect is mostly about. Thirty-seven effects
                     # already say which, because it is the one the shorthand

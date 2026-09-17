@@ -28,10 +28,13 @@ from fsme.content.vocabulary import (
     A_LIST,
     ANY_GROUP,
     BY_BINDING,
+    CARD_NAME_POOL,
     CARDS,
+    COUNTER_POOL,
     MIXED,
     PASSTHROUGH,
     PLAYERS,
+    TAG_POOL,
     UNCHECKED,
     ParamShape,
     TargetShape,
@@ -1018,8 +1021,18 @@ SEARCHING = {
     "exclude_type": ParamShape(
         "exclude_type", TEXT, values=CARD_TYPES, describes="leave out cards of this kind"
     ),
-    "tag": ParamShape("tag", TEXT, describes="only ones marked with this word"),
-    "named": ParamShape("named", TEXT, describes="only the card with this name"),
+    "tag": ParamShape(
+        "tag",
+        TEXT,
+        suggest_from=TAG_POOL,
+        describes="only ones marked with this word",
+    ),
+    "named": ParamShape(
+        "named",
+        TEXT,
+        suggest_from=CARD_NAME_POOL,
+        describes="only the card with this name",
+    ),
 }
 """
 What ``_target_deck_card`` reads. A misspelt deck stops the game today, deep
@@ -1297,9 +1310,17 @@ ITEMS = _shape(
             "exclude_source", FLAG, describes="leave out this card itself"
         ),
         "counter": ParamShape(
-            "counter", TEXT, describes="only ones carrying this counter"
+            "counter",
+            TEXT,
+            suggest_from=COUNTER_POOL,
+            describes="only ones carrying this counter",
         ),
-        "tag": ParamShape("tag", TEXT, describes="only ones marked with this word"),
+        "tag": ParamShape(
+            "tag",
+            TEXT,
+            suggest_from=TAG_POOL,
+            describes="only ones marked with this word",
+        ),
     },
 )
 """

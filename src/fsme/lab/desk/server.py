@@ -87,6 +87,15 @@ class DeskHandler(GameHandler):
 
             return
 
+        if path == "/api/suggestions":
+            # The words already written, which are content and not capability:
+            # `/api/capabilities` says what the engine can do and would say the
+            # same thing with no cards loaded at all. This says what has been
+            # called what, and changes every time somebody saves a card.
+            self._json({"pools": author.suggestions(self.bench.root)})
+
+            return
+
         if path == "/play":
             # The game itself, still served by the core's own page.
             self._send(HTML, (GAME_STATIC / "index.html").read_bytes())

@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from fsme.content.vocabulary import CARDS, PLAYERS
+from fsme.content.vocabulary import CARDS, COUNTER_POOL, PLAYERS
 from fsme.events import EventType
 from fsme.state import (
     CardModifier,
@@ -480,6 +480,7 @@ def register(registry: EffectRegistry) -> None:
             "silences": "the counter takes the card's abilities away",
         },
         needs=("counter",),
+        suggests={"counter": COUNTER_POOL},
         unless={"amount": "clear"},
     )
     registry.register(

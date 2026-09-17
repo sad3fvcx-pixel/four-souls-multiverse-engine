@@ -15,7 +15,7 @@ someone repairing an expansion should see everything wrong with it at once.
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -41,6 +41,21 @@ Reference resolution is a pipeline stage of its own: a character whose starting
 item does not exist must be caught while loading, not when somebody tries to
 play it.
 """
+
+
+def _card_files(directory: Path) -> list[Path]:
+    """
+    Every file in one set that holds cards.
+
+    A leading underscore marks a file that belongs to the set but is not a card
+    file: hand-written behaviour waiting to be merged in, notes, working
+    material. The manifest is the set's own papers rather than a card.
+    """
+    return [
+        path
+        for path in sorted(directory.rglob(f"*{CARD_FILE_EXTENSION}"))
+        if path.name != MANIFEST_NAME and not path.name.startswith("_")
+    ]
 
 
 class ContentLoader:
@@ -162,6 +177,25 @@ class ContentLoader:
     # One expansion
     # ------------------------------------------------------------------
 
+    def raw_cards(self, root: Path) -> Iterator[Mapping[str, Any]]:
+        """
+        Every card under one root, exactly as its file has it.
+
+        The loading pipeline's first stage on its own, for whoever wants what
+        was *written* rather than what the engine made of it. Nothing is
+        checked and nothing is refused: a set with one broken file in it still
+        has cards in its other files, and a caller reading spellings out of
+        content somebody is halfway through editing wants the ones that are
+        there rather than an exception about the one that is not.
+        """
+        report = ValidationReport()
+
+        for directory in self._expansion_directories(root):
+            for path in _card_files(directory):
+                for card in self._read_cards(path, report) or ():
+                    if isinstance(card, Mapping):
+                        yield card
+
     def _expansion_directories(self, root: Path) -> list[Path]:
         """
         Find every directory holding a manifest.
@@ -246,13 +280,7 @@ class ContentLoader:
         """
         definitions: list[CardDefinition] = []
 
-        for file_path in sorted(directory.rglob(f"*{CARD_FILE_EXTENSION}")):
-            if file_path.name == MANIFEST_NAME or file_path.name.startswith("_"):
-                # A leading underscore marks a file that belongs to the set but
-                # is not a card file: hand-written behaviour waiting to be
-                # merged in, notes, working material.
-                continue
-
+        for file_path in _card_files(directory):
             cards = self._read_cards(file_path, report)
 
             if cards is None:

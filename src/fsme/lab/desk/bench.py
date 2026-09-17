@@ -115,6 +115,13 @@ class Workbench:
     def work(self) -> Path:
         return self._work
 
+    @property
+    def root(self) -> Path:
+        """
+        Where the cards we ship are, for whoever needs them as they were written.
+        """
+        return self._root
+
     def show_card(self, card: Mapping[str, Any]) -> list[dict[str, Any]]:
         """
         Play one card in a game and say what happened, moment by moment.

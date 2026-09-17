@@ -462,6 +462,11 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             "defines": parameter.defines,
             "one_of": parameter.one_of,
             "domain_from": parameter.domain_from,
+            # Which open vocabulary this answer's word belongs to, so a page can
+            # offer the words already written without any of them becoming the
+            # only ones allowed. A pool's name, never its contents: the words
+            # are content and arrive from somewhere that has some.
+            "suggest_from": parameter.suggest_from,
             "domains": {
                 answer: [str(one) for one in allowed]
                 for answer, allowed in parameter.domains.items()

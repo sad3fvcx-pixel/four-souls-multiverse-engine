@@ -23,8 +23,10 @@ from typing import Any
 from fsme.content.vocabulary import (
     A_LIST,
     CONDITION,
+    COUNTER_POOL,
     FIRST,
     OPEN,
+    TAG_POOL,
     UNCHECKED,
     VALUES,
     ConditionShape,
@@ -601,12 +603,26 @@ ABOUT_A_PLAYER = _shape(SUBJECT_PLAYER, COMPARISON)
 HAS_SOMETHING = _shape(SUBJECT_PLAYER, HOW_MANY)
 HAS_TREASURE = _shape(
     HAS_SOMETHING,
-    {"tag": ParamShape("tag", TEXT, describes="only items marked with this word")},
+    {
+        "tag": ParamShape(
+            "tag",
+            TEXT,
+            suggest_from=TAG_POOL,
+            describes="only items marked with this word",
+        )
+    },
 )
 ABOUT_A_MONSTER = _shape(SUBJECT_MONSTER, COMPARISON)
 COUNTERS = _shape(
     COMPARISON,
-    {"counter": ParamShape("counter", TEXT, describes="what the counter is called")},
+    {
+        "counter": ParamShape(
+            "counter",
+            TEXT,
+            suggest_from=COUNTER_POOL,
+            describes="what the counter is called",
+        )
+    },
 )
 PLAYER_COUNTERS = _shape(SUBJECT_PLAYER, COUNTERS)
 

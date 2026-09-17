@@ -125,6 +125,16 @@ class ParamSpec:
     The smallest number accepted, where there is a floor.
     """
 
+    suggest_from: str = ""
+    """
+    An open vocabulary this parameter's word belongs to.
+
+    The opposite end of ``values`` and never both. ``values`` says the engine
+    knows every word there is; this says nobody does, and names the pool the
+    words that *have* been written are kept in, so that a form can offer them
+    without any of them becoming the only ones allowed.
+    """
+
     asks: str = ""
     """
     What to call this field when a person is filling it in.
@@ -391,6 +401,7 @@ class EffectRegistry:
         description: str = "",
         values: Mapping[str, Sequence[Any]] | None = None,
         least: Mapping[str, int] | None = None,
+        suggests: Mapping[str, str] | None = None,
         asks: Mapping[str, str] | None = None,
         needs: Sequence[str] = (),
         roles: Mapping[str, str] | None = None,
@@ -425,6 +436,16 @@ class EffectRegistry:
 
         for parameter, floor in (least or {}).items():
             described[parameter] = _narrow(described, parameter, name, least=floor)
+
+        for parameter, pool in (suggests or {}).items():
+            # A word with no closed set of words, and somewhere the ones
+            # already written are kept. Beside `values` because it is the same
+            # kind of fact about a parameter and the opposite answer: not which
+            # words are allowed, which is all of them, but which words a person
+            # has used before.
+            described[parameter] = _narrow(
+                described, parameter, name, suggest_from=pool
+            )
 
         for parameter in needs:
             # A parameter the handler raises on when it is missing. Its
@@ -586,6 +607,7 @@ def _narrow(
     unless_when: tuple[Any, ...] | None = None,
     refers_to: str | None = None,
     a_list_of: str | None = None,
+    suggest_from: str | None = None,
 ) -> ParamSpec:
     """
     Add a domain, a floor or a label to a parameter the handler declares.
@@ -619,6 +641,9 @@ def _narrow(
         ),
         refers_to=refers_to if refers_to is not None else known.refers_to,
         a_list_of=a_list_of if a_list_of is not None else known.a_list_of,
+        suggest_from=(
+            suggest_from if suggest_from is not None else known.suggest_from
+        ),
     )
 
 

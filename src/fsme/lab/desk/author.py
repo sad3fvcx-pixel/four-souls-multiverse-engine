@@ -27,6 +27,7 @@ from typing import Any
 
 from fsme.cards import validate_card
 from fsme.cards.references import NEW_SCOPE
+from fsme.content.suggestions import from_roots, pools_by_key
 from fsme.content.vocabulary import (
     ABILITY,
     ANSWER,
@@ -87,6 +88,7 @@ __all__ = [
     "read_card",
     "sets",
     "sets_directory",
+    "suggestions",
     "UnreadableCard",
 ]
 
@@ -136,6 +138,28 @@ def sets() -> list[dict[str, Any]]:
         )
 
     return found
+
+
+def suggestions(root: Path | str | None = None) -> dict[str, list[str]]:
+    """
+    The words already written, for a form to offer without insisting on them.
+
+    Everywhere a game would be dealt from, which is the shipped cards and the
+    author's own: a word is worth offering because somebody used it, and the
+    thousand cards we ship are where nearly every counter and every family name
+    an author wants already is. Their own sets are where the one they invented
+    last week is, and a list holding only one of the two would be a list that is
+    missing whichever half they were thinking of.
+
+    Nothing here is a domain. A word absent from all of it is an ordinary card,
+    and the checker is not told any of this.
+    """
+    roots = [sets_directory()]
+
+    if root is not None:
+        roots.insert(0, Path(root))
+
+    return from_roots(roots, pools_by_key(engine_vocabulary()))
 
 
 def make_set(name: str) -> dict[str, Any]:

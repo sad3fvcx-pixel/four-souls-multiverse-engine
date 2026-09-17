@@ -89,6 +89,11 @@ const api = async (path, body) => {
 };
 
 let can = null;          // what the engine can do
+// The words already written, one list per open vocabulary. Suggestions and
+// never a domain: an empty pool, a missing pool, or no answer from the server
+// at all leaves every box exactly as free as it was, because a word nobody has
+// used yet is an ordinary word and the engine has always thought so.
+let pools = {};
 let state = {};          // the card being made
 // Where a walk has got to, or null while the editor is open. Deliberately not
 // part of `state`: it is how somebody is being asked, not anything about the
@@ -102,6 +107,20 @@ let looking = false;
 // Changing one is a later step than this: everything is offered except
 // keeping it, so nothing can be written over a card by accident.
 let editing = false;
+// Everything a form needs before it can draw: what the engine can do, and what
+// has been called what. Both are fetched once and neither is fatal — the words
+// are a convenience, so a page that cannot get them still asks every question.
+async function ready() {
+  if (!can) can = await api("/api/capabilities");
+  if (Object.keys(pools).length) return;
+  try {
+    const said = await api("/api/suggestions");
+    pools = said.pools || {};
+  } catch (e) {
+    pools = {};
+  }
+}
+
 const page = document.getElementById("page");
 const el = (html) => { page.innerHTML = html; };
 const esc = (s) => String(s ?? "").replace(/[<>&"]/g, c =>
@@ -164,7 +183,7 @@ async function mine() {
 // half that was not read.
 
 async function openCard(set, card) {
-  if (!can) can = await api("/api/capabilities");
+  await ready();
   const said = await api("/api/cards/open", { set, card });
   if (said.error) return cannotOpen("", said.error);
   if (said.unreadable) return cannotOpen(card, said.unreadable);
@@ -264,7 +283,7 @@ async function startCard() {
   walk = null;
   looking = false;
   editing = false;
-  if (!can) can = await api("/api/capabilities");
+  await ready();
   const { sets } = await api("/api/sets");
   // A card is a node like every one inside it: what was typed under `fields`,
   // what was pointed at under `groups`, and its own name so that anything
@@ -2192,10 +2211,22 @@ function valueHtml(f, values, siblings, path) {
   const kept = value === undefined || value === null ? "" : value;
   const read = number ? "this.valueAsNumber"
     : f.role === "open" ? "guess(this.value)" : "this.value";
+  // Words other cards have used for this, where the engine says there is a
+  // pool of them. A `datalist` and not a `select` on purpose: the list drops
+  // down, and typing straight past it is the same box it always was.
+  const pool = f.suggest_from ? (pools[f.suggest_from] || []) : [];
+  const listed = pool.length ? `${note(path, f.id)}-pool` : "";
   return `${says}${why}
     <input ${dead} ${number
       ? `type="number" ${f.least != null ? `min="${f.least}"` : ""}` : ""}
+      ${listed ? `list="${listed}"` : ""}
       placeholder="${esc(fallback(f))}" value="${esc(kept)}" ${put(read)}>
+    ${listed ? `<datalist id="${listed}">${
+      pool.map(w => `<option value="${esc(w)}"></option>`).join("")
+    }</datalist>
+    <p class="muted">${pool.length} ${
+      pool.length === 1 ? "word has" : "words have"
+    } been used here before — or write a new one.</p>` : ""}
     ${f.role === "open"
       ? '<p class="muted">Any value at all — a number, true or false, or words.</p>'
       : ""}
