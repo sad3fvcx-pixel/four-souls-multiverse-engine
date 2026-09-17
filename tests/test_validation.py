@@ -1130,6 +1130,188 @@ def test_a_body_key_with_no_head_is_still_refused(vocabulary: Vocabulary) -> Non
 
 
 # ----------------------------------------------------------------------
+# What a promise owes is owed in the engine's own words
+# ----------------------------------------------------------------------
+#
+# An effect may keep structured data of its own, and what is inside it usually
+# needs a game to read — so the checker hands it over untouched. A promise is
+# the one that says what is inside: each thing it owes is a `change`, and the
+# engine describes a change as one of six operations. That description is a
+# description, and a description can be read without a game.
+#
+# Until it was, `{"value": {"bump": 2}}` passed every check, loaded into a
+# game, and stopped the ability when it ran. Worse, the writer knew the six
+# and dropped the rest, so opening such a card in the desk and saving it wrote
+# a promise that owed less than the author said, quietly.
+
+
+def a_promise(changes: Any) -> dict:
+    """A promise owing whatever this probe wants to say it owes."""
+    return {
+        "effect": "promise",
+        "event": "roll_modified",
+        "when": {"attack": True},
+        "changes": changes,
+    }
+
+
+def test_a_promise_owing_what_the_engine_knows_is_left_alone(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    Every one of the six, alone and together, and the one that is not a number.
+    """
+    from fsme.state.promises import CHANGES
+
+    for one in CHANGES:
+        owed = {"value": {one: 1}}
+
+        assert wholly(vocabulary, a_promise(owed)) == [], one
+
+    assert wholly(vocabulary, a_promise(
+        {"value": {"delta": 1, "factor": 2, "cap": 3, "floor": 0, "flip": 7}}
+    )) == []
+    assert wholly(vocabulary, a_promise({"value": {"value": "discard"}})) == []
+
+
+@pytest.mark.parametrize(
+    "owed",
+    [
+        {"value": {"bump": 2}},
+        {"value": {"delta": 2, "bump": 9}},
+        {"value": {"detla": 2}},
+    ],
+    ids=["unknown", "unknown beside known", "misspelled"],
+)
+def test_a_promise_cannot_owe_an_operation_the_engine_has_not(
+    vocabulary: Vocabulary, owed: dict
+) -> None:
+    """
+    One complaint, naming the operation, before anybody plays the card.
+    """
+    said = wholly(vocabulary, a_promise(owed))
+
+    assert len(said) == 1, said
+    assert "is not part of a change" in said[0], said
+
+
+def test_a_misspelled_operation_is_offered_the_one_it_meant(
+    vocabulary: Vocabulary,
+) -> None:
+    said = wholly(vocabulary, a_promise({"value": {"detla": 2}}))
+
+    assert "delta" in said[0], said
+
+
+@pytest.mark.parametrize(
+    "owed",
+    [5, "nonsense", [1, 2], None],
+    ids=["number", "text", "a list", "nothing"],
+)
+def test_a_thing_owed_that_is_not_a_change_is_refused(
+    vocabulary: Vocabulary, owed: Any
+) -> None:
+    said = wholly(vocabulary, a_promise({"value": owed}))
+
+    assert len(said) == 1, said
+    assert "this is a change" in said[0], said
+
+
+def test_each_thing_owed_is_read_on_its_own(vocabulary: Vocabulary) -> None:
+    """
+    The names are the card's own — which value of the event it changes — so
+    nothing reads them, and a mistake under one of them names that one.
+    """
+    said = wholly(vocabulary, a_promise(
+        {"value": {"delta": 1}, "amount": {"bump": 2}}
+    ))
+
+    assert len(said) == 1, said
+    assert "changes.amount" in said[0], said
+
+
+def test_a_number_that_is_not_a_number_is_still_one_complaint(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    Inside a change, the shape's own kinds apply — and saying the operation is
+    unknown as well would be one violation and two complaints.
+    """
+    said = wholly(vocabulary, a_promise({"value": {"delta": "lots"}}))
+
+    assert len(said) == 1, said
+    assert "whole number" in said[0], said
+
+
+def test_changes_that_are_not_a_set_of_them_is_one_complaint(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    The outer shape is a different question and was already asked. Asking the
+    inner one of something that has no inside would answer it twice.
+    """
+    for owed in ("nonsense", ["a"], 5):
+        said = wholly(vocabulary, a_promise(owed))
+
+        assert len(said) == 1, (owed, said)
+        assert "set of named values" in said[0], (owed, said)
+
+
+def test_an_effect_keeping_a_catalogue_is_still_handed_over(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    `watch_for` keeps steps and conditions, and says so by naming a catalogue
+    rather than a shape. Those are walked by whatever walks that kind, so this
+    must not ask again — and what is wrong inside one is still named once.
+    """
+    assert wholly(vocabulary, {
+        "effect": "watch_for", "event": "after_roll",
+        "conditions": [{"dice_equals": 1}], "effects": [{"draw_loot": 1}],
+    }) == []
+
+    said = wholly(vocabulary, {
+        "effect": "watch_for", "event": "after_roll",
+        "effects": [{"no_such_effect": 1}],
+    })
+
+    assert len(said) == 1, said
+    assert "unknown effect" in said[0], said
+
+
+def test_what_is_inside_a_kept_answer_is_asked_of_the_metadata() -> None:
+    """
+    Which kept answers have a readable inside is the parameter's own answer,
+    not a list of effects that are special.
+    """
+    from fsme.cards import validator
+
+    said = inspect.getsource(validator._each_named)
+    said = said.split('"""')[2]
+    said = "\n".join(line.split("#")[0] for line in said.splitlines())
+
+    for named in ("promise", "changes", "change", "watch_for", "step",
+                  "condition"):
+        assert f'"{named}"' not in said, named
+        assert f"'{named}'" not in said, named
+
+    assert "each_shaped_like" in said
+
+
+def test_the_six_are_written_down_once() -> None:
+    """
+    The checker reads them off the shape, the shape off `CHANGE_WORDS`, and
+    the runtime refuses by `CHANGES`. One list, three readers, no copy.
+    """
+    from fsme.runtime.vocabulary import engine_vocabulary
+    from fsme.state.promises import CHANGES
+
+    described = engine_vocabulary().node_shapes["change"]
+
+    assert set(described.params) == set(CHANGES)
+
+
+# ----------------------------------------------------------------------
 # The one that decides whether the design was right
 # ----------------------------------------------------------------------
 

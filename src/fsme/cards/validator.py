@@ -373,8 +373,18 @@ def _validate_call(
             # game and nothing here may judge that — but whether it is a
             # structure at all is a different question, and the effect answers
             # it at registration because its handler raises on anything else.
+            #
+            # Unless the parameter says what the things inside it are. Then
+            # they are not opaque: they are nodes the engine describes, and
+            # they are checked like any other.
             errors.extend(
                 _outer_shape(name, shape.params.get(key), value, location, path)
+            )
+            errors.extend(
+                _each_named(
+                    shape.params.get(key), value, location,
+                    f"{path}.{key}", node_shapes,
+                )
             )
             continue
 
@@ -674,6 +684,57 @@ def _each_one(
         if not isinstance(item, Mapping):
             errors.append(
                 f"{card_id}: {spot}: this is a {parameter.a_list_of}, "
+                f"and the card gives {_kind_written(item)}"
+            )
+
+            continue
+
+        errors.extend(_one_node(item, inside, card_id, spot, nodes))
+        errors.extend(_needs_answering(item, inside, card_id, spot))
+
+    return errors
+
+
+def _each_named(
+    parameter: Any,
+    value: Any,
+    card_id: str,
+    path: str,
+    nodes: Mapping[str, Any] | None,
+) -> list[str]:
+    """
+    A set of named nodes of one shape, checked one by one.
+
+    The sibling of ``_each_one``, for the answer that holds nodes under names
+    the card chose rather than in an order. The names are the author's — which
+    value of an event a promise changes — so nothing here reads them; what is
+    under each one is a node the engine describes, and that is what is read.
+
+    Only where the named kind is a shape this layer has. A parameter that
+    names a catalogue holds steps or conditions, and those are walked by
+    whatever walks that kind, so asking here would say one thing twice.
+
+    This is the one thing a parameter kept as written may still be judged on.
+    The rest of it is the effect's own data and needs a game to read, which is
+    why the caller hands it over untouched — but a shape is a description, and
+    a description is exactly what can be checked without a game. Until this
+    read it, an operation the engine has never heard of passed every check,
+    and the writer then dropped it on the way back out: a promise saved as
+    doing less than it said, with nothing said to anybody.
+    """
+    inside = (nodes or {}).get(getattr(parameter, "each_shaped_like", ""))
+
+    if inside is None or not isinstance(value, Mapping):
+        return []
+
+    errors: list[str] = []
+
+    for key, item in value.items():
+        spot = f"{path}.{key}"
+
+        if not isinstance(item, Mapping):
+            errors.append(
+                f"{card_id}: {spot}: this is a {parameter.each_shaped_like}, "
                 f"and the card gives {_kind_written(item)}"
             )
 
