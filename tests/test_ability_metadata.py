@@ -205,6 +205,85 @@ def test_a_domain_the_engine_enforces_is_a_domain_the_metadata_offers(
     assert len(domain("ability", "trigger")) == 66
 
 
+def test_the_two_domains_a_lookup_defines_are_offered_as_well(
+    can: dict[str, Any],
+) -> None:
+    """
+    The two that were still text boxes, and the two silences they allowed.
+
+    `card_in_zone` finds the pile by asking the state for the word the card
+    wrote, so a misspelled pile is not an error — it is a condition that
+    answers "not there" for the rest of the game, exactly as it answers for a
+    pile the card is genuinely not in. The two cannot be told apart by anybody
+    reading the card or watching it play.
+
+    `place_monster` reads its word in one comparison, and anything that is not
+    `unattacked` takes the same path as `free`. A card asking for a slot that
+    is not being fought, misspelled, quietly puts the monster anywhere.
+    """
+    from fsme.effects.builtin.damage import MONSTER_SLOTS
+    from fsme.runtime.condition_evaluator import ZONES_A_CARD_CAN_BE_IN
+
+    def choices(family: str, owner: str, key: str) -> list[str]:
+        one = next(entry for entry in can[family] if entry["id"] == owner)
+
+        return next(f["choices"] for f in one["fields"] if f["id"] == key)
+
+    assert choices("conditions", "card_in_zone", "zone") == list(
+        ZONES_A_CARD_CAN_BE_IN
+    )
+    assert choices("effects", "place_monster", "slot") == list(MONSTER_SLOTS)
+
+
+def test_the_piles_a_card_may_be_in_are_the_piles_the_state_has() -> None:
+    """
+    Both lists are derived from the same state, by the same rule, in two
+    modules that may not import each other — `runtime` reads the evaluator, so
+    the evaluator cannot read it back. Derived twice and pinned equal here is
+    the alternative to typed out twice and drifting.
+    """
+    from dataclasses import fields
+
+    from fsme.runtime.condition_evaluator import ZONES_A_CARD_CAN_BE_IN
+    from fsme.runtime.runtime import ABILITY_ZONES
+    from fsme.state import GameState, Zone
+
+    off_the_state = tuple(
+        sorted(
+            field.name
+            for field in fields(GameState)
+            if Zone.__name__ in str(field.type)
+        )
+    )
+
+    assert tuple(ZONES_A_CARD_CAN_BE_IN) == off_the_state
+    assert tuple(ZONES_A_CARD_CAN_BE_IN) == tuple(ABILITY_ZONES)
+
+
+def test_the_slots_offered_are_the_slots_the_effect_reads() -> None:
+    """
+    Two words, and the one that is not the default is the one the handler
+    compares against. A third would be a value the checker allows and the
+    effect ignores.
+    """
+    import inspect
+
+    from fsme.effects.builtin import damage
+
+    assert damage.MONSTER_SLOTS == (
+        damage.ANY_FREE_SLOT,
+        damage.NOT_THE_ONE_BEING_FOUGHT,
+    )
+
+    said = inspect.getsource(damage.place_monster)
+
+    assert "slot == NOT_THE_ONE_BEING_FOUGHT" in said
+    assert (
+        inspect.signature(damage.place_monster).parameters["slot"].default
+        == damage.ANY_FREE_SLOT
+    )
+
+
 def test_the_one_domain_that_depends_on_another_answer_is_not_guessed(
     can: dict[str, Any],
 ) -> None:

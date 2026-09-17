@@ -1312,6 +1312,129 @@ def test_the_six_are_written_down_once() -> None:
 
 
 # ----------------------------------------------------------------------
+# A word the engine looks up is a word it can be wrong about
+# ----------------------------------------------------------------------
+#
+# Two parameters are read by looking the card's own word up: `card_in_zone`
+# asks the state for a pile by name, and `place_monster` compares its word
+# against one. Neither lookup can fail loudly — a pile that is not a pile
+# answers "the card is not there", and a slot word that is not a slot word
+# takes the same path as `free`. So a misspelling did not stop a card; it
+# changed what the card did, for the rest of the game, silently.
+
+
+def zone_condition(zone: Any) -> dict:
+    return {"condition": "card_in_zone", "zone": zone}
+
+
+def a_conditioned_card(*conditions: Any) -> dict:
+    return {
+        "id": "example_expansion-loot-dark_coin",
+        "name": "Dark Coin",
+        "type": "loot",
+        "expansion": EXPANSION,
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "conditions": list(conditions),
+                "effects": [{"effect": "gain_coins", "amount": 1}],
+            }
+        ],
+    }
+
+
+def test_every_pile_the_state_has_is_a_pile_a_card_may_name(
+    vocabulary: Vocabulary,
+) -> None:
+    from fsme.runtime.condition_evaluator import ZONES_A_CARD_CAN_BE_IN
+
+    assert len(ZONES_A_CARD_CAN_BE_IN) == 12
+
+    for zone in ZONES_A_CARD_CAN_BE_IN:
+        said = validate_card(
+            a_conditioned_card(zone_condition(zone)),
+            known_effects=vocabulary.effects,
+            known_triggers=vocabulary.triggers,
+            known_conditions=vocabulary.conditions,
+            known_targets=vocabulary.targets,
+            shapes=vocabulary.shapes,
+            condition_shapes=vocabulary.condition_shapes,
+            target_shapes=vocabulary.target_shapes,
+            node_shapes=vocabulary.node_shapes,
+        )
+
+        assert said == [], (zone, said)
+
+
+@pytest.mark.parametrize(
+    "zone",
+    ["loot_discrd", "turn", "", "discard"],
+    ids=["misspelled", "a state attribute holding no cards", "blank", "not a pile"],
+)
+def test_a_pile_the_state_does_not_have_is_refused(
+    vocabulary: Vocabulary, zone: Any
+) -> None:
+    """
+    Before this, each of these was a condition that answered false forever and
+    told nobody it was not asking what its author wrote.
+    """
+    said = validate_card(
+        a_conditioned_card(zone_condition(zone)),
+        known_effects=vocabulary.effects,
+        known_triggers=vocabulary.triggers,
+        known_conditions=vocabulary.conditions,
+        known_targets=vocabulary.targets,
+        shapes=vocabulary.shapes,
+        condition_shapes=vocabulary.condition_shapes,
+        target_shapes=vocabulary.target_shapes,
+        node_shapes=vocabulary.node_shapes,
+    )
+
+    assert said, zone
+    assert any("card_in_zone" in one for one in said), said
+
+
+def test_both_slots_a_monster_may_be_stood_in_are_accepted(
+    vocabulary: Vocabulary,
+) -> None:
+    from fsme.effects.builtin.damage import MONSTER_SLOTS
+
+    for slot in MONSTER_SLOTS:
+        assert wholly(
+            vocabulary,
+            {"effect": "place_monster", "target": "current_monster", "slot": slot},
+        ) == [], slot
+
+
+def test_a_slot_the_effect_never_reads_is_refused(vocabulary: Vocabulary) -> None:
+    """
+    Anything that is not `unattacked` took the `free` path, so this used to be
+    a card that quietly put a monster somewhere nobody asked for.
+    """
+    for slot in ("sideways", "", "unattacked "):
+        said = wholly(
+            vocabulary,
+            {"effect": "place_monster", "target": "current_monster", "slot": slot},
+        )
+
+        assert said, slot
+        assert "place_monster" in said[0], said
+
+
+def test_a_card_that_names_no_slot_still_says_nothing(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    The effect's own default. Naming no slot is not naming a wrong one, and
+    one of the two shipped cards that place a monster does exactly this.
+    """
+    assert wholly(
+        vocabulary, {"effect": "place_monster", "target": "current_monster"}
+    ) == []
+
+
+# ----------------------------------------------------------------------
 # The one that decides whether the design was right
 # ----------------------------------------------------------------------
 

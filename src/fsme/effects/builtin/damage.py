@@ -338,10 +338,25 @@ def discard_monsters(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> in
     return discarded
 
 
+ANY_FREE_SLOT = "free"
+NOT_THE_ONE_BEING_FOUGHT = "unattacked"
+
+MONSTER_SLOTS = (ANY_FREE_SLOT, NOT_THE_ONE_BEING_FOUGHT)
+"""
+The two answers `place_monster` reads, beside the line that reads them.
+
+Written down because a third word was not refused: the branch below asks
+whether the card said one of them, and anything else fell through to the same
+placement as `free` — so "put it in a slot not being attacked", misspelled,
+quietly meant "put it anywhere" and moved a monster somewhere nobody asked
+for. Naming them here is what lets the checker say so.
+"""
+
+
 def place_monster(
     ctx: EffectContext,
     targets: Sequence[Any],
-    slot: str = "free",
+    slot: str = ANY_FREE_SLOT,
 ) -> int:
     """
     Stand a monster in a slot of the monster area, from wherever it was.
@@ -369,7 +384,7 @@ def place_monster(
 
         wanted: int | None = empty_slot(state)
 
-        if slot == "unattacked" and wanted is None:
+        if slot == NOT_THE_ONE_BEING_FOUGHT and wanted is None:
             fighting = slot_of(state, state.combat.monster)
 
             wanted = next(
@@ -417,6 +432,7 @@ def register(registry: EffectRegistry) -> None:
         hits=CARDS,
         primary="slot",
         description="Stand a monster in a slot of the monster area.",
+        values={"slot": MONSTER_SLOTS},
         asks={
             "slot": "which monster slot",
         },

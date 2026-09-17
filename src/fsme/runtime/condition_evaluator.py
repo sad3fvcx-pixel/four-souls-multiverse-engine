@@ -609,7 +609,55 @@ COUNTERS = _shape(
     {"counter": ParamShape("counter", TEXT, describes="what the counter is called")},
 )
 PLAYER_COUNTERS = _shape(SUBJECT_PLAYER, COUNTERS)
-IN_ZONE = {"zone": ParamShape("zone", TEXT, describes="which pile to look in")}
+
+
+def _zones_a_card_can_be_in(state_type: type) -> tuple[str, ...]:
+    """
+    The piles a card may be asked about, read off the state it is looked for in.
+
+    `_card_in_zone` finds the pile by building nothing — it takes the word the
+    card wrote and asks the state for it — so the words that work are the
+    attributes that exist. Reading them here is the same fact rather than a
+    second copy of it.
+
+    `runtime.py` derives the same list for the zone an ability may say it works
+    from, and derives it the same way, because it is the same lookup against
+    the same state. It is not imported: that module reads this one, so the two
+    are pinned equal by a test instead. What may not happen is the list being
+    typed out by hand in either place.
+    """
+    from dataclasses import fields
+
+    from fsme.state import Zone
+
+    return tuple(
+        sorted(
+            field.name
+            for field in fields(state_type)
+            if Zone.__name__ in str(field.type)
+        )
+    )
+
+
+ZONES_A_CARD_CAN_BE_IN = _zones_a_card_can_be_in(GameState)
+"""
+Where a card may be asked to be standing.
+
+Written down so that a misspelled pile is a card the checker refuses, rather
+than a condition that is quietly false for the rest of the game — which is
+what it was, because the lookup answers "not there" to a word that is not a
+pile exactly as it does to a pile the card is not in.
+"""
+
+IN_ZONE = {
+    "zone": ParamShape(
+        "zone",
+        TEXT,
+        values=ZONES_A_CARD_CAN_BE_IN,
+        describes="which pile to look in",
+    )
+}
+
 NAMED_VALUES = {
     "of": ParamShape(
         "of",

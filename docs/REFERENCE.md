@@ -62,7 +62,7 @@ an effect and for a target.
 | `modify_roll` | `amount` a whole number |
 | `move_cards` | `deck` `loot` or `treasure` or `monster` or `room`, `depth_from` a whole number, `position` `top` or `bottom` or `discard` |
 | `pass_hands` | `direction` `left` or `right` |
-| `place_monster` | `slot` text |
+| `place_monster` | `slot` `free` or `unattacked` |
 | `prevent_damage` | `amount` a whole number |
 | `prevent_next_damage` | `amount` a whole number, `label` text |
 | `promise` | `changes` a set of named values*, `event` one of 66 event names*, `unlimited` true or false, `uses` a whole number, `when` a set of named values |
@@ -99,7 +99,7 @@ an effect and for a target.
 | `and` | `of` a list |
 | `attack_roll` | — |
 | `card_counters` | `counter` text, `operator` `==` or `!=` or `>` or `>=` or `<` or `<=`, `value` a whole number |
-| `card_in_zone` | `zone` text |
+| `card_in_zone` | `zone` one of 12 zone names |
 | `combat_damage` | — |
 | `dice_equals` | `value` a whole number |
 | `dice_even` | — |
