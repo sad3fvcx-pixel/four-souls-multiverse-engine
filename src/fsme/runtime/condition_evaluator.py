@@ -42,6 +42,17 @@ ConditionFn = Callable[[GameState, AbilityContext, Mapping[str, Any]], bool]
 WHOLE = "a whole number"
 TEXT = "text"
 
+THE_USUAL_COUNTER = "charge"
+"""
+The counter a card means when it asks about counters and names none.
+
+`fsme.rules.costs` says the same word about a price paid in counters, and the
+two are the same fact — a card that says "counters" without saying which means
+charge counters wherever it says it. Importing it is not possible, because that
+module reads this one, so it is repeated here and a test refuses the two
+drifting apart.
+"""
+
 
 def _shape(*parts: Mapping[str, ParamShape]) -> dict[str, ParamShape]:
     """
@@ -619,6 +630,11 @@ COUNTERS = _shape(
         "counter": ParamShape(
             "counter",
             TEXT,
+            # `_card_counters` and `_player_counters` both read `charge` when
+            # the card names no counter, and neither has a second reading of
+            # it. Said here so that a form leaving the box empty can say which
+            # counter it is about to ask about rather than implying none.
+            default=THE_USUAL_COUNTER,
             suggest_from=COUNTER_POOL,
             describes="what the counter is called",
         )
@@ -895,7 +911,16 @@ def _nth_time_this_turn(
     return _compare(number, dict(params) or {"operator": "==", "value": 1})
 
 
-DICE = {"value": ParamShape("value", WHOLE, describes="the number on the face")}
+DICE = {
+    "value": ParamShape(
+        "value",
+        WHOLE,
+        # All four `dice_` comparisons read the same literal when the card
+        # writes no number, and none of them branches on whether it did.
+        default=0,
+        describes="the number on the face",
+    )
+}
 """
 What the four ``dice_`` comparisons read: the number on the face.
 
@@ -1047,7 +1072,7 @@ def _card_counters(
         return False
 
     counters = getattr(source, "counters", {})
-    name = str(params.get("counter", "charge"))
+    name = str(params.get("counter", THE_USUAL_COUNTER))
 
     return _compare(int(counters.get(name, 0)), dict(params))
 
@@ -1068,7 +1093,7 @@ def _player_counters(
         return False
 
     counters = state.player(int(seat)).counters
-    name = str(params.get("counter", "charge"))
+    name = str(params.get("counter", THE_USUAL_COUNTER))
 
     return _compare(int(counters.get(name, 0)), dict(params))
 

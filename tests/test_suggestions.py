@@ -554,15 +554,47 @@ def test_the_engine_publishes_the_pool_a_field_draws_from(
     assert counters[0]["role"] == "names"
 
 
-def test_the_capability_catalogue_holds_no_words(can: dict[str, Any]) -> None:
+def test_the_capability_catalogue_holds_no_words(
+    can: dict[str, Any], shipped: dict[str, list[str]], vocabulary: Vocabulary
+) -> None:
     """
-    What the engine can do, which is the same with no cards loaded at all. The
-    words are content and arrive from somewhere that has some.
+    What the engine can do, which is the same with no cards loaded at all.
+
+    Not every word a card has written is a content word: a counter nobody names
+    is a charge counter, and the engine says so in `rules.costs` whether any
+    card has been loaded or not — so `charge` reaching the catalogue as a
+    declared default is the engine speaking, not the corpus. What must never
+    reach it is a word known *only* because somebody wrote a card with it, and
+    that set is worked out here rather than listed, so a new card with a new
+    counter on it widens the test instead of dating it.
     """
+    engine_knows = {
+        str(one)
+        for table in (
+            vocabulary.shapes,
+            vocabulary.condition_shapes,
+            vocabulary.target_shapes,
+            vocabulary.node_shapes,
+        )
+        for shape in table.values()
+        for parameter in shape.params.values()
+        for one in (*parameter.values, parameter.default)
+        if one is not None
+    }
+
+    only_the_corpus_knows = {
+        word
+        for words in shipped.values()
+        for word in words
+        if word not in engine_knows
+    }
+
+    assert {"egg", "guppy", "passive", "The Bloat"} <= only_the_corpus_knows
+    assert "charge" not in only_the_corpus_knows
+
     said = set(re.findall(r'"([^"]*)"', json.dumps(can)))
 
-    for word in ("charge", "egg", "guppy", "passive", "The Bloat"):
-        assert word not in said
+    assert not (said & only_the_corpus_knows)
 
 
 def test_the_page_offers_the_words_without_closing_the_box(page: str) -> None:

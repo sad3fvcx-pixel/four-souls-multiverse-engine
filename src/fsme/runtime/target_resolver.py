@@ -49,6 +49,22 @@ from .errors import DecisionRequired, UnknownTargetError
 
 TargetFn = Callable[[GameState, AbilityContext, Mapping[str, Any], RNG], list[Any]]
 
+ONE = 1
+"""
+How many a card is asking for when it does not say.
+
+`_ask` and `_deck_top` both read this, and "choose a player" is one player in
+every card ever printed. Said so that a form can put it in the empty box rather
+than implying that leaving it out asks for none.
+"""
+
+THE_USUAL_DECK = "loot"
+THE_DECK_ITSELF = "deck"
+"""
+Which pile a search means when it names none: the loot deck, and the deck
+rather than its discard pile.
+"""
+
 WHOLE = "a whole number"
 TEXT = "text"
 FLAG = "true or false"
@@ -633,7 +649,7 @@ def _player_by_index(
 
 ASKING = {
     "count": ParamShape(
-        "count", WHOLE, least=0, describes="how many to pick"
+        "count", WHOLE, least=0, default=ONE, describes="how many to pick"
     ),
     "minimum": ParamShape(
         "minimum", WHOLE, least=0, describes="the fewest they may pick"
@@ -675,10 +691,10 @@ def _ask(
     if not options:
         return []
 
-    if len(options) == 1 and int(params.get("count", 1)) == 1:
+    if len(options) == 1 and int(params.get("count", ONE)) == ONE:
         return list(options)
 
-    count = int(params.get("count", 1))
+    count = int(params.get("count", ONE))
 
     # A card that says "choose 5" of something there are four of asks for four:
     # a question nobody could answer would stop the game, and the rules read an
@@ -1008,9 +1024,19 @@ DECKS, PILES = _piles_of(GameState)
 CARD_TYPES = tuple(str(kind) for kind in CardType)
 
 SEARCHING = {
-    "deck": ParamShape("deck", TEXT, values=DECKS, describes="which deck to search"),
+    "deck": ParamShape(
+        "deck",
+        TEXT,
+        values=DECKS,
+        default=THE_USUAL_DECK,
+        describes="which deck to search",
+    ),
     "pile": ParamShape(
-        "pile", TEXT, values=PILES, describes="a discard pile to search instead"
+        "pile",
+        TEXT,
+        values=PILES,
+        default=THE_DECK_ITSELF,
+        describes="a discard pile to search instead",
     ),
     "from_top": ParamShape(
         "from_top", WHOLE, least=1, describes="search only this many from the top"
@@ -1040,9 +1066,11 @@ inside a study and naming no card; this is the same knowledge asked earlier.
 """
 
 OFF_THE_TOP = {
-    "deck": ParamShape("deck", TEXT, values=DECKS, describes="which deck"),
+    "deck": ParamShape(
+        "deck", TEXT, values=DECKS, default=THE_USUAL_DECK, describes="which deck"
+    ),
     "count": ParamShape(
-        "count", WHOLE, least=0, describes="how many cards off the top"
+        "count", WHOLE, least=0, default=ONE, describes="how many cards off the top"
     ),
     "exclude": ParamShape(
         "exclude",
@@ -1067,8 +1095,8 @@ def _target_deck_card(
     rather than an effect: the machinery that stops the game and asks already
     exists, and a search is one more question.
     """
-    deck = str(params.get("deck", "loot"))
-    pile = str(params.get("pile", "deck"))
+    deck = str(params.get("deck", THE_USUAL_DECK))
+    pile = str(params.get("pile", THE_DECK_ITSELF))
     zone = getattr(state, f"{deck}_{pile}", None)
 
     if zone is None:
@@ -1139,13 +1167,13 @@ def _deck_top(
     cards out. That is what "put the rest on the bottom" means: the rest is
     what is left after the player has kept one.
     """
-    deck = str(params.get("deck", "loot"))
+    deck = str(params.get("deck", THE_USUAL_DECK))
     zone = getattr(state, f"{deck}_deck", None)
 
     if zone is None:
         raise UnknownTargetError(f"unknown deck '{deck}'")
 
-    count = int(params.get("count", 1))
+    count = int(params.get("count", ONE))
     cards: list[Any] = list(reversed(zone.cards[-count:])) if count > 0 else []
 
     excluded = params.get("exclude")
