@@ -5619,3 +5619,184 @@ def test_keeping_the_list_did_not_make_one_choice_into_two() -> None:
     assert declared_by(once) == ["victim"]
     assert {step["target"] for step in once["abilities"][0]["effects"]} == {"victim"}
     assert when_asked(once)["victim"] == "before any step"
+
+
+# ----------------------------------------------------------------------
+# A nested node is read the way it will be written
+# ----------------------------------------------------------------------
+#
+# Two answers hold a node of a shape the engine describes: what an ability
+# costs, and what a promise owes. The writer rebuilds both out of that shape,
+# keeping what it names and dropping the rest. The reader took them exactly as
+# the card wrote them — so a key the engine had never heard of went into the
+# editor whole and came back out gone, and where one such key stood beside one
+# the shape did know, what came back checked clean and played: an ability that
+# could not be paid for became one that costs a tap, and a promise owed less
+# than its author wrote. Nothing said so at any point.
+
+
+def a_cost(cost: Any) -> dict[str, Any]:
+    return {
+        "id": "example-treasure-probe",
+        "name": "Probe",
+        "type": "treasure",
+        "expansion": "example",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_activate",
+                "cost": cost,
+                "effects": [{"effect": "gain_coins", "amount": 1}],
+            }
+        ],
+    }
+
+
+def a_promise(changes: Any) -> dict[str, Any]:
+    return {
+        "id": "example-loot-probe",
+        "name": "Probe",
+        "type": "loot",
+        "expansion": "example",
+        "schema_version": "1",
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "effects": [
+                    {
+                        "effect": "promise",
+                        "event": "roll_modified",
+                        "when": {"attack": True},
+                        "changes": changes,
+                    }
+                ],
+            }
+        ],
+    }
+
+
+@pytest.mark.parametrize(
+    ("card", "says"),
+    [
+        (a_cost({"coins": 1, "sparkles": 2}), "sparkles"),
+        (a_cost({"sparkles": 2}), "sparkles"),
+        (a_promise({"value": {"delta": 2, "bump": 9}}), "bump"),
+        (a_promise({"value": {"bump": 2}}), "bump"),
+    ],
+    ids=["cost beside known", "cost alone", "change beside known", "change alone"],
+)
+def test_a_nested_key_the_engine_cannot_describe_is_refused(
+    card: dict[str, Any], says: str
+) -> None:
+    """
+    Refused, and named — not opened and quietly emptied.
+    """
+    read_back, why = read(card)
+
+    assert read_back is None, card
+    assert says in why, why
+    assert "does not describe" in why, why
+
+
+def test_a_cost_the_engine_describes_is_read(can: dict[str, Any]) -> None:
+    """
+    Every key a cost may have, including the one holding a named number.
+    """
+    for cost in (
+        {"coins": 1},
+        {"tap": True},
+        {"hp": 1},
+        {"discard": 1},
+        {"counters": {"eye": 1}},
+        {"coins": 1, "tap": True},
+    ):
+        read_back, why = read(a_cost(cost))
+
+        assert read_back is not None, (cost, why)
+
+
+def test_a_promise_owing_what_the_engine_describes_is_read() -> None:
+    """
+    All six operations, alone and together, and the one that is not a number.
+    """
+    from fsme.state.promises import CHANGES
+
+    for one in CHANGES:
+        read_back, why = read(a_promise({"value": {one: 1}}))
+
+        assert read_back is not None, (one, why)
+
+    read_back, why = read(
+        a_promise({"value": {"delta": 1, "factor": 2, "cap": 3, "floor": 0}})
+    )
+
+    assert read_back is not None, why
+
+
+def test_an_empty_cost_is_still_no_answer_at_all() -> None:
+    """
+    `"cost": {}` is an ability that costs nothing, which is what saying nothing
+    says — and a shipped card relies on it. The refusal above is asked of what
+    a nested node holds, so a node holding nothing never reaches it.
+    """
+    read_back, why = read(a_cost({}))
+
+    assert read_back is not None, why
+
+    written = build_card(read_back)
+
+    assert "cost" not in written["abilities"][0], written
+
+
+def test_the_shipped_card_that_says_it_costs_nothing_is_unchanged(
+    written: list[dict[str, Any]],
+) -> None:
+    """
+    `donation_machine` writes `"cost": {}` and means a tap. Both spellings ask
+    the same of the rules, and this is what says so.
+    """
+    from fsme.cards import CardDefinition
+    from fsme.rules.costs import cost_of
+
+    shipped = next(
+        card for card in written if "donation_machine" in str(card.get("id", ""))
+    )
+    written = build_card(read_card(shipped))
+
+    assert shipped["abilities"][0]["cost"] == {}
+    assert "cost" not in written["abilities"][0]
+    assert dict(cost_of(CardDefinition.from_data(shipped).abilities[0])) == dict(
+        cost_of(CardDefinition.from_data(written).abilities[0])
+    )
+
+
+def test_an_answer_naming_a_catalogue_is_still_read_as_a_list() -> None:
+    """
+    `watch_for` keeps steps and conditions, and names a catalogue rather than a
+    shape. Those are read as lists, not as one nested node, and this rule does
+    not reach them.
+    """
+    read_back, why = read(
+        {
+            "id": "example-loot-probe",
+            "name": "Probe",
+            "type": "loot",
+            "expansion": "example",
+            "schema_version": "1",
+            "abilities": [
+                {
+                    "trigger": "on_play",
+                    "effects": [
+                        {
+                            "effect": "watch_for",
+                            "event": "after_roll",
+                            "conditions": [{"dice_equals": 1}],
+                            "effects": [{"draw_loot": 1}],
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
+    assert read_back is not None, why

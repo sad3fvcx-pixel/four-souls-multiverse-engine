@@ -1798,6 +1798,12 @@ def _read_value(
             # saying nothing says.
             return _NOT_AN_ANSWER
 
+        # Asked before it is kept, and only asked: what a nested node holds is
+        # the writer's to rebuild from the shape, so a key the shape does not
+        # name is one the card would lose on the way back out.
+        if parameter.shaped_like:
+            _describable(said, parameter.shaped_like, value, bound)
+
         return value
 
     if not isinstance(value, (list, tuple)):
@@ -1903,6 +1909,42 @@ def _a_declared_target(
     )
 
     return chosen | {"as": called}
+
+
+def _describable(
+    said: Any,
+    kind: str,
+    node: Any,
+    bound: Mapping[str, tuple[str, dict[str, Any], str]] | None,
+) -> None:
+    """
+    Refuse a nested node the engine cannot describe, and read nothing from it.
+
+    The writer already knows what is inside these: it writes them out of their
+    shape, which keeps what the shape names and drops the rest. The reader did
+    not, and took them exactly as the card wrote them — so a key the engine has
+    never heard of went into the editor whole and came back out gone. Where
+    one such key stood beside one the shape does know, what came back was a
+    card that checked clean and played, owing or costing something other than
+    what its author wrote.
+
+    So the reader asks the same question the writer answers, and asks it first.
+    What it does *not* do is keep the answer: these go into author state as the
+    card wrote them, the writer reads them that way, and a nested node that
+    started describing itself differently here would be a second shape for one
+    thing. The reading is thrown away and only the refusal is kept.
+
+    Only where the named kind is a shape this layer has. A parameter naming a
+    target names something with a registry of its own, read by the aiming
+    machinery long before this, and one naming a catalogue holds steps or
+    conditions that are read as lists. Neither is one of these.
+    """
+    shape = said.node_shape(kind)
+
+    if shape is None or not isinstance(node, Mapping):
+        return
+
+    _read_fields(said, shape, node, kind, bound)
 
 
 def _read_inside(
@@ -2087,6 +2129,16 @@ def _read_step(
             # into author state as something nothing could show and the writer
             # would throw away, which is a card quietly emptied rather than a
             # card refused.
+            #
+            # And an answer holding nodes under names the card chose is asked
+            # the same question, for the same reason: the writer rebuilds each
+            # of them out of its shape. The names are the author's and nothing
+            # reads them; what is under each one is a node the engine
+            # describes.
+            if parameter.each_shaped_like and isinstance(value, Mapping):
+                for one in value.values():
+                    _describable(said, parameter.each_shaped_like, one, bound)
+
             read = (
                 _read_value(said, parameter, value, str(key), bound)
                 if parameter.a_list_of
