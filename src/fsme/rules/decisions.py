@@ -66,4 +66,11 @@ class ChooseTargetHandler:
         if choices is None:
             choices = [command.get("index")]
 
-        decision.chosen = [decision.options[int(choice)] for choice in choices]
+        # Both halves of one answer, written together because they are one
+        # answer: which of the offered things was taken, and what that thing
+        # was. Keeping only the second is how an option that looks like its
+        # neighbour became an option nobody could reach.
+        picked = [int(choice) for choice in choices]
+
+        decision.picked = picked
+        decision.chosen = [decision.options[at] for at in picked]

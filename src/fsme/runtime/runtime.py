@@ -23,7 +23,7 @@ from fsme.rng.rng import RNG
 from fsme.stack import SETTLE_ROLL, StackItem, StackItemType
 from fsme.state import GameState, PendingDecision, PendingRoll, PlayerState
 
-from .ability_context import AbilityContext
+from .ability_context import CHOSEN_AT, AbilityContext
 from .condition_evaluator import NTH_TIME, TIMES_THIS_TURN, ConditionEvaluator
 from .effect_executor import EffectExecutor
 from .errors import (
@@ -1572,10 +1572,29 @@ class Runtime:
 
         The binding goes into the ability's own context, so the target that
         asked the question finds the answer waiting when it is resolved again.
+        Beside it goes where the answer came from, because what was chosen does
+        not always say which of the offered things it was.
         """
         item, ability, context, ops, index = decision.continuation
 
+        if decision.chosen is not None and decision.picked is None:
+            # One answer written in two halves, and only one of them arrived.
+            # Nothing downstream can make that good: the half that is missing is
+            # the half that says which option was meant, and guessing it is the
+            # defect this pair exists to close.
+            raise InterpreterError(
+                "an answer was recorded without where it came from, "
+                f"for '{decision.bind}'"
+            )
+
         context.bind(decision.bind, list(decision.chosen or ()))
+
+        # Under the same name the answer itself is bound to, so an ability that
+        # asks more than once reads its own and not the last one asked.
+        came_from = dict(context.get(CHOSEN_AT) or {})
+        came_from[decision.bind] = list(decision.picked or ())
+
+        context.store(CHOSEN_AT, came_from)
 
         self._state.pending_decision = None
 

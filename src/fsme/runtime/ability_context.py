@@ -12,6 +12,27 @@ from typing import Any
 from fsme.effects import EffectResult
 from fsme.events import Event
 
+CHOSEN_AT = "__chosen_at__"
+"""
+Where the engine remembers which option a player took, by position.
+
+``targets`` says *what* was chosen and is what a card's own binding receives;
+this says *where in the list* it came from, under the same binding names, so the
+two are read the same way. They are not the same fact: two modes of one card may
+carry the same description, and a description cannot then say which was meant.
+
+Transient, like everything else here: it belongs to one resolving ability, it is
+never shared between abilities, and it is not part of a saved game.
+
+Spelled the way the engine's other private names are — ``__value__``,
+``__default_target__``, ``__times_this_turn__`` — but that spelling is a
+convention and not a rule anything enforces. What stops a card taking this name
+is a refusal at the one place a card names something it keeps, and it refuses
+this name rather than a shape of name: the others were already exposed before
+this existed, and closing them is a decision about the whole namespace rather
+than about a choice of mode.
+"""
+
 
 @dataclass(slots=True)
 class AbilityContext:

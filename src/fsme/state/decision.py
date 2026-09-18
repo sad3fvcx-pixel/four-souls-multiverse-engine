@@ -64,6 +64,24 @@ class PendingDecision:
     same way a passed priority is recorded and then acted on.
     """
 
+    picked: list[int] | None = None
+    """
+    Where the answer came from, by position in ``options``.
+
+    ``chosen`` says *what* was taken and is the answer a card's binding gets;
+    this says *which one of the offered things it was*. The two are not the same
+    fact whenever two options look alike — two modes of one card may carry the
+    same description, and then the description cannot say which was meant. The
+    answer arrives as positions and is checked as positions, so this is what was
+    already known and used to be thrown away.
+
+    Not saved, and nothing in the save format reads it. A decision is only ever
+    raised from inside a resolving ability, and a game suspended inside an
+    ability refuses to be saved at all — so this never has to outlive the
+    process that made it, and a save carrying it would be a save that cannot
+    exist.
+    """
+
     def accepts(self, count: int) -> bool:
         """
         Return True if choosing this many options satisfies the question.

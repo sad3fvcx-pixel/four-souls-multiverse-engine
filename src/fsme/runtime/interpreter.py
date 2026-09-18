@@ -23,7 +23,7 @@ from fsme.effects import EffectOp, EffectRegistry
 from fsme.rng.rng import RNG
 from fsme.state import DecisionKind, GameState
 
-from .ability_context import AbilityContext
+from .ability_context import CHOSEN_AT, AbilityContext
 from .condition_evaluator import ConditionEvaluator
 from .errors import DecisionRequired, InterpreterError
 from .target_resolver import TargetResolver
@@ -305,12 +305,28 @@ class Interpreter:
         if not answer:
             return []
 
-        try:
-            chosen = labels.index(str(answer[0]))
-        except ValueError:
+        came_from = context.get(CHOSEN_AT) or {}
+        at = came_from.get(name)
+
+        if not at:
+            # The answer said what was taken and not which one it was. That is
+            # the half this cannot supply: reading it back off the description
+            # is what made a mode that reads like its neighbour unreachable.
+            raise InterpreterError(
+                f"the answer to '{name}' does not say which mode it was"
+            )
+
+        chosen = int(at[0])
+
+        # The position picks the mode; the description still has to agree, which
+        # is what keeps a mistake loud. An ability that asks twice under one name
+        # finds the first answer bound and a position into the wrong list, and
+        # that has always been refused here rather than resolved to whatever the
+        # number happened to point at.
+        if not 0 <= chosen < len(labels) or labels[chosen] != str(answer[0]):
             raise InterpreterError(
                 f"'{answer[0]}' is not one of this card's modes"
-            ) from None
+            )
 
         mode = modes[chosen]
 

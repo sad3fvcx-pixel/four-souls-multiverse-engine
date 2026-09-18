@@ -19,7 +19,7 @@ from fsme.effects.errors import EffectExecutionError
 from fsme.state import PlayerState
 from fsme.util.errors import EngineError
 
-from .ability_context import AbilityContext
+from .ability_context import CHOSEN_AT, AbilityContext
 from .errors import AbilityResolutionError, StabilityError
 from .execution_context import ExecutionContext
 from .target_resolver import TargetResolver
@@ -79,6 +79,18 @@ class EffectExecutor:
             ability.store(spec.stores, value)
 
         if op.store:
+            if op.store == CHOSEN_AT:
+                # `store` is the one name in this dictionary a card chooses, and
+                # this is the one name the engine reads back out of it. A card
+                # writing it leaves the runtime holding a card's number where it
+                # kept which option a player took — measured: a stored integer
+                # there ends resolution with `'int' object is not iterable`,
+                # which names nothing anybody could act on.
+                raise AbilityResolutionError(
+                    f"effect '{op.name}' keeps its result under "
+                    f"{op.store!r}, which is where the engine remembers a choice"
+                )
+
             ability.store(op.store, value)
 
         return ability.record(result)
