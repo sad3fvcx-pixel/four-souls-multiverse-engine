@@ -953,11 +953,32 @@ class Runtime:
     ) -> None:
         """
         Run a replacement's operations, opening control flow as it goes.
+
+        Counted the same way `_resolve_ability` counts, and for the same
+        reason. The interpreter's own guards bound what *one* expansion may
+        produce, and a loop inside a loop is not one expansion: the inner one
+        is a single operation when the outer one is opened, and grows only
+        when the queue reaches it. So nothing the interpreter checks can see
+        `n` levels of `repeat` multiplying, and a card doing it is a card that
+        runs for as long as it likes. Counting the turns of this loop does see
+        it, because opening a control node costs a turn whether or not it
+        leaves anything behind to run.
+
+        A replacement cannot stop to ask, so unlike an ability there is no
+        resuming and the count is simply the whole of it.
         """
         ops = self._interpreter.build(ability.effects)
         index = 0
+        steps = 0
 
         while index < len(ops):
+            steps += 1
+
+            if steps > self._interpreter.max_ops:
+                raise InterpreterError(
+                    f"replacement ran more than {self._interpreter.max_ops} steps"
+                )
+
             op = ops[index]
 
             if self._interpreter.is_control(op):

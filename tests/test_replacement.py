@@ -17,6 +17,8 @@ from fsme.effects import EffectExecutionError, builtin_registry
 from fsme.events import EventType
 from fsme.rules import STARTING_COINS
 from fsme.runtime import StabilityError
+from fsme.runtime.ability_context import AbilityContext
+from fsme.runtime.errors import AbilityResolutionError, InterpreterError
 
 
 def shield(card_id="test.shield", *, amount=1, conditions=(), trigger="before_damage"):
@@ -383,6 +385,184 @@ def test_runaway_replacement_chains_are_stopped() -> None:
 
     with pytest.raises(StabilityError):
         activate(runtime)
+
+
+# ----------------------------------------------------------------------
+# A replacement that will not finish
+# ----------------------------------------------------------------------
+#
+# `MAX_REPLACEMENT_DEPTH` above stops replacements *causing* one another for
+# ever. What it cannot see is one replacement whose own effects grow without
+# end, because that is a single replacement and never recurses.
+#
+# The interpreter bounds what one expansion may produce, and a loop inside a
+# loop is not one expansion: the inner loop is a single operation while the
+# outer one is being opened, and grows only when the queue reaches it. So
+# `n` levels of `repeat` multiply past every guard the interpreter has —
+# measured before this was written, six levels of eight ran a quarter of a
+# million operations from two hundred bytes of card.
+#
+# `_resolve_ability` has always counted the turns of its own loop for exactly
+# this reason. `_run_replacement_ops` is the same loop and did not.
+
+
+def looping(card_id, effects, *, trigger="before_damage"):
+    """
+    A replacement whose body is whatever shape is being measured.
+    """
+    return make_definition(
+        card_id,
+        card_type=CardType.TREASURE,
+        abilities=(
+            Ability(
+                trigger=trigger,
+                effects=tuple(effects),
+                replacement=True,
+                scope="any",
+            ),
+        ),
+    )
+
+
+def nested(depth, times, leaf=None):
+    """
+    A loop of loops. The leaf gains a cent rather than preventing damage: run
+    on its own, past no event, `prevent_damage` refuses before the count is
+    anywhere near the limit, and the shape being measured is the loop.
+    """
+    node = leaf if leaf is not None else {"gain_coins": 1}
+
+    for _ in range(depth):
+        node = {"repeat": times, "effects": [node]}
+
+    return node
+
+
+def run_with(effects):
+    """
+    Put one replacement in play and let an ordinary blow meet it.
+
+    The blow is dealt by an effect, so a replacement that stops itself stops
+    inside one — and the executor wraps what it catches there, naming the
+    effect it was running. The reason survives that, which is what the tests
+    below read; `stopped_by` reaches the same guard with nothing wrapped
+    around it.
+    """
+    runtime, state = setup()
+
+    give(state, 0, striker(amount=1), "instance:striker")
+    give(state, 1, looping("test.loop", effects), "instance:loop")
+
+    activate(runtime)
+
+    return state
+
+
+def stopped_by(effects, *, players=2):
+    """
+    The same shape, run where nothing is wrapped around the guard.
+    """
+    runtime, state = setup(players=players)
+    ability = looping("test.loop", effects).abilities[0]
+
+    with pytest.raises(InterpreterError) as refused:
+        runtime._run_replacement_ops(ability, AbilityContext(controller=0))
+
+    return str(refused.value), runtime._interpreter.max_ops
+
+
+def test_a_replacement_that_nests_loops_is_stopped() -> None:
+    """
+    The shape the interpreter's own guards cannot see.
+    """
+    said, limit = stopped_by([nested(6, 8)])
+
+    assert said == f"replacement ran more than {limit} steps"
+
+
+def test_replacement_loops_side_by_side_are_stopped_too() -> None:
+    """
+    Not only nesting. Each of these is small enough for every guard the
+    interpreter has, and the queue they share is not.
+    """
+    said, _ = stopped_by([{"repeat": 200, "effects": [{"gain_coins": 1}]}] * 8)
+
+    assert "replacement ran more than" in said
+
+
+def test_a_replacement_that_nests_for_each_is_stopped() -> None:
+    """
+    `repeat` is not special: anything that opens into more than it was
+    multiplies the same way.
+    """
+    node: dict = {"gain_coins": 1}
+
+    for _ in range(6):
+        node = {"for_each": "all_players", "effects": [node]}
+
+    # Four players rather than two, because this one multiplies by however
+    # many the loop finds and two of them do not reach the limit in six.
+    said, _ = stopped_by([node], players=4)
+
+    assert "replacement ran more than" in said
+
+
+def test_the_count_is_of_turns_taken_and_not_of_effects_run() -> None:
+    """
+    The one that says what is being counted.
+
+    Every leaf here is a loop of no times, so this shape runs *nothing* — and
+    it still opens tens of thousands of control nodes on the way to running
+    nothing. A limit counting effects would let it through; this one does not,
+    because opening a node costs a turn whether or not anything comes of it.
+    """
+    said, _ = stopped_by(
+        [nested(6, 8, leaf={"repeat": 0, "effects": [{"gain_coins": 1}]})]
+    )
+
+    assert "replacement ran more than" in said
+
+
+def test_the_reason_survives_being_raised_inside_an_effect() -> None:
+    """
+    Damage is dealt by an effect, so this is how a player meets it.
+    """
+    with pytest.raises(AbilityResolutionError) as refused:
+        run_with([nested(6, 8, leaf={"prevent_damage": 1})])
+
+    assert "replacement ran more than" in str(refused.value)
+
+
+def test_an_ordinary_replacement_still_replaces() -> None:
+    """
+    The other half, and the one that would catch a limit set too low. Three
+    turns of the loop where the corpus never needs more than five.
+    """
+    state = run_with([{"repeat": 3, "effects": [{"prevent_damage": 1}]}])
+
+    assert state.player(1).hp == 2
+
+
+def test_the_two_loops_say_which_of_them_stopped() -> None:
+    """
+    Two loops count their own turns, and an error that did not say which had
+    stopped would send somebody to the wrong one.
+    """
+    said, _ = stopped_by([nested(6, 8)])
+
+    assert said.startswith("replacement ran")
+    assert "ability ran" not in said
+
+
+def test_the_limit_is_the_one_the_interpreter_already_had() -> None:
+    """
+    Read from the engine rather than written down again here.
+    """
+    from fsme.runtime.interpreter import DEFAULT_MAX_OPS
+
+    runtime, _ = setup()
+
+    assert runtime._interpreter.max_ops == DEFAULT_MAX_OPS
 
 
 def test_the_replacement_vocabulary_is_registered() -> None:
