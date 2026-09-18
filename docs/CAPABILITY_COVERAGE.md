@@ -230,11 +230,29 @@ the Constructor.
 | Branching defaults — `operator`, `value`, `amount`, `minimum`/`maximum`, `player`, `as` | §2 | Needs a Runtime decision before anything can be declared |
 | Empty required values — 6 parameters accept `""` | `cards/validator.py` | Two raise mid-game, one is silently false, three make a nameless card |
 | `repeat` with no count runs the body no times | `runtime/interpreter.py` | Contract undecided; 0 uses in the corpus |
-| `card.tags`, `card.rewards`, `promise.when` shown as raw JSON | §3 | The form does not draw structure it understands |
+| `card.tags`, `promise.when` shown as raw JSON | §3 | The form does not draw structure it understands |
 | Two modes described identically are accepted | `cards/validator.py` | 0 occurrences in the corpus; the player sees two options they cannot tell apart |
 | Opening a shipped card and saving it regenerates its `id` | §4 | May be intended; needs saying either way |
 | The bot observer reads a card's spelling | §5 | `fsme.lab.bot` — playtesting advice, not rules |
 | `runtime.py:122` names `_where_it_stands`, a function that has never existed | `runtime/runtime.py` | One word of documentation; the method is `_where_it_works` |
+
+## Decided, and waiting on a second use
+
+**`card.rewards` stays a box of card text.** What a monster pays out is an open
+set of names with whole numbers under them: the model calls it a mapping of
+integers, the checker asks only that each value be one, and the reader and the
+writer return the whole thing as written. The runtime is the narrow one — it
+pays `cents`, `loot` and `treasure` and ignores the rest — and that is about
+the game, not about what a card may say.
+
+Describing that interior is not something this layer can do. A container says
+what it holds by naming a shape, and a shape is a closed set of keys, so a
+description would refuse a card the engine accepts; it would also settle, as a
+side effect, whether an empty `{}` survives a round trip. Both are decisions
+worth taking deliberately, and neither is worth taking for one field. It is
+revisited when a second field of the same shape exists to design against — a
+mechanism drawn from a single use is a special case wearing a general name.
+Pinned by `test_a_monsters_rewards_stay_the_data_they_are`.
 
 ## Closed, and not to be reopened
 

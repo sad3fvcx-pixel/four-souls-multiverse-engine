@@ -100,11 +100,21 @@ These are the edges of the model, not things that are broken.
 
 **Some fields are kept whole rather than taken apart.** A card's `rewards`,
 a promise's `when`, and `metadata` are stored and returned exactly as written,
-and shown as the data they are rather than as separate boxes. That is
-deliberate: the engine accepts reward types it does not yet understand so that
-future content does not invalidate today's cards, and a form with a box per
-known reward would delete the ones it had no box for. Keeping them whole
-cannot lose anything.
+and shown as the data they are rather than as separate boxes. What you type
+into one of those comes back the way you typed it, names and order included.
+
+`rewards` is where that was decided. What a monster pays out is an open set of
+names with whole numbers under them: the checker asks that every value be a
+whole number and says nothing about the names, so a card naming a reward this
+engine has never paid still loads. The engine is the narrow one — it pays
+`cents`, `loot` and `treasure` and ignores anything else — and that is what the
+game does with the numbers, not what a card is allowed to say. A form drawing a
+box per reward it knew would write back only those boxes, and a name it had no
+box for would be gone; and telling the Constructor what is inside a field is
+how a set of keys becomes closed, which would refuse a card the engine accepts.
+So the field is left whole until a second one of the same shape exists to
+design against: a mechanism drawn from a single use is a special case wearing a
+general name.
 
 **Cards whose identifier is not a plain name can be opened but not saved.**
 An identifier becomes a file name, so the Constructor only writes identifiers

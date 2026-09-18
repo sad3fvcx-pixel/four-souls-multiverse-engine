@@ -134,6 +134,49 @@ def test_the_things_that_are_not_boxes_are_not_sent_to_the_form() -> None:
                     assert field["shown"] == "advanced", where
 
 
+def test_a_monsters_rewards_stay_the_data_they_are() -> None:
+    """
+    `rewards` is shown as the card's own text on purpose, and this says so.
+
+    What a monster pays out is an open set of names with whole numbers under
+    them. Every layer agrees on that and each says its own half: the card model
+    calls it a mapping of integers, the checker asks that every value be one
+    and says nothing about the names, and the reader and the writer hand the
+    whole thing back exactly as it was written, unknown names included. Only
+    the runtime is narrower — it pays `cents`, `loot` and `treasure` and
+    ignores the rest — and that is a fact about what the game does with the
+    numbers, not about what a card may say.
+
+    Nothing in this layer can describe that. A container says what it holds by
+    naming a shape, and a shape is a closed set of keys, so describing the
+    inside of this one would refuse a card the engine accepts. Describing it
+    would also quietly settle a second question: an empty `{}` is kept by the
+    reader and dropped by the writer, so it is the one value here that does
+    not survive a round trip — and a described field loses it evenly instead,
+    the way `cost` already does. Whether that is a fix or a change is not a
+    thing to decide as a side effect of drawing a form.
+
+    So it stays a box of card text until a second field of the same shape
+    exists to design against: one use is not enough to tell a general
+    mechanism from a special case. This test is what makes that a decision
+    rather than an oversight — if it ever renders as anything else, somebody
+    meant it to.
+    """
+    can = catalogue()
+    card = next(one for one in can["cards"] if one["id"] == "card")
+    rewards = next(one for one in card["fields"] if one["id"] == "rewards")
+
+    assert rewards["shown"] == "advanced"
+
+    # And why it is: the three ways a container has of saying what it holds,
+    # none of them taken. The rule above turns that into `advanced`, so
+    # asserting both is asserting the decision and its reason together.
+    assert rewards["role"] == STRUCTURE
+    assert not rewards["a_list_of"]
+    assert not rewards["each_shaped_like"]
+    assert not rewards["shaped_like"]
+
+
 def test_every_parameter_that_names_somebody_says_how_it_is_written() -> None:
     """
     Naming a player is not the same sentence for an effect and for a target,
