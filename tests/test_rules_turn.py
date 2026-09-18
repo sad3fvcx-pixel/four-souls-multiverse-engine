@@ -10,6 +10,7 @@ from fsme.cards import Ability, CardType
 from fsme.commands import Command, CommandType
 from fsme.events import EventType
 from fsme.rules import HAND_LIMIT, STARTING_COINS, STARTING_HAND_SIZE
+from fsme.stack import ADVANCE_TURN, DISCARD_TO_HAND_LIMIT, StackItem, StackItemType
 from fsme.state import GamePhase
 
 
@@ -339,3 +340,161 @@ def test_a_hand_within_the_limit_is_not_asked_about_twice() -> None:
 
     assert runtime.awaiting_decision is None
     assert state.turn.active_player == 1
+
+
+def _scheduled(state) -> list[str]:
+    """
+    The engine's own turn-ending objects waiting on the stack, bottom first.
+    """
+    return [
+        item.label
+        for item in state.stack
+        if item.label in (ADVANCE_TURN, DISCARD_TO_HAND_LIMIT)
+    ]
+
+
+def _ends_the_turn(state, effects, *, targets=()) -> None:
+    """
+    Give the active player a treasure that answers the end of their turn.
+    """
+    state.player(0).treasures.add_top(
+        make_instance(
+            make_definition(
+                "test.parting_shot",
+                name="Parting Shot",
+                card_type=CardType.TREASURE,
+                abilities=(
+                    Ability(
+                        trigger="turn_end", targets=tuple(targets), effects=effects
+                    ),
+                ),
+            ),
+            controller=0,
+            owner=0,
+            instance_id="instance:parting_shot",
+        )
+    )
+
+
+def test_ending_the_turn_from_an_ability_schedules_both_halves() -> None:
+    """
+    The effect that ends a turn puts the discard and the advance on the stack,
+    the discard above so that it resolves first.
+    """
+    runtime, state = make_game()
+    start(runtime)
+
+    runtime.context.apply("end_turn", [])
+
+    assert _scheduled(state) == [ADVANCE_TURN, DISCARD_TO_HAND_LIMIT]
+
+
+def test_a_turn_already_ending_is_not_ended_again() -> None:
+    """
+    An ability that answers the end of the turn by ending it changes nothing.
+
+    The turn is already being passed when "at the end of your turn" fires, so a
+    second advance is not a second ending — it is the same ending twice. It
+    passed the seat twice: the next player was dealt two opening loot cards
+    instead of one and the turn number went up by two.
+    """
+    runtime, state = make_game(loot_cards=40)
+    _ends_the_turn(state, ({"effect": "end_turn"},))
+    start(runtime)
+
+    opening = state.player(1).hand_size
+
+    end_turn(runtime, 0)
+
+    assert state.turn.turn_number == 2
+    assert state.turn.active_player == 1
+    assert state.player(1).hand_size == opening + 1
+    assert _scheduled(state) == []
+
+
+def test_ending_a_turn_twice_in_one_ability_ends_it_once() -> None:
+    """
+    Two instructions to end the turn in one ability are one ending.
+    """
+    runtime, state = make_game()
+    start(runtime)
+
+    runtime.context.apply("end_turn", [])
+    runtime.context.apply("end_turn", [])
+
+    assert _scheduled(state) == [ADVANCE_TURN, DISCARD_TO_HAND_LIMIT]
+
+    runtime.run()
+
+    assert state.turn.turn_number == 2
+    assert state.turn.active_player == 1
+
+
+def test_an_extra_turn_promised_at_the_end_is_still_taken() -> None:
+    """
+    A second advance took back the extra turn the moment it was granted: the
+    first one kept the seat, the second passed it, and the promised turn was
+    over before it began.
+    """
+    runtime, state = make_game()
+    _ends_the_turn(
+        state,
+        (
+            {"effect": "take_extra_turn", "target": "controller"},
+            {"effect": "end_turn"},
+        ),
+    )
+    start(runtime)
+
+    end_turn(runtime, 0)
+
+    assert state.turn.active_player == 0
+    assert state.turn.turn_number == 2
+
+
+def test_a_cancelled_ending_may_be_scheduled_again() -> None:
+    """
+    "Cancel everything that hasn't resolved" reaches the turn-ending objects,
+    and O. The Fool says that and then ends the turn.
+
+    Once they are off the stack the turn is not ending any more, so the next
+    instruction to end it has to be obeyed. Remembering that the end had been
+    announced, rather than asking the stack, would leave this game with no way
+    to pass the seat at all.
+    """
+    runtime, state = make_game()
+    _ends_the_turn(
+        state,
+        (
+            {"effect": "cancel_stack", "target": "doomed"},
+            {"effect": "end_turn"},
+        ),
+        targets=({"all_stack": {"as": "doomed"}},),
+    )
+    start(runtime)
+
+    end_turn(runtime, 0)
+
+    assert state.turn.turn_number == 2
+    assert state.turn.active_player == 1
+    assert _scheduled(state) == []
+
+
+def test_the_turn_ending_is_recognised_by_the_stack_and_not_by_a_card() -> None:
+    """
+    What stops a second ending is the object waiting on the stack, whatever put
+    it there: an advance with no card and no ability behind it counts.
+    """
+    runtime, state = make_game()
+    start(runtime)
+
+    runtime.context.push(
+        StackItem(
+            kind=StackItemType.ENGINE_EFFECT,
+            label=ADVANCE_TURN,
+            controller=0,
+        )
+    )
+
+    assert runtime.context.apply("end_turn", []) == 0
+    assert _scheduled(state) == [ADVANCE_TURN]

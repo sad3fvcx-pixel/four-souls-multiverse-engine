@@ -83,6 +83,26 @@ def end_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     the "at the end of your turn" triggers, because it never reached the end
     phase to fire them in. That is a wider gap than this function and is
     recorded rather than papered over here.
+
+    A turn that is already ending is not ended twice, and what knows whether it
+    is already ending is the stack: the turn-advancing object is either waiting
+    on it or it is not. A second copy passes the seat twice — the next player
+    is dealt two opening loot cards instead of one, the turn number goes up by
+    two, and an extra turn promised on the way out is taken back the moment it
+    is granted, because the first advance keeps the seat and the second passes
+    it.
+
+    The way in is the death penalty: its last clause ends the turn of a player
+    who was active, and a player can die while the turn is already being
+    passed. Three games in a thousand reached it. An ability that answers the
+    end of the turn by ending it is the other way in.
+
+    Asking the stack, rather than remembering that the turn is ending, is what
+    keeps a cancelled ending recoverable: "cancel everything that hasn't
+    resolved" takes the turn-advancing object off, and O. The Fool does that
+    and then ends the turn. Once it is gone the turn is not ending any more,
+    and the next instruction to end it must be obeyed — a flag saying the end
+    had been announced would leave that game with no way to pass the seat.
     """
     controller = ctx.actor
 
@@ -90,6 +110,11 @@ def end_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
         controller = ctx.state.turn.active_player
 
     seat = int(controller)
+
+    if any(item.label == ADVANCE_TURN for item in ctx.state.stack):
+        # Nothing was done, and the count says so: the turn is ending because
+        # something else already arranged it, not because of this.
+        return 0
 
     # Pushed first, so it resolves last: the seat only passes once the hand
     # has been trimmed.
