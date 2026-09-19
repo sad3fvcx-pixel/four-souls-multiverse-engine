@@ -1,0 +1,88 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-gold_box-holy_mantle",
+      "name": "Holy Mantle",
+      "type": "starting_item",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a player. The\nnext time that player\nwould die this turn, prevent\nit. If it's their turn, cancel\neverything that hasn't\nresolved and end it.\n------------------------------\nAt the end of your\nturn, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Gold Box",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-gold_box-holy_mantle",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "starting_items-gold_box-lord_of_the_pit",
+      "name": "Lord of the Pit",
+      "type": "starting_item",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Cancel an attack.\nThat player may\nattack an additional\ntime this turn.\n------------------------------\n-Eternal-\n(This can't be destroyed\nor put into discard.)",
+        "set": "Gold Box",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-gold_box-lord_of_the_pit",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "starting_items-gold_box-void",
+      "name": "Void",
+      "type": "starting_item",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose one-\n•Discard your hand,\nthen loot equal to the\nnumber of cards discarded.\n------------------------------\n•Put a monster not\nbeing attacked or a shop\nitem into discard.\n------------------------------\n-Eternal-",
+        "set": "Gold Box",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-gold_box-void",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "starting_items-gold_box-wooden_nickel",
+      "name": "Wooden Nickel",
+      "type": "starting_item",
+      "expansion": "gold_box",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a\nplayer, then roll-\nThat player\ngains ¢ equal\nto the result.\n------------------------------\n-Eternal-",
+        "set": "Gold Box",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-gold_box-wooden_nickel",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    }
+  ]
+}

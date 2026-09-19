@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .event import Event
 from .filter import EventFilter, accept_all
 from .listener import EventListener
 from .types import EventType
@@ -24,7 +25,7 @@ class EventSubscription:
     event_filter: EventFilter = accept_all
     enabled: bool = True
 
-    def accepts(self, event) -> bool:
+    def accepts(self, event: Event) -> bool:
         """
         Return True if this subscription should receive the event.
         """

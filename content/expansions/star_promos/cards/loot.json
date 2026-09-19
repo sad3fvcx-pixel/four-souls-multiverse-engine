@@ -1,0 +1,48 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-lost_soul-star_promos-lost_soul",
+      "name": "Lost Soul",
+      "type": "loot",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "When this enters play,\ngain +2 treasure and give\nthis to another player.\nIt becomes a soul.\n(It's no longer an item.)\n------------------------------\n-Trinket-\nFourSouls.com",
+        "set": "Star Promos",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-lost_soul-star_promos-lost_soul",
+        "subcategory": "Lost Soul",
+        "version": "Alt Ability",
+        "artist": "@Sony_Shock",
+        "notes": "This card was given to guests of various conventions where Maestro Media was in attendance in 2023."
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-star_promos-short_fuse",
+      "name": "Short Fuse",
+      "type": "loot",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "When this is destroyed,\ndeal 2 damage to a\nmonster or player.\n------------------------------\n-Trinket-\n\"As a mad man who casteth\nfirebrands, arrows, and death,\"\nProverbs 26:18",
+        "set": "Star Promos",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-star_promos-short_fuse",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "This bonus Star card was included with The Unboxing of Isaac #3: Horsemen, to celebrate United States Independence Day in July, 2022."
+      }
+    }
+  ]
+}

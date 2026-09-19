@@ -1,86 +1,109 @@
 # src/fsme/database/database.py
 
 """
-Content database for Four Souls Multiverse Engine.
+Content indexing.
+
+A library knows what was loaded; an index knows how to find it. Deck building,
+a card editor's search box and any query more specific than "every card" would
+otherwise walk the whole collection each time.
+
+The index is built once from an immutable library, so it can never disagree
+with what the game is actually playing with.
 """
 
 from __future__ import annotations
 
-from typing import Any
+from collections.abc import Iterable, Iterator
+
+from fsme.cards import CardDefinition, CardType
+from fsme.content import ContentLibrary
 
 
-class Database:
+class ContentIndex:
     """
-    In-memory database of engine content.
+    Lookups over a loaded content library.
     """
 
-    def __init__(self) -> None:
-        self._tables: dict[str, dict[str, Any]] = {}
+    def __init__(self, definitions: Iterable[CardDefinition] = ()) -> None:
+        self._by_id: dict[str, CardDefinition] = {}
+        self._by_type: dict[CardType, list[CardDefinition]] = {}
+        self._by_expansion: dict[str, list[CardDefinition]] = {}
+        self._by_tag: dict[str, list[CardDefinition]] = {}
 
-    def create_table(self, name: str) -> None:
-        """
-        Create a table if it does not already exist.
-        """
-        self._tables.setdefault(name, {})
+        for definition in definitions:
+            self._add(definition)
 
-    def insert(
-        self,
-        table: str,
-        identifier: str,
-        value: Any,
-    ) -> None:
+    @classmethod
+    def of(cls, library: ContentLibrary) -> ContentIndex:
         """
-        Insert a value into a table.
+        Index a whole library.
         """
-        self.create_table(table)
-        self._tables[table][identifier] = value
+        return cls(library.definitions())
 
-    def get(
-        self,
-        table: str,
-        identifier: str,
-    ) -> Any | None:
-        """
-        Return a value from a table.
-        """
-        return self._tables.get(table, {}).get(identifier)
+    def _add(self, definition: CardDefinition) -> None:
+        self._by_id[definition.id] = definition
 
-    def remove(
-        self,
-        table: str,
-        identifier: str,
-    ) -> None:
-        """
-        Remove a value from a table.
-        """
-        if table in self._tables:
-            self._tables[table].pop(identifier, None)
+        self._by_type.setdefault(definition.type, []).append(definition)
+        self._by_expansion.setdefault(definition.expansion, []).append(definition)
 
-    def contains(
-        self,
-        table: str,
-        identifier: str,
-    ) -> bool:
-        """
-        Return True if a value exists.
-        """
-        return identifier in self._tables.get(table, {})
+        for tag in sorted(definition.tags):
+            self._by_tag.setdefault(tag, []).append(definition)
 
-    def clear(self) -> None:
-        """
-        Remove all tables.
-        """
-        self._tables.clear()
+    def __len__(self) -> int:
+        return len(self._by_id)
 
-    def table(self, name: str) -> dict[str, Any]:
-        """
-        Return a table, creating it if necessary.
-        """
-        self.create_table(name)
-        return self._tables[name]
+    def __contains__(self, card_id: object) -> bool:
+        return card_id in self._by_id
 
-    def tables(self) -> tuple[str, ...]:
+    def __iter__(self) -> Iterator[CardDefinition]:
+        return iter(self._by_id.values())
+
+    def get(self, card_id: str) -> CardDefinition | None:
         """
-        Return all table names.
+        Return a card by identifier, or None.
         """
-        return tuple(self._tables)
+        return self._by_id.get(card_id)
+
+    def by_type(self, card_type: CardType) -> tuple[CardDefinition, ...]:
+        """
+        Return every card of a type, in load order.
+        """
+        return tuple(self._by_type.get(card_type, ()))
+
+    def by_expansion(self, expansion: str) -> tuple[CardDefinition, ...]:
+        """
+        Return every card from one set.
+        """
+        return tuple(self._by_expansion.get(expansion, ()))
+
+    def by_tag(self, tag: str) -> tuple[CardDefinition, ...]:
+        """
+        Return every card carrying a tag.
+        """
+        return tuple(self._by_tag.get(tag, ()))
+
+    def types(self) -> tuple[CardType, ...]:
+        """
+        Return every card type present, in a stable order.
+        """
+        return tuple(sorted(self._by_type, key=str))
+
+    def tags(self) -> tuple[str, ...]:
+        """
+        Return every tag present, in a stable order.
+        """
+        return tuple(sorted(self._by_tag))
+
+    def expansions(self) -> tuple[str, ...]:
+        """
+        Return every expansion present, in a stable order.
+        """
+        return tuple(sorted(self._by_expansion))
+
+    def counts(self) -> dict[str, int]:
+        """
+        Return how many cards there are of each type.
+        """
+        return {str(key): len(value) for key, value in sorted(
+            self._by_type.items(), key=lambda item: str(item[0])
+        )}

@@ -1,0 +1,124 @@
+{
+  "cards": [
+    {
+      "id": "characters-the_summer_of_isaac-clubby_the_seal",
+      "name": "Clubby the Seal",
+      "type": "character",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\n\"Clubby spends most of his time\ncollecting human skins to sell\non the black market.\"\n------------------------------\nStarting item:\nClub",
+        "set": "The Summer of Isaac",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-the_summer_of_isaac-clubby_the_seal",
+        "version": "Original",
+        "artist": "@rojen241",
+        "notes": "Crossover with the video game Clubby the Seal.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024.",
+        "starting_item": "starting_items-the_summer_of_isaac-club"
+      }
+    },
+    {
+      "id": "characters-the_summer_of_isaac-gish",
+      "name": "Gish",
+      "type": "character",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\n\"Life isn't easy when you're\na 12 pound ball of tar.\"\n------------------------------\nStarting item:\nBall of Tar",
+        "set": "The Summer of Isaac",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-the_summer_of_isaac-gish",
+        "version": "Original",
+        "artist": "@rojen241",
+        "notes": "Crossover with the video game Gish.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024.",
+        "starting_item": "starting_items-the_summer_of_isaac-ball_of_tar"
+      }
+    },
+    {
+      "id": "characters-the_summer_of_isaac-stacy",
+      "name": "Stacy",
+      "type": "character",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\n\"Meow.\"\n------------------------------\nStarting item:\nUnstable DNA",
+        "set": "The Summer of Isaac",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-the_summer_of_isaac-stacy",
+        "version": "Original",
+        "artist": "@rojen241",
+        "notes": "Crossover with the video game Mewgenics.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024.",
+        "starting_item": "starting_items-the_summer_of_isaac-unstable_dna"
+      }
+    },
+    {
+      "id": "characters-the_summer_of_isaac-the_hoarder",
+      "name": "The Hoarder",
+      "type": "character",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nBag of Crafting",
+        "set": "The Summer of Isaac",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-the_summer_of_isaac-the_hoarder",
+        "version": "Alt Art",
+        "artist": "@bogmanART",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024.",
+        "starting_item": "starting_items-requiem-bag_of_crafting"
+      }
+    },
+    {
+      "id": "characters-the_summer_of_isaac-the_miser",
+      "name": "The Miser",
+      "type": "character",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nKeeper's Bargain",
+        "set": "The Summer of Isaac",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-the_summer_of_isaac-the_miser",
+        "version": "Alt Art",
+        "artist": "@billiamboy1",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024.",
+        "starting_item": "starting_items-requiem-keeper_s_bargain"
+      }
+    }
+  ]
+}

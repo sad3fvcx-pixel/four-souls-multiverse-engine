@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-tapeworm-white_proglottid",
+      "name": "White Proglottid",
+      "type": "treasure",
+      "expansion": "tapeworm",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Put an egg counter on\nanother player.\n------------------------------\nPlayers with egg counters can\nbe attacked as if they were\nmonsters with a 4+ DC.  When a\nplayer with an egg counter dies\nremove all their egg counters,\nthe player that killed them\nloots 1.",
+        "set": "Tapeworm",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-tapeworm-white_proglottid",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via reaching $800,000 in the Tapeworm Kickstarter.\n\nFoil-only."
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-tapeworm-red_proglottid",
+      "name": "Red Proglottid",
+      "type": "treasure",
+      "expansion": "tapeworm",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 5¢: Put an egg\ncounter on a player\nor monster.\n------------------------------\nPlayers and monsters with egg\ncounters gain +1 AT for each\negg counter on them. If that\nplayer or monster dies, remove\nall their egg counters.",
+        "set": "Tapeworm",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-tapeworm-red_proglottid",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Unlocked via reaching $600,000 in the Tapeworm Kickstarter.\n\nFoil-only."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-tapeworm-black_proglottid",
+      "name": "Black Proglottid",
+      "type": "treasure",
+      "expansion": "tapeworm",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start and end of your\nturn, you may put an egg\ncounter on a player or monster\nwithout an egg counter.\n------------------------------\nEach time player or monster with an\negg counter dies, remove their egg\ncounters. Each player without\nan egg counter gains 2¢ for each egg\ncounter removed in this way.",
+        "set": "Tapeworm",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-tapeworm-black_proglottid",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "notes": "Unlocked via reaching $400,000 in the Tapeworm Kickstarter.\n\nFoil-only.\n\nDespite belonging to the Tapeworm promo set, this card is missing its \"T\" set symbol."
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "id": "base_game",
+  "name": "Base Game",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Base Game: 287 cards imported from the card database."
+}

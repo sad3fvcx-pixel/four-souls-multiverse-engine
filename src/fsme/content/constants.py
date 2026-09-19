@@ -6,30 +6,35 @@ Constants used by the content subsystem.
 
 from __future__ import annotations
 
-DEFAULT_CONTENT_NAMESPACE = "core"
+CONTENT_SCHEMA_VERSION = "1"
+"""
+The card and manifest schema this engine reads.
 
-DEFAULT_CONTENT_VERSION = "1.0.0"
+Content declares the schema it was written for, and a set written for a
+different one is refused rather than half-understood.
+"""
 
-DEFAULT_ENCODING = "utf-8"
+MANIFEST_NAME = "manifest.json"
 
 CARD_FILE_EXTENSION = ".json"
 
-CONTENT_MANIFEST_NAME = "manifest.json"
+DEFAULT_ENCODING = "utf-8"
 
-CONTENT_DIRECTORY_NAME = "content"
+BASE_GAME_DIRECTORY = "base_game"
+EXPANSIONS_DIRECTORY = "expansions"
+CUSTOM_DIRECTORY = "custom"
+USER_DIRECTORY = "user"
 
-CARDS_DIRECTORY_NAME = "cards"
+CONTENT_SECTIONS = (
+    BASE_GAME_DIRECTORY,
+    EXPANSIONS_DIRECTORY,
+    CUSTOM_DIRECTORY,
+    USER_DIRECTORY,
+)
+"""
+Where sets live under a content root.
 
-EFFECTS_DIRECTORY_NAME = "effects"
-
-ROOMS_DIRECTORY_NAME = "rooms"
-
-MONSTERS_DIRECTORY_NAME = "monsters"
-
-TREASURES_DIRECTORY_NAME = "treasures"
-
-LOOT_DIRECTORY_NAME = "loot"
-
-CHARACTERS_DIRECTORY_NAME = "characters"
-
-STARTING_ITEMS_DIRECTORY_NAME = "starting_items"
+The split is by origin, not by mechanics: official cards, published
+expansions, community sets and a player's own work all load through the same
+pipeline and get no special treatment from the engine.
+"""

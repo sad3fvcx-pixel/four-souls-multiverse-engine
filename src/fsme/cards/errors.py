@@ -1,12 +1,10 @@
-# src/fsme/cards/errors.py
-
 """
 Exceptions for the card subsystem.
 """
 
 from __future__ import annotations
 
-from fsme.util.errors import EngineError
+from fsme.util.errors import ContentValidationError, EngineError
 
 
 class CardError(EngineError):
@@ -15,25 +13,22 @@ class CardError(EngineError):
     """
 
 
-class CardResolutionError(CardError):
+class InvalidCardError(ContentValidationError):
     """
-    Raised when a card operation cannot be resolved.
-    """
-
-
-class CardExecutionError(CardError):
-    """
-    Raised when a card handler fails during execution.
-    """
-
-
-class InvalidCardError(CardError):
-    """
-    Raised when an invalid card object is encountered.
+    Raised when card content does not satisfy the card schema.
     """
 
 
 class UnknownCardError(CardError):
     """
-    Raised when an unknown card type or operation is encountered.
+    Raised when a card identifier is not registered.
+    """
+
+
+class DuplicateCardError(CardError):
+    """
+    Raised when a card identifier is registered twice.
+
+    Card identifiers are permanent and globally unique, so a collision is a
+    content error rather than a reason to overwrite.
     """

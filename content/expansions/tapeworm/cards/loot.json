@@ -1,0 +1,72 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-trinkets-tapeworm-rainbow_tapeworm",
+      "name": "Rainbow Tapeworm",
+      "type": "loot",
+      "expansion": "tapeworm",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        },
+        {
+          "trigger": "turn_start",
+          "scope": "controller",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": {
+                    "value": 3
+                  }
+                }
+              ],
+              "then": [
+                {
+                  "effect": "copy_card",
+                  "until": "end_of_turn",
+                  "targets": [
+                    {
+                      "target_treasure": {
+                        "exclude_eternal": true,
+                        "exclude_source": true,
+                        "as": "model"
+                      }
+                    }
+                  ],
+                  "target": "model"
+                }
+              ]
+            }
+          ],
+          "description": "At the start of your turn, roll: 1-3 nothing; 4-6 this becomes a copy of any non-eternal item in play till the end of your turn."
+        }
+      ],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "At the start of your turn, roll:\n1-3: Nothing\n4-6: This becomes a copy of\nany non-eternal item in play\ntill the end of your turn.\n------------------------------\n-Trinket-\n(This card counts\nas a passive item)",
+        "set": "Tapeworm",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-tapeworm-rainbow_tapeworm",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "As with the rest of the Tapeworm promos, this card is foil-only."
+      }
+    }
+  ]
+}

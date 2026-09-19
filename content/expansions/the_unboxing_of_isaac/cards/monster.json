@@ -1,0 +1,348 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-the_unboxing_of_isaac-eggy",
+      "name": "Eggy",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nWhen this dies, the active\nplayer rolls-\n1-2: Expand monster slots by 1.\n------------------------------\n3-4: Expand monster slots by 2.\n------------------------------\n5-6: Expand monster slots by 3.\n------------------------------\nRewards: 6¢",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_unboxing_of_isaac-eggy",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Pcap410",
+        "notes": "Included with The Unboxing of Isaac #11: Hush for March, 2023."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-the_unboxing_of_isaac-evis",
+      "name": "Evis",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 6,
+      "roll": 5,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 5+ | AT: 6\n\nAt the start of each turn, the\nactive player rolls-\n1-2: Put a gut counter\non the active player.\n------------------------------\nPlayers with gut counters on them\nhave 3+ and can be attacked.\n------------------------------\nRewards: Loot 2",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_unboxing_of_isaac-evis",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Pcap410",
+        "notes": "Included with The Unboxing of Isaac #11: Hush for March, 2023."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-the_unboxing_of_isaac-greedling_rush",
+      "name": "Greedling Rush!",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 6,
+      "roll": 3,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 3+ | AT: 6\n\nWhen this would die, prevent\nits death, put a counter on it,\nand the active player gains its\nrewards. Then, if this has 6+\ncounters, put this into discard.\n------------------------------\n-Indomintable-\n------------------------------\nRewards: 6¢",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_unboxing_of_isaac-greedling_rush",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Included with The Unboxing of Isaac #10: Lil Greed for February, 2023."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_unboxing_of_isaac-big_horn",
+      "name": "Big Horn",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 3+ | AT: 1\n\nAt the start of each turn\nor each time this deals\ncombat damage, the active\nplayer deals 1 damage to a\nplayer chosen at random.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_unboxing_of_isaac-big_horn",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Included with The Unboxing of Isaac #9: Isaac is Doomed! for January, 2023."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_unboxing_of_isaac-christian_broadcasts",
+      "name": "\"Christian Broadcasts\"",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 3+ | AT: 1\n\nWhen this dies, choose another\nmonster and player. They die.\n------------------------------\nWhen this dies, expand\nmonster slots by 2.\n------------------------------\n\"Blasphemy against the Holy Spirit!\"\nDefinitely the Bible\n------------------------------\nRewards: Loot 3",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_unboxing_of_isaac-christian_broadcasts",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Included with The Unboxing of Isaac #1: Dogma for May, 2022."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_unboxing_of_isaac-delirium",
+      "name": "Delirium",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 6
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nEach time you would deal\ndamage while you control\nthis soul, roll-\n1: Prevent that damage.\n------------------------------\nRewards: Loot 6\n(+1 soul)",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_unboxing_of_isaac-delirium",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "Private",
+        "notes": "Included with The Unboxing of Isaac #8: Delirious for December, 2022."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_unboxing_of_isaac-delirium-v2",
+      "name": "Delirium",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 18
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nWhile you control this\nsoul, your death penalty\nitem is chosen at random.\n------------------------------\nRewards: 18¢\n(+1 soul)",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_unboxing_of_isaac-delirium",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "Private",
+        "notes": "Included with The Unboxing of Isaac #8: Delirious for December, 2022."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_unboxing_of_isaac-larry_jr",
+      "name": "Larry Jr.",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 2\n\nWhile this is at 2 HP\nor less, it has -1 DC.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_unboxing_of_isaac-larry_jr",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@KayLousberg",
+        "notes": "This bonus card is included with The Unboxing of Isaac #9: Isaac is Doomed! for January, 2023.\n\nThis card was included as a thank you to the fans for sticking with The Unboxing of Isaac project."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_unboxing_of_isaac-loki",
+      "name": "Loki",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 5+ | AT: 1\n\nEach time the attacking\nplayer rolls an attack\nroll of 1, expand monster\nslots by 1.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_unboxing_of_isaac-loki",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #9: Isaac is Doomed! for January, 2023."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_unboxing_of_isaac-teratoma",
+      "name": "Teratoma",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 3+ | AT: 2\n\nEach time this takes damage, put\na spider counter on it.\n------------------------------\nWhen this dies, the active player\ndeals x damage divided as they\nchoose to any number of players,\nwhere x is the number of\nspider counters on this.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_unboxing_of_isaac-teratoma",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Pcap410",
+        "notes": "Included with The Unboxing of Isaac #11: Hush for March, 2023."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_unboxing_of_isaac-the_adversary",
+      "name": "The Adversary",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nAt the start of each turn,\nthe active player rolls-\n1-2: Put all cards in another\nmonster slot into discard.\n------------------------------\n3-4: Put the top card of the monster\ndeck in another monster slot.\n------------------------------\n5-6: Monsters gain +1 DC till\nend of turn.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_unboxing_of_isaac-the_adversary",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Included with The Unboxing of Isaac #9: Isaac is Doomed! for January, 2023."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-the_unboxing_of_isaac-dogma",
+      "name": "Dogma",
+      "type": "monster",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 3,
+      "roll": 3,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 3+ | AT: 3\n\nWhen the attacking player rolls an\nattack roll of 1, each player dies.\n------------------------------\nWhen this dies, each other\nmonster dies.\n------------------------------\n\"The anger of God is coming!\"\nDefinitely the Bible\n------------------------------\nRewards: +2 treasure",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-the_unboxing_of_isaac-dogma",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@orisghost",
+        "notes": "Included with The Unboxing of Isaac #1: Dogma for May, 2022."
+      }
+    }
+  ]
+}
