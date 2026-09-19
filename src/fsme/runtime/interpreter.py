@@ -252,6 +252,19 @@ class Interpreter:
         survive being asked: the ability is suspended, the player answers, and
         resolution starts over from this operation and finds the answer waiting
         instead of asking again.
+
+        Bound under a name, which means a card can write that name itself and
+        leave something here that is not an answer to this question. What was
+        found then has to be refused rather than read as "no": the two are the
+        same silence, and one of them is a card that never does what it says.
+
+        What this catches is something that is not an answer to a "may" at all.
+        What it cannot catch is another "may"'s answer: every one of them offers
+        the same two words, so two of them sharing a name are answered together
+        by whichever is asked first, and there is nothing here to tell that from
+        an answer of its own. Its sibling below is stricter for a reason it has
+        and this does not — its options differ from node to node, so it can see
+        an answer that came from elsewhere.
         """
         name = str(params.get("as", "__may__"))
         answer = context.targets.get(name)
@@ -265,7 +278,15 @@ class Interpreter:
                 prompt=str(params.get("prompt", "")),
             )
 
-        if not answer or answer[0] != YES:
+        if not answer:
+            return []
+
+        if str(answer[0]) not in MAY_OPTIONS:
+            raise InterpreterError(
+                f"'{answer[0]}' is not an answer to this card's 'may'"
+            )
+
+        if answer[0] != YES:
             return []
 
         return self.build(params.get("effects", params.get("may", ())), default_target)

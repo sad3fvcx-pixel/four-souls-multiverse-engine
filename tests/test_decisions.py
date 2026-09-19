@@ -8,8 +8,9 @@ then carries on from the exact operation it stopped on.
 from __future__ import annotations
 
 import pytest
-from conftest import make_game, make_instance, treasure_definition
+from conftest import make_definition, make_game, make_instance, treasure_definition
 
+from fsme.cards import Ability, CardType
 from fsme.commands import Command, CommandType
 from fsme.rules import STARTING_COINS
 from fsme.runtime.ability_context import CHOSEN_AT
@@ -422,3 +423,177 @@ def test_a_card_may_still_keep_a_result_under_its_own_name() -> None:
     give(state, 0, ({"effect": "gain_coins", "amount": 1, "store": "gained"},))
 
     assert activate(runtime).accepted
+
+
+def give_asking(state, player_id, targets, effects, card_id="test.asker"):
+    """
+    A treasure whose one ability binds something and then asks a question.
+
+    `treasure_definition` builds an ability with no targets, and these need one:
+    the point of them is a name the card chose itself.
+    """
+    card = make_instance(
+        make_definition(
+            card_id,
+            name="Asker",
+            card_type=CardType.TREASURE,
+            abilities=(
+                Ability(
+                    trigger="on_activate",
+                    targets=tuple(targets),
+                    effects=tuple(effects),
+                ),
+            ),
+        ),
+        controller=player_id,
+        owner=player_id,
+        instance_id=f"instance:{card_id}",
+    )
+    state.player(player_id).treasures.add_top(card)
+
+    return card
+
+
+def test_answering_no_to_a_may_does_nothing() -> None:
+    runtime, state = make_game(players=2)
+    start(runtime)
+    give(state, 0, ({"may": [{"gain_coins": 7}]},))
+
+    before = state.player(0).pennies
+
+    activate(runtime)
+
+    decision = runtime.awaiting_decision
+
+    assert decision is not None
+    assert list(decision.options) == ["yes", "no"]
+
+    assert choose(runtime, 0, list(decision.options).index("no")).accepted
+
+    assert state.player(0).pennies == before
+
+
+def test_answering_yes_to_a_may_does_it() -> None:
+    runtime, state = make_game(players=2)
+    start(runtime)
+    give(state, 0, ({"may": [{"gain_coins": 7}]},))
+
+    before = state.player(0).pennies
+
+    activate(runtime)
+
+    decision = runtime.awaiting_decision
+
+    assert decision is not None
+
+    assert choose(runtime, 0, list(decision.options).index("yes")).accepted
+
+    assert state.player(0).pennies == before + 7
+
+
+def test_a_may_refuses_an_answer_that_is_not_one_of_its_own() -> None:
+    """
+    The answer to "you may" is bound under a name, and a card may write that
+    name itself — so what is waiting there is not always an answer to this
+    question.
+
+    Read as "no", which is what happened, the card silently never does what it
+    says: the question is not even asked, the body does not run, and nothing is
+    wrong as far as anything can tell. Measured before this was written: a card
+    binding a player under the name a bare `may` uses gained nought where the
+    body says seven, with one question asked instead of two.
+
+    Refused instead, and named.
+
+    What is refused is something that is not an answer to a "may". Two `may`
+    nodes sharing one name are a different case and still not caught: both
+    offer the same two words, so the first answer serves for both and nothing
+    can tell it from an answer of the second's own. Measured, before and after
+    alike: two of them under one name run both bodies off one "yes", with one
+    question asked. No shipped card does that — 33 `may` nodes, none sharing a
+    name — and telling them apart needs the nodes to be identifiable, which is
+    a wider change than this.
+    """
+    runtime, state = make_game(players=2)
+    start(runtime)
+    give_asking(
+        state,
+        0,
+        ({"target_player": {"as": "__may__"}},),
+        ({"may": [{"gain_coins": 7}]},),
+    )
+
+    before = state.player(0).pennies
+
+    activate(runtime)
+
+    decision = runtime.awaiting_decision
+
+    assert decision is not None, "the target is still chosen the ordinary way"
+
+    with pytest.raises(EngineError) as raised:
+        choose(runtime, 0, 0)
+
+    assert "is not an answer to this card's 'may'" in str(raised.value)
+    assert state.player(0).pennies == before
+
+
+def test_a_may_under_a_name_the_card_chose_still_works() -> None:
+    """
+    Naming the question is the feature the collision comes from, and it keeps
+    working: a `may` with its own name, beside a target with another, asks and
+    is answered.
+    """
+    runtime, state = make_game(players=2)
+    start(runtime)
+    give_asking(
+        state,
+        0,
+        ({"target_player": {"as": "who"}},),
+        ({"may": [{"gain_coins": 7}], "as": "well"},),
+    )
+
+    before = state.player(0).pennies
+
+    activate(runtime)
+
+    for _ in range(2):
+        decision = runtime.awaiting_decision
+
+        assert decision is not None
+
+        assert choose(runtime, 0, 0).accepted
+
+    assert state.player(0).pennies == before + 7
+
+
+def test_a_choose_still_refuses_in_its_own_words() -> None:
+    """
+    Two questions, two refusals, and they do not borrow each other's words: a
+    `choose` handed something that is not one of its modes says so, which is
+    what it said before any of this.
+    """
+    runtime, state = make_game(players=2)
+    start(runtime)
+    give_asking(
+        state,
+        0,
+        ({"target_player": {"as": "__choice__"}},),
+        (
+            {
+                "choose": [
+                    {"description": "A", "effects": [{"gain_coins": 1}]},
+                    {"description": "B", "effects": [{"gain_coins": 7}]},
+                ]
+            },
+        ),
+    )
+
+    activate(runtime)
+
+    assert runtime.awaiting_decision is not None
+
+    with pytest.raises(EngineError) as raised:
+        choose(runtime, 0, 0)
+
+    assert "is not one of this card's modes" in str(raised.value)
