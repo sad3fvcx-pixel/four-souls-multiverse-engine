@@ -9,6 +9,7 @@ anything malformed instead of letting it reach the game.
 from __future__ import annotations
 
 import json
+import socket
 import threading
 import urllib.error
 import urllib.request
@@ -64,6 +65,44 @@ def post(address: str, path: str, body: Any) -> Any:
 
     with urllib.request.urlopen(request, timeout=10) as answer:
         return json.loads(answer.read())
+
+
+def asked(address: str, target: str) -> tuple[int, bytes]:
+    """
+    One GET with the target put on the wire exactly as written.
+
+    ``urllib`` and ``http.client`` both encode a request line as ASCII and
+    raise on a path they cannot, so neither can ask about a superscript two —
+    which is one latin-1 byte, which ``str.isdigit`` accepts, and which is
+    therefore a question worth being able to ask.
+
+    A status of nought means the handler answered with a closed socket and no
+    status at all. That is what dying looks like from the outside.
+    """
+    host, _, port = address.removeprefix("http://").partition(":")
+
+    with socket.create_connection((host, int(port)), timeout=10) as sock:
+        sock.sendall(
+            f"GET {target} HTTP/1.1\r\n".encode("latin-1")
+            + b"Host: fsme\r\nConnection: close\r\n\r\n"
+        )
+
+        answer = b""
+
+        while True:
+            got = sock.recv(65536)
+
+            if not got:
+                break
+
+            answer += got
+
+    if not answer:
+        return 0, b""
+
+    head, _, body = answer.partition(b"\r\n\r\n")
+
+    return int(head.split()[1]), body
 
 
 def test_the_page_is_served(address: str) -> None:
@@ -218,6 +257,68 @@ def test_the_journal_can_be_asked_for_only_what_is_new(address: str) -> None:
     assert rest["seed"] == whole["seed"]
     assert rest["format"] == whole["format"]
     assert rest["players"] == whole["players"]
+
+
+def test_a_since_too_long_to_be_a_number_is_read_as_the_beginning(
+    address: str,
+) -> None:
+    """
+    ``isdigit`` says yes and ``int`` says no, and the hint has to survive it.
+
+    Python will not read an integer of more than four thousand three hundred
+    digits out of a string, so such a query passed the guard and raised inside
+    it. Nothing caught it, so the handler died and answered a closed socket
+    with no status — where the contract here has always been that a hint this
+    cannot read means "from the beginning".
+    """
+    status, body = asked(address, "/api/journal?since=" + "1" * 4301)
+
+    assert status == 200, "the handler stopped instead of starting over"
+    assert json.loads(body) == get(address, "/api/journal?since=0")
+
+
+def test_a_since_that_is_a_digit_but_not_a_number_is_read_as_the_beginning(
+    address: str,
+) -> None:
+    """
+    A superscript two is a digit to ``str.isdigit`` and not one to ``int``.
+
+    One latin-1 byte, so it reaches the handler exactly as sent. Asked over a
+    socket because ``urllib`` encodes a request line as ASCII and will not send
+    it at all.
+    """
+    from_nought = get(address, "/api/journal?since=0")
+
+    for digit in ("²", "³", "¹"):
+        status, body = asked(address, f"/api/journal?since={digit}")
+
+        assert status == 200, f"{digit!r} stopped the handler"
+        assert json.loads(body) == from_nought
+
+
+def test_a_since_that_is_a_word_still_means_the_beginning(address: str) -> None:
+    """
+    The contract that was always here, and the one the fix above matches.
+    """
+    assert get(address, "/api/journal?since=abc") == get(
+        address, "/api/journal?since=0"
+    )
+
+
+def test_the_mended_helper_is_the_one_every_route_reads(address: str) -> None:
+    """
+    `_since` is read by four callers, so the fix belongs to all of them.
+
+    `/api/view` is the other reader a page hits on every poll; it died on the
+    same query and must now answer the same as `since=0`.
+    """
+    from_nought = get(address, "/api/view?since=0")
+
+    for target in ("/api/view?since=²", "/api/view?since=" + "1" * 4301):
+        status, body = asked(address, target)
+
+        assert status == 200, f"{target!r} stopped the handler"
+        assert json.loads(body) == from_nought
 
 
 def test_the_watch_page_reads_the_game_out(address: str) -> None:

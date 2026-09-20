@@ -351,6 +351,72 @@ def test_a_run_it_does_not_know_is_refused(address: str) -> None:
     assert raised.value.code == 400
 
 
+def test_a_job_number_too_long_to_be_a_number_is_refused(address: str) -> None:
+    """
+    ``isdigit`` says yes, ``int`` says no, and the answer has to be the refusal.
+
+    Python will not read an integer of more than four thousand three hundred
+    digits out of a string, so such a path passed the guard and raised inside
+    it. The handler died, and a dead handler closes the socket with no status
+    at all — the one answer a page cannot show a person. Plain ASCII, no setup.
+    """
+    status, _, body = asked(address, "/api/jobs/" + "1" * 4301)
+
+    assert status == 404, "the handler stopped instead of refusing"
+    assert "no such job" in json.loads(body)["error"]
+
+
+def test_a_job_number_that_is_a_digit_but_not_a_number_is_refused(
+    address: str,
+) -> None:
+    """
+    A superscript two is a digit to ``str.isdigit`` and not one to ``int``.
+
+    Three characters are like this and a request line can carry all of them,
+    each being one latin-1 byte. Asked over a socket because ``urllib``
+    encodes a request line as ASCII and will not send any of them at all.
+    """
+    for digit in ("²", "³", "¹"):
+        status, _, body = asked(address, f"/api/jobs/{digit}")
+
+        assert status == 404, f"{digit!r} stopped the handler"
+        assert "no such job" in json.loads(body)["error"]
+
+
+def test_a_job_that_exists_is_still_returned(address: str) -> None:
+    """
+    The refusal above must not have cost the answer this endpoint is for.
+    """
+    number = post(address, "/api/run", {"kind": "play", "seed": 3, "players": 2})["id"]
+    job = get(address, f"/api/jobs/{number}")
+
+    assert job["id"] == number
+    assert job["kind"] == "play"
+
+
+def test_a_job_that_is_not_there_is_refused(address: str) -> None:
+    with pytest.raises(urllib.error.HTTPError) as raised:
+        get(address, "/api/jobs/9999")
+
+    assert raised.value.code == 404
+
+
+def test_a_job_asked_for_by_anything_but_digits_is_refused(address: str) -> None:
+    """
+    The refusal that was always here, and the width it always had.
+
+    A word was refused before this and is refused now. The rest are here
+    because ``int`` would accept them and ``isdigit`` does not: reading the
+    number without still asking that question would quietly make ``1_0`` mean
+    ten, and hand back one job where another was asked for.
+    """
+    for wanted in ("abc", "1_0", "-1", "+1", ""):
+        with pytest.raises(urllib.error.HTTPError) as raised:
+            get(address, f"/api/jobs/{wanted}")
+
+        assert raised.value.code == 404, f"{wanted!r} was not refused"
+
+
 def test_a_run_asking_for_too_much_is_brought_back_in_range() -> None:
     """
     A typed digit too many is an easy mistake to make and a hard one to notice.

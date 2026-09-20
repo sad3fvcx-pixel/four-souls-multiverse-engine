@@ -243,13 +243,35 @@ class GameHandler(BaseHTTPRequestHandler):
         return written
 
     def _since(self) -> int:
+        """
+        How much of the journal the page has already seen.
+
+        A paging hint rather than an identifier, so anything unusable means
+        "start from the beginning" — which is what a missing `since` and what
+        `since=abc` have always meant.
+
+        `isdigit` and `int` do not agree on what a number is, and both halves
+        of the disagreement arrive over HTTP: `"²".isdigit()` is true and
+        `int("²")` raises, and so does a number of more than four thousand
+        three hundred digits, which `int` refuses by length. Asking `isdigit`
+        alone let those through to a `ValueError` nothing caught, and the
+        handler died — every reader of this answered a closed socket with no
+        status at all. They now mean nought, the same as any other value this
+        cannot read. `isdigit` stays: it is what keeps the hint to digits.
+        """
         _, _, query = self.path.partition("?")
 
         for part in query.split("&"):
             key, _, value = part.partition("=")
 
             if key == "since" and value.isdigit():
-                return int(value)
+                # Only the conversion is guarded. Anything else going wrong in
+                # here is not a malformed hint and has no business being read
+                # as nought.
+                try:
+                    return int(value)
+                except ValueError:
+                    return 0
 
         return 0
 

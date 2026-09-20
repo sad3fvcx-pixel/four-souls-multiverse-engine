@@ -110,7 +110,20 @@ class DeskHandler(GameHandler):
         if path.startswith("/api/jobs/"):
             wanted = path.rsplit("/", 1)[-1]
 
-            job = self.bench.job(int(wanted)) if wanted.isdigit() else None
+            # The same disagreement the report path below explains at length:
+            # `isdigit` admits `"²"` and a number of more than four thousand
+            # three hundred digits, and `int` refuses both. Asking only the
+            # first let them through to kill the handler, which then answers a
+            # closed socket and no status — worse than the refusal this path
+            # already has for a name that is not a number. `isdigit` stays for
+            # the reason it stays there: `int` alone would newly accept `-1`,
+            # `+1` and `1_0`, and the last of those is ten.
+            try:
+                number = int(wanted) if wanted.isdigit() else None
+            except ValueError:
+                number = None
+
+            job = self.bench.job(number) if number is not None else None
 
             if job is None:
                 self._json({"error": "no such job"}, status=404)
