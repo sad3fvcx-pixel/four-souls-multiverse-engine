@@ -6,6 +6,110 @@ internals may change between minor versions. The two things treated as
 promises even now are the **journal format** (bumped explicitly, and a journal
 that cannot be read says so) and the **card schema**.
 
+## 0.10.0 - the whole card by clicking
+
+Everything since 0.9.0. The Guided Walk went from making one reacting rule to
+making every kind of card the engine has, and the layer underneath it began
+reading the answers it had until now only been writing down.
+
+### Added
+
+- **Every kind of card can be made by answering questions.** An event card, a
+  monster with the numbers printed on it, and a rule that waits for no moment
+  at all are built by the walk now rather than handed to the expert editor.
+  Each reads what the engine already settles — which moment a kind acts at,
+  which numbers a kind prints — instead of keeping a list of its own.
+- **A card may hold more than one rule.** Thirty-eight shipped cards across
+  five kinds are written that way. The card model, the writer, the checker and
+  the runtime had always allowed it; one line in the walk put a fresh list in
+  place of the card's own, so a second rule replaced the first instead of
+  sitting beside it.
+- **A rule can say when it acts, whose actions it reacts to, and what has to
+  be true first.** The moment comes from the ability's own trigger field, so a
+  moment the engine gains is offered without being told about it. Of 182
+  shipped abilities that state a scope, 128 state something other than what
+  the silence would have meant, and the walk gave nobody a way to say it.
+  Seventy-seven shipped cards state a condition before anything happens; a
+  condition can now name the parameter a person must answer, the way an effect
+  always could.
+- **Branches, choices and loops are made by the walk.** A hundred and eight
+  branches across forty-nine shipped cards could be opened and none could be
+  made: the walk offered the catalogue of effects minus the structures, while
+  the editor's own list for the same place had always included them. What a
+  choice offers and what a loop runs over are asked for too.
+- **The words an author has already used are offered.** What a counter is
+  called, which families a card belongs to and what cards are called have no
+  closed set and never will, so the box was empty and somebody had to remember
+  a spelling from another file. Nine counters, sixteen families and eight
+  hundred and ninety-two names are read out of the content that is loaded.
+- **A blank box says what it is about to mean.** Twenty-one condition and
+  target parameters declare the default the engine applies, instead of being
+  drawn with "leave it out" beneath a field where blank means *this happens
+  instead*.
+- **Two lookups offer the domains they decide.** A pile name and a monster
+  slot were read by looking the card's own word up, and neither lookup could
+  fail out loud: a misspelled pile sat quietly false for the rest of the game,
+  and a misspelled slot put the monster somewhere nobody asked for.
+- **Two decisions are written down rather than left to be rediscovered.** A
+  monster's `rewards` stays a box of card text — what a monster pays out is an
+  open set of names, and describing its interior would close a set of keys the
+  engine deliberately keeps open, so it is revisited when a second field of the
+  same shape exists to design against. Capability coverage was remeasured twice
+  against the real path rather than inferred.
+
+### Fixed
+
+- **A body is looked inside whatever its key.** The checker walked a list of
+  four body keys and there are five, so `sequence` was the one body in the card
+  language nothing looked inside: an unknown effect, a mistyped argument and a
+  name that was never bound all passed the checker and met the runtime instead.
+- **A body key alone is not a card.** `{"then": [...]}` with no head names
+  nothing that can run. The checker passed it and the game it loaded into
+  failed there.
+- **What a list says is in it is read.** A choice's options went unchecked in
+  both directions: an option could be a word, a number, or nothing at all.
+- **What a promise owes is read.** A change outside the six the engine
+  describes passed every check and stopped the ability when it ran.
+- **A nested answer is read the way it will be written.** A key the engine has
+  never heard of went into the editor whole and came back gone — silently,
+  where it stood beside a key the shape does know.
+- **Six control nodes named the wrong spelling as their own.** A node is a
+  `may` because it says `may`; the canonical name had been taken from the order
+  the interpreter reads two names in, which is a different question.
+- **Two questions under one name are told apart.** A `may` that writes no name
+  is read under the one the engine keeps for its sort, so two of them found the
+  same reply and only one ever asked. A choice inside an option had the same
+  collision and refused to resolve at all.
+- **A replacement runs inside the same bound an ability has.** The loop that
+  runs a replacement counted nothing, while its sibling has always stopped an
+  ability that takes too many turns: six levels of eight ran 262,144 operations
+  from a 205-byte card.
+- **A turn already ending is not ended again.** A second copy of the
+  turn-advancing object passes the seat twice: the turn number jumped by two,
+  the next player was dealt two opening loot cards, and an extra turn promised
+  on the way out was spent and then immediately passed. The way in is the death
+  penalty, and three games in a thousand reach it.
+- **A choice is taken by position and not by its description.** Two modes
+  described alike are two modes, and the description was being looked up by
+  text — so the second of them ran never, and silently.
+- **A "may" reads an answer that is its own.** A card may write the name a bare
+  `may` keeps its reply under, and whatever was waiting there was read as "no":
+  the card did nothing, and nothing said the question had never been put.
+- **The desk refuses a report number it cannot read.** `str.isdigit` and `int`
+  disagree about what a number is, and both halves of that disagreement arrive
+  over HTTP; either killed the request handler, which answers with a closed
+  socket and no status at all.
+
+### Verified
+
+- 1045 of 1045 shipped cards read, and mean the same after being written back.
+- Every shipped card written back through the Constructor comes out
+  byte-identical.
+- 352 of 352 rule-bearing cards pass the checker, and the walk reaches the end
+  of every one of them in a real browser with no page errors.
+- A thousand recorded games replay identically, apart from the three that the
+  turn-ending fix corrects — each traced to one declined call.
+
 ## 0.9.0 - Card Constructor
 
 The first release since 0.7.0, and it carries everything since. There was no

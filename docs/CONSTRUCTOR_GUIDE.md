@@ -94,7 +94,7 @@ identical. That is the guarantee, and it is measured rather than asserted: the
 whole shipped corpus is rewritten through the Constructor and replayed, and
 the games come out the same.
 
-## What v0.9 does not do
+## What v0.10 does not do
 
 These are the edges of the model, not things that are broken.
 
