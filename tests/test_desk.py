@@ -12,6 +12,7 @@ fails says so instead of disappearing.
 from __future__ import annotations
 
 import json
+import socket
 import threading
 import time
 import urllib.error
@@ -80,6 +81,54 @@ def post(address: str, path: str, body: dict[str, Any]) -> Any:
 
     with urllib.request.urlopen(request, timeout=30) as answer:
         return json.loads(answer.read())
+
+
+def asked(address: str, target: str) -> tuple[int, str, bytes]:
+    """
+    One GET with the target put on the wire exactly as written.
+
+    ``urllib`` and ``http.client`` both encode a request line as ASCII and
+    raise on a path they cannot, so neither can ask about a superscript two —
+    which is one latin-1 byte, which ``str.isdigit`` accepts, and which is
+    therefore a question worth being able to ask.
+
+    The status comes back as a number, and a status of nought means the handler
+    answered with a closed socket and no status at all. That is what dying
+    looks like from the outside, and it is what these tests are about.
+    """
+    host, _, port = address.removeprefix("http://").partition(":")
+
+    with socket.create_connection((host, int(port)), timeout=30) as sock:
+        sock.sendall(
+            f"GET {target} HTTP/1.1\r\n".encode("latin-1")
+            + b"Host: fsme\r\nConnection: close\r\n\r\n"
+        )
+
+        answer = b""
+
+        while True:
+            got = sock.recv(65536)
+
+            if not got:
+                break
+
+            answer += got
+
+    if not answer:
+        return 0, "", b""
+
+    head, _, body = answer.partition(b"\r\n\r\n")
+
+    return int(head.split()[1]), head.decode("latin-1"), body
+
+
+def filename(disposition: str) -> str:
+    """
+    What the browser will call the file, out of the header that says so.
+    """
+    _, _, quoted = disposition.partition('filename="')
+
+    return quoted.rpartition('"')[0]
 
 
 def finished(address: str, number: int) -> Any:
@@ -422,6 +471,91 @@ def test_a_report_can_be_saved_and_opened_again(address: str) -> None:
 
     assert again["state"] == "done", again["error"]
     assert again["text"] == job["text"]
+
+
+def test_a_report_number_too_long_to_be_a_number_is_refused(
+    address: str,
+) -> None:
+    """
+    ``isdigit`` says yes, ``int`` says no, and the answer has to be the refusal.
+
+    Python will not read an integer of more than four thousand three hundred
+    digits out of a string, so a path of four thousand three hundred and one
+    digits passed the guard and then raised inside it. The handler died, and a
+    dead handler closes the socket with no status at all — which is the one
+    answer a page cannot show a person. Plain ASCII, no setup, one request.
+    """
+    status, _, body = asked(address, "/api/report/" + "1" * 4301)
+
+    assert status == 404, "the handler stopped instead of refusing"
+    assert "no saved report" in json.loads(body)["error"]
+
+
+def test_a_report_number_that_is_a_digit_but_not_a_number_is_refused(
+    address: str,
+) -> None:
+    """
+    A superscript two is a digit to ``str.isdigit`` and not one to ``int``.
+
+    It is also a single latin-1 byte, so it reaches the handler written exactly
+    as it was sent; three characters are like this and a request line can carry
+    all of them. Asked over a socket because ``urllib`` encodes a request line
+    as ASCII and will not send any of them at all.
+    """
+    for digit in ("²", "³", "¹"):
+        status, _, body = asked(address, f"/api/report/{digit}")
+
+        assert status == 404, f"{digit!r} stopped the handler"
+        assert "no saved report" in json.loads(body)["error"]
+
+
+def test_a_report_arrives_as_a_file_whose_name_is_the_number(
+    address: str,
+) -> None:
+    """
+    The name is built from the number read, not from the characters typed.
+
+    Which is what keeps the header a header. Nothing ``isdigit`` admits can end
+    a line, so the path cannot split this response today — but the name is made
+    from the parsed integer anyway, so the header holds digits and nothing else
+    however the way in is widened later. This is the test that would notice
+    that stopping being true.
+    """
+    job = finished(
+        address,
+        post(address, "/api/run", {"kind": "play", "seed": 5, "players": 2})["id"],
+    )
+
+    with urllib.request.urlopen(f"{address}/api/report/{job['id']}") as answer:
+        disposition = answer.headers.get("Content-Disposition", "")
+
+    assert disposition == (
+        f'attachment; filename="fsme-report-{job["id"]}.json"'
+    )
+
+    for forbidden in ("\r", "\n", '"', ";"):
+        assert forbidden not in filename(disposition), (
+            f"{forbidden!r} reached the name a browser will write to disk"
+        )
+
+
+def test_a_report_asked_for_by_anything_but_digits_is_refused(
+    address: str,
+) -> None:
+    """
+    The refusal that was always here, and the width it always had.
+
+    A word was refused before this and is refused now. The rest are here
+    because ``int`` would accept them and ``isdigit`` does not: reading the
+    number without still asking that question would quietly make ``1_0`` mean
+    ten, and serve one job's report as though another had been asked for.
+    """
+    for wanted in ("abc", "1_0", "-1", "+1", ""):
+        with pytest.raises(urllib.error.HTTPError) as raised:
+            get(address, f"/api/report/{wanted}")
+
+        assert raised.value.code == 404, f"{wanted!r} was not refused"
+        assert "no saved report" in json.loads(raised.value.read())["error"]
 
 
 def test_a_file_that_is_not_a_report_is_refused_by_name(address: str) -> None:

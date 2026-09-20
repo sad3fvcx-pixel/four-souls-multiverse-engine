@@ -127,8 +127,26 @@ class DeskHandler(GameHandler):
         if path.startswith("/api/report/"):
             wanted = path.rsplit("/", 1)[-1]
 
+            # `isdigit` and `int` disagree about what a number is, and both
+            # halves of the disagreement arrive over HTTP. `"²".isdigit()` is
+            # true and `int("²")` raises; so does a number of more than four
+            # thousand three hundred digits, which `int` refuses by length.
+            # Asking either question alone let the other through to kill the
+            # handler, and a dead handler answers nothing at all — the socket
+            # closes with no status, which is worse than the plain refusal
+            # this path already has for a name that is not a number.
+            #
+            # The condition asks `isdigit` first and keeps it. Not redundant:
+            # it is what says a job is named by digits, and `int` alone would
+            # newly accept `-1`, `+1` and `1_0` — the last of which is ten, so
+            # a report would be served under a name nobody asked for.
+            try:
+                number = int(wanted) if wanted.isdigit() else None
+            except ValueError:
+                number = None
+
             bundle = (
-                self.bench.bundle(int(wanted)) if wanted.isdigit() else None
+                self.bench.bundle(number) if number is not None else None
             )
 
             if bundle is None:
@@ -137,7 +155,12 @@ class DeskHandler(GameHandler):
                 return
 
             body = json.dumps(bundle).encode("utf-8")
-            name = f"fsme-report-{wanted}.json"
+
+            # From the number, not from what was typed. The two differ only in
+            # leading zeros, which no page produces — `watching` is a job's own
+            # integer id — and a header built from an integer cannot carry a
+            # quote, a semicolon or a line ending whatever arrives here later.
+            name = f"fsme-report-{number}.json"
 
             self.send_response(200)
             self.send_header("Content-Type", JSON)
