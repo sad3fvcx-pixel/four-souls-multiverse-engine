@@ -232,7 +232,7 @@ the Constructor.
 | `repeat` with no count runs the body no times | `runtime/interpreter.py` | Contract undecided; 0 uses in the corpus |
 | `card.tags`, `promise.when` shown as raw JSON | §3 | The form does not draw structure it understands |
 | Two modes described identically are accepted | `cards/validator.py` | 0 occurrences in the corpus; the player sees two options they cannot tell apart |
-| Opening a shipped card and saving it regenerates its `id` | §4 | May be intended; needs saying either way |
+| Two `may` nodes under one name are answered together | `runtime/interpreter.py` | 33 `may` nodes in the corpus, 7 name one and none share a name; telling them apart needs the nodes to be identifiable |
 | The bot observer reads a card's spelling | §5 | `fsme.lab.bot` — playtesting advice, not rules |
 | `runtime.py:122` names `_where_it_stands`, a function that has never existed | `runtime/runtime.py` | One word of documentation; the method is `_where_it_works` |
 
