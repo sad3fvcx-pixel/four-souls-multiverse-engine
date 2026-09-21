@@ -23,25 +23,26 @@ Cards are implemented from their printed text, one at a time, with a test each.
 Nothing is guessed: a card whose rules the specifications do not settle is
 recorded as a gap in `PROJECT_PLAN.md` §11.5 rather than invented.
 
-## A turn ended by a card skips its end-of-turn triggers
+## A turn ended by a card does not offer the room change
 
 `COMPREHENSIVE_RULES.md` §3.3 step 1 says an effect that ends a turn jumps
 straight into the end phase, so the "at the end of your turn" effects still
-fire. In the engine a turn ended by a card — or by the death penalty, whose
-last clause ends the active player's turn — goes straight to passing the seat.
-Healing, the revival of whoever died, the expiry of "till end of turn" bonuses
-and the discard down to ten all happen; the `turn_end` triggers do not, and
-neither does the offer to change rooms.
+fire, and that is what the engine does. A turn ended by a card — or by the
+death penalty, whose last clause ends the active player's turn — enters its end
+phase and announces it, and the 16 abilities in the loaded content that answer
+the end of a turn hear one ended that way. Healing, the revival of whoever
+died, the expiry of "till end of turn" bonuses and the discard down to ten
+happen as they always did.
 
-**How often, and what it costs.** 40% of turns end this way rather than by the
-active player saying so — 1123 of 2800 at four players, 761 of 1842 at two.
-The price is much smaller than that number suggests, because most turns have
-nothing waiting on the trigger: across forty four-player games, 66 abilities
-failed to fire, about 1.6 a game. Fifteen cards in the loaded content answer
-the end of a turn, and the ones that came up are mostly "recharge this" — The
-D6, Yum Heart, Blood Lust, Book of Belial — so the visible effect is an item
-staying tapped one turn longer than it should. No room change was missed in
-any measured game.
+What is missing is not one of those steps. The offer to change rooms, a monster
+having died this turn, is `COMPREHENSIVE_RULES.md` §12 rather than §3.3, and it
+is put on the stack in `EndTurnHandler.execute` alone — the path where the
+active player ends their own turn. A turn ended by a card or by the death
+penalty passes the seat without asking.
+
+**How often the end goes unannounced.** 40 turns of 2544 across forty
+four-player games, 1.6%, and exactly one per game: the last turn, which never
+ended because the game did.
 
 This is a gap in how completely the rules are simulated, not a hole in the
 state: nothing is lost, duplicated or left inconsistent, and a game that takes

@@ -284,17 +284,13 @@ elsewhere. This is the largest single gap between FSME and Four Souls, and it is
 a content gap rather than an engine one — see
 [OFFICIAL_CARD_COVERAGE.md](OFFICIAL_CARD_COVERAGE.md).
 
-### A turn ended by a card does not enter the end phase
+### A turn ended by a card does not offer the room change
 
-§3.3 step 1 says an effect that ends a turn jumps straight into the end phase,
-so the "at the end of your turn" abilities still fire. The engine puts the
-turn-advancing object on the stack instead: healing, revival, the expiry of
-"till end of turn" bonuses and the discard down to ten all happen, and the
-`turn_end` triggers do not.
-
-40% of turns end this way. The cost is much smaller than that: about 1.6
-abilities a game fail to fire at four players, nearly all of them "recharge
-this", and no room change was missed in any measured game.
+A turn ended by a card, or by the death penalty, enters its end phase and
+announces it, so the abilities that answer the end of a turn fire — §3.3 step 1.
+The offer to change rooms is not one of those steps: it is §12, and it is
+pushed in `EndTurnHandler.execute` alone, the path where the active player ends
+their own turn.
 
 A gap in how completely the rules are simulated, not a hole in the state:
 nothing is lost or left inconsistent, and such a game replays like any other.
@@ -326,9 +322,9 @@ nothing was invented. Five cases in 120 games, always `Lost Soul`. See
 Not promises, and not scheduled — the shape of what is left, so that "Core
 Stable" is not read as "finished".
 
-**Rules completeness.** The turn ended by an effect should enter the end phase.
-A destroyed soul card should have somewhere to go. Both are written up in
-`PROJECT_PLAN.md` §11.5 with what blocks them; neither is a hole in the state.
+**Rules completeness.** A destroyed soul card should have somewhere to go. It is
+written up in `PROJECT_PLAN.md` §11.5 with what blocks it; it is not a hole in
+the state.
 
 **Content.** 352 of 1045 known cards have working rules, and 166 of 287
 treasures carry none the engine can read. This is the largest gap between FSME
