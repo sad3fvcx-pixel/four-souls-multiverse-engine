@@ -498,3 +498,200 @@ def test_the_turn_ending_is_recognised_by_the_stack_and_not_by_a_card() -> None:
 
     assert runtime.context.apply("end_turn", []) == 0
     assert _scheduled(state) == [ADVANCE_TURN]
+
+
+def _announcements(runtime) -> list[str]:
+    """
+    Every turn-ending announcement, in the order the engine made them.
+    """
+    said: list[str] = []
+
+    for event_type in (EventType.TURN_END, EventType.TURN_CLEANUP):
+        runtime.subscribe(
+            event_type,
+            lambda event, name=str(event_type): said.append(name),
+        )
+
+    return said
+
+
+def test_a_turn_ended_by_a_card_enters_its_end_phase() -> None:
+    """
+    §3.3 step 1: an effect that ends a turn jumps straight into the end phase.
+
+    It used to jump straight to passing the seat instead, so the phase never
+    became `end` and nothing announced the turn's end. Measured before this was
+    written: 1072 of 2693 turns across forty four-player games, two turns in
+    five, ended with no `turn_end` at all.
+    """
+    runtime, state = make_game()
+    start(runtime)
+
+    said = _announcements(runtime)
+
+    runtime.context.apply("end_turn", [])
+
+    assert state.turn.phase is GamePhase.END, "on the way in, before anything resolves"
+
+    runtime.run()
+
+    assert said == [str(EventType.TURN_END), str(EventType.TURN_CLEANUP)]
+
+
+def test_a_card_answering_the_end_of_a_turn_hears_one_ended_by_a_card() -> None:
+    """
+    The whole point of the announcement: sixteen shipped cards say "at the end
+    of your turn", and a turn ended this way never reached them.
+    """
+    runtime, state = make_game()
+
+    state.player(0).treasures.add_top(
+        make_instance(
+            make_definition(
+                "test.last_word",
+                name="Last Word",
+                card_type=CardType.TREASURE,
+                abilities=(
+                    Ability(
+                        trigger="turn_end",
+                        effects=({"effect": "gain_coins", "amount": 7},),
+                    ),
+                ),
+            ),
+            controller=0,
+            owner=0,
+            instance_id="instance:last_word",
+        )
+    )
+
+    start(runtime)
+
+    before = state.player(0).pennies
+
+    runtime.context.apply("end_turn", [])
+    runtime.run()
+
+    assert state.player(0).pennies == before + 7
+
+
+def test_the_end_of_a_turn_is_announced_once_however_often_it_is_ended() -> None:
+    """
+    The phase is the record that the end has been announced.
+
+    A card may answer the end of the turn by cancelling the ending and ending it
+    again — "Parting Shot" below is that card — and announcing the end afresh
+    each time calls it again, unbounded, until the engine stops itself. The
+    scheduling still asks the stack, so a cancelled ending is still
+    rescheduled; only the announcement is once.
+    """
+    runtime, state = make_game()
+    _ends_the_turn(
+        state,
+        (
+            {"effect": "cancel_stack", "target": "doomed"},
+            {"effect": "end_turn"},
+        ),
+        targets=({"all_stack": {"as": "doomed"}},),
+    )
+    start(runtime)
+
+    said = _announcements(runtime)
+
+    end_turn(runtime, 0)
+
+    assert said.count(str(EventType.TURN_END)) == 1
+    assert state.turn.turn_number == 2, "and the seat still passed"
+
+
+def test_a_turn_the_player_ends_is_announced_by_the_handler_alone() -> None:
+    """
+    The other path is untouched: it announces its own end exactly once, and the
+    effect no longer adds a second announcement on top of it.
+    """
+    runtime, state = make_game()
+    start(runtime)
+
+    said = _announcements(runtime)
+
+    end_turn(runtime, 0)
+
+    assert said.count(str(EventType.TURN_END)) == 1
+    assert said.count(str(EventType.TURN_CLEANUP)) == 1
+
+
+def end_phase(runtime, player):
+    return runtime.submit(Command(type=CommandType.END_PHASE, player=player))
+
+
+def _owes_an_attack(runtime) -> None:
+    """
+    Put an unpaid "must attack" debt on the active player.
+
+    Everything a debt needs to be payable is true here — the player is alive
+    and able to attack, and there is a monster on the board to attack — so the
+    only thing left to decide the answer is the phase.
+    """
+    runtime.context.apply("require_attack", [], times=1)
+
+
+def test_a_debt_incurred_in_the_end_phase_does_not_hold_the_turn_open() -> None:
+    """
+    A debt nobody can pay is not a debt, and the end phase is where attacking
+    stops: there is no attack left in the turn to pay with, and a turn does not
+    go back to its action phase.
+
+    Left as it was, the game stopped. The debt refused to let the turn end, the
+    phase could not be ended either because it was already the last one, and
+    no attack was offered to pay with: two of sixty seeded two-player games
+    reached that dead end and had no move at all.
+    """
+    runtime, state = make_game()
+    start(runtime)
+
+    assert end_phase(runtime, 0).accepted, "the loot phase ends"
+    assert end_phase(runtime, 0).accepted, "and so does the action phase"
+    assert state.turn.phase is GamePhase.END
+
+    _owes_an_attack(runtime)
+
+    assert state.turn.obligations, "the debt is still recorded"
+    assert end_turn(runtime, 0).accepted
+    assert state.turn.turn_number == 2, "and the seat passed"
+
+
+def test_a_debt_still_holds_the_turn_open_where_it_can_be_paid() -> None:
+    """
+    The other side of it: in the action phase the debt bites, as it always has.
+    """
+    runtime, state = make_game()
+    start(runtime)
+
+    assert end_phase(runtime, 0).accepted
+    assert state.turn.phase is GamePhase.ACTION
+
+    _owes_an_attack(runtime)
+
+    refused = end_turn(runtime, 0)
+
+    assert not refused.accepted
+    assert "must still attack" in str(refused.reason)
+    assert not end_phase(runtime, 0).accepted, "nor may the player leave the phase"
+
+
+def test_a_debt_owed_before_the_action_phase_still_holds_the_turn_open() -> None:
+    """
+    The narrowing is to the end phase alone, not to "anywhere but the action
+    phase": a turn in its loot phase is still going to reach its action phase,
+    so the debt there is one the player can still pay.
+    """
+    runtime, state = make_game()
+    start(runtime)
+
+    assert state.turn.phase is GamePhase.LOOT
+
+    _owes_an_attack(runtime)
+
+    refused = end_turn(runtime, 0)
+
+    assert not refused.accepted
+    assert "must still attack" in str(refused.reason)

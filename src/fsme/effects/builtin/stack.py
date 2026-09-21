@@ -22,6 +22,7 @@ from fsme.stack import (
     StackItem,
     StackItemType,
 )
+from fsme.state import GamePhase
 
 from ..context import EffectContext
 from ..errors import EffectExecutionError
@@ -79,10 +80,10 @@ def end_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
     that ended, and a player who walks away from one holding twelve cards is
     holding two cards the rules do not let them keep.
 
-    What this does *not* do is run step 1: a turn ended this way never fires
-    the "at the end of your turn" triggers, because it never reached the end
-    phase to fire them in. That is a wider gap than this function and is
-    recorded rather than papered over here.
+    Step 1 runs too: the turn enters its end phase and the effects answering
+    the end of a turn are announced, which is what §3.3 step 1 asks for. What
+    is still missing is the offer to change rooms — that is §12 rather than
+    §3.3, and it stays outside this function for now.
 
     A turn that is already ending is not ended twice, and what knows whether it
     is already ending is the stack: the turn-advancing object is either waiting
@@ -115,6 +116,39 @@ def end_turn(ctx: EffectContext, targets: Sequence[Any], **_: Any) -> int:
         # Nothing was done, and the count says so: the turn is ending because
         # something else already arranged it, not because of this.
         return 0
+
+    # §3.3 step 1: the turn enters its end phase, and the effects that answer
+    # the end of a turn are announced there. A turn ended this way used to skip
+    # straight to passing the seat, so sixteen cards that say "at the end of
+    # your turn" never heard it — measured at 1072 of 2693 turns across forty
+    # four-player games, or two turns in five.
+    #
+    # Announced before the work below is pushed, and that is what puts the
+    # abilities above it: `emit` only queues, so the loop gathers them after
+    # this returns and they go on top of what is already there. They resolve
+    # while it is still this player's turn, which is where the rules put them.
+    # Announced on the way in, and only then. The phase is the record that the
+    # end has been announced: it lives on the turn, it is saved with the game,
+    # and `reset_for_new_turn` clears it — so no new flag is needed and none
+    # could be more truthful than the phase itself.
+    #
+    # Announcing it every time instead is a loop. A card may answer the end of
+    # the turn by cancelling the ending and ending it again — the test card
+    # "Parting Shot" is exactly that — and a fresh announcement each time calls
+    # it again, unbounded, until the engine stops itself. The scheduling below
+    # still asks the stack rather than a memory, which is what keeps a cancelled
+    # ending recoverable; those are two different questions and this is the one
+    # the phase answers.
+    if not ctx.state.turn.phase.is_end:
+        ctx.state.turn.phase = GamePhase.END
+
+        ctx.emit(
+            EventType.PHASE_CHANGED,
+            controller=seat,
+            phase=str(GamePhase.END),
+        )
+        ctx.emit(EventType.TURN_END, controller=seat)
+        ctx.emit(EventType.TURN_CLEANUP, controller=seat)
 
     # Pushed first, so it resolves last: the seat only passes once the hand
     # has been trimmed.

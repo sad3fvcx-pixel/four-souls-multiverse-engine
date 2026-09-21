@@ -41,6 +41,20 @@ def _payable(state: GameState, obligation: Obligation) -> bool:
     if obligation.action != ATTACK:
         return False
 
+    if state.turn.phase.is_end:
+        # There is no attack left in the turn to pay with: the end phase is
+        # where attacking stops (`rules/combat.py` refuses one, and the list of
+        # offered moves does not hold one), and a turn does not go back to its
+        # action phase. So the debt is unpayable here for the same reason a
+        # debt owed to an empty monster deck is, and the answer belongs in the
+        # same place rather than beside the two handlers that ask.
+        #
+        # Without this the game stops: the debt blocks the turn from ending,
+        # the phase cannot be ended either because it is already the last one,
+        # and nothing is offered to pay with. Measured on two of sixty seeded
+        # two-player games before this was written.
+        return False
+
     player = state.player(obligation.player_id)
 
     if not player.alive or not player.can_attack():

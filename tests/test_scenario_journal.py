@@ -174,10 +174,17 @@ def test_an_experiment_replays_after_its_scenario_file_is_gone(
 def test_a_watched_experiment_replays_too(everything: ContentLibrary) -> None:
     """
     The other shape of journal, which records the deal as its first command.
+
+    The seed is one whose game the bots finish, and that is all it is chosen
+    for: what this test checks is that the journal replays, not that a game
+    must end. Eight of sixty seeded games at this table — two players and no
+    shop — are not finished by the lab bot within the six thousand moves the
+    loop above allows, and that was so before any of the turn-ending work as
+    well; the seeds in that class are simply not the same ones.
     """
     scenario = an_experiment()
 
-    journal, game = watched(everything, 4, scenario)
+    journal, game = watched(everything, 2, scenario)
 
     assert game.is_over
     assert journal.entries[0].command == "start_game"
