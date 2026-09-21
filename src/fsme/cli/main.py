@@ -35,13 +35,33 @@ VERSION = __version__
 def seats_of(given: str) -> tuple[int, ...]:
     """
     Read a comma-separated list of seats.
+
+    Anything that is not a seat number is ignored, which is what `abc` and `-1`
+    have always got. `isdigit` and `int` do not agree on what a number is, and
+    a command line carries the whole of that disagreement: argv is decoded as
+    UTF-8, so every digit in Unicode arrives, and `int` refuses a hundred and
+    twenty-eight of them — a superscript two among them — as well as any number
+    of more than four thousand three hundred digits. Asking `isdigit` alone let
+    those reach a `ValueError` nothing catches, and `main` does not catch it
+    either: the person got a traceback and an exit code of one where every
+    other mistake in this command line is a plain sentence and an exit code of
+    two. They are ignored now, the same as any other part that is not a seat.
     """
     if not given.strip():
         return ()
 
-    return tuple(
-        int(part) for part in given.replace(" ", "").split(",") if part.isdigit()
-    )
+    seats: list[int] = []
+
+    for part in given.replace(" ", "").split(","):
+        if not part.isdigit():
+            continue
+
+        try:
+            seats.append(int(part))
+        except ValueError:
+            continue
+
+    return tuple(seats)
 
 
 def content_root(given: str | None) -> Path:

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from fsme.cli.main import content_root, main
+from fsme.cli.main import content_root, main, seats_of
 
 # ``fsme.cli`` re-exports ``main`` the function, which shadows ``main`` the
 # module on the package, so the module is taken from the import table instead.
@@ -197,3 +197,76 @@ def test_a_report_can_skip_the_replay(
 
     assert "FSME GAME REPORT" in told
     assert "The decisions" not in told
+
+
+def test_a_seat_list_is_read_as_numbers() -> None:
+    assert seats_of("2") == (2,)
+    assert seats_of("0,1") == (0, 1)
+    assert seats_of("0, 1") == (0, 1), "spaces are for the person typing it"
+
+
+def test_no_seats_asked_for_is_no_seats() -> None:
+    assert seats_of("") == ()
+    assert seats_of("   ") == ()
+
+
+def test_a_seat_that_is_not_a_number_is_ignored() -> None:
+    """
+    The width this has always had, and must keep.
+
+    A part that is not a seat is dropped rather than refused, and the rest of
+    the list is still read. `-1`, `+1` and `1_0` are here because `int` would
+    take all three — the last of them as ten — and `isdigit` is what keeps them
+    out.
+    """
+    for given in ("abc", "1_0", "-1", "+1"):
+        assert seats_of(given) == (), given
+
+    assert seats_of("0,abc,1") == (0, 1)
+
+
+def test_a_digit_that_is_not_a_number_is_ignored() -> None:
+    """
+    ``isdigit`` says yes and ``int`` says no, and a seat list has to survive it.
+
+    A superscript two and an Ethiopic one are digits to ``str.isdigit`` and not
+    numbers to ``int``. They reached a `ValueError` nothing caught, and the
+    person got a traceback where a mistake on this command line is a sentence.
+    """
+    assert seats_of("²") == ()
+    assert seats_of("፩") == ()
+    assert seats_of("0,²") == (0,), "and the seats beside it are still read"
+
+
+def test_a_seat_too_long_to_be_a_number_is_ignored() -> None:
+    """
+    Python will not read an integer of more than 4300 digits out of a string.
+    """
+    assert seats_of("1" * 4301) == ()
+    assert seats_of("0," + "1" * 4301) == (0,)
+
+
+def test_a_seat_written_in_another_script_is_still_a_number() -> None:
+    """
+    Pinned as it stands, not as an opinion about what it should be.
+
+    An Arabic-Indic three is a digit to ``str.isdigit`` and three to ``int``, so
+    it has always named seat three and still does. Narrowing that would be a
+    decision about what this command line accepts, and it has not been taken.
+    """
+    assert seats_of("٣") == (3,)
+
+
+def test_a_seat_the_command_line_cannot_read_does_not_end_in_a_traceback(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """
+    Every other mistake here is a sentence and an exit code; this was neither.
+
+    `--bot-seats ²` left `ValueError` to climb out of `main`, which catches four
+    other complaints and not that one: a traceback, and an exit code of one
+    where argparse and every caught error answer two.
+    """
+    assert main(["play", "--seed", "3", "--players", "2", "--bot-seats", "²"]) == 0
+
+    assert "won" in capsys.readouterr().out
