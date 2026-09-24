@@ -239,8 +239,11 @@ def _dangers(dangers: Risks | None, *, width: int) -> Iterator[str]:
     yield ""
 
     if not dangers.faithful:
-        yield "  The replay diverged from the journal: the engine has changed"
-        yield "  under this game, and nothing below is about it."
+        # Not "the engine has changed": a divergence says the replay came out
+        # differently and nothing about why, and this account is never handed
+        # the journal that would say which engine played it.
+        yield "  The replay diverged from the journal, and nothing below is about"
+        yield "  this game."
         yield ""
 
         return

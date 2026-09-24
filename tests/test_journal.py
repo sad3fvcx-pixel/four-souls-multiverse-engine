@@ -500,3 +500,191 @@ def test_an_event_says_which_player_it_is_about(
         "this game never resolved an attack on somebody else's command, so it "
         "does not test what it is here to test"
     )
+
+
+# ----------------------------------------------------------------------
+# Which engines a diverging replay was between
+# ----------------------------------------------------------------------
+
+
+def _written(everything: ContentLibrary, **changed: Any) -> dict[str, Any]:
+    """
+    A kept journal as the file would hold it, with some header fields changed.
+
+    A value of ``None`` removes the field, the way a journal written before it
+    existed would lack it.
+    """
+    data = scripted(everything, seed=7, steps=120).journal.to_dict()
+
+    for key, value in changed.items():
+        if value is None:
+            data.pop(key, None)
+        else:
+            data[key] = value
+
+    return data
+
+
+def _spoiled(data: dict[str, Any], at: int = 5) -> Journal:
+    """
+    The journal with one recorded fingerprint made wrong, so it diverges there.
+    """
+    data["entries"][at]["digest"] = "not the fingerprint this command produced"
+
+    return Journal.from_dict(data)
+
+
+def _refused(data: dict[str, Any]) -> Journal:
+    """
+    The journal with one command handed to a player who may not give it.
+    """
+    for entry in data["entries"]:
+        if entry["command"] in ("end_phase", "end_turn"):
+            entry["player"] = (int(entry["player"]) + 1) % len(data["players"])
+
+            return Journal.from_dict(data)
+
+    raise AssertionError("no command in this game that only the active player gives")
+
+
+def test_a_faithful_replay_says_nothing_about_engines(
+    everything: ContentLibrary,
+) -> None:
+    playback = replay_journal(Journal.from_dict(_written(everything)), everything)
+
+    assert playback.faithful
+    assert playback.divergence is None
+
+
+def test_a_divergence_between_two_releases_names_both(
+    everything: ContentLibrary,
+) -> None:
+    import fsme
+
+    said = str(
+        replay_journal(_spoiled(_written(everything, engine="0.9.0")), everything)
+        .divergence
+    )
+
+    assert "left the game in a different state" in said, "the fact still comes first"
+    assert "'0.9.0'" in said
+    assert repr(fsme.__version__) in said
+
+
+def test_equal_releases_are_named_and_not_taken_for_the_same_engine(
+    everything: ContentLibrary,
+) -> None:
+    """
+    A release number is written once per release, and the rules change between
+    commits that both carry it — C1 changed 998 games in 1000 inside 0.10.0.
+    """
+    import fsme
+
+    said = str(
+        replay_journal(
+            _spoiled(_written(everything, engine=fsme.__version__)), everything
+        ).divergence
+    )
+
+    assert "does not show that the two are the same" in said
+    assert "changed" not in said
+    assert "played by engine" not in said
+
+
+def test_a_journal_that_names_no_engine_is_not_called_a_different_one(
+    everything: ContentLibrary,
+) -> None:
+    journal = _spoiled(_written(everything, engine=None))
+
+    assert journal.engine_version == "", "a journal without the field still reads"
+
+    said = str(replay_journal(journal, everything).divergence)
+
+    assert "the journal does not say which engine played it" in said
+    assert "played by engine" not in said
+
+
+def test_a_journal_of_format_one_without_an_engine_still_replays(
+    everything: ContentLibrary,
+) -> None:
+    journal = Journal.from_dict(
+        _written(
+            everything,
+            format="1",
+            engine=None,
+            scenario_digest=None,
+            interactive_priority=None,
+        )
+    )
+
+    assert journal.engine_version == ""
+
+    playback = replay_journal(journal, everything)
+
+    assert playback.faithful, str(playback.divergence)
+
+
+@pytest.mark.parametrize(
+    ("written", "shown"),
+    [
+        (None, "'None'"),
+        (7, "'7'"),
+        ("banana", "'banana'"),
+        ("0.9.0\nforged line", "'0.9.0\\nforged line'"),
+        ("\x1b[31mred", "'\\x1b[31mred'"),
+    ],
+    ids=["null", "number", "text", "line break", "control character"],
+)
+def test_an_engine_field_that_is_not_a_release_neither_breaks_nor_counts(
+    everything: ContentLibrary, written: Any, shown: str
+) -> None:
+    """
+    The field is data from a file. JSON ``null`` reads back as the text
+    ``None``, and whatever it holds is quoted rather than printed, so it can
+    neither end the line it sits in nor pass for a release number.
+    """
+    data = _written(everything)
+    data["engine"] = written
+    said = str(replay_journal(_spoiled(data), everything).divergence)
+
+    assert "\n" not in said
+    assert "\x1b" not in said
+    assert shown in said
+    assert "which is not a release number" in said
+    assert "played by engine" not in said
+
+
+def test_a_refusal_keeps_its_reason_and_gains_the_engines(
+    everything: ContentLibrary,
+) -> None:
+    divergence = replay_journal(
+        _refused(_written(everything, engine="0.9.0")), everything
+    ).divergence
+
+    assert divergence is not None
+    assert divergence.found == "rejected"
+
+    said = str(divergence)
+
+    assert "the engine now refuses it: only the active player" in said
+    assert said.index("refuses it") < said.index("'0.9.0'"), "the refusal first"
+
+
+def test_a_note_about_the_content_is_kept_on_both_kinds_of_divergence(
+    everything: ContentLibrary,
+) -> None:
+    """
+    It used to be kept only when a fingerprint disagreed. A refused command
+    replaced it with the refusal, and the reader lost the likelier cause.
+    """
+    other = "base_game@0.0.1"
+
+    for journal in (
+        _spoiled(_written(everything, content=other)),
+        _refused(_written(everything, content=other)),
+    ):
+        said = str(replay_journal(journal, everything).divergence)
+
+        assert "the content is not what this was played against" in said
+        assert other in said
+        assert "this engine" in said

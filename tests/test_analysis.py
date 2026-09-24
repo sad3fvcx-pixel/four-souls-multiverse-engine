@@ -527,3 +527,18 @@ def test_the_squares_survive_being_added_up_across_processes() -> None:
     assert halves.spread_of(halves.turns, halves.turns_squared) == whole.spread_of(
         whole.turns, whole.turns_squared
     )
+
+
+def test_an_account_of_a_diverged_replay_does_not_blame_the_engine(
+    a_game: GameSummary,
+) -> None:
+    """
+    This account is never handed the journal, so it cannot know which engine
+    played the game, and a divergence alone does not say the engine changed.
+    """
+    from fsme.lab.analysis.risk import Risks
+
+    told = explain(a_game, dangers=Risks(seed=a_game.seed, faithful=False))
+
+    assert "The replay diverged from the journal" in told
+    assert "has changed" not in told

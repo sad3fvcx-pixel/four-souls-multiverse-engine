@@ -29,12 +29,15 @@ tell which — so they cannot, because they read the same objects.
 
 from __future__ import annotations
 
+import textwrap
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from typing import Any
 
+from fsme import __version__
 from fsme.content import ContentLibrary
 from fsme.journal import Journal
+from fsme.replay.player import which_engines
 
 from .moments import Contribution, Turning, turning_points
 from .risk import Risks, Risky, risks
@@ -64,6 +67,13 @@ class Review:
 
     names: dict[str, str] = field(default_factory=dict)
     """Card identifiers to printed names, when the content was to hand."""
+
+    engine: str = ""
+    """
+    The engine the journal says it was played by, for saying so if the replay
+    behind the decisions came out differently. Read like ``names``: it shapes
+    the text, and is not part of what the report records.
+    """
 
     @property
     def winner(self) -> SeatFacts | None:
@@ -108,6 +118,7 @@ def review(
                 for definition in library.definitions()
             }
         ),
+        engine=journal.engine_version,
     )
 
 
@@ -154,6 +165,17 @@ def _souls_of(seat: SeatFacts) -> str:
         f"{count} from {SOUL_WORDS.get(kind, kind)}"
         for kind, count in sorted(seat.souls_from.items())
     )
+
+
+def _wrapped(text: str, *, width: int) -> Iterator[str]:
+    """
+    A sentence of unknown length, indented and broken to the report's width.
+
+    Only for text built from something the report did not write — here, what a
+    journal says about its engine — where no line break can be placed by hand.
+    """
+    for line in textwrap.wrap(text, width=max(20, width - 2)):
+        yield f"  {line}"
 
 
 def _heading(title: str, *, width: int) -> Iterator[str]:
@@ -349,8 +371,17 @@ def _decisions(report: Review, *, width: int) -> Iterator[str]:
     yield from _heading("The decisions", width=width)
 
     if not dangers.faithful:
+        # Not "the engine has changed": a divergence says the replay came out
+        # differently and nothing about why. What is known about the engines is
+        # said as exactly that.
         yield "  The replay diverged from the journal, so nothing here is about"
-        yield "  this game. The engine has changed under it."
+        yield "  this game."
+
+        engines = which_engines(report.engine, __version__)
+
+        if engines:
+            yield from _wrapped(f"{engines[0].upper()}{engines[1:]}.", width=width)
+
         yield ""
 
         return

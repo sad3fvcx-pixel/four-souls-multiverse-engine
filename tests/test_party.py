@@ -145,3 +145,78 @@ def test_a_good_decision_needs_a_worse_one_to_have_been_available(
         assert risk.margin > 0
         assert risk.regret == 0
         assert risk.considered > 1
+
+
+def _diverged(report: Review, engine: str) -> str:
+    """
+    The report as it reads when the replay behind the decisions came apart.
+    """
+    import dataclasses
+
+    from fsme.lab.analysis.risk import Risks
+
+    return reviewed(
+        dataclasses.replace(
+            report,
+            dangers=Risks(seed=report.summary.seed, faithful=False),
+            engine=engine,
+        )
+    )
+
+
+def _flat(told: str) -> str:
+    """
+    The page with its line breaks and indentation folded, for finding a phrase
+    the report wrapped.
+    """
+    return " ".join(told.split())
+
+
+def test_the_report_takes_the_engine_from_the_journal(
+    a_journal: Journal, a_report: Review
+) -> None:
+    assert a_report.engine == a_journal.engine_version
+    assert "engine" not in a_report.to_dict(), "it shapes the text, it is not a finding"
+
+
+def test_a_diverged_replay_does_not_blame_the_engine_on_its_own_say(
+    a_report: Review,
+) -> None:
+    """
+    A divergence says the replay came out differently, and nothing about why.
+    """
+    import fsme
+
+    told = _diverged(a_report, fsme.__version__)
+
+    assert "The replay diverged from the journal" in told
+    assert "has changed" not in told
+    assert "does not show that the two are the same" in _flat(told)
+
+
+def test_a_diverged_replay_names_two_different_releases(a_report: Review) -> None:
+    import fsme
+
+    told = _diverged(a_report, "0.9.0")
+
+    assert "'0.9.0'" in told
+    assert repr(fsme.__version__) in told
+    assert "has changed" not in told
+
+
+def test_a_diverged_replay_with_no_engine_named_claims_no_difference(
+    a_report: Review,
+) -> None:
+    told = _diverged(a_report, "")
+
+    assert "does not say which engine played it" in _flat(told)
+    assert "played by engine" not in told
+
+
+def test_an_engine_that_is_not_a_release_cannot_break_the_page(
+    a_report: Review,
+) -> None:
+    told = _diverged(a_report, "0.9.0\nFORGED HEADING\n" + "x" * 200)
+
+    assert "\nFORGED HEADING" not in told
+    assert all(len(line) <= 78 for line in told.splitlines()), "wrapped to the page"

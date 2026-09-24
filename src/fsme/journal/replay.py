@@ -18,13 +18,23 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from fsme import __version__
 from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary
 from fsme.game import Game
 from fsme.replay import state_digest
+from fsme.replay.player import which_engines
 from fsme.scenario import Scenario, parse
 
 from .entry import Journal
+
+_ANOTHER_GAME = (
+    "left the game in a different state than it did when the journal was kept"
+)
+"""
+What a digest divergence is, in words. Said on its own when there is nothing
+to add, and first when there is, so the fact is never replaced by its context.
+"""
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,10 +56,7 @@ class Divergence:
         if self.reason:
             return f"entry {self.index} ({self.command}): {self.reason}"
 
-        return (
-            f"entry {self.index} ({self.command}) left the game in a different "
-            f"state than it did when the journal was kept"
-        )
+        return f"entry {self.index} ({self.command}) {_ANOTHER_GAME}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,6 +123,7 @@ def replay_journal(
         interactive_priority = how_it_was_played(journal)
 
     content = why_the_content_differs(journal, library)
+    engine = why_the_engine_differs(journal)
 
     game = Game.from_content(
         library,
@@ -148,7 +156,9 @@ def replay_journal(
                     player=entry.player,
                     expected="accepted",
                     found="rejected",
-                    reason=f"the engine now refuses it: {result.reason}",
+                    reason=_because(
+                        f"the engine now refuses it: {result.reason}", content, engine
+                    ),
                 ),
             )
 
@@ -166,7 +176,11 @@ def replay_journal(
                     player=entry.player,
                     expected=entry.digest,
                     found=found,
-                    reason=content,
+                    reason=(
+                        _because(f"it {_ANOTHER_GAME}", content, engine)
+                        if content or engine
+                        else ""
+                    ),
                 ),
             )
 
@@ -208,6 +222,35 @@ def why_the_content_differs(journal: Journal, library: ContentLibrary) -> str:
         f"the content is not what this was played against — "
         f"the journal says {written}, this library is {here}"
     )
+
+
+def why_the_engine_differs(journal: Journal) -> str:
+    """
+    What to say about the engine if this replay comes out differently.
+
+    The same question as the content one above and answered in the same
+    spirit, with one difference that follows from what a release number is.
+    Content has an identity per set, so two that agree say nothing; a release
+    number is written once per release, and a replay that diverges between two
+    builds carrying the same one is exactly the case somebody is looking at
+    when they read this. So equal numbers are named rather than left out, and
+    named as proving nothing — see ``which_engines``, which both replay paths
+    share so that they cannot come to say different things.
+
+    The number is the journal's own ``engine`` field, read as it was written.
+    """
+    return which_engines(journal.engine_version, __version__)
+
+
+def _because(*said: str) -> str:
+    """
+    One reason out of several, leaving out the ones with nothing to say.
+
+    ``Divergence.reason`` is a single string, and a refusal, a content note and
+    an engine note can all be true of the same entry. They go in that order —
+    what happened first, then what might explain it — and none replaces another.
+    """
+    return "; ".join(part for part in said if part)
 
 
 def deals_itself(journal: Journal) -> bool:

@@ -272,6 +272,14 @@ class Journal:
     characters: tuple[str, ...] = ()
 
     engine_version: str = ""
+    """
+    The release of FSME that played this game, as the keeper stamped it.
+
+    Empty in a journal written before anything filled it in. Read back as a
+    string whatever the file held, so it is data rather than a version until
+    something checks: a replay that diverges names it, and does not treat two
+    equal release numbers as proof that the engines were the same.
+    """
 
     content_version: str = ""
     """

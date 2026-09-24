@@ -266,3 +266,68 @@ def test_a_different_seed_produces_a_different_game() -> None:
 
     with pytest.raises(ReplayDivergence):
         replay(other, build_state)
+
+
+def _poisoned(engine_version: str) -> Recording:
+    """
+    A recording that diverges at command 3, stamped with the given engine.
+    """
+    _, recording = record_a_game()
+
+    commands = list(recording.commands)
+    poisoned = commands[3]
+    commands[3] = type(poisoned)(
+        type=poisoned.type,
+        player=poisoned.player,
+        payload=poisoned.payload,
+        digest="0" * 32,
+    )
+
+    return Recording(
+        seed=recording.seed,
+        commands=tuple(commands),
+        engine_version=engine_version,
+    ).sealed()
+
+
+def test_a_divergence_between_two_releases_names_both() -> None:
+    import fsme
+
+    with pytest.raises(ReplayDivergence) as error:
+        replay(_poisoned("0.9.0"), build_state)
+
+    said = str(error.value)
+
+    assert "command 3" in said, "the command still comes first"
+    assert "'0.9.0'" in said
+    assert repr(fsme.__version__) in said
+
+
+def test_equal_releases_are_not_taken_for_the_same_engine() -> None:
+    import fsme
+
+    with pytest.raises(ReplayDivergence) as error:
+        replay(_poisoned(fsme.__version__), build_state)
+
+    said = str(error.value)
+
+    assert "does not show that the two are the same" in said
+    assert "changed" not in said
+
+
+def test_a_recording_engine_that_is_not_a_release_is_quoted_not_believed() -> None:
+    with pytest.raises(ReplayDivergence) as error:
+        replay(_poisoned("0.9.0\nforged line"), build_state)
+
+    said = str(error.value)
+
+    assert "\n" not in said
+    assert "which is not a release number" in said
+    assert "played by engine" not in said
+
+
+def test_nothing_is_said_about_engines_when_neither_names_one() -> None:
+    from fsme.replay.player import which_engines
+
+    assert which_engines("", "") == ""
+    assert which_engines(None, None) == ""
