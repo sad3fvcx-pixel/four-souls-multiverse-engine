@@ -470,6 +470,145 @@ def test_a_yes_or_no_the_save_does_not_hold_keeps_its_default(
     assert FLAGS[where][2](state) is default
 
 
+def edited(saved: dict[str, Any], path: tuple[Any, ...], value: Any) -> dict[str, Any]:
+    """
+    A copy of the save with the value at one path replaced, or taken out.
+    """
+    data = dict(json.loads(json.dumps(saved)))
+    holder: Any = data
+
+    for key in path[:-1]:
+        holder = holder[key]
+
+    if value is MISSING:
+        del holder[path[-1]]
+    else:
+        holder[path[-1]] = value
+
+    return data
+
+
+def with_a_modifier(saved: dict[str, Any], amount: Any) -> dict[str, Any]:
+    """
+    The save with one temporary modifier written into it, taking one away.
+    """
+    data = dict(json.loads(json.dumps(saved)))
+
+    data["modifiers"] = [{"stat": "attack", "amount": amount, "player_id": 0}]
+
+    return data
+
+
+# A whole number at three depths: the game, a player, and a modifier inside a
+# list - which is also where a number below zero is an ordinary thing to hold.
+NUMBERS: dict[str, tuple[tuple[Any, ...], Any]] = {
+    "souls to win": (("souls_to_win",), lambda state: state.souls_to_win),
+    "a player's pennies": (
+        ("players", 0, "pennies"),
+        lambda state: state.players[0].pennies,
+    ),
+    "a modifier's amount": (
+        ("modifiers", 0, "amount"),
+        lambda state: state.modifiers[0].amount,
+    ),
+}
+
+
+def numbered(saved: dict[str, Any], where: str, value: Any) -> dict[str, Any]:
+    path, _ = NUMBERS[where]
+
+    return edited(with_a_modifier(saved, -1), path, value)
+
+
+@pytest.mark.parametrize("where", NUMBERS)
+@pytest.mark.parametrize(
+    "value", (3.0, 3.7, True, False, "3", "", "abc", None, [], {})
+)
+def test_a_whole_number_that_is_not_one_is_refused(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    where: str,
+    value: Any,
+) -> None:
+    """
+    Read as Python reads it, 3.7 is quietly 3, "3" is 3 and true is 1. The
+    writer only ever puts a whole number in these places.
+    """
+    with pytest.raises(SaveError, match="can only be a whole number"):
+        Game.load(numbered(a_saved_game, where, value), everything)
+
+
+@pytest.mark.parametrize("where", NUMBERS)
+@pytest.mark.parametrize("value", (5, 0, -3))
+def test_a_whole_number_is_read_as_written_whatever_its_sign(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    where: str,
+    value: int,
+) -> None:
+    """
+    Only the type is asked about. Whether a number makes sense for its field is
+    a question about the game, and a modifier that takes one away is ordinary.
+    """
+    state = Game.load(numbered(a_saved_game, where, value), everything).state
+
+    assert NUMBERS[where][1](state) == value
+
+
+@pytest.mark.parametrize(
+    ("path", "default", "read"),
+    (
+        (("souls_to_win",), 4, lambda state: state.souls_to_win),
+        (("players", 0, "pennies"), 0, lambda state: state.players[0].pennies),
+        (("turn", "turn_number"), 1, lambda state: state.turn.turn_number),
+    ),
+)
+def test_a_whole_number_the_save_does_not_hold_keeps_its_default(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    path: tuple[Any, ...],
+    default: int,
+    read: Any,
+) -> None:
+    state = Game.load(edited(a_saved_game, path, MISSING), everything).state
+
+    assert read(state) == default
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "said"),
+    (
+        (("seed",), "abc", "whole number"),
+        (("players", 0, "player_id"), MISSING, "missing 'player_id'"),
+        (("modifiers", 0, "stat"), MISSING, "missing 'stat'"),
+        (("zones",), [], "should be an object"),
+        (("players",), "abc", "should be a list"),
+        (("players", 0, "counters"), [1], "should be an object"),
+        (("ids",), -1, "identifiers"),
+        (("modifiers", 0, "duration"), "for ever", "unknown duration"),
+        (("turn", "phase"), "nonsense", "unknown phase"),
+        (("format",), "2", "format"),
+    ),
+)
+def test_a_save_that_cannot_be_read_is_refused_as_one(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    path: tuple[Any, ...],
+    value: Any,
+    said: str,
+) -> None:
+    """
+    A caller loading a save has one thing to catch. A field missing, a list
+    where an object belongs or a number that cannot be one used to come out as
+    whatever Python raised first; the refusals that were already SaveError stay
+    what they were.
+    """
+    data = edited(with_a_modifier(a_saved_game, -1), path, value)
+
+    with pytest.raises(SaveError, match=said):
+        Game.load(data, everything)
+
+
 def test_the_plain_functions_work_without_the_facade(
     everything: ContentLibrary,
 ) -> None:

@@ -21,6 +21,7 @@ and the caller is told why.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from enum import Enum
 from typing import Any
 
 from fsme import __version__
@@ -466,136 +467,144 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
             f"format '{SAVE_FORMAT_VERSION}'"
         )
 
-    state = GameState(seed=int(data.get("seed", 0)))
+    state = GameState(seed=_integer(data, "seed", 0))
 
     state.rng_state = _tuples(data.get("rng"))
     state.started = _flag(data, "started", False)
     state.game_over = _flag(data, "game_over", False)
     state.winner = data.get("winner")
-    state.souls_to_win = int(data.get("souls_to_win", 4))
-    state.monster_slots = int(data.get("monster_slots", 2))
-    state.shop_slots = int(data.get("shop_slots", 2))
+    state.souls_to_win = _integer(data, "souls_to_win", 4)
+    state.monster_slots = _integer(data, "monster_slots", 2)
+    state.shop_slots = _integer(data, "shop_slots", 2)
 
     # Read with a default rather than required, and the format is not bumped
     # for them. A save is taken from a game in progress, and these two are read
     # by `start_game` and by nothing after it — so a save written before they
     # existed reloads into exactly the game it was.
-    state.starting_coins = int(data.get("starting_coins", 3))
-    state.starting_hand = int(data.get("starting_hand", 3))
+    state.starting_coins = _integer(data, "starting_coins", 3)
+    state.starting_hand = _integer(data, "starting_hand", 3)
 
-    state.skipped_players = [int(seat) for seat in data.get("skipped_players", ())]
-    state.ids.restore(int(data.get("ids", 0)))
+    state.skipped_players = [
+        _whole(seat, "skipped_players") for seat in _listing(data, "skipped_players")
+    ]
+
+    try:
+        state.ids.restore(_integer(data, "ids", 0))
+    except ValueError as error:
+        raise SaveError(f"this save cannot restore its identifiers: {error}") from error
 
     index: dict[str, Any] = {}
 
+    zones = _section(data, "zones")
+
     for name in GLOBAL_ZONES:
-        saved = data.get("zones", {}).get(name)
+        saved = _maybe_section(zones, name)
 
         if saved is not None:
             _load_zone(getattr(state, name), saved, cards, index)
 
-    _load_monster_area(state, data.get("monster_area", ()), cards, index)
+    _load_monster_area(state, _listing(data, "monster_area"), cards, index)
 
-    for saved_player in data.get("players", ()):
+    for saved_player in _entries(data, "players"):
         state.add_player(_load_player(saved_player, cards, index))
 
-    _load_turn(state, data.get("turn", {}), index)
+    _load_turn(state, _section(data, "turn"), index)
 
-    priority = data.get("priority", {})
+    priority = _section(data, "priority")
 
     state.priority.holder = priority.get("holder")
-    state.priority.passes = int(priority.get("passes", 0))
+    state.priority.passes = _integer(priority, "passes", 0)
     state.priority.is_open = _flag(priority, "is_open", False)
 
-    combat = data.get("combat", {})
+    combat = _section(data, "combat")
 
     state.combat.attacker = combat.get("attacker")
     state.combat.monster = _resolve(combat.get("monster"), state, index)
-    state.combat.round_number = int(combat.get("round_number", 0))
+    state.combat.round_number = _integer(combat, "round_number", 0)
     state.combat.settled_roll = combat.get("settled_roll")
     state.combat.active = _flag(combat, "active", False)
 
-    for saved_item in data.get("stack", ()):
+    for saved_item in _entries(data, "stack"):
         state.stack.push(_load_stack_item(saved_item, state, index))
 
-    for saved_event in data.get("events", ()):
+    for saved_event in _entries(data, "events"):
         state.events.push(_load_event(saved_event, state, index))
 
     state.shields = [
         DamageShield(
-            player_id=int(saved["player_id"]),
+            player_id=_integer(saved, "player_id"),
             amount=saved.get("amount"),
             label=str(saved.get("label", "")),
-            duration=Duration(saved.get("duration", Duration.END_OF_TURN)),
+            duration=_duration(saved),
         )
-        for saved in data.get("shields", ())
+        for saved in _entries(data, "shields")
     ]
 
     state.modifiers = [
         TemporaryModifier(
-            stat=str(saved["stat"]),
-            amount=int(saved["amount"]),
-            player_id=int(saved["player_id"]),
-            duration=Duration(saved.get("duration", Duration.END_OF_TURN)),
+            stat=str(_needed(saved, "stat")),
+            amount=_integer(saved, "amount"),
+            player_id=_integer(saved, "player_id"),
+            duration=_duration(saved),
         )
-        for saved in data.get("modifiers", ())
+        for saved in _entries(data, "modifiers")
     ]
 
     state.promises = [
         Promise(
-            event=str(saved["event"]),
-            changes=dict(saved.get("changes", {})),
+            event=str(_needed(saved, "event")),
+            changes=dict(_section(saved, "changes")),
             player_id=saved.get("player_id"),
             card_id=saved.get("card_id"),
-            when=dict(saved.get("when", {})),
+            when=dict(_section(saved, "when")),
             uses=saved.get("uses"),
-            duration=Duration(saved.get("duration", Duration.END_OF_TURN)),
+            duration=_duration(saved),
         )
-        for saved in data.get("promises", ())
+        for saved in _entries(data, "promises")
     ]
 
     state.watchers = [
         Watcher(
-            event=str(saved["event"]),
+            event=str(_needed(saved, "event")),
             controller=saved.get("controller"),
             source=_resolve(saved.get("source"), state, index),
             label=str(saved.get("label", "")),
-            conditions=tuple(saved.get("conditions", ())),
-            effects=tuple(saved.get("effects", ())),
+            conditions=tuple(_listing(saved, "conditions")),
+            effects=tuple(_listing(saved, "effects")),
             player_id=saved.get("player_id"),
             uses=saved.get("uses"),
-            duration=Duration(saved.get("duration", Duration.END_OF_TURN)),
+            duration=_duration(saved),
             waits=_flag(saved, "waits", False),
-            fired=list(saved.get("fired", ())),
+            fired=list(_listing(saved, "fired")),
         )
-        for saved in data.get("watchers", ())
+        for saved in _entries(data, "watchers")
     ]
 
-    saved_decision = data.get("pending_decision")
+    saved_decision = _maybe_section(data, "pending_decision")
 
     if saved_decision is not None:
         state.pending_decision = PendingDecision(
-            decision_id=str(saved_decision["decision_id"]),
-            player=int(saved_decision["player"]),
-            kind=DecisionKind(saved_decision["kind"]),
+            decision_id=str(_needed(saved_decision, "decision_id")),
+            player=_integer(saved_decision, "player"),
+            kind=_member(DecisionKind, _needed(saved_decision, "kind"), "decision"),
             options=[
                 _resolve(option, state, index)
-                for option in saved_decision.get("options", ())
+                for option in _listing(saved_decision, "options")
             ],
-            minimum=int(saved_decision.get("minimum", 1)),
-            maximum=int(saved_decision.get("maximum", 1)),
+            minimum=_integer(saved_decision, "minimum", 1),
+            maximum=_integer(saved_decision, "maximum", 1),
             bind=str(saved_decision.get("bind", "chosen")),
             prompt=str(saved_decision.get("prompt", "")),
         )
 
-    saved_roll = data.get("pending_roll")
+    saved_roll = _maybe_section(data, "pending_roll")
 
     if saved_roll is not None:
         state.pending_roll = PendingRoll(
-            roll_id=str(saved_roll["roll_id"]),
-            sides=int(saved_roll["sides"]),
-            natural=int(saved_roll["natural"]),
-            value=int(saved_roll["value"]),
+            roll_id=str(_needed(saved_roll, "roll_id")),
+            sides=_integer(saved_roll, "sides"),
+            natural=_integer(saved_roll, "natural"),
+            value=_integer(saved_roll, "value"),
             roller=saved_roll.get("roller"),
             attack=_flag(saved_roll, "attack", False),
         )
@@ -611,39 +620,44 @@ def _load_player(
     index: dict[str, Any],
 ) -> PlayerState:
     player = PlayerState(
-        player_id=int(saved["player_id"]),
+        player_id=_integer(saved, "player_id"),
         name=str(saved.get("name", "")),
-        hp=int(saved.get("hp", 0)),
-        max_hp=int(saved.get("max_hp", 0)),
-        pennies=int(saved.get("pennies", 0)),
-        counters={str(k): int(v) for k, v in saved.get("counters", {}).items()},
-        attacks_left=int(saved.get("attacks_left", 0)),
-        purchases_left=int(saved.get("purchases_left", 0)),
-        additional_loot_plays=int(saved.get("additional_loot_plays", 0)),
-        loot_played=int(saved.get("loot_played", 0)),
+        hp=_integer(saved, "hp", 0),
+        max_hp=_integer(saved, "max_hp", 0),
+        pennies=_integer(saved, "pennies", 0),
+        counters={
+            str(key): _whole(value, "counters")
+            for key, value in _section(saved, "counters").items()
+        },
+        attacks_left=_integer(saved, "attacks_left", 0),
+        purchases_left=_integer(saved, "purchases_left", 0),
+        additional_loot_plays=_integer(saved, "additional_loot_plays", 0),
+        loot_played=_integer(saved, "loot_played", 0),
         alive=_flag(saved, "alive", True),
     )
 
     player.loot_limit_lifted = _flag(saved, "loot_limit_lifted", False)
     player.died_this_turn = _flag(saved, "died_this_turn", False)
-    player.hp_before_lethal = int(saved.get("hp_before_lethal", 0))
+    player.hp_before_lethal = _integer(saved, "hp_before_lethal", 0)
 
     # Absent in a save written before a seat could be dealt its own opening,
     # and absent in every ordinary game since. `None` is the right answer to
     # both, so the format is not bumped for them.
     opening = saved.get("starting_coins")
-    player.starting_coins = None if opening is None else int(opening)
+    player.starting_coins = (
+        None if opening is None else _whole(opening, "starting_coins")
+    )
 
     hand = saved.get("starting_hand")
-    player.starting_hand = None if hand is None else int(hand)
+    player.starting_hand = None if hand is None else _whole(hand, "starting_hand")
 
-    character = saved.get("character")
+    character = _maybe_section(saved, "character")
 
     if character is not None:
         player.character = _load_card(character, cards, index)
 
     for name in PLAYER_ZONES:
-        written = saved.get(name)
+        written = _maybe_section(saved, name)
 
         if written is not None:
             _load_zone(getattr(player, name), written, cards, index)
@@ -660,7 +674,7 @@ def _load_zone(
     zone.zone_type = _by_name(saved.get("type"), ZoneType, zone.zone_type, "zone")
     zone.cards.clear()
 
-    for written in saved.get("cards", ()):
+    for written in _entries(saved, "cards"):
         zone.cards.append(_load_card(written, cards, index))
 
 
@@ -682,8 +696,16 @@ def _load_monster_area(
     state.monster_area.clear()
 
     for written in saved:
+        if not isinstance(written, (list, tuple)):
+            raise SaveError(f"this save holds {written!r} for a monster slot")
+
         state.monster_area.append(
-            MonsterSlot(cards=[_load_card(card, cards, index) for card in written])
+            MonsterSlot(
+                cards=[
+                    _load_card(_object(card, "monster_area"), cards, index)
+                    for card in written
+                ]
+            )
         )
 
     sync(state)
@@ -713,6 +735,116 @@ def _flag(saved: Mapping[str, Any], key: str, default: bool) -> bool:
         )
 
     return value
+
+
+def _needed(saved: Mapping[str, Any], key: str) -> Any:
+    """
+    A field the save cannot be read without.
+    """
+    if key not in saved:
+        raise SaveError(f"this save is missing '{key}'")
+
+    return saved[key]
+
+
+def _whole(value: Any, key: str) -> int:
+    """
+    A whole number, exactly as JSON writes one.
+
+    The writer only ever puts a whole number here. Read as Python reads it, 3.7
+    is quietly 3, the text "3" is 3 and true is 1 — each a guess about a file
+    somebody else wrote, so each is refused. Whether the number makes sense
+    for the field is not asked here: a modifier may take one away.
+    """
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise SaveError(
+            f"this save holds {value!r} for '{key}', which can only be a whole number"
+        )
+
+    return value
+
+
+def _integer(saved: Mapping[str, Any], key: str, default: int | None = None) -> int:
+    """
+    Read a whole number back, or its default when the save does not hold it.
+
+    With no default the field is required, and a save without it is refused.
+    """
+    if key not in saved:
+        if default is None:
+            raise SaveError(f"this save is missing '{key}'")
+
+        return default
+
+    return _whole(saved[key], key)
+
+
+def _object(value: Any, key: str) -> Mapping[str, Any]:
+    """
+    Something the save holds as an object, checked to be one.
+    """
+    if not isinstance(value, Mapping):
+        raise SaveError(
+            f"this save holds {value!r} for '{key}', which should be an object"
+        )
+
+    return value
+
+
+def _section(saved: Mapping[str, Any], key: str) -> Mapping[str, Any]:
+    """
+    An object inside the save, empty when the save does not hold it.
+    """
+    return _object(saved.get(key, {}), key)
+
+
+def _maybe_section(saved: Mapping[str, Any], key: str) -> Mapping[str, Any] | None:
+    """
+    An object inside the save that may be absent, or written down as nothing.
+    """
+    value = saved.get(key)
+
+    return None if value is None else _object(value, key)
+
+
+def _listing(saved: Mapping[str, Any], key: str) -> Sequence[Any]:
+    """
+    A list inside the save, empty when the save does not hold it.
+
+    A text is refused rather than read letter by letter.
+    """
+    value = saved.get(key, ())
+
+    if not isinstance(value, (list, tuple)):
+        raise SaveError(
+            f"this save holds {value!r} for '{key}', which should be a list"
+        )
+
+    return value
+
+
+def _entries(saved: Mapping[str, Any], key: str) -> list[Mapping[str, Any]]:
+    """
+    A list of objects inside the save, each checked to be one.
+    """
+    return [_object(entry, key) for entry in _listing(saved, key)]
+
+
+def _member[E: Enum](kind: type[E], written: Any, what: str) -> E:
+    """
+    Read an enumeration back from the value it was written under.
+    """
+    try:
+        return kind(written)
+    except ValueError as error:
+        raise SaveError(f"this save holds an unknown {what}: {written!r}") from error
+
+
+def _duration(saved: Mapping[str, Any]) -> Duration:
+    """
+    How long something lasts, until the end of the turn when the save is silent.
+    """
+    return _member(Duration, saved.get("duration", Duration.END_OF_TURN), "duration")
 
 
 def _by_name(written: Any, choices: Any, fallback: Any, what: str) -> Any:
@@ -763,16 +895,16 @@ def _load_card(
         tapped=_flag(saved, "tapped", False),
         alive=_flag(saved, "alive", True),
         last_damaged_by=saved.get("last_damaged_by"),
-        counters=dict(saved.get("counters", {})),
+        counters=dict(_section(saved, "counters")),
     )
 
     card.modifiers = [
         CardModifier(
-            stat=str(modifier["stat"]),
-            amount=int(modifier["amount"]),
-            duration=Duration(modifier.get("duration", Duration.END_OF_TURN)),
+            stat=str(_needed(modifier, "stat")),
+            amount=_integer(modifier, "amount"),
+            duration=_duration(modifier),
         )
-        for modifier in saved.get("modifiers", ())
+        for modifier in _entries(saved, "modifiers")
     ]
 
     card.copy_expires = str(saved.get("copy_expires", ""))
@@ -806,25 +938,25 @@ def _load_turn(
 ) -> None:
     turn = state.turn
 
-    turn.turn_number = int(saved.get("turn_number", 1))
-    turn.active_player = int(saved.get("active_player", 0))
-    turn.priority_player = int(saved.get("priority_player", 0))
+    turn.turn_number = _integer(saved, "turn_number", 1)
+    turn.active_player = _integer(saved, "active_player", 0)
+    turn.priority_player = _integer(saved, "priority_player", 0)
     turn.phase = _by_name(saved.get("phase"), GamePhase, GamePhase.START, "phase")
-    turn.stack_depth = int(saved.get("stack_depth", 0))
-    turn.loot_played = int(saved.get("loot_played", 0))
-    turn.attacks_declared = int(saved.get("attacks_declared", 0))
+    turn.stack_depth = _integer(saved, "stack_depth", 0)
+    turn.loot_played = _integer(saved, "loot_played", 0)
+    turn.attacks_declared = _integer(saved, "attacks_declared", 0)
     turn.extra_turn_for = saved.get("extra_turn_for")
-    turn.attack_rolls = int(saved.get("attack_rolls", 0))
+    turn.attack_rolls = _integer(saved, "attack_rolls", 0)
     turn.monster_died = _flag(saved, "monster_died", False)
-    turn.triggers_fired = dict(saved.get("triggers_fired", {}))
+    turn.triggers_fired = dict(_section(saved, "triggers_fired"))
     turn.obligations = [
         Obligation(
-            player_id=int(owed["player_id"]),
+            player_id=_integer(owed, "player_id"),
             action=str(owed.get("action", "attack")),
             card_id=owed.get("card_id"),
-            remaining=int(owed.get("remaining", 1)),
+            remaining=_integer(owed, "remaining", 1),
         )
-        for owed in saved.get("obligations", ())
+        for owed in _entries(saved, "obligations")
     ]
 
 
@@ -832,22 +964,24 @@ def _load_stack_item(
     saved: Mapping[str, Any], state: GameState, index: dict[str, Any]
 ) -> StackItem:
     item = StackItem(
-        kind=StackItemType(saved["kind"]),
+        kind=_member(StackItemType, _needed(saved, "kind"), "stack item"),
         label=str(saved.get("label", "")),
         source=_resolve(saved.get("source"), state, index),
-        ability=_load_ability(saved.get("ability")),
+        ability=_load_ability(_maybe_section(saved, "ability")),
         controller=saved.get("controller"),
         targets=[
-            _resolve(target, state, index) for target in saved.get("targets", ())
+            _resolve(target, state, index) for target in _listing(saved, "targets")
         ],
         event=(
-            _load_event(saved["event"], state, index)
-            if saved.get("event") is not None
+            _load_event(event, state, index)
+            if (event := _maybe_section(saved, "event")) is not None
             else None
         ),
     )
 
-    item.status = StackItemStatus(saved.get("status", StackItemStatus.CREATED))
+    item.status = _member(
+        StackItemStatus, saved.get("status", StackItemStatus.CREATED), "status"
+    )
 
     return item
 
@@ -863,17 +997,21 @@ def _load_event(
     saved: Mapping[str, Any], state: GameState, index: dict[str, Any]
 ) -> Event:
     event = Event(
-        type=EventType(saved["type"]),
+        type=_member(EventType, _needed(saved, "type"), "event"),
         source=_resolve(saved.get("source"), state, index),
         controller=saved.get("controller"),
-        targets=[_resolve(target, state, index) for target in saved.get("targets", ())],
+        targets=[
+            _resolve(target, state, index) for target in _listing(saved, "targets")
+        ],
         payload=_resolve(saved.get("payload", {}), state, index),
         event_id=str(saved.get("event_id", "")),
-        sequence=int(saved.get("sequence", 0)),
-        replacements_applied=list(saved.get("replacements_applied", ())),
+        sequence=_integer(saved, "sequence", 0),
+        replacements_applied=list(_listing(saved, "replacements_applied")),
     )
 
-    event.status = EventStatus(saved.get("status", EventStatus.CREATED))
+    event.status = _member(
+        EventStatus, saved.get("status", EventStatus.CREATED), "status"
+    )
 
     return event
 
@@ -892,10 +1030,10 @@ def _resolve(value: Any, state: GameState, index: Mapping[str, Any]) -> Any:
         if PLAYER in value:
             seat = value[PLAYER]
 
-            if seat is None or not 0 <= int(seat) < len(state.players):
+            if seat is None or not 0 <= _whole(seat, "player") < len(state.players):
                 return None
 
-            return state.player(int(seat))
+            return state.player(_whole(seat, "player"))
 
         return {key: _resolve(item, state, index) for key, item in value.items()}
 
