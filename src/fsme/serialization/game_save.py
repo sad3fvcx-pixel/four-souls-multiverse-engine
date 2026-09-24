@@ -469,8 +469,8 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
     state = GameState(seed=int(data.get("seed", 0)))
 
     state.rng_state = _tuples(data.get("rng"))
-    state.started = bool(data.get("started", False))
-    state.game_over = bool(data.get("game_over", False))
+    state.started = _flag(data, "started", False)
+    state.game_over = _flag(data, "game_over", False)
     state.winner = data.get("winner")
     state.souls_to_win = int(data.get("souls_to_win", 4))
     state.monster_slots = int(data.get("monster_slots", 2))
@@ -505,7 +505,7 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
 
     state.priority.holder = priority.get("holder")
     state.priority.passes = int(priority.get("passes", 0))
-    state.priority.is_open = bool(priority.get("is_open", False))
+    state.priority.is_open = _flag(priority, "is_open", False)
 
     combat = data.get("combat", {})
 
@@ -513,7 +513,7 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
     state.combat.monster = _resolve(combat.get("monster"), state, index)
     state.combat.round_number = int(combat.get("round_number", 0))
     state.combat.settled_roll = combat.get("settled_roll")
-    state.combat.active = bool(combat.get("active", False))
+    state.combat.active = _flag(combat, "active", False)
 
     for saved_item in data.get("stack", ()):
         state.stack.push(_load_stack_item(saved_item, state, index))
@@ -565,7 +565,7 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
             player_id=saved.get("player_id"),
             uses=saved.get("uses"),
             duration=Duration(saved.get("duration", Duration.END_OF_TURN)),
-            waits=bool(saved.get("waits", False)),
+            waits=_flag(saved, "waits", False),
             fired=list(saved.get("fired", ())),
         )
         for saved in data.get("watchers", ())
@@ -597,7 +597,7 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
             natural=int(saved_roll["natural"]),
             value=int(saved_roll["value"]),
             roller=saved_roll.get("roller"),
-            attack=bool(saved_roll.get("attack", False)),
+            attack=_flag(saved_roll, "attack", False),
         )
 
     _relink_copies(index, cards)
@@ -621,11 +621,11 @@ def _load_player(
         purchases_left=int(saved.get("purchases_left", 0)),
         additional_loot_plays=int(saved.get("additional_loot_plays", 0)),
         loot_played=int(saved.get("loot_played", 0)),
-        alive=bool(saved.get("alive", True)),
+        alive=_flag(saved, "alive", True),
     )
 
-    player.loot_limit_lifted = bool(saved.get("loot_limit_lifted", False))
-    player.died_this_turn = bool(saved.get("died_this_turn", False))
+    player.loot_limit_lifted = _flag(saved, "loot_limit_lifted", False)
+    player.died_this_turn = _flag(saved, "died_this_turn", False)
     player.hp_before_lethal = int(saved.get("hp_before_lethal", 0))
 
     # Absent in a save written before a seat could be dealt its own opening,
@@ -689,6 +689,32 @@ def _load_monster_area(
     sync(state)
 
 
+def _flag(saved: Mapping[str, Any], key: str, default: bool) -> bool:
+    """
+    Read a yes-or-no back, or its default when the save does not hold it.
+
+    The writer only ever puts true or false here, so anything else is refused
+    rather than guessed at: read as Python reads it, the text "false" is true,
+    and a game written as not over would reload over. A number is refused too,
+    though Python counts true and false as one and zero — a save is JSON, and
+    JSON keeps the two apart.
+
+    A field that is missing keeps its default, as it always did: that is how a
+    save written before the field existed still loads.
+    """
+    if key not in saved:
+        return default
+
+    value = saved[key]
+
+    if not isinstance(value, bool):
+        raise SaveError(
+            f"this save holds {value!r} for '{key}', which can only be true or false"
+        )
+
+    return value
+
+
 def _by_name(written: Any, choices: Any, fallback: Any, what: str) -> Any:
     """
     Read a numbered enumeration back from the name it was written under.
@@ -734,8 +760,8 @@ def _load_card(
         controller=saved.get("controller"),
         zone=str(saved.get("zone", "")),
         hp=saved.get("hp"),
-        tapped=bool(saved.get("tapped", False)),
-        alive=bool(saved.get("alive", True)),
+        tapped=_flag(saved, "tapped", False),
+        alive=_flag(saved, "alive", True),
         last_damaged_by=saved.get("last_damaged_by"),
         counters=dict(saved.get("counters", {})),
     )
@@ -750,9 +776,9 @@ def _load_card(
     ]
 
     card.copy_expires = str(saved.get("copy_expires", ""))
-    card.eternal = bool(saved.get("eternal", False))
+    card.eternal = _flag(saved, "eternal", False)
     card.silenced_while = str(saved.get("silenced_while", ""))
-    card.recharge_skipped = bool(saved.get("recharge_skipped", False))
+    card.recharge_skipped = _flag(saved, "recharge_skipped", False)
 
     if saved.get("copy_of"):
         # Kept as a name until every card is back, then looked up: a copy may
@@ -789,7 +815,7 @@ def _load_turn(
     turn.attacks_declared = int(saved.get("attacks_declared", 0))
     turn.extra_turn_for = saved.get("extra_turn_for")
     turn.attack_rolls = int(saved.get("attack_rolls", 0))
-    turn.monster_died = bool(saved.get("monster_died", False))
+    turn.monster_died = _flag(saved, "monster_died", False)
     turn.triggers_fired = dict(saved.get("triggers_fired", {}))
     turn.obligations = [
         Obligation(

@@ -361,6 +361,115 @@ def test_the_engine_a_save_names_does_not_decide_whether_it_loads(
     )
 
 
+# Where a yes-or-no lives in a save, at three depths: the game, a player, and
+# a card - the character, which every player holds from the deal onwards. Each
+# names the object that holds the field in the file, the field, and how to read
+# it back off the loaded game.
+FLAGS: dict[str, tuple[Any, str, Any]] = {
+    "the game is over": (
+        lambda data: data,
+        "game_over",
+        lambda state: state.game_over,
+    ),
+    "a player is alive": (
+        lambda data: data["players"][0],
+        "alive",
+        lambda state: state.players[0].alive,
+    ),
+    "a card is tapped": (
+        lambda data: data["players"][0]["character"],
+        "tapped",
+        lambda state: state.players[0].character.tapped,
+    ),
+}
+
+
+@pytest.fixture(scope="module")
+def a_saved_game(everything: ContentLibrary) -> dict[str, Any]:
+    game = Game.from_content(everything, ["Ann", "Bo"], seed=3)
+
+    assert game.start().accepted
+
+    return written(game)
+
+
+MISSING = object()
+
+
+def rewritten(saved: dict[str, Any], where: str, value: Any) -> dict[str, Any]:
+    """
+    A copy of the save with one yes-or-no set to a value, or taken out.
+    """
+    data = dict(json.loads(json.dumps(saved)))
+    holder, key, _ = FLAGS[where]
+
+    if value is MISSING:
+        del holder(data)[key]
+    else:
+        holder(data)[key] = value
+
+    return data
+
+
+@pytest.mark.parametrize("where", FLAGS)
+@pytest.mark.parametrize(
+    "value", ("false", "true", "no", "yes", 0, 1, None, [], {})
+)
+def test_a_yes_or_no_that_is_not_true_or_false_is_refused(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    where: str,
+    value: Any,
+) -> None:
+    """
+    Read as Python reads it, "false" is true and a game written as not over
+    reloads over. The writer only ever puts true or false in these places, so
+    anything else is a save somebody else wrote, and it is refused rather than
+    guessed at.
+    """
+    data = rewritten(a_saved_game, where, value)
+
+    with pytest.raises(SaveError, match="can only be true or false"):
+        Game.load(data, everything)
+
+
+@pytest.mark.parametrize("where", FLAGS)
+@pytest.mark.parametrize("value", (True, False))
+def test_a_yes_or_no_that_is_true_or_false_is_read_as_written(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    where: str,
+    value: bool,
+) -> None:
+    state = Game.load(rewritten(a_saved_game, where, value), everything).state
+
+    assert FLAGS[where][2](state) is value
+
+
+@pytest.mark.parametrize(
+    ("where", "default"),
+    (
+        ("the game is over", False),
+        ("a player is alive", True),
+        ("a card is tapped", False),
+    ),
+)
+def test_a_yes_or_no_the_save_does_not_hold_keeps_its_default(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    where: str,
+    default: bool,
+) -> None:
+    """
+    A save written before a field existed does not hold it, and still loads.
+    """
+    data = rewritten(a_saved_game, where, MISSING)
+
+    state = Game.load(data, everything).state
+
+    assert FLAGS[where][2](state) is default
+
+
 def test_the_plain_functions_work_without_the_facade(
     everything: ContentLibrary,
 ) -> None:
