@@ -25,7 +25,13 @@ from enum import Enum
 from typing import Any
 
 from fsme import __version__
-from fsme.cards import Ability, CardInstance, CardRegistry, SoulToken
+from fsme.cards import (
+    Ability,
+    CardInstance,
+    CardRegistry,
+    SoulToken,
+    UnknownCardError,
+)
 from fsme.events import Event, EventStatus, EventType
 from fsme.stack import StackItem, StackItemStatus, StackItemType
 from fsme.state import (
@@ -930,7 +936,13 @@ def _relink_copies(index: Mapping[str, Any], cards: CardRegistry) -> None:
     be one that had not been read yet when the copy was.
     """
     for card, definition_id in index.get("__copies__", ()):
-        card.copy_of = cards.get(definition_id)
+        try:
+            card.copy_of = cards.get(definition_id)
+        except UnknownCardError as error:
+            raise SaveError(
+                f"this save holds a copy of '{definition_id}', which the loaded "
+                f"content does not have"
+            ) from error
 
 
 def _load_turn(

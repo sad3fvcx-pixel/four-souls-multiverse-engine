@@ -294,6 +294,59 @@ def test_a_save_naming_a_card_the_content_lacks_is_refused(
         Game.load(data, everything)
 
 
+def test_a_save_holding_a_copy_of_a_card_the_content_lacks_is_refused(
+    everything: ContentLibrary,
+) -> None:
+    """
+    A copy is written down by the name of the card it copies, and that card is
+    looked up only once every card is back. Loaded against content without it,
+    the save is refused the way a card the content lacks is refused.
+
+    The original is chosen from cards the save does not hold, so that it is the
+    copy that goes missing and not a card in a zone.
+    """
+    game = Game.from_content(everything, ["Ann", "Bo"], seed=3)
+
+    assert game.start().accepted
+
+    settle(game)
+
+    held: set[str] = set()
+
+    def gather(value: Any) -> None:
+        if isinstance(value, dict):
+            if isinstance(value.get("id"), str):
+                held.add(value["id"])
+
+            for item in value.values():
+                gather(item)
+        elif isinstance(value, list):
+            for item in value:
+                gather(item)
+
+    gather(written(game))
+
+    original = next(
+        card_id
+        for card_id in sorted(everything.registry().ids())
+        if card_id not in held
+    )
+
+    owner = next(player for player in game.state.players if player.treasures.cards)
+    owner.treasures.cards[0].copy_of = game.runtime.cards.get(original)
+
+    data = written(game)
+
+    back = Game.load(data, everything)
+    restored = back.state.player(owner.player_id).treasures.cards[0]
+
+    assert restored.copy_of is not None
+    assert restored.copy_of.id == original
+
+    with pytest.raises(SaveError, match="does not have"):
+        Game.load(data, everything.without([original]))
+
+
 def test_the_format_is_written_down(everything: ContentLibrary) -> None:
     game = Game.from_content(everything, ["Ann", "Bo"], seed=3)
 
