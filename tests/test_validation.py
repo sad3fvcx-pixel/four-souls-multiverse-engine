@@ -1448,3 +1448,106 @@ def test_the_whole_of_the_official_content_still_loads() -> None:
 
     assert len(library.definitions()) == 1045
     assert len(library) == 24
+
+
+# ----------------------------------------------------------------------
+# A blank answer is no answer
+# ----------------------------------------------------------------------
+
+
+def _as_a_replacement(vocabulary: Vocabulary, *effects: Any) -> list[str]:
+    """
+    `wholly`, for a card whose ability replaces an event rather than answers one.
+
+    `modify_event` edits the event it is handed, so anywhere else it is refused
+    for a different reason than the one being asked about here.
+    """
+    card = a_card(*effects)
+    card["abilities"][0].update(trigger="before_coins_gained", replacement=True)
+
+    return validate_card(
+        card,
+        known_effects=vocabulary.effects,
+        known_triggers=vocabulary.triggers,
+        known_conditions=vocabulary.conditions,
+        known_targets=vocabulary.targets,
+        shapes=vocabulary.shapes,
+        condition_shapes=vocabulary.condition_shapes,
+        target_shapes=vocabulary.target_shapes,
+        node_shapes=vocabulary.node_shapes,
+    )
+
+
+def _named(key: str, written: Any, **rest: Any) -> dict:
+    """The parameters, with ``key`` left out entirely when ``written`` is None."""
+    return {**rest, **({} if written is None else {key: written})}
+
+
+NAMES_THE_ENGINE_CANNOT_DO_WITHOUT = {
+    "add_counter.counter": (
+        wholly,
+        lambda value: {
+            "effect": "add_counter",
+            **_named("counter", value, target="self"),
+        },
+        "'add_counter' needs 'counter'",
+        "charge",
+    ),
+    "modify_event.key": (
+        _as_a_replacement,
+        lambda value: {"effect": "modify_event", **_named("key", value, delta=1)},
+        "'modify_event' needs 'key'",
+        "amount",
+    ),
+    "event_value.key": (
+        wholly,
+        lambda value: {
+            "if": [{"event_value": _named("key", value, value=1)}],
+            "then": [{"gain_coins": 1}],
+        },
+        "'event_value' needs 'key'",
+        "amount",
+    ),
+}
+
+
+@pytest.mark.parametrize("field", sorted(NAMES_THE_ENGINE_CANNOT_DO_WITHOUT))
+def test_a_blank_name_is_refused_as_if_it_were_missing(
+    vocabulary: Vocabulary, field: str
+) -> None:
+    """
+    A blank used to pass where a missing key was refused by name, and the engine
+    found out instead, in the middle of a game: two of these refuse to run
+    without a name and the third quietly answers no.
+
+    One complaint either way, and the same one.
+    """
+    check, node, said, _ = NAMES_THE_ENGINE_CANNOT_DO_WITHOUT[field]
+
+    for written in ("", None):
+        complaints_made = check(vocabulary, node(written))
+
+        assert len(complaints_made) == 1, (written, complaints_made)
+        assert said in complaints_made[0], (written, complaints_made)
+
+
+@pytest.mark.parametrize("field", sorted(NAMES_THE_ENGINE_CANNOT_DO_WITHOUT))
+def test_a_name_that_is_given_still_passes(vocabulary: Vocabulary, field: str) -> None:
+    check, node, _, given = NAMES_THE_ENGINE_CANNOT_DO_WITHOUT[field]
+
+    assert check(vocabulary, node(given)) == []
+
+
+def test_a_blank_with_answers_to_choose_from_is_still_one_complaint(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    Only free text is unanswered when blank. `stat` has a fixed set of answers
+    and a blank was always refused as not one of them; calling it missing as
+    well would be one mistake and two complaints.
+    """
+    said = wholly(vocabulary, {"effect": "add_modifier", "stat": "", "target": "self"})
+
+    assert len(said) == 1, said
+    assert "needs" not in said[0], said
+    assert "and the card gives ''" in said[0], said

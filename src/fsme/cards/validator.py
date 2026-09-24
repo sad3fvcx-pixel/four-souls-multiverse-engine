@@ -405,7 +405,7 @@ def _validate_call(
         )
 
     for key, parameter in shape.params.items():
-        if parameter.required and key not in params:
+        if parameter.required and _unanswered(params, key, parameter):
             errors.append(
                 f"{location}: {path}: '{name}' needs '{key}' "
                 f"({parameter.wants()}), and the card does not give it"
@@ -774,6 +774,28 @@ def _needs_answering(
         for key, parameter in shape.params.items()
         if parameter.required and (key not in node or node[key] == "")
     ]
+
+
+def _unanswered(given: Mapping[str, Any], key: str, parameter: Any) -> bool:
+    """
+    Whether a parameter the card has to answer was left without an answer.
+
+    The rule `_needs_answering` states — absent or blank, and nothing else —
+    held to both halves. A blank is only unanswered where nothing else would
+    refuse it, which is free text: a parameter with a fixed set of answers
+    already names a blank as not one of them, and one that is not text already
+    names it as the wrong sort of thing. Calling either missing as well would
+    be one violation and two complaints.
+
+    Without this a blank passed where an absent key was refused by name, and
+    the engine found out instead, in the middle of a game: `add_counter` and
+    `modify_event` refuse to run without a name, and `event_value` reads the
+    event's nameless value and quietly answers no.
+    """
+    if key not in given:
+        return True
+
+    return given[key] == "" and parameter.kind == TEXT and not parameter.values
 
 
 def _only_one(
@@ -1635,7 +1657,7 @@ def _check_condition_params(
     errors: list[str] = []
 
     for key in shape.params:
-        if shape.params[key].required and key not in params:
+        if shape.params[key].required and _unanswered(params, key, shape.params[key]):
             errors.append(f"{location}: {path}: '{name}' needs '{key}'")
 
     for key, value in params.items():
