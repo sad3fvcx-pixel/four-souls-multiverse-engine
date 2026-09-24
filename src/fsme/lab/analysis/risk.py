@@ -44,6 +44,7 @@ from fsme.journal import Journal
 from fsme.journal.replay import deals_itself, how_it_was_played, scenario_of
 from fsme.lab.bot import HeuristicBot
 from fsme.lab.bot.evaluation import Evaluation, Reason
+from fsme.replay import state_digest
 
 WORTH_MENTIONING = 1.0
 """
@@ -202,8 +203,10 @@ class Risks:
     """
     Whether the replay reproduced the journal.
 
-    False means the engine has changed under the game and every number here is
-    about a different one.
+    False means the replay came out differently — a command was refused, or a
+    position no longer matched the fingerprint written beside it — and every
+    number here is about a different game. Why it came out differently is not
+    something a divergence says on its own.
     """
 
     def to_dict(self) -> dict[str, Any]:
@@ -278,6 +281,19 @@ def risks(
         if not game.submit(
             Command(type=kind, player=player, payload=dict(payload))
         ).accepted:
+            told.faithful = False
+
+            break
+
+        # Accepted is not the same as reproduced. A command can be taken and
+        # still leave a different position than it left when the journal was
+        # kept, and from there on this is weighing another game's decisions
+        # under this one's name. So the position is held against the
+        # fingerprint written beside the command, at the moment the keeper took
+        # it and `replay_journal` checks it: after the command, before the next
+        # one is weighed. Weighing only reads the position, so there is nothing
+        # of it here to be seen.
+        if entry.digest and state_digest(game.state) != entry.digest:
             told.faithful = False
 
             break

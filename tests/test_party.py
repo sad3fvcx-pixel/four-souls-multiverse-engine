@@ -220,3 +220,21 @@ def test_an_engine_that_is_not_a_release_cannot_break_the_page(
 
     assert "\nFORGED HEADING" not in told
     assert all(len(line) <= 78 for line in told.splitlines()), "wrapped to the page"
+
+
+def test_a_report_on_a_journal_that_no_longer_replays_says_so(
+    a_journal: Journal, everything: ContentLibrary
+) -> None:
+    """
+    The whole path, from a journal whose fingerprint no longer holds to the
+    page: every command is still accepted, and the report used to print a full
+    table of decisions from a game that was not this one.
+    """
+    data = a_journal.to_dict()
+    data["entries"][40]["digest"] = "not the fingerprint this command produced"
+
+    told = reviewed(review(Journal.from_dict(data), everything))
+
+    assert "The replay diverged from the journal" in told
+    assert "Best —" not in told
+    assert "moves weighed" not in told

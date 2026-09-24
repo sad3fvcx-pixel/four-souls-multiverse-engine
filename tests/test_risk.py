@@ -12,6 +12,7 @@ names the bot doing the judging.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -141,3 +142,86 @@ def test_the_risks_are_plain_data(weighed: Risks) -> None:
 
     for risk in written["worst"]:
         assert set(risk) >= {"regret", "taken", "best", "instead", "times"}
+
+
+# ----------------------------------------------------------------------
+# A replay that comes out differently is not weighed as if it had not
+# ----------------------------------------------------------------------
+
+
+def _rewritten(journal: Journal, change: Any) -> Journal:
+    """
+    The journal as a file would hold it, with one change made to the entries.
+    """
+    data = journal.to_dict()
+    change(data["entries"])
+
+    return Journal.from_dict(data)
+
+
+SPOILED = 40
+
+
+def _spoiled(entries: list[dict[str, Any]]) -> None:
+    entries[SPOILED]["digest"] = "not the fingerprint this command produced"
+
+
+def _refused(entries: list[dict[str, Any]], players: int = 3) -> None:
+    for entry in entries:
+        if entry["command"] in ("end_phase", "end_turn"):
+            entry["player"] = (int(entry["player"]) + 1) % players
+
+            return
+
+    raise AssertionError("no command in this game that only the active player gives")
+
+
+def test_a_position_that_no_longer_matches_stops_the_weighing(
+    a_journal: Journal, everything: ContentLibrary
+) -> None:
+    """
+    Every command was accepted, so a check on refusals alone passed this and
+    went on weighing a different game under this one's name.
+    """
+    told = risks(_rewritten(a_journal, _spoiled), everything, top=3)
+
+    assert not told.faithful
+    assert told.weighed + told.skipped == SPOILED + 1, "nothing after it is looked at"
+    assert told.weighed > 0, "what came before it was weighed as it was"
+
+    for found in (*told.riskiest, *told.worst, *told.best):
+        assert found.index <= SPOILED, found
+
+
+def test_a_refused_command_still_stops_the_weighing(
+    a_journal: Journal, everything: ContentLibrary
+) -> None:
+    journal = _rewritten(a_journal, _refused)
+    at = next(
+        entry.index
+        for entry, original in zip(journal.entries, a_journal.entries, strict=True)
+        if entry.player != original.player
+    )
+
+    told = risks(journal, everything, top=3)
+
+    assert not told.faithful
+    assert told.weighed + told.skipped == at + 1
+
+
+@pytest.mark.parametrize("players", [2, 4])
+@pytest.mark.parametrize("seed", [0, 1, 2])
+def test_a_game_that_replays_is_never_called_one_that_did_not(
+    everything: ContentLibrary, seed: int, players: int
+) -> None:
+    """
+    The fingerprint holds the random generator's state and the number of events,
+    so matching it at every command is also proof that weighing a move left no
+    trace in the game it was weighed in.
+    """
+    journal, _ = play_one(everything, seed=seed, players=players, thinking_seats=(0,))
+
+    told = risks(journal, everything, top=3)
+
+    assert told.faithful
+    assert told.weighed + told.skipped == len(journal.entries)
