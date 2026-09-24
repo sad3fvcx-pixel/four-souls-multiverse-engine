@@ -18,6 +18,8 @@ from typing import Any
 import pytest
 from test_soak import play, step
 
+from fsme import __version__
+from fsme.api import Session
 from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary, ContentLoader
 from fsme.game import Game
@@ -302,6 +304,61 @@ def test_the_format_is_written_down(everything: ContentLibrary) -> None:
     assert data["format"] == SAVE_FORMAT_VERSION
     assert data["engine"] == "test"
     assert data["seed"] == 3
+
+
+def test_a_save_is_stamped_with_the_engine_that_wrote_it(
+    everything: ContentLibrary,
+) -> None:
+    """
+    Left out, the engine version is this engine's — the same one every journal
+    and recording carries. Given, it is written exactly as given, an empty
+    string included: nothing decides on the caller's behalf what it meant.
+    """
+    game = Game.from_content(everything, ["Ann", "Bo"], seed=3)
+
+    assert game.start().accepted
+
+    settle(game)
+
+    rng = game.runtime.rng.get_state()
+
+    assert game.save()["engine"] == __version__
+    assert game.save(engine_version="0.9.0")["engine"] == "0.9.0"
+    assert game.save(engine_version="")["engine"] == ""
+
+    assert save_game(game.state, rng_state=rng)["engine"] == __version__
+    assert save_game(game.state, engine_version="", rng_state=rng)["engine"] == ""
+
+
+def test_a_session_save_is_stamped_with_this_engine(
+    everything: ContentLibrary,
+) -> None:
+    session = Session(everything, 2, seed=3)
+
+    settle(session.game)
+
+    assert session.save()["engine"] == __version__
+
+
+@pytest.mark.parametrize("engine", [None, "", "0.9.0", "99.0.0"])
+def test_the_engine_a_save_names_does_not_decide_whether_it_loads(
+    everything: ContentLibrary, engine: str | None
+) -> None:
+    """
+    Loading has never read the field, and stamping it did not change that.
+    """
+    game = play(everything, 7, 2, steps=40)
+
+    data = written(game)
+
+    if engine is None:
+        del data["engine"]
+    else:
+        data["engine"] = engine
+
+    assert state_digest(Game.load(data, everything).state) == state_digest(
+        game.state
+    )
 
 
 def test_the_plain_functions_work_without_the_facade(

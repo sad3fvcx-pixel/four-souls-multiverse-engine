@@ -23,6 +23,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from fsme import __version__
 from fsme.cards import Ability, CardInstance, CardRegistry, SoulToken
 from fsme.events import Event, EventStatus, EventType
 from fsme.stack import StackItem, StackItemStatus, StackItemType
@@ -90,11 +91,15 @@ class SaveError(EngineError):
 def save_game(
     state: GameState,
     *,
-    engine_version: str = "",
+    engine_version: str | None = None,
     rng_state: Any = None,
 ) -> dict[str, Any]:
     """
     Write a game out as plain data.
+
+    ``engine_version`` left out is the engine writing the file, the same
+    version every journal and recording is stamped with. Anything passed is
+    written exactly as given, an empty string included.
 
     ``rng_state`` is the live generator's position, which is not kept in
     GameState while a game is running: the Runtime owns the generator, and a
@@ -104,7 +109,7 @@ def save_game(
 
     return {
         "format": SAVE_FORMAT_VERSION,
-        "engine": engine_version,
+        "engine": __version__ if engine_version is None else engine_version,
         "seed": state.seed,
         "rng": _plain(rng_state if rng_state is not None else state.rng_state),
         "started": state.started,

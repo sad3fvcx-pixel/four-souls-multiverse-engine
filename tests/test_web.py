@@ -18,6 +18,7 @@ from typing import Any
 
 import pytest
 
+from fsme import __version__
 from fsme.api import Session, load_content
 from fsme.content import ContentLibrary
 from fsme.web import serve
@@ -186,6 +187,7 @@ def test_a_game_can_be_saved_over_http(address: str) -> None:
 
     assert saved["format"]
     assert saved["players"]
+    assert saved["engine"] == __version__
 
 
 def test_anything_else_is_not_here(address: str) -> None:

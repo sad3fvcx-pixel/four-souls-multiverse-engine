@@ -137,13 +137,15 @@ class Game:
             content_version=chosen.identity(),
         )
 
-    def save(self, *, engine_version: str = "") -> dict[str, Any]:
+    def save(self, *, engine_version: str | None = None) -> dict[str, Any]:
         """
         Write the game out as plain data that can be reloaded later.
 
         The generator's position is taken from the live game rather than from
         GameState: the Runtime owns it while a game is running, and a save that
         forgot it would reload into a game that rolls different dice.
+
+        Left out, ``engine_version`` is this engine's own; see ``save_game``.
         """
         from fsme.serialization import save_game
 
