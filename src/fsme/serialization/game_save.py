@@ -515,6 +515,7 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
         state.add_player(_load_player(saved_player, cards, index))
 
     _load_turn(state, _section(data, "turn"), index)
+    _check_seats(state)
 
     priority = _section(data, "priority")
 
@@ -943,6 +944,45 @@ def _relink_copies(index: Mapping[str, Any], cards: CardRegistry) -> None:
                 f"this save holds a copy of '{definition_id}', which the loaded "
                 f"content does not have"
             ) from error
+
+
+def _check_seats(state: GameState) -> None:
+    """
+    Refuse a save whose seats do not line up with its players.
+
+    A player's identifier is also where they sit: the rules look a player up
+    by it, and a turn names its player by it. The writer always numbers the
+    seats from nought, so a save that does not is somebody else's file - and
+    one the game would not refuse later but misread: a turn given to seat -1
+    goes to the last player by Python's reckoning, and nobody may act in it.
+
+    A save with no players at all is left as it was; what it should mean is a
+    question of its own.
+    """
+    for seat, player in enumerate(state.players):
+        if player.player_id != seat:
+            raise SaveError(
+                f"this save seats player {player.player_id} in seat {seat}"
+            )
+
+    if not state.players:
+        return
+
+    seats = range(len(state.players))
+
+    if state.turn.active_player not in seats:
+        raise SaveError(
+            f"this save gives the turn to seat {state.turn.active_player}, "
+            f"and it has {len(state.players)} players"
+        )
+
+    promised = state.turn.extra_turn_for
+
+    if promised is not None and promised not in seats:
+        raise SaveError(
+            f"this save promises an extra turn to seat {promised}, "
+            f"and it has {len(state.players)} players"
+        )
 
 
 def _load_turn(

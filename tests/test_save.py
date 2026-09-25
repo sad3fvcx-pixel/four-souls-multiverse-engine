@@ -726,6 +726,92 @@ def test_a_malformed_ability_on_the_stack_is_refused(
         Game.load(with_an_ability(a_saved_game, ability), everything)
 
 
+@pytest.fixture(scope="module")
+def three_seats(everything: ContentLibrary) -> dict[str, Any]:
+    game = play(everything, 7, 3, steps=40)
+
+    return written(game)
+
+
+def reseated(saved: dict[str, Any], seats: list[int]) -> dict[str, Any]:
+    """
+    A copy of the save with the players' identifiers rewritten, seat by seat.
+    """
+    data = dict(json.loads(json.dumps(saved)))
+
+    for player, seat in zip(data["players"], seats, strict=True):
+        player["player_id"] = seat
+
+    return data
+
+
+@pytest.mark.parametrize(
+    "seats",
+    ([1, 1, 2], [-1, 1, 2], [0, 1, 3], [0, 2, 4], [2, 1, 0]),
+    ids=("duplicate", "negative", "past the end", "with gaps", "reversed"),
+)
+def test_a_player_out_of_their_seat_is_refused(
+    everything: ContentLibrary, three_seats: dict[str, Any], seats: list[int]
+) -> None:
+    """
+    A player's identifier is where they sit. A save that numbers them otherwise
+    used to load, and then the moves offered to a client and the moves the game
+    accepted belonged to different people.
+    """
+    with pytest.raises(SaveError, match="seats player"):
+        Game.load(reseated(three_seats, seats), everything)
+
+
+@pytest.mark.parametrize(
+    ("key", "seat", "said"),
+    (
+        ("active_player", -1, "gives the turn to seat -1"),
+        ("active_player", 3, "gives the turn to seat 3"),
+        ("extra_turn_for", -1, "promises an extra turn to seat -1"),
+        ("extra_turn_for", 3, "promises an extra turn to seat 3"),
+    ),
+)
+def test_a_turn_given_to_a_seat_nobody_sits_in_is_refused(
+    everything: ContentLibrary,
+    three_seats: dict[str, Any],
+    key: str,
+    seat: int,
+    said: str,
+) -> None:
+    """
+    Seat -1 is the last player to Python and nobody to the rules: a turn given
+    to it loaded, and then no one could act in it. A seat past the end loaded
+    and failed on the first move.
+    """
+    data = edited(three_seats, ("turn", key), seat)
+
+    with pytest.raises(SaveError, match=said):
+        Game.load(data, everything)
+
+
+@pytest.mark.parametrize("promised", (None, 0, 2))
+def test_an_extra_turn_promised_to_a_seat_at_the_table_loads(
+    everything: ContentLibrary, three_seats: dict[str, Any], promised: int | None
+) -> None:
+    data = edited(three_seats, ("turn", "extra_turn_for"), promised)
+
+    assert Game.load(data, everything).state.turn.extra_turn_for == promised
+
+
+@pytest.mark.parametrize("players", (2, 3, 4))
+def test_every_table_the_writer_sets_loads_back(
+    everything: ContentLibrary, players: int
+) -> None:
+    game = play(everything, 11, players, steps=30)
+
+    back = Game.load(written(game), everything)
+
+    assert [player.player_id for player in back.state.players] == list(
+        range(players)
+    )
+    assert state_digest(back.state) == state_digest(game.state)
+
+
 def test_the_plain_functions_work_without_the_facade(
     everything: ContentLibrary,
 ) -> None:
