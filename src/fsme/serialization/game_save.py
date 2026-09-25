@@ -1002,6 +1002,11 @@ def _load_ability(saved: Mapping[str, Any] | None) -> Ability | None:
     if saved is None:
         return None
 
+    _needed(saved, "trigger")
+
+    for key in ("conditions", "targets", "effects"):
+        _listing(saved, key)
+
     return Ability.from_data(dict(saved))
 
 

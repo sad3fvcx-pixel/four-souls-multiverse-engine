@@ -662,6 +662,70 @@ def test_a_save_that_cannot_be_read_is_refused_as_one(
         Game.load(data, everything)
 
 
+AN_ABILITY: dict[str, Any] = {
+    "trigger": "activated",
+    "conditions": [],
+    "targets": [],
+    "effects": [{"effect": "gain_cents", "amount": 1}],
+}
+
+
+def with_an_ability(saved: dict[str, Any], ability: dict[str, Any]) -> dict[str, Any]:
+    """
+    The save with one ability waiting on the stack.
+    """
+    data = dict(json.loads(json.dumps(saved)))
+
+    data["stack"] = [{"kind": "activated_ability", "ability": ability}]
+
+    return data
+
+
+def test_an_ability_on_the_stack_comes_back_as_written(
+    everything: ContentLibrary, a_saved_game: dict[str, Any]
+) -> None:
+    state = Game.load(with_an_ability(a_saved_game, AN_ABILITY), everything).state
+
+    ability = next(iter(state.stack)).ability
+
+    assert ability is not None
+    assert ability.trigger == "activated"
+    assert [dict(effect) for effect in ability.effects] == AN_ABILITY["effects"]
+
+
+@pytest.mark.parametrize(
+    ("key", "value", "said"),
+    (
+        ("trigger", MISSING, "missing 'trigger'"),
+        ("conditions", 7, "should be a list"),
+        ("targets", None, "should be a list"),
+        ("effects", {"x": 1}, "should be a list"),
+        ("effects", "ab", "should be a list"),
+    ),
+)
+def test_a_malformed_ability_on_the_stack_is_refused(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    key: str,
+    value: Any,
+    said: str,
+) -> None:
+    """
+    The ability is rebuilt from what the save says, and a shape the writer never
+    puts down came out as whatever Python raised first - or, for effects written
+    as an object, as a game that loaded and failed on its first move.
+    """
+    ability = dict(AN_ABILITY)
+
+    if value is MISSING:
+        del ability[key]
+    else:
+        ability[key] = value
+
+    with pytest.raises(SaveError, match=said):
+        Game.load(with_an_ability(a_saved_game, ability), everything)
+
+
 def test_the_plain_functions_work_without_the_facade(
     everything: ContentLibrary,
 ) -> None:
