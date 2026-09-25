@@ -171,7 +171,7 @@ class Game:
         different content is a content mismatch and is refused as one.
         """
         from fsme.rng.rng import RNG
-        from fsme.serialization import load_game
+        from fsme.serialization import SaveError, load_game
 
         registry = library.registry()
         state = load_game(data, registry)
@@ -179,7 +179,17 @@ class Game:
         rng = RNG(state.seed)
 
         if state.rng_state is not None:
-            rng.set_state(state.rng_state)
+            # The generator checks its own state, and says what is wrong with
+            # it in whichever of these it likes; a save is refused as one.
+            try:
+                rng.set_state(state.rng_state)
+            except (
+                ValueError, TypeError, KeyError, IndexError, OverflowError
+            ) as error:
+                raise SaveError(
+                    f"this save holds a random generator state that cannot be "
+                    f"restored: {error}"
+                ) from error
 
         return cls(
             state,

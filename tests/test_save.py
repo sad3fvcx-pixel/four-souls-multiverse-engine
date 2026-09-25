@@ -812,6 +812,85 @@ def test_every_table_the_writer_sets_loads_back(
     assert state_digest(back.state) == state_digest(game.state)
 
 
+def a_generator(saved: dict[str, Any], rng: Any) -> dict[str, Any]:
+    return edited(saved, ("rng",), rng)
+
+
+@pytest.mark.parametrize(
+    "rng",
+    (
+        "x",
+        7,
+        {},
+        [],
+        [3],
+        "wrong length",
+        "negative",
+    ),
+)
+def test_a_random_generator_that_cannot_be_restored_is_refused(
+    everything: ContentLibrary, three_seats: dict[str, Any], rng: Any
+) -> None:
+    """
+    The generator's state is handed to Python's own, which refuses a broken one
+    in whichever way it likes - a value error, a type error, a missing key, an
+    index past the end, a number that does not fit. A caller loading a save has
+    one thing to catch.
+    """
+    version, words, gauss = three_seats["rng"]
+
+    if rng == "wrong length":
+        rng = [version, words[:-1], gauss]
+    elif rng == "negative":
+        rng = [version, [-5, *words[1:]], gauss]
+
+    with pytest.raises(SaveError, match="random generator"):
+        Game.load(a_generator(three_seats, rng), everything)
+
+
+def test_a_session_keeps_its_game_when_the_generator_cannot_be_restored(
+    everything: ContentLibrary, three_seats: dict[str, Any]
+) -> None:
+    session = Session(everything, 2, seed=1)
+    before = state_digest(session.game.state)
+
+    with pytest.raises(SaveError, match="random generator"):
+        session.load(a_generator(three_seats, "x"))
+
+    assert state_digest(session.game.state) == before
+
+
+def test_a_saved_generator_rolls_on_as_it_would_have(
+    everything: ContentLibrary,
+) -> None:
+    game = play(everything, 5, 3, steps=25)
+
+    back = Game.load(written(game), everything)
+
+    assert back.runtime.rng.get_state() == game.runtime.rng.get_state()
+    assert [back.runtime.rng.randint(1, 6) for _ in range(20)] == [
+        game.runtime.rng.randint(1, 6) for _ in range(20)
+    ]
+
+
+def test_a_game_saved_before_it_starts_rolls_from_its_seed(
+    everything: ContentLibrary,
+) -> None:
+    """
+    Nothing has rolled yet, so nothing is written down: the generator is where
+    the seed puts it, and that is where a reload puts it too.
+    """
+    game = Game.from_content(everything, ["Ann", "Bo"], seed=4)
+
+    data = json.loads(json.dumps(save_game(game.state)))
+
+    assert data["rng"] is None
+
+    back = Game.load(data, everything)
+
+    assert back.runtime.rng.get_state() == game.runtime.rng.get_state()
+
+
 def test_the_plain_functions_work_without_the_facade(
     everything: ContentLibrary,
 ) -> None:
