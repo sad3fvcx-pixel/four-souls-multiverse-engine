@@ -477,6 +477,17 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
 
     state.rng_state = _tuples(data.get("rng"))
     state.started = _flag(data, "started", False)
+
+    # Before the start nothing has rolled, and no state means the one the seed
+    # gives. After it the generator may have rolled or may not have, and the
+    # save says nothing else about which - a game in progress that does not
+    # hold the state would reload into another game.
+    if state.started and state.rng_state is None:
+        raise SaveError(
+            "this save is of a game in progress and holds no random generator "
+            "state"
+        )
+
     state.game_over = _flag(data, "game_over", False)
     state.winner = data.get("winner")
     state.souls_to_win = _integer(data, "souls_to_win", 4)

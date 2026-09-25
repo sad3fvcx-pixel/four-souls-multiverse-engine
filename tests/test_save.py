@@ -24,6 +24,7 @@ from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary, ContentLoader
 from fsme.game import Game
 from fsme.replay import state_digest
+from fsme.rng.rng import RNG
 from fsme.runtime.vocabulary import engine_vocabulary
 from fsme.serialization import SAVE_FORMAT_VERSION, SaveError, load_game, save_game
 
@@ -889,6 +890,104 @@ def test_a_game_saved_before_it_starts_rolls_from_its_seed(
     back = Game.load(data, everything)
 
     assert back.runtime.rng.get_state() == game.runtime.rng.get_state()
+
+
+@pytest.fixture(scope="module")
+def before_the_start(everything: ContentLibrary) -> dict[str, Any]:
+    game = Game.from_content(everything, ["Ann", "Bo"], seed=4)
+
+    return dict(json.loads(json.dumps(save_game(game.state))))
+
+
+@pytest.mark.parametrize("rng", (None, MISSING))
+def test_a_game_not_yet_started_needs_no_generator_state(
+    everything: ContentLibrary, before_the_start: dict[str, Any], rng: Any
+) -> None:
+    """
+    Nothing has rolled before the start, so the seed says where the generator
+    is, and a save that leaves the state out says no less.
+    """
+    data = edited(before_the_start, ("rng",), rng)
+
+    assert data["started"] is False
+
+    back = Game.load(data, everything)
+
+    assert back.runtime.rng.get_state() == RNG(4).get_state()
+
+
+@pytest.mark.parametrize("rng", (None, MISSING))
+def test_a_game_in_progress_without_its_generator_state_is_refused(
+    everything: ContentLibrary, three_seats: dict[str, Any], rng: Any
+) -> None:
+    """
+    Once a game has started, the seed no longer says where the generator is:
+    it may have rolled, and nothing else in the save says whether it has. A
+    save of a game in progress that does not hold the state would reload into
+    another game, so it is refused.
+    """
+    data = edited(three_seats, ("rng",), rng)
+
+    assert data["started"] is True
+
+    with pytest.raises(SaveError, match="random generator state"):
+        Game.load(data, everything)
+
+
+def test_a_session_keeps_its_game_when_a_started_save_has_no_generator(
+    everything: ContentLibrary, three_seats: dict[str, Any]
+) -> None:
+    session = Session(everything, 2, seed=1)
+    before = state_digest(session.game.state)
+
+    with pytest.raises(SaveError, match="random generator state"):
+        session.load(edited(three_seats, ("rng",), None))
+
+    assert state_digest(session.game.state) == before
+
+
+def test_the_writer_holds_back_the_generator_only_before_the_start(
+    everything: ContentLibrary,
+) -> None:
+    game = Game.from_content(everything, ["Ann", "Bo"], seed=4)
+
+    assert save_game(game.state)["rng"] is None
+
+    assert game.start().accepted
+
+    settle(game)
+
+    written_down = written(game)
+
+    assert written_down["started"] is True
+    assert written_down["rng"] is not None
+
+    back = Game.load(written_down, everything)
+
+    assert back.runtime.rng.get_state() == game.runtime.rng.get_state()
+
+
+@pytest.mark.parametrize("steps", (0, 25, 60))
+def test_a_started_game_rolls_on_after_a_reload(
+    everything: ContentLibrary, steps: int
+) -> None:
+    game = play(everything, 9, 3, steps=steps)
+
+    back = Game.load(written(game), everything)
+
+    assert back.runtime.rng.get_state() == game.runtime.rng.get_state()
+
+    rolls = random.Random(1)
+    again = random.Random(1)
+
+    for _ in range(30):
+        if game.is_over:
+            break
+
+        step(game, rolls)
+        step(back, again)
+
+        assert state_digest(back.state) == state_digest(game.state)
 
 
 def test_the_plain_functions_work_without_the_facade(
