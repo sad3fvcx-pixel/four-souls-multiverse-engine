@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import random
+import re
 from pathlib import Path
 from typing import Any
 
@@ -1015,6 +1016,109 @@ def test_a_started_game_rolls_on_after_a_reload(
         step(back, again)
 
         assert state_digest(back.state) == state_digest(game.state)
+
+
+@pytest.fixture(scope="module")
+def a_window_open(everything: ContentLibrary) -> dict[str, Any]:
+    """
+    A three-player game saved while a priority window is open.
+    """
+    game = Game.from_content(
+        everything, ["Ann", "Bo", "Cy"], seed=5, interactive_priority=True
+    )
+
+    assert game.start().accepted
+
+    moves = random.Random(0)
+
+    for _ in range(500):
+        step(game, moves)
+
+        try:
+            data = written(game)
+        except SaveError:
+            continue
+
+        if data["priority"]["is_open"]:
+            return data
+
+    raise AssertionError("no priority window was ever open between moves")
+
+
+def test_a_window_the_writer_left_open_or_shut_loads(
+    everything: ContentLibrary,
+    a_window_open: dict[str, Any],
+    three_seats: dict[str, Any],
+) -> None:
+    shut = Game.load(three_seats, everything).state.priority
+
+    assert shut.is_open is False
+    assert shut.holder is None
+
+    held = Game.load(a_window_open, everything).state.priority
+
+    assert held.is_open is True
+    assert held.holder == a_window_open["priority"]["holder"]
+
+
+@pytest.mark.parametrize(
+    ("holder", "said"),
+    (
+        (None, "priority window open for seat None"),
+        (-1, "priority window open for seat -1"),
+        (3, "priority window open for seat 3"),
+        (True, "'holder'"),
+        (1.0, "'holder'"),
+        ("1", "'holder'"),
+        ([], "'holder'"),
+    ),
+)
+def test_an_open_window_held_by_nobody_at_the_table_is_refused(
+    everything: ContentLibrary,
+    a_window_open: dict[str, Any],
+    holder: Any,
+    said: str,
+) -> None:
+    """
+    Nobody but the holder may pass, so a window open for no seat - or for a
+    seat nobody sits in - used to load into a game nobody could move.
+    """
+    data = edited(a_window_open, ("priority", "holder"), holder)
+
+    with pytest.raises(SaveError, match=re.escape(said)):
+        Game.load(data, everything)
+
+
+@pytest.mark.parametrize("holder", (0, 2))
+def test_an_open_window_held_at_the_table_loads(
+    everything: ContentLibrary, a_window_open: dict[str, Any], holder: int
+) -> None:
+    data = edited(a_window_open, ("priority", "holder"), holder)
+
+    assert Game.load(data, everything).state.priority.holder == holder
+
+
+@pytest.mark.parametrize(
+    ("holder", "said"),
+    (
+        (0, "priority to seat 0 with no window open"),
+        (True, "'holder'"),
+        (1.0, "'holder'"),
+        ("1", "'holder'"),
+    ),
+)
+def test_priority_held_with_no_window_open_is_refused(
+    everything: ContentLibrary,
+    three_seats: dict[str, Any],
+    holder: Any,
+    said: str,
+) -> None:
+    data = edited(three_seats, ("priority", "holder"), holder)
+
+    assert data["priority"]["is_open"] is False
+
+    with pytest.raises(SaveError, match=re.escape(said)):
+        Game.load(data, everything)
 
 
 def test_the_plain_functions_work_without_the_facade(

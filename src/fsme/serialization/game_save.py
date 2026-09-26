@@ -530,9 +530,11 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
 
     priority = _section(data, "priority")
 
-    state.priority.holder = priority.get("holder")
+    holder = priority.get("holder")
+    state.priority.holder = None if holder is None else _whole(holder, "holder")
     state.priority.passes = _integer(priority, "passes", 0)
     state.priority.is_open = _flag(priority, "is_open", False)
+    _check_priority(state)
 
     combat = _section(data, "combat")
 
@@ -955,6 +957,32 @@ def _relink_copies(index: Mapping[str, Any], cards: CardRegistry) -> None:
                 f"this save holds a copy of '{definition_id}', which the loaded "
                 f"content does not have"
             ) from error
+
+
+def _check_priority(state: GameState) -> None:
+    """
+    Refuse a priority window that nobody could act in, or one held while shut.
+
+    A window is opened for a seat and passed round the table, so while it is
+    open somebody at the table holds it; shut, nobody does. A save that has it
+    open for nobody - or for a seat nobody sits in - used to load, and then no
+    one could pass and the game waited for ever.
+    """
+    holder = state.priority.holder
+
+    if not state.priority.is_open:
+        if holder is not None:
+            raise SaveError(
+                f"this save gives priority to seat {holder} with no window open"
+            )
+
+        return
+
+    if holder is None or holder not in range(len(state.players)):
+        raise SaveError(
+            f"this save has a priority window open for seat {holder}, "
+            f"and it has {len(state.players)} players"
+        )
 
 
 def _check_seats(state: GameState) -> None:
