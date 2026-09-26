@@ -1008,7 +1008,10 @@ def _load_turn(
     turn.stack_depth = _integer(saved, "stack_depth", 0)
     turn.loot_played = _integer(saved, "loot_played", 0)
     turn.attacks_declared = _integer(saved, "attacks_declared", 0)
-    turn.extra_turn_for = saved.get("extra_turn_for")
+    promised = saved.get("extra_turn_for")
+    turn.extra_turn_for = (
+        None if promised is None else _whole(promised, "extra_turn_for")
+    )
     turn.attack_rolls = _integer(saved, "attack_rolls", 0)
     turn.monster_died = _flag(saved, "monster_died", False)
     turn.triggers_fired = dict(_section(saved, "triggers_fired"))

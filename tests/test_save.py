@@ -790,13 +790,40 @@ def test_a_turn_given_to_a_seat_nobody_sits_in_is_refused(
         Game.load(data, everything)
 
 
-@pytest.mark.parametrize("promised", (None, 0, 2))
-def test_an_extra_turn_promised_to_a_seat_at_the_table_loads(
-    everything: ContentLibrary, three_seats: dict[str, Any], promised: int | None
+@pytest.mark.parametrize("promised", (1.0, True, "1"))
+def test_an_extra_turn_promised_to_something_other_than_a_seat_number_is_refused(
+    everything: ContentLibrary, three_seats: dict[str, Any], promised: Any
 ) -> None:
+    """
+    Seat 1 as 1.0 or as true is equal to a seat by Python's reckoning, and got
+    past the check on seats: 1.0 then failed on the first move, and true was
+    quietly read as the second player. A seat is a whole number, as JSON writes
+    one.
+    """
     data = edited(three_seats, ("turn", "extra_turn_for"), promised)
 
-    assert Game.load(data, everything).state.turn.extra_turn_for == promised
+    with pytest.raises(SaveError, match="'extra_turn_for'"):
+        Game.load(data, everything)
+
+
+@pytest.mark.parametrize(
+    "promised", (None, MISSING, 0, 2), ids=("none", "missing", "0", "2")
+)
+def test_an_extra_turn_promised_to_a_seat_at_the_table_loads(
+    everything: ContentLibrary, three_seats: dict[str, Any], promised: Any
+) -> None:
+    """
+    A save that does not hold the field promises no extra turn, exactly as one
+    that holds nothing for it.
+    """
+    data = edited(three_seats, ("turn", "extra_turn_for"), promised)
+
+    if promised is MISSING:
+        assert "extra_turn_for" not in data["turn"]
+
+    expected = None if promised is MISSING else promised
+
+    assert Game.load(data, everything).state.turn.extra_turn_for == expected
 
 
 @pytest.mark.parametrize("players", (2, 3, 4))
