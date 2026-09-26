@@ -825,6 +825,82 @@ def test_a_malformed_ability_on_the_stack_is_refused(
         Game.load(with_an_ability(a_saved_game, ability), everything)
 
 
+# A controller at three places in a save, each read by its own loader: an
+# ability waiting on the stack, an event waiting in the queue, and a watcher.
+# Each entry says how to write one in, and how to read the controller back.
+CONTROLLED: dict[str, tuple[Any, Any]] = {
+    "stack": (
+        lambda: {"kind": "activated_ability", "ability": dict(AN_ABILITY)},
+        lambda state: next(iter(state.stack)).controller,
+    ),
+    "events": (
+        lambda: {"type": "game_start"},
+        lambda state: next(iter(state.events)).controller,
+    ),
+    "watchers": (
+        lambda: {"event": "after_roll"},
+        lambda state: state.watchers[0].controller,
+    ),
+}
+
+
+def controlled(saved: dict[str, Any], where: str, controller: Any) -> dict[str, Any]:
+    """
+    The save with one entry at the place named, answering to a controller.
+    """
+    data = dict(json.loads(json.dumps(saved)))
+    entry = CONTROLLED[where][0]()
+
+    if controller is not MISSING:
+        entry["controller"] = controller
+
+    data[where] = [entry]
+
+    return data
+
+
+@pytest.mark.parametrize("where", CONTROLLED)
+@pytest.mark.parametrize("controller", (True, False, 1.0, 1.5, "1", [], {}))
+def test_a_controller_that_is_not_a_seat_number_is_refused(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    where: str,
+    controller: Any,
+) -> None:
+    """
+    A fraction or a text got past the checks on seats and failed when the
+    ability resolved, and true was quietly read as the second player.
+    """
+    data = controlled(a_saved_game, where, controller)
+
+    with pytest.raises(SaveError, match="'controller'"):
+        Game.load(data, everything)
+
+
+@pytest.mark.parametrize("where", CONTROLLED)
+@pytest.mark.parametrize(
+    ("controller", "read"),
+    ((1, 1), (-1, -1), (2, 2), (None, None), (MISSING, None)),
+    ids=("seat", "negative", "past the end", "none", "missing"),
+)
+def test_a_controller_that_is_a_seat_number_or_nobody_loads(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    where: str,
+    controller: Any,
+    read: int | None,
+) -> None:
+    """
+    Only the type is asked about. A seat nobody sits in is how the rules say
+    nobody, and they already answer it that way when the entry is played.
+    """
+    assert len(a_saved_game["players"]) == 2
+
+    state = Game.load(controlled(a_saved_game, where, controller), everything).state
+
+    assert CONTROLLED[where][1](state) == read
+
+
 @pytest.fixture(scope="module")
 def three_seats(everything: ContentLibrary) -> dict[str, Any]:
     game = play(everything, 7, 3, steps=40)

@@ -586,7 +586,7 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
     state.watchers = [
         Watcher(
             event=str(_needed(saved, "event")),
-            controller=saved.get("controller"),
+            controller=_maybe_whole(saved, "controller"),
             source=_resolve(saved.get("source"), state, index),
             label=str(saved.get("label", "")),
             conditions=tuple(_listing(saved, "conditions")),
@@ -1075,7 +1075,7 @@ def _load_stack_item(
         label=str(saved.get("label", "")),
         source=_resolve(saved.get("source"), state, index),
         ability=_load_ability(_maybe_section(saved, "ability")),
-        controller=saved.get("controller"),
+        controller=_maybe_whole(saved, "controller"),
         targets=[
             _resolve(target, state, index) for target in _listing(saved, "targets")
         ],
@@ -1111,7 +1111,7 @@ def _load_event(
     event = Event(
         type=_member(EventType, _needed(saved, "type"), "event"),
         source=_resolve(saved.get("source"), state, index),
-        controller=saved.get("controller"),
+        controller=_maybe_whole(saved, "controller"),
         targets=[
             _resolve(target, state, index) for target in _listing(saved, "targets")
         ],
