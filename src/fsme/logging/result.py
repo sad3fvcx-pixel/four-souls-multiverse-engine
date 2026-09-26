@@ -29,7 +29,7 @@ class LoggingResult:
         message: str = "",
         *,
         emitted_records: int = 0,
-    ) -> "LoggingResult":
+    ) -> LoggingResult:
         """
         Create a successful logging result.
         """
@@ -43,7 +43,7 @@ class LoggingResult:
     def failed(
         cls,
         message: str = "",
-    ) -> "LoggingResult":
+    ) -> LoggingResult:
         """
         Create a failed logging result.
         """

@@ -1,0 +1,317 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-warp_zone-boxing_glove",
+      "name": "Boxing Glove",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Put a monster\nnot being attacked\non the bottom of the\nmonster deck.\n------------------------------\nEach time a monster\ndies, recharge this.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-warp_zone-boxing_glove",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Risk of Rain.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-warp_zone-doorway",
+      "name": "Doorway",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Choose one-\n•Put each monster not being\nattacked into discard.\n------------------------------\n•Put each shop item into\ndiscard.\n------------------------------\n•Put each room into\ndiscard.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-warp_zone-doorway",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game ToeJam & Earl.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-warp_zone-water_bottle",
+      "name": "Water Bottle",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Roll-\n1-3: Roll again.\n------------------------------\n4: Deal 1 damage to a monster\nor player. Roll again.\n------------------------------\n5. Deal 1 damage to a monster\nor player.\n------------------------------\n6: If it's your turn, end it. Cancel\neverything that hasn't resolved.\n------------------------------\n\"I did not hit her! I did not!\nOh, hi Mark!\"",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-warp_zone-water_bottle",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the film The Room.\n\nUnlocked via The Credits social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-warp_zone-gun_that_can_kill_the_past",
+      "name": "Gun That Can Kill the Past",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "↷: Destroy this.\nIf you do,\ncancel everything\nthat hasn't resolved.\nTake an extra turn\nafter this one.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-warp_zone-gun_that_can_kill_the_past",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Enter the Gungeon.\n\nUnlocked via the Lake of Fire social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-warp_zone-ser_junkan",
+      "name": "Ser Junkan",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard a loot card:\nThis levels up!\n------------------------------\nLevel 4+: You have +1 HP.\n------------------------------\nLevel 8+: Monsters have -1 DC\non your turn.\n------------------------------\nLevel 10+: You take no combat\ndamage on attack\nrolls of 1 or 2.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-warp_zone-ser_junkan",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the video game Enter the Gungeon.\n\nUnlocked via the Lake of Fire social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-warp_zone-spewer",
+      "name": "Spewer",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard a loot card: Roll.\nIf the discarded card was\nnamed Pills!, roll 3x instead-\n1-2: You gain +1 HP\ntill end of turn.\n------------------------------\n3-4: You gain +1 AT\ntill end of turn.\n------------------------------\n5-6: Take 1 damage.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-warp_zone-spewer",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the video game Spewer.\n\nUnlocked via The White Light social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-warp_zone-the_crowdfunder",
+      "name": "The Crowdfunder",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 2¢: Roll-\n3-4: Deal 1 damage to\nanother player.\n------------------------------\n5-6: Deal 1 damage to\na monster.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-warp_zone-the_crowdfunder",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Risk of Rain.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-warp_zone-aubrey",
+      "name": "Aubrey",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you\npurchase a shop\nitem, loot 3.\n------------------------------\n\"You think this is a dream?\nWell then, maybe it's time\nfor you to wake up?\"",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-warp_zone-aubrey",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Hotline Miami.\n\nUnlocked via the Corpse social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-warp_zone-birthday_cake",
+      "name": "Birthday Cake",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, choose any number\nof players. Those players\nloot 1.\n------------------------------\n\"This is the day that the\nLord has made; let us rejoice\nand be glad in it.\"\nPsalm 118:24",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-warp_zone-birthday_cake",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Created to celebrate the 10th Anniversary of The Binding of Isaac and released to all backers of the Requiem Kickstarter, as well as pre-orders of Requiem.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-warp_zone-diogenes_pot",
+      "name": "Diogenes' Pot",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You take no combat\ndamage on attack\nrolls of 2 or 3.\n------------------------------\nEach time you roll an\nattack roll of 1, you die.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-warp_zone-diogenes_pot",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Getting Over It with Bennett Foddy.\n\nUnlocked via The Planetarium social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-warp_zone-george",
+      "name": "George",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you declare\nan attack, before choosing\nwhat to attack, you may\nlook at the top 5 cards\nof the monster deck and\nput them back in\nany order.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-warp_zone-george",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Hotline Miami.\n\nUnlocked via the Corpse social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-warp_zone-hitops",
+      "name": "Hitops",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You take no combat\ndamage on attack rolls\nof 4 or 5.\n------------------------------\nAt the start of each other\nplayer's turn, you may offer\nto high-five them. If they\naccept, they take no combat\ndamage on attack rolls of 4\nor 5 till end of turn.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-warp_zone-hitops",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game ToeJam & Earl.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-warp_zone-newgrounds_tank",
+      "name": "Newgrounds Tank",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You have\n+1 HP and +1 AT.\n------------------------------\nMonsters have\n+1 DC on your turn.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-warp_zone-newgrounds_tank",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the website Newgrounds.\n\nUnlocked via the Ashpit social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-warp_zone-tony",
+      "name": "Tony",
+      "type": "treasure",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "+1 AT\n------------------------------\nYou have +1 AT while\nyou control no other\nnon-eternal items.",
+        "set": "Warp Zone",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-warp_zone-tony",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Hotline Miami.\n\nUnlocked via the Corpse social goals to-do list during the Requiem Kickstarter."
+      }
+    }
+  ]
+}

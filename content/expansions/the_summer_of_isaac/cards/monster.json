@@ -1,0 +1,683 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-the_summer_of_isaac-coil",
+      "name": "Coil",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nWhen this enters play, each\nplayer gives their hand to the\nplayer to their right.\n------------------------------\nWhen this dies, put it in the\nmonster deck 4 cards\nfrom the top.\n------------------------------\nRewards: Loot 2",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_summer_of_isaac-coil",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Coil.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-the_summer_of_isaac-conjoined_fatty",
+      "name": "Conjoined Fatty",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nEach time a player plays a loot\ncard, put a counter on this.\n------------------------------\nEach time this would take damage\nwhile it has counters on it, prevent\nit. Remove a counter from this, and\nthe active player loots 1.\n------------------------------\nRewards: Loot 3",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_summer_of_isaac-conjoined_fatty",
+        "subcategory": "Basic Enemies",
+        "version": "Alt Ability",
+        "artist": "@rich_werner",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-the_summer_of_isaac-giant_poop",
+      "name": "Giant Poop",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 0,
+      "roll": 4,
+      "rewards": {
+        "loot": 5
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 0\n\nEach time a player deals\ndamage to this, they loot 1.\n------------------------------\nWhen an attack is declared on this,\neach non-active player teams up\nwith the attacking player.\n------------------------------\nThe player who kills this\ngains its rewards.\n------------------------------\nRewards: Loot 5",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_summer_of_isaac-giant_poop",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Design by @Gel0_Art\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-the_summer_of_isaac-light_switch",
+      "name": "Light Switch",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 0,
+      "roll": 1,
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 1+ | AT: 0\n\nEach time the active player deals\ndamage to this, they roll-\n1: Take 3 damage.\n------------------------------\n2: Take 2 damage.  3: Gain 1¢.\n------------------------------\n4: Loot 1.  5: Gain 5¢\n------------------------------\n6: Gain +1 treasure.\n------------------------------\nRewards: Roll- Gain x¢",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_summer_of_isaac-light_switch",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "Item: @HamBerry_art\nBackground: @WhaleBeanArt",
+        "notes": "Crossover with the video game AVGM.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-the_summer_of_isaac-mulligoon",
+      "name": "Mulligoon",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 0,
+      "roll": 4,
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 0\n\nEach time this takes damage, cancel\nan attack against this if able. The\nactive player loots 1 and moves\nthis to another monster slot.\n------------------------------\nThis doesn't heal at the\nend of each turn.\n------------------------------\nRewards: Deal 2 damage\nto a monster or player",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_summer_of_isaac-mulligoon",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241",
+        "notes": "Design by @MetroDesigner\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-the_summer_of_isaac-shopkeeper",
+      "name": "Shopkeeper",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 0,
+      "roll": 0,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 0 | AT: 0\n\nIf a player would destroy an\nitem for the death penalty, they\nput it in a shop slot instead.\n------------------------------\nThis can't be attacked.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: 5¢",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_summer_of_isaac-shopkeeper",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Design by @DaveReiby\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-the_summer_of_isaac-tainted_mulligan",
+      "name": "Tainted Mulligan",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nWhen an attack is declared\non this, this gains +1 HP for\neach loot card in the\nactive player's hand till\nend of turn.\n------------------------------\nRewards: Roll- Loot x",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_summer_of_isaac-tainted_mulligan",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Design by @megabonez\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-the_summer_of_isaac-weltling",
+      "name": "Weltling",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nAt the start of each turn,\nput a counter on this.\n------------------------------\nThis has -1 HP  for each counter on it.\n------------------------------\nEach time a player rolls an\nattack roll of 1, this deals\n2 damage to each player.\n------------------------------\nRewards: 5¢",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-the_summer_of_isaac-weltling",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Carious Weltling.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-cereus_peashy",
+      "name": "Cereus Peashy",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nAt the start of each turn, the\nactive player rolls-\n1-3: Choose another monster at\nrandom. Put it into discard.\n------------------------------\n4-6: They must attack this this turn.\n------------------------------\nEach time this takes damage, it deals\n1 damage to the active player.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-cereus_peashy",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Cereus Peashy.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-charmed_vis",
+      "name": "Charmed Vis",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nEach time a player attacking or\ncontrolling this takes damage,\nthis deals 1 damage to each\nother monster.\n------------------------------\nIf this would be killed by another\nplayer while it's an item, prevent\ndeath. That player steals this instead.\n------------------------------\nRewards: If this is a monster, it becomes\nan item with familiar. Gain it",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-charmed_vis",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241",
+        "notes": "Design by MrWe$tCoa$t\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-conquest",
+      "name": "Conquest",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 7
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nWhen this dies, the active\nplayer must make an\nadditional attack against\nanother player. They have\n4+ DC for the attack.\n------------------------------\nRewards: 7¢\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-conquest",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@Personfaces",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-cursed_haunt",
+      "name": "Cursed Haunt",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nWhile this is a soul, it has +1 DC\nand can be attacked.\n------------------------------\nIf this would die while it is a\nsoul, prevent death. The active\nplayer gains its reward and\nsteals it instead.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-cursed_haunt",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@MitBoy_",
+        "notes": "Design by @MitBoy_\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-gemini",
+      "name": "Gemini",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 8
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhen this reaches 1 HP, put\na HP counter on a monster\nchosen at random, then put\na AT counter on a monster\nchosen at random.\n------------------------------\nRewards: 8¢\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-gemini",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@Valdevia_Art",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-headless_horseman",
+      "name": "Headless Horseman",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nIf this would die, except on\nan attack roll of 6, prevent\ndeath. This heals to full HP,\ngains +1 DC and +1 AT till end of\nturn, and the active player\ngains its rewards.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-headless_horseman",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@Rodarounet",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-holy_greed",
+      "name": "Holy Greed",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 2,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 2\n\nShop items the active player\npurchases cost 3¢ less.\n------------------------------\nEach time a player purchases\na shop item, put counters on this\nequal to the amount of ¢ they paid.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: Gain 1¢\nfor each counter on this\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-holy_greed",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241",
+        "notes": "Design by @Quinbo51\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-krampus",
+      "name": "Krampus",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 4
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 1\n\nAt the start of each turn, each player\nvotes naughty or nice. If naughty wins, the\nactive player must attack this this turn.\n------------------------------\nEach time the attacking player rolls\nthe same attack roll result twice in\na row on the same turn, this deals\n1 damage to each other monster.\n------------------------------\nRewards: Loot 4\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-krampus",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@OmegaBlackArt",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-the_adversary",
+      "name": "The Adversary",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 3+ | AT: 1\n\nAt the start of each\nturn, each player\nchooses a different number\nbetween 1 and 6 in turn order.\nTill end of turn, each time a\nplayer's chosen number is\nrolled, they take 1 damage.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-the_adversary",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@KrampusParty",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-the_bloat",
+      "name": "The Bloat",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 2\n\nEach time a monster\ndies, this deals 1 damage\nto each other monster\nand each player.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-the_bloat",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "Joseph Whiteford",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-the_rainmaker",
+      "name": "The Rainmaker",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 0,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 10
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 0\n\nThis has +1 AT for each curse\nthe active player controls.\n------------------------------\nWhen an attack is declared on this,\nreveal cards from the top of the monster\ndeck till you reveal a curse card. Gain\nit, then put the rest on the bottom\nof the deck in a random order.\n------------------------------\nRewards: 10¢\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-the_rainmaker",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@D4V34NN4",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-war",
+      "name": "War",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 9
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 2\n\nAt the start\nof each turn, put a\nAT counter on another\nmonster chosen at random.\n(AT counters give the\nability \"This has +1 AT.\")\n------------------------------\nRewards: 9¢\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-war",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@pitchcanker",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-the_summer_of_isaac-widow",
+      "name": "Widow",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "activated",
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 5+ | AT: 1\n\nAt the start of each turn, put a\nspider counter on a character chosen at\nrandom. Then, the active player rolls for\neach spider counter on their character-\n1-3: Take 1 damage.\n------------------------------\nEach character with a spider\ncounter has ↷: Remove a spider\ncounter from this.\"\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-the_summer_of_isaac-widow",
+        "subcategory": "Bosses",
+        "version": "Alt Ability",
+        "artist": "@lehmannthiago",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-the_summer_of_isaac-dogma",
+      "name": "Dogma",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 4,
+      "roll": 4,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 4\n\nEach time a player rolls a 1, put\neach other monster into discard.\n------------------------------\nWhen this dies, the active player\nputs an eternal counter on an\nitem. (Eternal counters give\nthe ability \"eternal.\")\n------------------------------\nRewards: +1 treasure",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-the_summer_of_isaac-dogma",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@SpriBriPlus",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-the_summer_of_isaac-hush",
+      "name": "Hush",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 1,
+      "souls": 2,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 1+ | AT: 1\n\nDamage this would take\nis reduced by 1.\n------------------------------\nIf an attack roll made against\nthis is less than or equal to\nthe last attack roll made\nagainst it this turn, the\nroll counts as a miss.\n------------------------------\nRewards: +2 treasure\n(+2 souls)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-the_summer_of_isaac-hush",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@ZalsNG",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-the_summer_of_isaac-mother",
+      "name": "Mother!",
+      "type": "monster",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 8,
+      "attack": 2,
+      "roll": 1,
+      "souls": 2,
+      "rewards": {
+        "loot": 4
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 8 | DC: 1+ | AT: 2\n\nBefore each attack roll against\nthis is rolled, the players to the\nactive player's left and right\neach choose a number between\n1 and 6. If the next attack roll\nis one of those numbers, it\ncounts as a miss.\n------------------------------\nRewards: Loot 4\n(+2 souls)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-the_summer_of_isaac-mother",
+        "subcategory": "Epic Boss",
+        "version": "Alt Ability",
+        "artist": "@OddOblivion",
+        "notes": "Part of the Alt Art Booster Pack in The Summer of Isaac, released in July, 2024.",
+        "effect_3p_plus": true
+      }
+    }
+  ]
+}

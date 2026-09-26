@@ -1,0 +1,54 @@
+name: Something is missing
+description: A question you wanted to ask FSME and could not
+labels: ["enhancement"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        FSME is deliberately narrow: an engine that plays Four Souls, a journal
+        of what happened, and analysis of that journal. It is not going to
+        become a card maker, a story generator, or a game you play with
+        friends — [docs/NEXT.md](../blob/main/docs/NEXT.md) says what is on the
+        list, what is not, and why.
+
+        **Tell us the question you had, not the feature you designed.** The
+        most useful requests describe what you were trying to find out; we
+        often already have machinery that can answer it, or the answer changes
+        the shape of the feature entirely.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: What were you trying to find out
+      description: >
+        "I wanted to know whether my card is too strong for Isaac
+        specifically" is worth more than "add per-character splits".
+    validations:
+      required: true
+
+  - type: textarea
+    id: now
+    attributes:
+      label: What you did instead
+      description: What you tried, and where it stopped being enough.
+
+  - type: dropdown
+    id: who
+    attributes:
+      label: What are you using FSME for
+      options:
+        - writing custom cards
+        - balancing a set I am designing
+        - understanding the published game
+        - building something on top of the engine
+        - curiosity
+        - something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: shape
+    attributes:
+      label: What you think it should look like
+      description: Optional. A guess at the command, the output, or the report.

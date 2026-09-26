@@ -2,18 +2,12 @@
 
 """
 Stack subsystem exports.
+
+The stack stores pending actions and enforces LIFO ordering. It does not
+resolve them: resolution needs effects, targets and events, all of which sit
+above the stack in the dependency order, so the Runtime owns it.
 """
 
-from .constants import (
-    CARD_STACK_SOURCE,
-    DEFAULT_STACK_LIMIT,
-    PLAYER_STACK_SOURCE,
-    REPLACEMENT_STACK_SOURCE,
-    SYSTEM_STACK_SOURCE,
-    TRIGGER_STACK_SOURCE,
-)
-from .context import StackContext
-from .dispatcher import StackDispatcher
 from .errors import (
     InvalidStackItemError,
     StackEmptyError,
@@ -21,39 +15,39 @@ from .errors import (
     StackOverflowError,
     StackResolutionError,
 )
-from .handler import StackHandler
-from .item import StackItem
-from .resolver import StackResolver
-from .result import StackResult
-from .stack import Stack
-from .utils import (
-    ensure_stack_item,
-    ensure_stack_items,
-    is_stack_item,
-    stack_item_name,
+from .item import StackItem, StackItemStatus, StackItemType
+from .labels import (
+    ADVANCE_TURN,
+    ATTACK_DECLARATION,
+    CHANGE_ROOMS,
+    COMBAT_ROUND,
+    COMBAT_STRIKE,
+    DISCARD_PLAYED_LOOT,
+    DISCARD_TO_HAND_LIMIT,
+    LOOT_STEP,
+    PURCHASE,
+    SETTLE_ROLL,
 )
+from .stack import Stack
 
 __all__ = [
+    "ADVANCE_TURN",
+    "COMBAT_ROUND",
+    "COMBAT_STRIKE",
+    "DISCARD_PLAYED_LOOT",
+    "DISCARD_TO_HAND_LIMIT",
+    "ATTACK_DECLARATION",
+    "CHANGE_ROOMS",
+    "LOOT_STEP",
+    "PURCHASE",
+    "SETTLE_ROLL",
     "Stack",
     "StackItem",
-    "StackResult",
-    "StackResolver",
-    "StackDispatcher",
-    "StackHandler",
-    "StackContext",
+    "StackItemStatus",
+    "StackItemType",
     "StackError",
     "StackEmptyError",
     "StackResolutionError",
     "InvalidStackItemError",
     "StackOverflowError",
-    "DEFAULT_STACK_LIMIT",
-    "SYSTEM_STACK_SOURCE",
-    "PLAYER_STACK_SOURCE",
-    "CARD_STACK_SOURCE",
-    "TRIGGER_STACK_SOURCE",
-    "REPLACEMENT_STACK_SOURCE",
-    "ensure_stack_item",
-    "ensure_stack_items",
-    "stack_item_name",
-    "is_stack_item",
 ]

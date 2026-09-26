@@ -30,7 +30,10 @@ MANIFEST
 #   Usually these files are written by a python script from a template
 #   before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
+# PyInstaller writes a .spec beside whatever it was pointed at; ours is
+# hand-written and is the only way to build the executable, so it is kept.
 *.spec
+!packaging/fsme.spec
 
 # Installer logs
 pip-log.txt
@@ -73,6 +76,9 @@ docs/_build/
 
 # PyBuilder
 .pybuilder/
+# Java and Rust build directories. FSME has neither, and this pattern once
+# swallowed content/expansions/target/ — the Target expansion — so the
+# directories that must ship are exempted below.
 target/
 
 # Jupyter Notebook
@@ -216,3 +222,21 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# PyInstaller
+build/
+dist/
+*.spec.bak
+
+# Games played from the desk
+fsme-work/
+
+# Nothing under these may be ignored, whatever the patterns above say. Two
+# real losses came from generic patterns matching project files: `*.spec` ate
+# the PyInstaller recipe, and `target/` ate a card set. tests/test_release.py
+# fails if anything in here stops being tracked.
+!content/**
+!spec/**
+!docs/**
+!examples/**
+!packaging/**

@@ -1,0 +1,418 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-1-four_souls-a_penny",
+      "name": "A Penny!",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 1¢.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 3,
+        "source_id": "loot_deck-1-four_souls-a_penny",
+        "subcategory": "1¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-2-four_souls-2_cents",
+      "name": "2 Cents!",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 2¢.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 3,
+        "source_id": "loot_deck-2-four_souls-2_cents",
+        "subcategory": "2¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-3-four_souls-3_cents",
+      "name": "3 Cents!",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 3¢.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 4,
+        "source_id": "loot_deck-3-four_souls-3_cents",
+        "subcategory": "3¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-4-four_souls-4_cents",
+      "name": "4 Cents!",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 4¢.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 2,
+        "source_id": "loot_deck-4-four_souls-4_cents",
+        "subcategory": "4¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-batteries-four_souls-lil_battery",
+      "name": "Lil Battery",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Recharge\nan item.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-batteries-four_souls-lil_battery",
+        "subcategory": "Batteries",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-bombs-four_souls-bomb",
+      "name": "Bomb!",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Deal 1 damage\nto a monster\nor player.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-bombs-four_souls-bomb",
+        "subcategory": "Bombs",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-butter_beans-four_souls-butter_bean",
+      "name": "Butter Bean!",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "Cancel the ↷ or $\nability of an item\nor a loot being\nplayed.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-butter_beans-four_souls-butter_bean",
+        "subcategory": "Butter Beans",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-four_souls-card",
+      "name": "? Card",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "As you play this,\nchoose an item. This\ncopies one of that\nitem's ↷ abilities.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-four_souls-card",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-four_souls-get_out_of_jail_card",
+      "name": "Get Out of Jail Card",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Other players can't\nplay loot cards or\nactivate items till\nend of turn.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-four_souls-get_out_of_jail_card",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-four_souls-gold_key",
+      "name": "Gold Key",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The active player\nmay attack the\nmonster deck any\nnumber of times\ntill end of turn.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-four_souls-gold_key",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-dice_shards_soul_hearts-four_souls-dice_shard",
+      "name": "Dice Shard",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a dice roll.\nIts controller\nrerolls it.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-dice_shards_soul_hearts-four_souls-dice_shard",
+        "subcategory": "Dice Shards / Soul Hearts",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-nickels-four_souls-a_nickel",
+      "name": "A Nickel!",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 5¢.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-nickels-four_souls-a_nickel",
+        "subcategory": "Nickels",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-four_souls-ansuz",
+      "name": "Ansuz",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Look at the top\n4 cards of a deck\nand put them back\nin any order.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-four_souls-ansuz",
+        "subcategory": "Pills / Runes",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-four_souls-black_rune",
+      "name": "Black Rune",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Deal 1 damage\nto each monster.\n------------------------------\n3-4: Reroll an item.\n------------------------------\n5-6: Discard your\nhand, then loot 3.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-four_souls-black_rune",
+        "subcategory": "Pills / Runes",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-four_souls-perthro",
+      "name": "Perthro",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Reroll an item.\n(Destroy that item\nand replace it with\nthe top card of the\ntreasure deck.)",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-four_souls-perthro",
+        "subcategory": "Pills / Runes",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-four_souls-pills",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Cancel the ability\nof a loot being played.\n------------------------------\n3-4: Each other player\ndiscards a loot card.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-four_souls-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-four_souls-pills-v2",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Deal 1 damage to\na player.\n------------------------------\n3-4: Deal 1 damage to\na monster.\n------------------------------\n5-6: Take 1 damage.",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-four_souls-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-four_souls-pills-v3",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-2: Reroll an item you control.\n------------------------------\n3-4: Reroll an item.\n------------------------------\n5-6: Reroll each item you control.\n(Destroy that item and\nreplace it with the top card\nof the treasure deck.)",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-four_souls-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-four_souls-aaa_battery",
+      "name": "AAA Battery",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "At the end of\nyour turn, roll-\n4-6: Recharge an item.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-four_souls-aaa_battery",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-four_souls-poker_chip",
+      "name": "Poker Chip",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "The first time you would\ngain ¢ on each of your\nturns, roll-\n1-3: Gain 1¢ instead.\n------------------------------\n4-6: Gain double the number\nof ¢ you would've gained.\n------------------------------\n-Trinket-",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-four_souls-poker_chip",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-four_souls-tape_worm",
+      "name": "Tape Worm",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "Each time you miss\nan attack roll,\ndeal 1 damage to\nanother player.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-four_souls-tape_worm",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-four_souls-the_left_hand",
+      "name": "The Left Hand",
+      "type": "loot",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "Each time another\nplayer dies, you may\nrecharge an item.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Four Souls+",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-four_souls-the_left_hand",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

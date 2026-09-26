@@ -1,0 +1,74 @@
+{
+  "cards": [
+    {
+      "id": "room_deck-anniversary_booster_pack-daily_run",
+      "name": "Daily Run",
+      "type": "room",
+      "expansion": "anniversary_booster_pack",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nThis room can be attacked.\n------------------------------\nEach time this takes damage, gain 4¢ or loot 1,\nthen you may cancel your attack on this.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: +1 treasure",
+        "set": "Anniversary Booster Pack",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-anniversary_booster_pack-daily_run",
+        "notes": "Art by Private"
+      }
+    },
+    {
+      "id": "room_deck-anniversary_booster_pack-greed_mode",
+      "name": "Greed Mode",
+      "type": "room",
+      "expansion": "anniversary_booster_pack",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "Each time a monster dies, the active\nplayer gains ¢ equal to its HP.\n------------------------------\nEach ↷ ability on an item or\ncharacter becomes a $ ability\nwith \"$: Pay 3¢:\".",
+        "set": "Anniversary Booster Pack",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-anniversary_booster_pack-greed_mode",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-anniversary_booster_pack-guppy_s_pieces",
+      "name": "Guppy's Pieces",
+      "type": "room",
+      "expansion": "anniversary_booster_pack",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "When this enters play, choose a card\noutside the game named Soul of Guppy.\nIt becomes an active bonus soul.\n------------------------------\n↷: Look at the top 5 cards of the treasure\ndeck. You may gain up to 1 Guppy item\nfrom among them. Put the rest on the\nbottom of the deck in a random order.",
+        "set": "Anniversary Booster Pack",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-anniversary_booster_pack-guppy_s_pieces",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-anniversary_booster_pack-multiplayer_update",
+      "name": "Multiplayer Update",
+      "type": "room",
+      "expansion": "anniversary_booster_pack",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time an attack is declared,\neach non-active player teams up\nwith the attacking player.\n------------------------------\nIf a non-active player kills a\nmonster, they also gain its rewards.",
+        "set": "Anniversary Booster Pack",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-anniversary_booster_pack-multiplayer_update",
+        "notes": "Art by Private"
+      }
+    }
+  ]
+}

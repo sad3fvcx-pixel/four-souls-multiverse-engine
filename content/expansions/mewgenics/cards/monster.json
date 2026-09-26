@@ -1,0 +1,67 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-bosses-mewgenics-radical_rat",
+      "name": "Radical Rat",
+      "type": "monster",
+      "expansion": "mewgenics",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "turn_start",
+          "scope": "any",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": {
+                    "value": 4
+                  }
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "random_player"
+                }
+              ],
+              "else": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "random_monster"
+                }
+              ]
+            }
+          ],
+          "description": "At the start of each turn, the active player rolls- 1-3: deal 2 damage to a player chosen at random. 4-6: deal 2 damage to a monster chosen at random."
+        }
+      ],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nAt the start of each turn,\nthe active player rolls-\n1-3: Deal 2 damage to a player\nchosen at random.\n------------------------------\n4-6: Deal 2 damage to a monster\nchosen at random.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Mewgenics",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-mewgenics-radical_rat",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Mewgenics Collectible Cat Carrier bundle to celebrate the release of the Mewgenics video game."
+      }
+    }
+  ]
+}

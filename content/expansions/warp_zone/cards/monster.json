@@ -1,0 +1,627 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-warp_zone-a_dead_horse",
+      "name": "A Dead Horse",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 0,
+      "roll": 2,
+      "rewards": {
+        "cents": 25
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 2+ | AT: 0\n\nEach time this would take\ndamage, prevent it, then roll-\n1-2: Cancel an attack against this.\n------------------------------\n3-6: Gain 3¢.\n------------------------------\nRewards: 25¢",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-warp_zone-a_dead_horse",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via The Closet social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-warp_zone-hubert_cumberdale",
+      "name": "Hubert Cumberdale",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhen this dies, if it dealt\ncombat damage to a player\nthis turn, put it in a monster\nslot at the end of the turn.\n------------------------------\nWhen this dies, choose\nanother player. They die.\n------------------------------\nRewards: Loot 1",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-warp_zone-hubert_cumberdale",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the web series Salad Fingers.\n\nUnlocked via the Corpse social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-warp_zone-javon",
+      "name": "Javon!",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 3,
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 2\n\nAt the start of each turn,\nthe active player rerolls\na shop item, then deals\n1 damage to a player\nchosen at random.\n------------------------------\nRewards: Steal a shop item",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-warp_zone-javon",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241",
+        "notes": "Unlocked on the tenth roll against The Beast during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-warp_zone-keke_is_you",
+      "name": "Keke Is You",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nAt the start of each turn, the\nactive player chooses another\nplayer. If this would die this turn,\ninstead cancel an attack against\nthis, the chosen player dies, this\nheals to full HP, then the\nactive player loots 3.\n------------------------------\nRewards: Loot 3",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-warp_zone-keke_is_you",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Baba Is You.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-warp_zone-leatherneck",
+      "name": "Leatherneck",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 4+ | AT: 1\n\nEach time this takes\ndamage, this deals 1\ndamage to a player\nchosen at random.\n------------------------------\nRewards: +1 treasure",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-warp_zone-leatherneck",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Dusk.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-warp_zone-shopkeeper",
+      "name": "Shopkeeper!",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 5,
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 5+ | AT: 2\n\nAt any time the active player could\npurchase an item, they may roll-\n1-4: They must make an\nadditional attack against this.\n------------------------------\n5-6: The next shop item they\npurchase this turn costs 0¢.\n------------------------------\nRewards: Steal a shop item",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-warp_zone-shopkeeper",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Spelunky.\n\nUnlocked via The Mines social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-warp_zone-the_impostor",
+      "name": "The Impostor!",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nThe first time a player dies\neach turn, each living player\nvotes for a living player. Each\nplayer with the most votes\nor tied for the most dies.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: Loot 1",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-warp_zone-the_impostor",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Among Us.\n\nUnlocked via the Static social goals to-do list during the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-warp_zone-the_purple_shirted_eye_stabber",
+      "name": "The Purple-Shirted Eye Stabber",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 3,
+      "roll": 3,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 3\n\nAt the end of each turn,\nif the active player played\na loot card this turn, this\ndeals 1 damage to them.\n------------------------------\n\"I'm not for eyes.\nI'm against them!\"\n------------------------------\nRewards: Loot 3",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-warp_zone-the_purple_shirted_eye_stabber",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the webcomic Cyanide & Happiness.\n\nUnlocked via the Lake of Fire social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-warp_zone-zombie_jesus",
+      "name": "Zombie Jesus",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 2,
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 2+ | AT: 1\n\nAt the start of each turn, the\nactive player rolls-\n3-4: Kill the player\nto your right.\n------------------------------\n5-6: Kill the player\nto your left.\n------------------------------\nRewards: This kills you!",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-warp_zone-zombie_jesus",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the webcomic Cyanide & Happiness.\n\nUnlocked via the Lake of Fire social goals to-do list during the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-bosses-warp_zone-balrog",
+      "name": "Balrog",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 4,
+      "tags": [
+        "activated",
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 1\n\nWhen this dies, this becomes and\nitem with \"↷: Destroy this. If you\ndo, kill a player or monster\"\nand loses all other abilities.\nThe active player gains it.\n------------------------------\nRewards: \"Oh, yeah!\"",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-warp_zone-balrog",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Cave Story.\n\nUnlocked via the Home social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-warp_zone-death_trapper",
+      "name": "Death Trapper",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEach time a monster\ntakes damage,\nmonsters gain +1 DC\ntill end of turn.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-warp_zone-death_trapper",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the film PG: Psycho Goreman.\n\nUnlocked via the Gehenna social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-warp_zone-grandparent",
+      "name": "Grandparent",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 1\n\nWhen an attack is declared on\nthis, put a counter on it.\n------------------------------\nThis has +1 AT for each counter on it.\n------------------------------\nWhen the 3rd counter is put on this,\nthis dies. Each player takes 3 damage.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-warp_zone-grandparent",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Risk of Rain.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-warp_zone-lil_hunter",
+      "name": "Lil Hunter",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 2\n\nWhen this enters play, expand\nmonster slots by 1. The active\nplayer must make an additional\nattack this turn.\n------------------------------\nAt the end of the turn, put\nthis card in the monster deck\n4 cards from the top.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-warp_zone-lil_hunter",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Nuclear Throne.\n\nUnlocked via the Dross social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-warp_zone-melqu_ades",
+      "name": "Melquíades",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 1\n\nEach time this takes\ndamage, put a counter on it.\n------------------------------\nWhile this has 5+ counters\non it, it has -2 DC.\n------------------------------\nRewards: +2 treasure\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-warp_zone-melqu_ades",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Blasphemous.\n\nUnlocked via The Credits social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-warp_zone-peeper",
+      "name": "Peeper",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 5+ | AT: 1\n\nWhen this dies, it becomes\nan item with \"+1 HP\" and loses\nall other abilites. The active\nplayer gains it.\n------------------------------\nWhen the attacking player misses\nan attack roll, cancel the attack.\n------------------------------\nRewards: Loot 1",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-warp_zone-peeper",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the video game Subnautica.\n\nUnlocked on the first roll against The Beast during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-warp_zone-the_butcher",
+      "name": "The Butcher",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 2,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 6,
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 2\n\nEach time the attacking player rolls\nan attack roll of 1, they roll-\nThey take damage equal to the result.\n------------------------------\nEach time this kills a player, put a\ncounter on it. This gains +1 AT.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: Loot 3 + gain 6¢\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-warp_zone-the_butcher",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the board game Kingdom Death: Monster.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-warp_zone-the_collector",
+      "name": "The Collector",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nEach time a player dies,\nput a counter on this.\n------------------------------\nThis has +1 HP for each\ncounter on it.\n------------------------------\nRewards: Gain +1 treasure\nfor each counter on this.\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-warp_zone-the_collector",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Darkest Dungeon.\n\nUnlocked on the fourth roll against The Beast during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bosses-warp_zone-the_gorm",
+      "name": "The Gorm",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "cents": 6,
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 5+ | AT: 1\n\nAt the end of each turn, the\nactive player discards a loot card.\n------------------------------\nAttack rolls of 1 against this\ncount as a hit and the combat damage\nit takes on them is doubled.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: Loot 3 + gain 6¢\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-warp_zone-the_gorm",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the board game Kingdom Death: Monster.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-warp_zone-ballos",
+      "name": "Ballos!",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 2,
+      "rewards": {
+        "loot": 5
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nWhen this dies, after gaining\nrewards, if it had no counters on\nit, put a counter on it, and put it in\na monster slot not being attacked.\n------------------------------\nThis has +2 AT while it\nhas a counter on it.\n------------------------------\nRewards: Loot 5\n(+2 souls)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-warp_zone-ballos",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Cave Story.\n\nUnlocked via the Home social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-warp_zone-exp_sito",
+      "name": "Expósito",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 6,
+      "roll": 6,
+      "souls": 1,
+      "rewards": {
+        "loot": 6
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 6 | AT: 6\n\nEach time a monster dies, put\na counter on this. Then, if this\nhas 6+ counters, it dies.\n------------------------------\nThe active player must attack\nthe monster deck once each\nturn if able.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: Loot 6\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-warp_zone-exp_sito",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Blasphemous.\n\nUnlocked via The Credits social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-warp_zone-the_radiance",
+      "name": "The Radiance",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 7,
+      "attack": 5,
+      "roll": 6,
+      "souls": 1,
+      "rewards": {
+        "loot": 10
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 7 | DC: 6 | AT: 5\n\nEach time a player dies,\nput a counter on this.\n------------------------------\nThis has -1 DC for each counter on it.\n------------------------------\nThe active player loots +1\nduring their loot step.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: Loot 10\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-warp_zone-the_radiance",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Hollow Knight.\n\nUnlocked via the Dross social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-warp_zone-time_eater",
+      "name": "Time Eater",
+      "type": "monster",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 6,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 5+ | AT: 1\n\nAt the end of each turn,\nput a counter on this.\n------------------------------\nWhen the 12th counter is put\non this, choose a player who\ncontrols the most souls or tied\nfor the most. That player wins.\n------------------------------\n-Indomitable-\n------------------------------\nRewards: Take an extra turn\nafter this one\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-warp_zone-time_eater",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Slay the Spire.\n\nUnlocked via The Mausoleum social goals to-do list during the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    }
+  ]
+}

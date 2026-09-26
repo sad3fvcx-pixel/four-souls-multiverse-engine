@@ -1,0 +1,99 @@
+{
+  "cards": [
+    {
+      "id": "engine_demo.cave_crawler",
+      "name": "Cave Crawler",
+      "type": "monster",
+      "expansion": "engine_demo",
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": { "cents": 3 },
+      "tags": ["basic"],
+      "abilities": []
+    },
+    {
+      "id": "engine_demo.stone_lurker",
+      "name": "Stone Lurker",
+      "type": "monster",
+      "expansion": "engine_demo",
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": { "cents": 4 },
+      "tags": ["basic"],
+      "abilities": []
+    },
+    {
+      "id": "engine_demo.gloom_moth",
+      "name": "Gloom Moth",
+      "type": "monster",
+      "expansion": "engine_demo",
+      "health": 2,
+      "attack": 2,
+      "roll": 5,
+      "souls": 1,
+      "rewards": { "loot": 1 },
+      "tags": ["flying"],
+      "abilities": [
+        {
+          "trigger": "on_enter",
+          "effects": [
+            { "effect": "deal_damage", "amount": 1, "target": "active_player" }
+          ],
+          "description": "When this enters play, deal 1 damage to the active player."
+        }
+      ]
+    },
+    {
+      "id": "engine_demo.hollow_king",
+      "name": "Hollow King",
+      "type": "monster",
+      "expansion": "engine_demo",
+      "health": 5,
+      "attack": 2,
+      "roll": 5,
+      "souls": 2,
+      "rewards": { "cents": 6, "treasure": 1 },
+      "tags": ["boss"],
+      "abilities": []
+    },
+    {
+      "id": "engine_demo.coin_slime",
+      "name": "Coin Slime",
+      "type": "monster",
+      "expansion": "engine_demo",
+      "health": 1,
+      "attack": 1,
+      "roll": 2,
+      "souls": 1,
+      "rewards": { "cents": 8 },
+      "tags": ["basic"],
+      "abilities": []
+    },
+    {
+      "id": "engine_demo.thorn_beast",
+      "name": "Thorn Beast",
+      "type": "monster",
+      "expansion": "engine_demo",
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": { "cents": 3 },
+      "tags": ["basic"],
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "effects": [
+            { "effect": "deal_damage", "amount": 1, "target": "active_player" }
+          ],
+          "description": "Whenever this is damaged, it deals 1 damage back."
+        }
+      ]
+    }
+  ]
+}
