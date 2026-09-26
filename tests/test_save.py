@@ -761,6 +761,69 @@ def test_a_shield_that_stops_a_whole_number_or_the_whole_blow_loads(
     assert [shield.amount for shield in shields] == [stops] * len(shields)
 
 
+# The seats a card writes down: who owns it, who controls it, and who last hurt
+# it. Each is a seat or nobody.
+SEATED = ("owner", "controller", "last_damaged_by")
+
+
+def a_monster_with(saved: dict[str, Any], field: str, value: Any) -> dict[str, Any]:
+    """
+    The save with one seat on the first monster written as the value given.
+    """
+    return edited(saved, (*A_MONSTER[:-1], field), value)
+
+
+@pytest.mark.parametrize("field", SEATED)
+@pytest.mark.parametrize("value", (*NOT_A_WHOLE_NUMBER, {}))
+def test_a_card_seat_that_is_not_a_seat_number_is_refused(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], field: str, value: Any
+) -> None:
+    """
+    A fraction or a text loaded and failed later - a monster killed half way,
+    an item's ability with nobody to find - and true was read as seat 1: it
+    paid a reward, and the game then wrote a save it would not load.
+    """
+    with pytest.raises(SaveError, match=f"'{field}'"):
+        Game.load(a_monster_with(a_saved_game, field, value), everything)
+
+
+@pytest.mark.parametrize("field", SEATED)
+@pytest.mark.parametrize(
+    ("value", "read"),
+    ((1, 1), (-1, -1), (99, 99), (None, None), (MISSING, None)),
+    ids=("seat", "negative", "far past the end", "none", "missing"),
+)
+def test_a_card_seat_that_is_a_seat_number_or_nobody_loads(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    field: str,
+    value: Any,
+    read: int | None,
+) -> None:
+    """
+    Only the type is asked about. A seat nobody sits in is how the rules say
+    nobody, and a seat left out is the same as one written down as nothing.
+    """
+    assert field in a_saved_game["monster_area"][0][0]
+
+    data = a_monster_with(a_saved_game, field, value)
+    monster = Game.load(data, everything).state.monster_area[0].cards[0]
+
+    assert getattr(monster, field) == read
+
+
+@pytest.mark.parametrize("field", SEATED)
+def test_a_card_seat_just_past_the_table_loads(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], field: str
+) -> None:
+    seats = len(a_saved_game["players"])
+
+    data = a_monster_with(a_saved_game, field, seats)
+    monster = Game.load(data, everything).state.monster_area[0].cards[0]
+
+    assert getattr(monster, field) == seats
+
+
 AN_ABILITY: dict[str, Any] = {
     "trigger": "activated",
     "conditions": [],

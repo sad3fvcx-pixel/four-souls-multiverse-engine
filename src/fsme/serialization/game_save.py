@@ -921,13 +921,13 @@ def _load_card(
     card = CardInstance(
         definition=definition,
         instance_id=str(saved.get("instance_id", "")),
-        owner=saved.get("owner"),
-        controller=saved.get("controller"),
+        owner=_maybe_whole(saved, "owner"),
+        controller=_maybe_whole(saved, "controller"),
         zone=str(saved.get("zone", "")),
         hp=_maybe_whole(saved, "hp"),
         tapped=_flag(saved, "tapped", False),
         alive=_flag(saved, "alive", True),
-        last_damaged_by=saved.get("last_damaged_by"),
+        last_damaged_by=_maybe_whole(saved, "last_damaged_by"),
         counters=dict(_section(saved, "counters")),
     )
 
