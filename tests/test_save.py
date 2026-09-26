@@ -664,6 +664,103 @@ def test_a_save_that_cannot_be_read_is_refused_as_one(
         Game.load(data, everything)
 
 
+A_MONSTER = ("monster_area", 0, 0, "hp")
+
+
+def with_shields(saved: dict[str, Any], amount: Any) -> dict[str, Any]:
+    """
+    The save with a shield on every player, each stopping the same amount.
+    """
+    data = dict(json.loads(json.dumps(saved)))
+
+    data["shields"] = []
+
+    for player in data["players"]:
+        shield: dict[str, Any] = {"player_id": player["player_id"], "label": "t"}
+
+        if amount is not MISSING:
+            shield["amount"] = amount
+
+        data["shields"].append(shield)
+
+    return data
+
+
+NOT_A_WHOLE_NUMBER = (True, False, 1.0, 1.5, "1", [])
+
+
+@pytest.mark.parametrize("hp", NOT_A_WHOLE_NUMBER)
+def test_a_card_whose_health_is_not_a_whole_number_is_refused(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], hp: Any
+) -> None:
+    """
+    A monster's health written as text failed on the next move, false or an
+    empty list read as a monster already dead, and a fraction left one with
+    health no die can take away.
+    """
+    with pytest.raises(SaveError, match="'hp'"):
+        Game.load(edited(a_saved_game, A_MONSTER, hp), everything)
+
+
+@pytest.mark.parametrize("hp", (5, 0, -2))
+def test_a_card_whose_health_is_a_whole_number_loads(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], hp: int
+) -> None:
+    state = Game.load(edited(a_saved_game, A_MONSTER, hp), everything).state
+
+    assert state.monster_area[0].cards[0].hp == hp
+
+
+@pytest.mark.parametrize("hp", (None, MISSING), ids=("none", "missing"))
+def test_a_card_with_no_health_written_down_takes_its_printed_health(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], hp: Any
+) -> None:
+    """
+    Nothing written down means the health printed on the card, and a card with
+    no health printed on it has none.
+    """
+    state = Game.load(edited(a_saved_game, A_MONSTER, hp), everything).state
+
+    monster = state.monster_area[0].cards[0]
+
+    assert monster.definition.health is not None
+    assert monster.hp == monster.definition.health
+
+    loot = edited(a_saved_game, ("zones", "loot_deck", "cards", 0, "hp"), hp)
+    card = Game.load(loot, everything).state.loot_deck.cards[0]
+
+    assert card.definition.health is None
+    assert card.hp is None
+
+
+@pytest.mark.parametrize("amount", NOT_A_WHOLE_NUMBER)
+def test_a_shield_that_stops_something_other_than_a_whole_number_is_refused(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], amount: Any
+) -> None:
+    """
+    A shield of text failed the first time damage met it, and a fraction would
+    have left a player with health no die can take away.
+    """
+    with pytest.raises(SaveError, match="'amount'"):
+        Game.load(with_shields(a_saved_game, amount), everything)
+
+
+@pytest.mark.parametrize(
+    ("amount", "stops"),
+    ((3, 3), (0, 0), (-1, -1), (None, None), (MISSING, None)),
+    ids=("3", "0", "-1", "none", "missing"),
+)
+def test_a_shield_that_stops_a_whole_number_or_the_whole_blow_loads(
+    everything: ContentLibrary,
+    a_saved_game: dict[str, Any],
+    amount: Any,
+    stops: int | None,
+) -> None:
+    shields = Game.load(with_shields(a_saved_game, amount), everything).state.shields
+
+    assert [shield.amount for shield in shields] == [stops] * len(shields)
+
+
 AN_ABILITY: dict[str, Any] = {
     "trigger": "activated",
     "conditions": [],

@@ -553,7 +553,7 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
     state.shields = [
         DamageShield(
             player_id=_integer(saved, "player_id"),
-            amount=saved.get("amount"),
+            amount=_maybe_whole(saved, "amount"),
             label=str(saved.get("label", "")),
             duration=_duration(saved),
         )
@@ -799,6 +799,19 @@ def _integer(saved: Mapping[str, Any], key: str, default: int | None = None) -> 
     return _whole(saved[key], key)
 
 
+def _maybe_whole(saved: Mapping[str, Any], key: str) -> int | None:
+    """
+    A whole number that may be written down as nothing, or left out.
+
+    Nothing means what the field means by it - a card's printed health, a
+    shield that stops the whole blow - so it is kept as nothing, and only a
+    value that is there is asked to be a whole number.
+    """
+    value = saved.get(key)
+
+    return None if value is None else _whole(value, key)
+
+
 def _object(value: Any, key: str) -> Mapping[str, Any]:
     """
     Something the save holds as an object, checked to be one.
@@ -911,7 +924,7 @@ def _load_card(
         owner=saved.get("owner"),
         controller=saved.get("controller"),
         zone=str(saved.get("zone", "")),
-        hp=saved.get("hp"),
+        hp=_maybe_whole(saved, "hp"),
         tapped=_flag(saved, "tapped", False),
         alive=_flag(saved, "alive", True),
         last_damaged_by=saved.get("last_damaged_by"),
