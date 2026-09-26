@@ -600,6 +600,16 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
         for saved in _entries(data, "watchers")
     ]
 
+    # A question is only ever asked inside an ability, and a game waiting inside
+    # an ability is not saved - `_refuse_if_mid_ability` says so. A save that
+    # holds one is not ours: loaded, it left nobody able to move but the player
+    # asked, and their answer failed with the game already half changed.
+    if data.get("pending_decision") is not None:
+        raise SaveError(
+            "this save holds a decision still waiting for an answer, and a "
+            "saved game cannot hold one"
+        )
+
     saved_decision = _maybe_section(data, "pending_decision")
 
     if saved_decision is not None:

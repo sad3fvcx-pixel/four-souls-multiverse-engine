@@ -554,6 +554,51 @@ def with_a_modifier(saved: dict[str, Any], amount: Any) -> dict[str, Any]:
     return data
 
 
+# A decision written down with every field the writer gives one, each of them
+# well formed: what is refused is that the save holds one at all.
+A_DECISION: dict[str, Any] = {
+    "decision_id": "decision:1",
+    "player": 0,
+    "kind": "choose_option",
+    "options": ["yes", "no"],
+    "minimum": 1,
+    "maximum": 1,
+    "bind": "chosen",
+    "prompt": "",
+    "chosen": None,
+}
+
+
+@pytest.mark.parametrize(
+    "decision",
+    (A_DECISION, {}, "a decision", 0),
+    ids=("well formed", "empty", "text", "number"),
+)
+def test_a_save_holding_a_decision_is_refused(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], decision: Any
+) -> None:
+    """
+    A decision is only asked inside an ability, which is never saved. One
+    loaded from a file left nobody able to move but the player asked, and
+    their answer failed with the game already half changed.
+    """
+    data = edited(a_saved_game, ("pending_decision",), decision)
+
+    with pytest.raises(SaveError, match="decision still waiting for an answer"):
+        load_game(data, everything.registry())
+
+
+@pytest.mark.parametrize("decision", (None, MISSING), ids=("none", "missing"))
+def test_a_save_holding_no_decision_loads(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], decision: Any
+) -> None:
+    assert "pending_decision" in a_saved_game
+
+    data = edited(a_saved_game, ("pending_decision",), decision)
+
+    assert load_game(data, everything.registry()).pending_decision is None
+
+
 # A whole number at three depths: the game, a player, and a modifier inside a
 # list - which is also where a number below zero is an ordinary thing to hold.
 NUMBERS: dict[str, tuple[tuple[Any, ...], Any]] = {
