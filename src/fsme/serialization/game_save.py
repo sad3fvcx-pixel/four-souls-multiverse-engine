@@ -538,11 +538,12 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
 
     combat = _section(data, "combat")
 
-    state.combat.attacker = combat.get("attacker")
+    state.combat.attacker = _maybe_whole(combat, "attacker")
     state.combat.monster = _resolve(combat.get("monster"), state, index)
     state.combat.round_number = _integer(combat, "round_number", 0)
     state.combat.settled_roll = combat.get("settled_roll")
     state.combat.active = _flag(combat, "active", False)
+    _check_combat(state)
 
     for saved_item in _entries(data, "stack"):
         state.stack.push(_load_stack_item(saved_item, state, index))
@@ -980,6 +981,32 @@ def _relink_copies(index: Mapping[str, Any], cards: CardRegistry) -> None:
                 f"this save holds a copy of '{definition_id}', which the loaded "
                 f"content does not have"
             ) from error
+
+
+def _check_combat(state: GameState) -> None:
+    """
+    Refuse an attack made by nobody at the table.
+
+    An attack is begun by a seat and ended all at once, so while one is going on
+    somebody at the table is making it. The rounds look the attacker up by seat
+    with nothing in between: a seat past the end failed half way through a
+    round, one below nought was read as a player counted from the end, and an
+    attack going on with nobody making it lost its rounds without a word. An
+    attack that is over may still name who made it; nothing reads that.
+    """
+    attacker = state.combat.attacker
+
+    if attacker is None:
+        if state.combat.active:
+            raise SaveError("this save has an attack going on that nobody is making")
+
+        return
+
+    if attacker not in range(len(state.players)):
+        raise SaveError(
+            f"this save has seat {attacker} attacking, "
+            f"and it has {len(state.players)} players"
+        )
 
 
 def _check_priority(state: GameState) -> None:

@@ -869,6 +869,133 @@ def test_a_card_seat_just_past_the_table_loads(
     assert getattr(monster, field) == seats
 
 
+def attacking(saved: dict[str, Any], attacker: Any, active: bool) -> dict[str, Any]:
+    """
+    The save with an attack said to be going on, or over, made by the seat given.
+    """
+    data = edited(saved, ("combat", "active"), active)
+
+    return edited(data, ("combat", "attacker"), attacker)
+
+
+@pytest.fixture(scope="module")
+def an_attack_going_on(everything: ContentLibrary) -> dict[str, Any]:
+    """
+    A two-player game saved while an attack is going on.
+
+    Only a table that answers priority stops between the rounds of an attack;
+    otherwise the whole of it is one move.
+    """
+    game = Game.from_content(
+        everything, ["Ann", "Bo"], seed=1, interactive_priority=True
+    )
+
+    assert game.start().accepted
+
+    moves = random.Random(1)
+
+    for _ in range(500):
+        step(game, moves)
+
+        try:
+            data = written(game)
+        except SaveError:
+            continue
+
+        if data["combat"]["active"]:
+            return data
+
+    raise AssertionError("no attack was ever going on between moves")
+
+
+def test_an_attack_the_writer_left_going_on_loads(
+    everything: ContentLibrary, an_attack_going_on: dict[str, Any]
+) -> None:
+    combat = Game.load(an_attack_going_on, everything).state.combat
+
+    assert combat.active is True
+    assert combat.attacker == an_attack_going_on["combat"]["attacker"]
+    assert combat.attacker in range(len(an_attack_going_on["players"]))
+
+
+@pytest.mark.parametrize("attacker", (*NOT_A_WHOLE_NUMBER, {}))
+def test_an_attacker_that_is_not_a_seat_number_is_refused(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], attacker: Any
+) -> None:
+    """
+    A fraction or a text failed half way through the next round, and true or
+    false was quietly read as seat 1 or seat 0.
+    """
+    data = attacking(a_saved_game, attacker, True)
+
+    with pytest.raises(SaveError, match="'attacker'"):
+        Game.load(data, everything)
+
+
+@pytest.mark.parametrize(
+    "attacker",
+    (-1, "every seat back", "the seat past the end", 99),
+    ids=("-1", "negative of an occupied seat", "n", "99"),
+)
+def test_an_attacker_nobody_sits_at_is_refused(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], attacker: Any
+) -> None:
+    """
+    The rounds look the attacker up by seat and nothing else: a seat past the
+    end failed half way through one, and a seat below nought was read as a
+    player counted from the end of the table.
+    """
+    seats = len(a_saved_game["players"])
+    seat = {"every seat back": -seats, "the seat past the end": seats}.get(
+        attacker, attacker
+    )
+
+    with pytest.raises(SaveError, match=f"seat {seat} attacking"):
+        Game.load(attacking(a_saved_game, seat, True), everything)
+
+
+@pytest.mark.parametrize("active", (True, False))
+def test_an_attacker_at_the_table_loads(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], active: bool
+) -> None:
+    """
+    An attack that is over may still name who made it: nothing reads it, and
+    the writer's own saves never say so, but it is not refused either.
+    """
+    last = len(a_saved_game["players"]) - 1
+
+    data = attacking(a_saved_game, last, active)
+    combat = Game.load(data, everything).state.combat
+
+    assert (combat.attacker, combat.active) == (last, active)
+
+
+@pytest.mark.parametrize("attacker", (None, MISSING), ids=("none", "missing"))
+def test_no_attacker_with_no_attack_going_on_loads(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], attacker: Any
+) -> None:
+    assert "attacker" in a_saved_game["combat"]
+
+    data = attacking(a_saved_game, attacker, False)
+    combat = Game.load(data, everything).state.combat
+
+    assert (combat.attacker, combat.active) == (None, False)
+
+
+@pytest.mark.parametrize("attacker", (None, MISSING), ids=("none", "missing"))
+def test_an_attack_going_on_with_nobody_making_it_is_refused(
+    everything: ContentLibrary, a_saved_game: dict[str, Any], attacker: Any
+) -> None:
+    """
+    The rounds of such an attack did nothing and said nothing, and the attack
+    was lost.
+    """
+    data = attacking(a_saved_game, attacker, True)
+
+    with pytest.raises(SaveError, match="attack going on that nobody is making"):
+        Game.load(data, everything)
+
+
 AN_ABILITY: dict[str, Any] = {
     "trigger": "activated",
     "conditions": [],
