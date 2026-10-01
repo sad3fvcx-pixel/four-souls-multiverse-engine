@@ -400,10 +400,12 @@ def _card_field(field: Field[Any]) -> ParamShape:
     # name somebody gave it. A form offering either takes an answer it is about
     # to overwrite.
     ours = ("id", "expansion")
-    # Free-form data the engine keeps and does not read: a list of family names
-    # with no closed set, what a monster pays out, and the card's own notes.
-    # None of them is a value anybody types into a box.
-    theirs = ("tags", "rewards", "metadata")
+    # Free-form data the engine keeps and does not read: what a monster pays
+    # out, and the card's own notes. Neither is a value anybody types into a
+    # box. The families a card belongs to used to be here too, and are not: a
+    # list of words is words, several of them, and saying so is what lets the
+    # form ask for them one at a time and offer the ones already written.
+    theirs = ("rewards", "metadata")
     # Where two of the open vocabularies come from. A card's name and the
     # families it declares are not answers drawn from a pool, they *are* the
     # pool — and saying so here is what lets one mechanism gather the words and

@@ -619,7 +619,7 @@ function picksFirst(part) {
 // a word inside a sentence. Not the same question as whether the walk asks it:
 // a list of steps is asked and is not a word.
 function sayable(f) {
-  return f.asked !== "never" && f.shown === "form";
+  return f.asked !== "never" && f.shown === "form" && !f.words;
 }
 
 // The three ways of showing a field that are not a question this walk puts.
@@ -2043,6 +2043,7 @@ function oneByOne(fields, values, groups, path, groupPath, owner) {
     if (f.shown === "nested")
       return nestedHtml(f, values, path, groups, groupPath);
     if (f.shown === "advanced") return structureHtml(f, values, path);
+    if (f.words) return wordsHtml(f, values, path);
     // More than one way of being written, a name an earlier step made, or a
     // list of choices that waits on another answer.
     if (f.also.length) return waysHtml(f, values, list, path, owner);
@@ -2162,6 +2163,37 @@ function structureHtml(f, values, path) {
       oninput="setStructure('${path}','${f.id}',this)">${esc(shown)}</textarea>
     <p class="problem" id="${note(path, f.id)}"></p>
   </details>`;
+}
+
+// Several words, each typed, none of them out of a known set: the families a
+// card belongs to. One box a word, in the order they were written, and the
+// words other cards have used offered on every one of them without any of them
+// being the only ones allowed. What a card already says is shown as it says
+// it and kept that way until somebody changes it.
+function wordsHtml(f, values, path) {
+  const written = Array.isArray(values[f.id]) ? values[f.id] : [];
+  const pool = f.suggest_from ? (pools[f.suggest_from] || []) : [];
+  const listed = pool.length ? `${note(path, f.id)}-pool` : "";
+  const offered = listed ? `list="${listed}"` : "";
+  const rows = written.map((word, i) => `<div class="head">
+      <input ${offered} value="${esc(word)}"
+             onchange="setWord('${path}','${f.id}',${i},this.value)">
+      <button onclick="dropWord('${path}','${f.id}',${i})">remove</button>
+    </div>`).join("");
+  return `<label>${esc(asksOf(f))}${needed(f)}</label>
+    <div class="body" data-words="${esc(f.id)}">${rows}
+      <div class="head">
+        <input ${offered} placeholder="another word">
+        <button onclick="addWord('${path}','${f.id}',this.previousElementSibling)"
+          >Add a word</button>
+      </div>
+      ${listed ? `<datalist id="${listed}">${
+        pool.map(w => `<option value="${esc(w)}"></option>`).join("")
+      }</datalist>
+      <p class="muted">${pool.length} ${
+        pool.length === 1 ? "word has" : "words have"
+      } been used here before — or write a new one.</p>` : ""}
+    </div>`;
 }
 
 // Everything a person simply answers. `role` decides the control, `many`
@@ -2345,6 +2377,49 @@ function setMany(path, key, box) {
   if (picked.length) at(path)[key] = picked; else delete at(path)[key];
   told(path, key, picked.length ? picked : undefined);
   face();
+}
+
+// The words a list of words holds now, kept in the card or left out of it. A
+// list with nothing left in it is not written at all, the way every other
+// answer left empty is not: an empty list and no list mean the same card.
+function keepWords(path, key, words) {
+  if (words.length) at(path)[key] = words; else delete at(path)[key];
+  drawn();
+}
+
+// Words already there, as a fresh list — never the one the card holds, which
+// is only replaced once the change is known to be one worth keeping.
+function wordsAt(path, key) {
+  const held = at(path)[key];
+  return Array.isArray(held) ? held.slice() : [];
+}
+
+// One more word, at the end. A blank is not a word and a word already there is
+// not another one: either is left out and the box is emptied all the same.
+function addWord(path, key, box) {
+  const word = box.value.trim();
+  const words = wordsAt(path, key);
+  if (!word || words.includes(word)) { box.value = ""; return; }
+  words.push(word);
+  keepWords(path, key, words);
+}
+
+// A word changed where it stands, so the order is kept. Emptied, it is taken
+// out; changed into one of the others, it is left as it was.
+function setWord(path, key, i, now) {
+  const word = now.trim();
+  const words = wordsAt(path, key);
+  if (word === words[i]) return drawn();
+  if (!word) words.splice(i, 1);
+  else if (words.includes(word)) return drawn();
+  else words[i] = word;
+  keepWords(path, key, words);
+}
+
+function dropWord(path, key, i) {
+  const words = wordsAt(path, key);
+  words.splice(i, 1);
+  keepWords(path, key, words);
 }
 
 // Something the ability picks out, named behind the author's back.

@@ -18,6 +18,7 @@ looked like a bug in one effect, and none of them was.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -31,9 +32,10 @@ from fsme.content.vocabulary import (
     BY_NAME,
     BY_PLAYER_OF,
     STRUCTURE,
+    TAG_POOL,
     WHOM,
 )
-from fsme.lab.desk.author import build_card, check_card
+from fsme.lab.desk.author import build_card, check_card, read_card
 from fsme.lab.desk.capabilities import catalogue
 
 PAGE = (
@@ -998,3 +1000,182 @@ def test_every_target_and_condition_asks_in_words(can: dict[str, Any]) -> None:
     ]
 
     assert bare == []
+
+
+# ----------------------------------------------------------------------
+# The families a card belongs to are words, not a box of JSON
+# ----------------------------------------------------------------------
+
+
+CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
+
+
+def card_fields(can: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    (card,) = [one for one in can["cards"] if one["id"] == "card"]
+
+    return {field["id"]: field for field in card["fields"]}
+
+
+def shipped_cards() -> list[dict[str, Any]]:
+    found = []
+
+    for path in sorted(CONTENT_ROOT.rglob("*.json")):
+        data = json.loads(path.read_text("utf-8"))
+
+        if isinstance(data, dict) and isinstance(data.get("cards"), list):
+            found.extend(one for one in data["cards"] if isinstance(one, dict))
+
+    return found
+
+
+def test_a_card_s_families_are_asked_as_words(can: dict[str, Any]) -> None:
+    """
+    A list of family names used to be drawn as a box of JSON, which is the one
+    control that cannot offer the families other cards already use.
+    """
+    tags = card_fields(can)["tags"]
+
+    assert tags["role"] != STRUCTURE
+    assert tags["shown"] == "form"
+    assert tags["kind"] == A_LIST
+    assert tags["words"] is True
+    assert tags["many"] is False
+    assert tags["choices"] == []
+    assert tags["suggest_from"] == TAG_POOL == "tags"
+
+
+def test_only_a_card_s_families_are_words(can: dict[str, Any]) -> None:
+    """
+    Every other list is drawn as it was: a list of more of the language as a
+    body, several out of a known set as a multiple choice, and what a monster
+    pays out and a card's own notes as the structures they are.
+    """
+
+    def every(node: Any, owner: str = "") -> Any:
+        if isinstance(node, dict):
+            if "fields" in node and "id" in node:
+                for field in node["fields"]:
+                    yield f"{node['id']}.{field['id']}", field
+
+            for value in node.values():
+                yield from every(value)
+        elif isinstance(node, list):
+            for value in node:
+                yield from every(value)
+
+    fields = dict(every(can))
+
+    assert {where for where, field in fields.items() if field["words"]} == {
+        "card.tags"
+    }
+    assert {where for where, field in fields.items() if field["many"]} == {
+        "all_stack.kinds",
+        "all_stack.triggers",
+        "target_stack_item.kinds",
+        "target_stack_item.triggers",
+    }
+
+    card = card_fields(can)
+
+    assert card["rewards"]["shown"] == "advanced"
+    assert card["metadata"]["shown"] == "advanced"
+    assert card["abilities"]["shown"] == "body"
+
+
+def test_the_page_draws_words_one_box_each() -> None:
+    """
+    One box a word, with a way to add one and a way to take one out, and the
+    families other cards use offered on every box.
+    """
+    page = PAGE.read_text("utf-8")
+
+    assert "if (f.words) return wordsHtml(f, values, path);" in page
+    assert "function wordsHtml(f, values, path)" in page
+    assert "pools[f.suggest_from]" in page
+    assert "<datalist" in page
+    assert "Add a word" in page
+    assert "onclick=\"dropWord(" in page
+    assert "onchange=\"setWord(" in page
+    # A list of words is not one plain value, so it is never read back as one.
+    assert '&& !f.words' in page
+
+
+def test_a_blank_or_repeated_word_is_never_kept() -> None:
+    """
+    Adding trims the word and leaves out a blank or one already there;
+    changing a word to nothing takes it out, and changing it into another word
+    already there leaves it as it was. An empty list is not written at all.
+    """
+    page = PAGE.read_text("utf-8")
+
+    assert "const word = box.value.trim();" in page
+    assert "if (!word || words.includes(word))" in page
+    assert "const word = now.trim();" in page
+    assert "if (!word) words.splice(i, 1);" in page
+    assert "else if (words.includes(word)) return drawn();" in page
+    assert (
+        "if (words.length) at(path)[key] = words; else delete at(path)[key];"
+        in page
+    )
+
+
+def test_every_card_s_families_open_and_save_as_they_were() -> None:
+    """
+    Opened and kept without a change, a card says the same families in the
+    same order — every one of the shipped cards that has any.
+    """
+    tagged = [card for card in shipped_cards() if "tags" in card]
+
+    assert len(tagged) == 774
+
+    for card in tagged:
+        read = read_card(card)
+
+        assert read["card"]["fields"]["tags"] == card["tags"], card["id"]
+        assert build_card(read)["tags"] == card["tags"], card["id"]
+
+
+def test_families_reach_the_card_in_the_order_they_were_written() -> None:
+    card = build_card(
+        {
+            "set": "demo",
+            "card": {
+                "id": "card",
+                "fields": {
+                    "name": "Many Families",
+                    "type": "loot",
+                    "tags": ["trinket", "a_new_family", "guppy"],
+                },
+                "groups": {},
+            },
+        }
+    )
+
+    assert card["tags"] == ["trinket", "a_new_family", "guppy"]
+    # A family nobody has used before is as good as one everybody has. The
+    # card is unfinished - it does nothing yet - and says so about that alone.
+    assert [said for said in check_card(card) if "tag" in said] == []
+
+
+def test_a_card_with_no_families_says_none() -> None:
+    """
+    Every word taken out leaves an empty list, which the page does not keep;
+    and a card that never had any gains none by being opened and kept.
+    """
+    for given in ({"tags": []}, {}):
+        card = build_card(
+            {
+                "set": "demo",
+                "card": {
+                    "id": "card",
+                    "fields": {"name": "No Families", "type": "loot", **given},
+                    "groups": {},
+                },
+            }
+        )
+
+        assert "tags" not in card
+
+    untagged = next(card for card in shipped_cards() if "tags" not in card)
+
+    assert "tags" not in build_card(read_card(untagged))

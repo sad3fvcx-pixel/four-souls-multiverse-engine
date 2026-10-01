@@ -510,6 +510,17 @@ def _fields(shape: Any) -> list[dict[str, Any]]:
             else "form"
         )
 
+        # Several words out of no set at all — the families a card belongs to.
+        # Not `many`, which is several out of a known set and is a different
+        # control: here every word is typed, and a word nobody has used before
+        # is as good as one everybody has. Only what a person answers is one;
+        # a list of anything else is already drawn as what it is.
+        entry["words"] = (
+            entry["shown"] == "form"
+            and parameter.kind == A_LIST
+            and not parameter.values
+        )
+
         found.append(entry)
 
     return found
