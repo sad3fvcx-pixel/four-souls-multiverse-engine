@@ -23,7 +23,8 @@ three spellings with an operator as it already did without one, and refuses
 two spellings written together. Only the entries those nine touch were
 changed. Nothing was remeasured for that update, so every figure below is
 still the one taken at `75a070b`; the corpus still checks 1045 of 1045 and the
-replay of 1000 games is unchanged.
+replay of 1000 games is unchanged. Since then `promise.when` has been decided
+open on purpose (§6) and pinned by tests; no engine code changed for it.
 
 ## The headline
 
@@ -157,21 +158,24 @@ somebody editing a damage watcher, which is worse than an empty box.
 
 ### Structured data the form can only show as raw JSON
 
-Three parameters render as a text area holding JSON. Two of them are data the
-engine understands and could be asked for field by field; the third is
-free-form on purpose and is right as it is.
+Three parameters render as a text area holding JSON. None of them has a closed
+set of names to draw a box for: `card.rewards` and `promise.when` are open
+sets of named values the engine reads, and `card.metadata` is free-form notes
+it never reads. A box holding the data as written is a correct control for
+all three; a row per name and value would be a kinder one for the first two.
 
 | Parameter | What it holds | Cards carrying it | Should it stay raw? |
 | --- | --- | ---: | --- |
-| `card.rewards` | three keys the engine reads: `cents`, `loot`, `treasure` | 255 | No. Every monster has them. |
-| `promise.when` | a condition on the replaced event's values | 1 | No, though it is much the rarest of the two. |
+| `card.rewards` | an open set of reward names with whole numbers; the engine pays `cents`, `loot` and `treasure` | 255 | It may. Decided in §6; name/value rows would be a presentation improvement. |
+| `promise.when` | a filter on what the event carries: field names and the values they must have | 1 | It may. Open on purpose, see §6; name/value rows would be a presentation improvement. |
 | `card.metadata` | notes the engine keeps and never reads | 1018 | **Yes.** Genuinely free-form; a box is the honest control. |
 
 This section previously read *"Nothing structural"*, which was measured wrong.
 A set made in the form and a set made in a text editor are still the same
 format, and a card the form cannot describe is still refused rather than
-quietly rewritten — but two fields above are structure the form does not yet
-draw.
+quietly rewritten — but two fields above have structure the form shows as
+written rather than as rows. That is presentation, not a gap in what can be
+said: neither has a list of names to ask from.
 
 `card.tags` was the fourth row of this table until `55c450f`. A list of family
 names is now asked as what it is — one box a word, in the order they were
@@ -248,19 +252,50 @@ tooling gap in §6 and is not fixed in this document's scope.
 # 6. Everything still open, in one place
 
 Nothing here stops a card being made, and the create-from-nothing path in the
-headline was measured with every one of them open. The first is the form
-telling an author something untrue; the last four sit outside the
+headline was measured with every one of them open. All four sit outside the
 Constructor. `repeat` with no count was here too, and is closed by `b76482b`;
 so were branching defaults, closed by `c65699d` — what is still undeclared in
-§2 is undeclared on purpose.
+§2 is undeclared on purpose. `promise.when` was here too, and is decided:
+open on purpose, below. `card.tags` was with it, and is drawn as a list of
+words since `55c450f`.
 
 | Open | Where | Kind |
 | --- | --- | --- |
-| `promise.when` shown as raw JSON | §3 | The form does not draw structure it understands. `card.tags` was here too, and is drawn as a list of words since `55c450f` |
 | Two modes described identically are accepted | `cards/validator.py` | 0 occurrences in the corpus; the player sees two options they cannot tell apart |
 | Two `may` nodes under one name are answered together | `runtime/interpreter.py` | 33 `may` nodes in the corpus, 7 name one and none share a name; telling them apart needs the nodes to be identifiable |
 | The bot observer reads a card's spelling | §5 | `fsme.lab.bot` — playtesting advice, not rules |
 | `runtime.py:122` names `_where_it_stands`, a function that has never existed | `runtime/runtime.py` | One word of documentation; the method is `_where_it_works` |
+
+## Decided: open on purpose
+
+**`promise.when` is a filter on what the event carries, and it is open.** It
+is a mapping of event field names to values. A promise applies to an event of
+its own type when every pair it names is what that event carries at the
+moment promises are kept, which is after the cards in play have made their
+replacements, so a field a replacement wrote is there to be matched. It may
+name only part of what the event carries, and whatever else the event carries
+does not matter. A `when` left out, written as `null`, or written as `{}`
+names nothing, and the promise applies to any event of its type. A name the
+event does not carry does not meet a value the promise asks for, and it is
+not an error: nothing is refused, the promise simply waits.
+
+The checker asks only that `when` be a mapping. It does not ask which names,
+because no list of an event's fields exists to ask from: an event's payload is
+whatever its emitter and the replacements before the promise put there, the
+same reason `key` on `modify_event` and `event_value` is open. Writing it as
+JSON in the form is a correct way to write it. A row per name and value would
+be a kinder control, and is a presentation improvement for later, not part of
+what `when` is.
+
+Two things are deliberately left out of this contract, and each is a rules
+decision of its own: whether a name written with the value `null` meets an
+event that does not carry that name, and whether a whole number meets `true`
+or `false`. What the engine does with either today is not a promise.
+
+Pinned by the tests under *"What a promise waits for"* in
+`tests/test_promise_changes.py`; the one shipped use, Polycephalus's
+`{"attack": true}` on `roll_modified`, is pinned by its own tests. The
+analysis behind this is `CARD_CONSTRUCTOR_V09_WHEN_PLAN.md`.
 
 ## Decided, and waiting on a second use
 
@@ -318,7 +353,7 @@ domains, the vocabulary suggestions, and the unconditional defaults.
 | Unconditional defaults on conditions and targets | ✅ | ✅ | ✅ | 21 parameters say what a blank box means; `75a070b` |
 | Branching defaults (`operator`, `value`, `minimum`…) | ✅ | ❌ | ⚠️ | Read one way each since `c65699d`, and undeclared on purpose; see §2 |
 | `card.tags` | ✅ | ✅ | ✅ | A list of words, one box each, offering the `tags` pool; `55c450f` |
-| `card.rewards`, `promise.when` | ✅ | ✅ | ⚠️ | Structure shown as raw JSON; see §3 |
+| `card.rewards`, `promise.when` | ✅ | ✅ | ⚠️ | Open sets of named values, kept and shown as written; both decided, see §6 |
 | `card.metadata` | ✅ | ✅ | ✅ | Free-form on purpose; a box is the honest control |
 
 ---
@@ -376,7 +411,7 @@ whether a person can say it by clicking.
 | Feature | Technical location | Difficulty | Value to authors |
 | --- | --- | --- | --- |
 | `card.rewards` as real fields | `capabilities._fields`, the renderer | Low — three known keys | 255 cards; every monster has them |
-| `promise.when` as real fields | the renderer | Medium | 1 card |
+| `promise.when` as name/value rows | the renderer | Medium | 1 card; presentation only — `when` stays open, see §6 |
 
 ---
 

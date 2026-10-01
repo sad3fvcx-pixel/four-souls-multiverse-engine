@@ -12,6 +12,24 @@ inside it that is about presentation, not about the language.** The reasoning
 is in §5, and it is the opposite of the `changes` result on purpose: the same
 argument that made `changes` describable makes `when` not.
 
+> **Status, after `f7648c0`: decided.** The classification below stands and is
+> now the contract: `when` is open on purpose, a filter on what the event
+> carries, with no list of field names behind it. Stated in full in
+> `CAPABILITY_COVERAGE.md` §6 and pinned by the tests under *"What a promise
+> waits for"* in `tests/test_promise_changes.py`. That document and this one
+> agree on what `when` is; where that document once called it data that
+> "could be asked for field by field", it meant presentation, and it now says
+> so. The thin B in §5 is still a presentation idea for later, not part of the
+> contract. Two questions are left out of the contract on purpose and are each
+> a rules decision of its own: whether a name written with `null` meets an
+> event that does not carry it, and whether a whole number meets `true` or
+> `false`.
+>
+> One example in §5 has aged: `before_loot_draw` is now proposed with a
+> `source` (`effects/builtin/loot.py`), so it is no longer a field only a
+> replacement writes. The point it made still holds — `modify_event` may write
+> any field, and a promise is kept after those replacements.
+
 
 ## 1. What `when` is
 

@@ -353,3 +353,134 @@ def test_a_change_that_cannot_be_written_is_not_quietly_dropped() -> None:
     problems = check_card(build_card(read_card(card)))
 
     assert problems, "a promise owing nothing must not pass as written"
+
+
+# ----------------------------------------------------------------------
+# 5. What a promise waits for
+# ----------------------------------------------------------------------
+#
+# `when` is a filter on what the event carries: every pair it names has to be
+# what the event carries when promises are kept, and nothing else about the
+# event matters. It is open — no list of an event's fields exists, and none is
+# asked for — so a name the event does not carry is not a mistake the checker
+# can see; it is a promise that never meets its event.
+#
+# Two things are deliberately not pinned here, because they are not part of
+# the contract yet: whether `{"k": null}` meets an event that carries no `k`,
+# and whether `1` meets `true`. Both follow from Python's equality today, and
+# each is a rules decision of its own.
+
+NOT_WRITTEN = object()
+"""A promise that says nothing at all about what it waits for."""
+
+
+def a_roll_after_promising(when: Any, **carried: Any) -> tuple[int, int]:
+    """
+    Promise to turn the next roll over, then roll; say what came of it.
+
+    The promise is made by the effect a card makes it with, and kept by the
+    runtime that keeps every promise, so what is measured is the real path.
+    Returns the roll as the event ended up carrying it, and how many promises
+    are still owed afterwards.
+    """
+    from types import SimpleNamespace
+
+    from conftest import make_runtime, make_state
+
+    from fsme.effects.builtin.replacement import promise
+    from fsme.events.event import Event
+    from fsme.events.types import EventType
+
+    state = make_state()
+    runtime = make_runtime(state)
+    asked: dict[str, Any] = {} if when is NOT_WRITTEN else {"when": when}
+
+    promise(
+        SimpleNamespace(state=state),
+        [],
+        event="roll_modified",
+        changes={"value": {FLIP: 7}},
+        **asked,
+    )
+
+    payload = {"sides": 6, "value": 2, "natural": 2, **carried}
+    event = runtime._propose(Event(type=EventType.ROLL_MODIFIED, payload=payload))
+
+    return int(event.payload["value"]), len(state.promises)
+
+
+def test_an_attack_roll_meets_a_promise_about_attack_rolls() -> None:
+    assert a_roll_after_promising({"attack": True}, attack=True) == (5, 0)
+
+
+def test_a_plain_roll_does_not_and_the_promise_is_still_owed() -> None:
+    assert a_roll_after_promising({"attack": True}, attack=False) == (2, 1)
+
+
+@pytest.mark.parametrize(
+    "when", (NOT_WRITTEN, {}, None), ids=("not written", "empty", "null")
+)
+@pytest.mark.parametrize("attack", (True, False), ids=("attack roll", "plain roll"))
+def test_a_promise_that_names_nothing_meets_any_event_of_its_kind(
+    when: Any, attack: bool
+) -> None:
+    """
+    `null` is made into an empty filter when the promise is made, and an empty
+    filter has nothing to tell one roll from another.
+    """
+    assert a_roll_after_promising(when, attack=attack) == (5, 0)
+
+
+def test_every_pair_a_promise_names_has_to_be_carried() -> None:
+    both = {"attack": True, "sides": 6}
+    one_of_them = {"attack": True, "sides": 20}
+
+    assert a_roll_after_promising(both, attack=True) == (5, 0)
+    assert a_roll_after_promising(one_of_them, attack=True) == (2, 1)
+
+
+@pytest.mark.parametrize("attack", (True, False), ids=("attack roll", "plain roll"))
+def test_a_name_the_event_does_not_carry_never_meets_it(attack: bool) -> None:
+    assert a_roll_after_promising({"atack": True}, attack=attack) == (2, 1)
+
+
+def test_what_else_the_event_carries_does_not_matter() -> None:
+    assert a_roll_after_promising(
+        {"attack": True}, attack=True, lucky="yes", bonus=3
+    ) == (5, 0)
+
+
+def a_card_promising(when: Any) -> dict[str, Any]:
+    effect: dict[str, Any] = {
+        "effect": "promise",
+        "event": "roll_modified",
+        "changes": {"value": {FLIP: 7}},
+        "when": when,
+    }
+
+    return {
+        "id": "probe-when",
+        "name": "When",
+        "type": "treasure",
+        "expansion": "probe",
+        "abilities": [{"trigger": "on_play", "effects": [effect]}],
+    }
+
+
+@pytest.mark.parametrize(
+    "when",
+    ({"attack": True}, {}, None, {"atack": True}),
+    ids=("a field it carries", "empty", "null", "a name it does not carry"),
+)
+def test_the_checker_asks_only_that_what_it_waits_for_is_a_mapping(when: Any) -> None:
+    assert check_card(a_card_promising(when)) == []
+
+
+@pytest.mark.parametrize(
+    "when", ("attack", ["attack"], 1), ids=("a word", "a list", "a number")
+)
+def test_anything_but_a_mapping_is_refused(when: Any) -> None:
+    said = check_card(a_card_promising(when))
+
+    assert len(said) == 1
+    assert "effects[0].when: 'promise' takes a set of named values here" in said[0]
