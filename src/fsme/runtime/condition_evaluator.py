@@ -553,7 +553,13 @@ def _has(
     if "operator" not in params:
         return amount >= int(params.get("amount", params.get("count", params.get("value", 1))))
 
-    return _compare(amount, params)
+    # The same number, however it was spelt: an operator changes the
+    # comparison, not which of the three names is read. Handed on as the one
+    # name the comparison reads, and nought when none is written, as it is for
+    # every other comparison.
+    asked = params.get("amount", params.get("count", params.get("value", 0)))
+
+    return _compare(amount, {"operator": params["operator"], "value": asked})
 
 
 JOINED = {

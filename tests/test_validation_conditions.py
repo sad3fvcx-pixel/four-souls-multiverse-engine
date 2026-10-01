@@ -391,3 +391,184 @@ def test_everything_already_written_still_passes() -> None:
     library = load_content(CONTENT_ROOT)
 
     assert len(library.registry()) > 1000
+
+
+# ----------------------------------------------------------------------
+# One number, however it is spelt
+# ----------------------------------------------------------------------
+#
+# `player_has_*` reads its number as `amount`, then `count`, then `value`: the
+# three are declared `instead_of` one another, and that is a statement about
+# what the card means, not only about which box the form draws. An operator
+# changes the comparison; it does not change which name is read.
+
+
+def holding_two_cents() -> Any:
+    from conftest import make_state
+
+    state = make_state()
+    state.player(0).pennies = 2
+
+    return state
+
+
+@pytest.mark.parametrize(
+    ("params", "expected"),
+    (
+        ({"operator": "<", "amount": 3}, True),
+        ({"operator": "<", "count": 3}, True),
+        ({"operator": ">=", "amount": 3}, False),
+        ({"operator": "<", "value": 3}, True),
+        ({"operator": ">=", "value": 3}, False),
+        ({"operator": "<"}, False),
+        ({"operator": ">="}, True),
+        ({"operator": "==", "value": 0}, False),
+        ({"operator": ">", "amount": 0}, True),
+    ),
+    ids=(
+        "operator and amount",
+        "operator and count",
+        "at least the amount",
+        "operator and value",
+        "at least the value",
+        "operator and no number is nought",
+        "at least nought",
+        "exactly nought",
+        "more than an amount of nought",
+    ),
+)
+def test_an_operator_compares_with_the_number_however_it_is_spelt(
+    params: dict, expected: bool
+) -> None:
+    from fsme.runtime import AbilityContext
+
+    said = ConditionEvaluator().evaluate(
+        {"player_has_coins": params}, holding_two_cents(), AbilityContext(controller=0)
+    )
+
+    assert said is expected
+
+
+@pytest.mark.parametrize(
+    ("params", "expected"),
+    (
+        ({"amount": 3}, False),
+        ({"count": 2}, True),
+        ({"value": 3}, False),
+        ({"amount": 2, "count": 3, "value": 3}, True),
+        ({"count": 2, "value": 3}, True),
+        ({}, True),
+        ({"value": 0}, True),
+    ),
+    ids=(
+        "amount",
+        "count",
+        "value",
+        "amount is read first",
+        "count is read before value",
+        "nothing written is one",
+        "at least nought",
+    ),
+)
+def test_without_an_operator_it_is_still_at_least_that_many(
+    params: dict, expected: bool
+) -> None:
+    from fsme.runtime import AbilityContext
+
+    said = ConditionEvaluator().evaluate(
+        {"player_has_coins": params}, holding_two_cents(), AbilityContext(controller=0)
+    )
+
+    assert said is expected
+
+
+@pytest.mark.parametrize(
+    "written",
+    (
+        {"amount": 3, "value": 3},
+        {"count": 3, "value": 3},
+        {"amount": 3, "count": 3},
+        {"amount": 3, "count": 3, "value": 3},
+    ),
+    ids=("amount and value", "count and value", "amount and count", "all three"),
+)
+def test_one_number_written_under_two_of_its_names_is_refused_once(
+    vocabulary: Vocabulary, written: dict
+) -> None:
+    """
+    The engine reads whichever spelling it comes to first, so the others are a
+    number nobody reads.
+    """
+    said = asking(vocabulary, {"player_has_coins": written})
+    names = " and ".join(f"'{one}'" for one in sorted(written))
+
+    assert said == [
+        "example_expansion-loot-dark_coin: abilities[0].conditions[0]: "
+        f"'player_has_coins' gives {names}, which are {len(written)} spellings "
+        "of 'value'; write one"
+    ]
+
+
+@pytest.mark.parametrize(
+    "written",
+    (
+        {"amount": 3},
+        {"count": 3},
+        {"value": 3},
+        {"operator": "<", "amount": 3},
+        {"operator": "<", "count": 3},
+        {"operator": "<", "value": 3},
+    ),
+    ids=("amount", "count", "value", "operator and amount", "operator and count",
+         "operator and value"),
+)
+def test_one_number_written_once_under_any_of_its_names_passes(
+    vocabulary: Vocabulary, written: dict
+) -> None:
+    assert asking(vocabulary, {"player_has_coins": written}) == []
+
+
+def a_card_the_constructor_opens(params: dict) -> dict:
+    return {
+        "id": "probe",
+        "name": "Probe",
+        "type": "loot",
+        "expansion": "custom",
+        "metadata": {},
+        "abilities": [
+            {
+                "trigger": "on_play",
+                "conditions": [{"player_has_coins": params}],
+                "effects": [{"gain_coins": 1}],
+            }
+        ],
+    }
+
+
+@pytest.mark.parametrize(
+    "written",
+    ({"amount": 3}, {"count": 3}, {"operator": "<", "amount": 3}),
+    ids=("amount", "count", "operator and amount"),
+)
+def test_the_constructor_reads_a_spelling_back_as_it_was_written(
+    written: dict,
+) -> None:
+    from fsme.lab.desk.author import build_card, check_card, read_card
+
+    card = a_card_the_constructor_opens(written)
+
+    assert check_card(card) == []
+    assert build_card(read_card(card))["abilities"][0]["conditions"] == [
+        {"player_has_coins": written}
+    ]
+
+
+def test_the_constructor_s_check_refuses_two_spellings() -> None:
+    from fsme.lab.desk.author import check_card
+
+    card = a_card_the_constructor_opens({"amount": 3, "value": 3})
+
+    assert check_card(card) == [
+        "probe: abilities[0].conditions[0]: 'player_has_coins' gives 'amount' "
+        "and 'value', which are 2 spellings of 'value'; write one"
+    ]

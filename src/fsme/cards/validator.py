@@ -1817,7 +1817,44 @@ def _check_condition_params(
                 f"for '{key}', card says {value!r}"
             )
 
+    errors.extend(_one_spelling(name, params, shape, f"{location}: {path}"))
+
     return errors
+
+
+def _one_spelling(
+    name: str,
+    params: Mapping[str, Any],
+    shape: Any,
+    where: str,
+) -> list[str]:
+    """
+    One answer written under more than one of its names.
+
+    A parameter that is ``instead_of`` another is the same question spelt
+    another way, and the engine reads whichever of the spellings it comes to
+    first. Writing two is not writing two: the second is a number nobody reads,
+    and a card saying two things quietly gets one. Grouped by what each key is
+    a spelling of, read off the shape, so no name is written down here.
+    """
+    spellings: dict[str, list[str]] = {}
+
+    for key in params:
+        parameter = shape.params.get(key)
+
+        if parameter is None:
+            continue
+
+        answer = str(getattr(parameter, "instead_of", "") or "") or str(key)
+        spellings.setdefault(answer, []).append(str(key))
+
+    return [
+        f"{where}: '{name}' gives "
+        + " and ".join(f"'{one}'" for one in sorted(written))
+        + f", which are {len(written)} spellings of '{answer}'; write one"
+        for answer, written in spellings.items()
+        if len(written) > 1
+    ]
 
 
 def _effect_aliases(nodes: Any) -> set[str]:
