@@ -54,8 +54,24 @@ def validate_card(
 
     card_id = data.get("id", "<no id>")
 
+    if card_id == "":
+        # A blank identifier is a missing one, and says so the same way.
+        card_id = "<no id>"
+
+    # What the card itself says each field is, where an engine has said it. A
+    # blank is as missing here as it is anywhere else a card must answer —
+    # `_unanswered` decides that, and it only ever calls free text blank, so a
+    # blank kind of card stays the one complaint it already was.
+    card_shape = (node_shapes or {}).get("card")
+
     for field_name in REQUIRED_FIELDS:
-        if field_name not in data:
+        parameter = (
+            card_shape.params.get(field_name) if card_shape is not None else None
+        )
+
+        if field_name not in data or (
+            parameter is not None and _unanswered(data, field_name, parameter)
+        ):
             errors.append(f"{card_id}: missing required field '{field_name}'")
 
     if "type" in data:

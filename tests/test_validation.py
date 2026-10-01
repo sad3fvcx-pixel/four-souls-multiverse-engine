@@ -1551,3 +1551,101 @@ def test_a_blank_with_answers_to_choose_from_is_still_one_complaint(
     assert len(said) == 1, said
     assert "needs" not in said[0], said
     assert "and the card gives ''" in said[0], said
+
+
+# ----------------------------------------------------------------------
+# A card's own name, identifier and set, written blank
+# ----------------------------------------------------------------------
+
+
+def judged(vocabulary: Vocabulary, card: dict) -> list[str]:
+    """
+    Everything the checker says about a whole card, told what the engine knows.
+    """
+    return validate_card(
+        card,
+        known_effects=vocabulary.effects,
+        known_triggers=vocabulary.triggers,
+        known_conditions=vocabulary.conditions,
+        known_targets=vocabulary.targets,
+        shapes=vocabulary.shapes,
+        condition_shapes=vocabulary.condition_shapes,
+        target_shapes=vocabulary.target_shapes,
+        node_shapes=vocabulary.node_shapes,
+    )
+
+
+def a_card_saying(field: str, written: Any) -> dict:
+    """A card that does something, with one of its own fields written as given."""
+    card = a_card({"effect": "gain_coins", "amount": 1})
+
+    if written is None:
+        del card[field]
+    else:
+        card[field] = written
+
+    return card
+
+
+@pytest.mark.parametrize("field", ("id", "name", "expansion"))
+def test_a_card_s_own_blank_text_is_refused_as_missing(
+    vocabulary: Vocabulary, field: str
+) -> None:
+    """
+    A card written by hand with a blank name, identifier or set used to load: a
+    card nobody could find or name. The Constructor never writes one, and the
+    checker now says of it exactly what it says of the field left out.
+    """
+    blank = judged(vocabulary, a_card_saying(field, ""))
+
+    assert blank == [
+        f"{'<no id>' if field == 'id' else a_card()['id']}: "
+        f"missing required field '{field}'"
+    ]
+    assert blank == judged(vocabulary, a_card_saying(field, None))
+
+
+def test_a_card_that_says_all_of_them_still_passes(vocabulary: Vocabulary) -> None:
+    assert judged(vocabulary, a_card({"effect": "gain_coins", "amount": 1})) == []
+
+
+@pytest.mark.parametrize("field", ("id", "name", "expansion"))
+def test_a_card_s_own_text_of_spaces_is_not_judged_blank(
+    vocabulary: Vocabulary, field: str
+) -> None:
+    """
+    Blank means written as nothing at all, as it does for every parameter since
+    `10af2e4`. Text of spaces is a separate question, and is left where it was.
+    """
+    assert judged(vocabulary, a_card_saying(field, "   ")) == []
+
+
+def test_a_blank_kind_of_card_is_still_one_complaint(vocabulary: Vocabulary) -> None:
+    """
+    The kind of card has answers to choose from, so a blank was always refused
+    as not one of them. Calling it missing as well would be one mistake and two
+    complaints.
+    """
+    said = judged(vocabulary, a_card_saying("type", ""))
+
+    assert said == [f"{a_card()['id']}: unknown card type ''"]
+
+
+def test_the_constructor_s_check_refuses_a_blank_name_too() -> None:
+    from fsme.lab.desk.author import check_card
+
+    said = check_card(a_card_saying("name", ""))
+
+    assert said == [f"{a_card()['id']}: missing required field 'name'"]
+
+
+def test_a_set_holding_a_nameless_card_is_refused(tmp_path: Path) -> None:
+    root = a_set(tmp_path, a_card_saying("name", ""))
+
+    with pytest.raises(InvalidContentError) as raised:
+        load_content(root)
+
+    said = str(raised.value)
+
+    assert "missing required field 'name'" in said
+    assert "loot.json" in said
