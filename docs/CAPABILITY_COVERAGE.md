@@ -8,12 +8,14 @@ by reading either side and inferring the other.
 Measured at `75a070b`, against 1045 shipped cards, 63 effects, 44 conditions,
 46 targets, 66 triggers, 15 node shapes and 7 control nodes.
 
-Brought up to date at `8df552b` for the three changes made since: `10af2e4`,
+Brought up to date at `36666fd` for the four changes made since: `10af2e4`,
 which refuses a blank required parameter of an effect or a condition,
-`55c450f`, which draws a card's `tags` as a list of words, and `8df552b`, which
-refuses a blank `card.id`, `card.name` or `card.expansion`. Only the entries
-those three touch were changed. Nothing was remeasured for that update, so every
-figure below is still the one taken at `75a070b`.
+`55c450f`, which draws a card's `tags` as a list of words, `8df552b`, which
+refuses a blank `card.id`, `card.name` or `card.expansion`, and `36666fd`, which
+refuses a card's own field written as a different kind from the one its shape
+declares. Only the entries those four touch were changed. Nothing was
+remeasured for that update, so every figure below is still the one taken at
+`75a070b`.
 
 ## The headline
 
@@ -385,6 +387,18 @@ whether a person can say it by clicking.
    missing, the same as when it is left out.
 5. ~~`card.tags` as a real field~~ — **closed**, `55c450f`, as a list of words
    offering the `tags` pool.
+6. ~~A card's own field written as the wrong kind~~ — **closed**, `36666fd`.
+   Found after this list was last written, not carried on it before. The
+   checker now reads what each of a card's own fields is from the card's shape
+   and refuses a field written as something else — `tags` as one word, `name`
+   or `id` as a number, `true` where a number belongs, and `metadata` or
+   `statics` as text, both of which used to pass the checker and then fail
+   inside the loader with an `AttributeError` that named no card and no file.
+   The fields the checker already judged in words of their own — the kind of
+   card, the printed numbers, `rewards`, `abilities` — keep those words and are
+   not told twice. No shipped card is written as the wrong kind. Still open,
+   and not part of it: what the words inside `tags` may be (`[1, 2]`, `[""]`),
+   and a reward written as `true`.
 
 ## Next small improvements
 
