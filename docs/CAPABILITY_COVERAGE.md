@@ -8,6 +8,12 @@ by reading either side and inferring the other.
 Measured at `75a070b`, against 1045 shipped cards, 63 effects, 44 conditions,
 46 targets, 66 triggers, 15 node shapes and 7 control nodes.
 
+Brought up to date at `55c450f` for the two changes made since: `10af2e4`,
+which refuses a blank required parameter of an effect or a condition, and
+`55c450f`, which draws a card's `tags` as a list of words. Only the entries
+those two touch were changed. Nothing was remeasured for that update, so every
+figure below is still the one taken at `75a070b`.
+
 ## The headline
 
 **Every shipped card that carries rules can be walked by the form — 352 of 352,
@@ -136,22 +142,28 @@ somebody editing a damage watcher, which is worse than an empty box.
 
 ### Structured data the form can only show as raw JSON
 
-Four parameters render as a text area holding JSON. Three of them are data the
-engine understands and could be asked for field by field; the fourth is
+Three parameters render as a text area holding JSON. Two of them are data the
+engine understands and could be asked for field by field; the third is
 free-form on purpose and is right as it is.
 
 | Parameter | What it holds | Cards carrying it | Should it stay raw? |
 | --- | --- | ---: | --- |
-| `card.tags` | a list of family names — and the source of the `tags` pool | 774 | No. The pool has 16 words and this is the one field that cannot offer them. |
 | `card.rewards` | three keys the engine reads: `cents`, `loot`, `treasure` | 255 | No. Every monster has them. |
-| `promise.when` | a condition on the replaced event's values | 1 | No, though it is much the rarest of the three. |
+| `promise.when` | a condition on the replaced event's values | 1 | No, though it is much the rarest of the two. |
 | `card.metadata` | notes the engine keeps and never reads | 1018 | **Yes.** Genuinely free-form; a box is the honest control. |
 
 This section previously read *"Nothing structural"*, which was measured wrong.
 A set made in the form and a set made in a text editor are still the same
 format, and a card the form cannot describe is still refused rather than
-quietly rewritten — but three fields above are structure the form does not yet
+quietly rewritten — but two fields above are structure the form does not yet
 draw.
+
+`card.tags` was the fourth row of this table until `55c450f`. A list of family
+names is now asked as what it is — one box a word, in the order they were
+written, with a way to add one and a way to take one out — and every box offers
+the `tags` pool it feeds. A blank word and a word already there are not kept,
+a family nobody has used before is as good as one everybody has, and a card
+opened and kept without a change says the same families in the same order.
 
 ---
 
@@ -228,9 +240,9 @@ the Constructor.
 | Open | Where | Kind |
 | --- | --- | --- |
 | Branching defaults — `operator`, `value`, `amount`, `minimum`/`maximum`, `player`, `as` | §2 | Needs a Runtime decision before anything can be declared |
-| Empty required values — 6 parameters accept `""` | `cards/validator.py` | Two raise mid-game, one is silently false, three make a nameless card |
+| Empty required values — `card.id`, `card.name` and `card.expansion` accept `""` | `cards/validator.py` | The checker, on a card written by hand: three make a nameless card. The Constructor cannot make one — it refuses a blank name and a blank set, and writes the identifier itself. The three effect and condition parameters that raised mid-game or were silently false are refused since `10af2e4` |
 | `repeat` with no count runs the body no times | `runtime/interpreter.py` | Contract undecided; 0 uses in the corpus |
-| `card.tags`, `promise.when` shown as raw JSON | §3 | The form does not draw structure it understands |
+| `promise.when` shown as raw JSON | §3 | The form does not draw structure it understands. `card.tags` was here too, and is drawn as a list of words since `55c450f` |
 | Two modes described identically are accepted | `cards/validator.py` | 0 occurrences in the corpus; the player sees two options they cannot tell apart |
 | Two `may` nodes under one name are answered together | `runtime/interpreter.py` | 33 `may` nodes in the corpus, 7 name one and none share a name; telling them apart needs the nodes to be identifiable |
 | The bot observer reads a card's spelling | §5 | `fsme.lab.bot` — playtesting advice, not rules |
@@ -291,7 +303,8 @@ domains, the vocabulary suggestions, and the unconditional defaults.
 | `key` on `modify_event` / `event_value` | ✅ | ✅ (open) | ⚠️ | Open on purpose; no honest source of suggestions — see §3 |
 | Unconditional defaults on conditions and targets | ✅ | ✅ | ✅ | 21 parameters say what a blank box means; `75a070b` |
 | Branching defaults (`operator`, `value`, `minimum`…) | ✅ | ❌ | ⚠️ | The engine reads them inconsistently; see §2 |
-| `card.tags`, `card.rewards`, `promise.when` | ✅ | ✅ | ⚠️ | Structure shown as raw JSON; see §3 |
+| `card.tags` | ✅ | ✅ | ✅ | A list of words, one box each, offering the `tags` pool; `55c450f` |
+| `card.rewards`, `promise.when` | ✅ | ✅ | ⚠️ | Structure shown as raw JSON; see §3 |
 | `card.metadata` | ✅ | ✅ | ✅ | Free-form on purpose; a box is the honest control |
 
 ---
@@ -348,9 +361,8 @@ whether a person can say it by clicking.
 | Feature | Technical location | Difficulty | Value to authors |
 | --- | --- | --- | --- |
 | `card.rewards` as real fields | `capabilities._fields`, the renderer | Low — three known keys | 255 cards; every monster has them |
-| `card.tags` as a list of words | the same, plus the `tags` pool | Low | 774 cards, and the one field that cannot offer its own pool |
 | A contract for `repeat` with no count | `interpreter._expand_repeat` | Low, once decided | A blank count silently runs the body no times |
-| Refusing an empty required value | `validator._needs_answering` | Low | Two effects raise mid-game today; three make a nameless card |
+| Refusing an empty required value on the card itself | `cards/validator.py` | Low | `card.id`, `card.name` and `card.expansion` written blank by hand make a nameless card; the effect and condition parameters are refused since `10af2e4` |
 | Branching defaults | `_compare`, `_has`, `_ask` | Needs a Runtime decision first | The blank box still lies on 12 conditions |
 | `promise.when` as real fields | the renderer | Medium | 1 card |
 
@@ -366,24 +378,29 @@ whether a person can say it by clicking.
    `cb128d3`, as `suggest_from`.
 3. ~~Defaults the engine applies and the metadata does not state~~ — **closed
    for the unconditional ones**, `75a070b`.
+4. ~~Refusing an empty required value~~ — **closed for the parameters of
+   effects and conditions**, `10af2e4`: `add_counter.counter`,
+   `modify_event.key` and `event_value.key` written as `""` are refused as
+   missing. Still open for the card's own `card.id`, `card.name` and
+   `card.expansion` — see below.
+5. ~~`card.tags` as a real field~~ — **closed**, `55c450f`, as a list of words
+   offering the `tags` pool.
 
 ## Next small improvements
 
 Still metadata the engine already has, or a contract that needs stating. No new
 UI concepts, no DSL change.
 
-1. **Refusing an empty required value.** `add_counter.counter` and
-   `modify_event.key` are `required`, accept `""`, and raise mid-game;
-   `event_value.key` reads `""` and is silently false; `card.id`, `card.name`
-   and `card.expansion` accept `""` and make a nameless card. Only
-   `mode.description` is caught today, because the check that catches it is
-   reached from two call sites.
+1. **Refusing an empty required value on the card itself.** `card.id`,
+   `card.name` and `card.expansion` accept `""` from a card written by hand and
+   make a nameless card. The Constructor cannot make one: it refuses a blank
+   name and a blank set, and writes the identifier itself. The effect and
+   condition parameters are refused since `10af2e4`.
 2. **A contract for `repeat` with no count.** Reproducible by clicking: pick
    `repeat`, add an effect, leave the count empty — checker-clean, the walk
    calls it finished, and the body runs no times. `repeat` has no uses in the
    shipped corpus, so this is a trap for new cards rather than a live bug.
-3. **`card.rewards` and `card.tags` as real fields**, which also lets `tags`
-   offer the pool it feeds.
+3. **`card.rewards` as real fields.** `card.tags` was here too, and is done.
 
 None of them blocks a card being made.
 
