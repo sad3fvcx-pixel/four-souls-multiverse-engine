@@ -2093,3 +2093,76 @@ def test_the_constructor_s_check_refuses_a_blank_family() -> None:
     assert check_card(a_card_saying("tags", [""])) == [
         f"{a_card()['id']}: field 'tags' must be a list of text, and item 0 is blank"
     ]
+
+
+# ----------------------------------------------------------------------
+# An `if` that asks nothing
+# ----------------------------------------------------------------------
+#
+# All of no conditions hold, so `{"if": [], ...}` runs its `then` every time
+# and its `else` never. It is not a way to say "always": it is what is left
+# when nobody said what the branch turns on, and the checker says so.
+
+NO_CONDITION = (
+    "example_expansion-loot-dark_coin: abilities[0].effects[0]: this 'if' "
+    "says nothing under 'if' — say what must be true"
+)
+NOTHING_TO_DO = (
+    "example_expansion-loot-dark_coin: abilities[0].effects[0]: this 'if' has "
+    "nothing to do — say what happens under 'then' or 'else'"
+)
+COINS = [{"effect": "gain_coins", "amount": 1}]
+
+
+@pytest.mark.parametrize(
+    "branches",
+    ({"then": COINS}, {"else": COINS}, {"then": COINS, "else": COINS}),
+    ids=("then", "else", "both"),
+)
+def test_an_if_with_no_conditions_is_refused_once(
+    vocabulary: Vocabulary, branches: dict
+) -> None:
+    assert wholly(vocabulary, {"if": [], **branches}) == [NO_CONDITION]
+
+
+def test_an_if_with_nothing_at_all_says_both_parts_are_missing(
+    vocabulary: Vocabulary,
+) -> None:
+    assert wholly(vocabulary, {"if": []}) == [NOTHING_TO_DO, NO_CONDITION]
+
+
+@pytest.mark.parametrize("branch", ("then", "else"))
+def test_an_if_with_a_condition_still_passes(
+    vocabulary: Vocabulary, branch: str
+) -> None:
+    assert wholly(vocabulary, {"if": ["player_alive"], branch: COINS}) == []
+
+
+def test_an_ability_with_no_conditions_still_passes(vocabulary: Vocabulary) -> None:
+    """
+    An ability's own `conditions` is not a branch: none of them means it always
+    happens, and that is unchanged.
+    """
+    card = a_card(*COINS)
+    card["abilities"][0]["conditions"] = []
+
+    assert validate_card(
+        card,
+        known_effects=vocabulary.effects,
+        known_triggers=vocabulary.triggers,
+        known_conditions=vocabulary.conditions,
+        known_targets=vocabulary.targets,
+        shapes=vocabulary.shapes,
+        condition_shapes=vocabulary.condition_shapes,
+        target_shapes=vocabulary.target_shapes,
+        node_shapes=vocabulary.node_shapes,
+    ) == []
+
+
+def test_a_set_holding_an_if_with_no_conditions_is_refused(tmp_path: Path) -> None:
+    root = a_set(tmp_path, a_card({"if": [], "then": COINS}))
+
+    with pytest.raises(InvalidContentError) as raised:
+        load_content(root)
+
+    assert "this 'if' says nothing under 'if'" in str(raised.value)

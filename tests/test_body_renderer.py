@@ -609,3 +609,24 @@ def test_nothing_is_shown_a_way_nobody_publishes(
     dead weight is what falls out of step first.
     """
     assert declared(page) - published(can) == set()
+
+
+def test_an_if_whose_conditions_were_left_blank_is_written_and_refused() -> None:
+    """
+    The form still writes the key that makes the node an `if`, with nothing
+    under it; what is missing is the checker's to say.
+    """
+    card = a_card({"trigger": "on_play", "effects": [{"id": "if", "fields": {"then": [COIN]}}]})
+
+    assert card["abilities"][0]["effects"][0]["if"] == []
+    assert check_card(card) == [
+        "demo-loot-under_test: abilities[0].effects[0]: this 'if' says nothing "
+        "under 'if' — say what must be true"
+    ]
+
+
+def test_an_if_given_a_condition_is_written_and_passes() -> None:
+    fields = {"if": [{"id": "player_alive", "fields": {}}], "then": [COIN]}
+    node = written({"trigger": "on_play", "effects": [{"id": "if", "fields": fields}]})
+
+    assert node["effects"][0]["if"] == ["player_alive"]

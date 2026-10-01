@@ -1142,6 +1142,7 @@ def _control_nodes(
             # list of problems stops being read.
             if not wrong:
                 errors.extend(_does_something(node, nodes[head], card_id, here))
+                errors.extend(_asks_something(node, nodes[head], card_id, here))
 
         for key, value in node.items():
             if isinstance(value, (list, tuple)):
@@ -1185,6 +1186,40 @@ def _does_something(
         f"{card_id}: {path}: this '{shape.name}' has nothing to do — "
         f"say what happens under "
         + " or ".join(f"'{key}'" for key in bodies)
+    ]
+
+
+def _asks_something(
+    node: Mapping[str, Any],
+    shape: Any,
+    card_id: str,
+    path: str,
+) -> list[str]:
+    """
+    Whether the list that makes a control node what it is says anything.
+
+    ``{"if": [], "then": [...]}`` is a branch with nothing to decide on. All of
+    no conditions hold, so its ``then`` runs every time and its ``else`` never
+    does, and nothing about it reads like that. It is also exactly what a form
+    writes for conditions nobody filled in, which leaves the checker to say
+    what is still missing.
+
+    Read off the shape: a key that names its node and holds a list, where that
+    list is not one of the places the node keeps what it does. Those are asked
+    by ``_does_something`` already, and asking twice is two complaints about
+    one mistake.
+    """
+    bodies = getattr(shape, "bodies", ())
+
+    return [
+        f"{card_id}: {path}: this '{shape.name}' says nothing under '{key}' — "
+        f"say {parameter.describes or 'what goes there'}"
+        for key, parameter in shape.params.items()
+        if getattr(parameter, "names_the_node", False)
+        and getattr(parameter, "a_list_of", "")
+        and key not in bodies
+        and isinstance(node.get(key), (list, tuple))
+        and not node.get(key)
     ]
 
 
