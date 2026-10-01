@@ -1153,7 +1153,11 @@ def _nothing_yet(parameter: Any) -> Any:
         return []
 
     if parameter.kind == "a whole number":
-        return 0
+        # Not nought: nought is a number a card may mean — a repeat of no
+        # times — so writing it for a box nobody filled in would be an answer
+        # the checker has to accept. Nothing at all is no whole number, and
+        # the checker says so.
+        return None
 
     if parameter.shaped_like or parameter.kind == "text":
         return ""

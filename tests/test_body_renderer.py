@@ -417,7 +417,10 @@ def test_every_control_node_is_offered_and_none_is_half_offered(
 
 def test_an_unfinished_control_node_is_refused_and_not_saved() -> None:
     for node in ("if", "may", "choose", "repeat", "sequence"):
-        card = a_card({"trigger": "on_play", "effects": [{"id": node, "fields": {}}]})
+        # A repeat says how many times as well as what; it is given the count
+        # here so that what is missing is only what it does.
+        fields = {"repeat": 1} if node == "repeat" else {}
+        card = a_card({"trigger": "on_play", "effects": [{"id": node, "fields": fields}]})
 
         assert check_card(card), node
         assert "nothing to do" in check_card(card)[0], node
@@ -428,12 +431,46 @@ def test_a_control_node_keeps_the_key_that_makes_it_one() -> None:
     A card being built may be unfinished; it may not be a node the engine
     cannot recognise.
     """
-    for node, empty in (("if", []), ("may", []), ("repeat", 0),
+    for node, empty in (("if", []), ("may", []), ("repeat", None),
                         ("for_each", ""), ("stop", True)):
         card = a_card({"trigger": "on_play", "effects": [{"id": node, "fields": {}}]})
         written_node = card["abilities"][0]["effects"][0]
 
         assert written_node[node] == empty, node
+
+
+@pytest.mark.parametrize("left", ({}, {"repeat": ""}, {"repeat": None}),
+                         ids=("not given", "blank", "nothing"))
+def test_a_repeat_whose_count_was_left_blank_is_refused(left: dict[str, Any]) -> None:
+    """
+    A count nobody filled in is not a count of nought. Writing it as one made
+    a repeat of no times that the checker had to accept, so a card that did
+    nothing was saved as finished.
+    """
+    fields = {**left, "effects": [COIN]}
+    card = a_card(
+        {"trigger": "on_play", "effects": [{"id": "repeat", "fields": fields}]}
+    )
+
+    assert card["abilities"][0]["effects"][0]["repeat"] is None
+    assert check_card(card) == [
+        "demo-loot-under_test: abilities[0].effects[0].repeat: "
+        "this takes a whole number, and the card gives NoneType (None)"
+    ]
+
+
+@pytest.mark.parametrize("times", (0, 1, 3))
+def test_a_repeat_given_a_count_keeps_it(times: int) -> None:
+    """
+    Nought is still a count a card may give, and means no times at all.
+    """
+    fields = {"repeat": times, "effects": [COIN]}
+    node = written(
+        {"trigger": "on_play", "effects": [{"id": "repeat", "fields": fields}]}
+    )["effects"][0]
+
+    assert node["repeat"] == times
+    assert node["repeat"] is not None
 
 
 def test_the_card_is_still_ordinary_content(tmp_path: Path) -> None:

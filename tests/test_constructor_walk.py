@@ -568,7 +568,11 @@ def a_walked_one(can: dict[str, Any], shape: Mapping[str, Any]) -> dict[str, Any
             }
             continue
 
-        if f["a_list_of"] == "step":
+        if f["kind"] == "a whole number" and not f["a_list_of"]:
+            # A number the walk asks is a number the person typed; one left
+            # blank is not nought, and the checker says so.
+            inside[f["id"]] = 1
+        elif f["a_list_of"] == "step":
             inside[f["id"]] = [{"id": "gain_coins", "fields": {"amount": 1},
                                 "groups": {}}]
         elif f["a_list_of"] == "condition":
