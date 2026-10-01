@@ -8,7 +8,7 @@ by reading either side and inferring the other.
 Measured at `75a070b`, against 1045 shipped cards, 63 effects, 44 conditions,
 46 targets, 66 triggers, 15 node shapes and 7 control nodes.
 
-Brought up to date at `b76482b` for the eight changes made since: `10af2e4`,
+Brought up to date at `c65699d` for the nine changes made since: `10af2e4`,
 which refuses a blank required parameter of an effect or a condition,
 `55c450f`, which draws a card's `tags` as a list of words, `8df552b`, which
 refuses a blank `card.id`, `card.name` or `card.expansion`, `36666fd`, which
@@ -16,10 +16,14 @@ refuses a card's own field written as a different kind from the one its shape
 declares, `d763217`, which refuses `true` or `false` as the value of a
 reward, `67f9744`, which refuses an item of a list written as a different kind
 from the one the metadata declares for its items, `10863bd`, which refuses
-an item of a list of text written as `""`, and `b76482b`, which writes a
-`repeat` count left blank as `null` rather than `0`, so the checker refuses it.
-Only the entries those eight touch were changed. Nothing was remeasured for
-that update, so every figure below is still the one taken at `75a070b`.
+an item of a list of text written as `""`, `b76482b`, which writes a
+`repeat` count left blank as `null` rather than `0`, so the checker refuses it,
+and `c65699d`, which makes `player_has_*` read its number under any of its
+three spellings with an operator as it already did without one, and refuses
+two spellings written together. Only the entries those nine touch were
+changed. Nothing was remeasured for that update, so every figure below is
+still the one taken at `75a070b`; the corpus still checks 1045 of 1045 and the
+replay of 1000 games is unchanged.
 
 ## The headline
 
@@ -101,18 +105,22 @@ reads the copy.
 | `card_in_zone.zone` | `2bf8049` | declares the 12 zones, derived from the state's own fields; a misspelling is refused instead of sitting silently false |
 | `place_monster.slot` | `2bf8049` | declares `free` and `unattacked`; a misspelling is refused instead of silently meaning `free` |
 | Defaults on conditions and targets | `75a070b` | 21 parameters declare the default their handler already applies |
+| The number `player_has_*` compares with | `c65699d` | read as `amount`, then `count`, then `value` whether or not an operator is written; two spellings written together are refused |
 
-## Open — defaults the engine applies inconsistently
+## Undeclared on purpose — defaults no single value can state
 
 `75a070b` declared every default that was unconditional. What it deliberately
 left alone is the set where the engine reads the same parameter differently
 depending on what else the card wrote, so that no single declared value would
-be true. These need a decision about the Runtime, not a declaration.
+be true. One reading among them contradicted the metadata — `player_has_*`
+dropped an `amount` or `count` written beside an operator — and was fixed at
+`c65699d`. What is left reads one way each, and is undeclared because that way
+is not one value.
 
 | Feature | What the engine does |
 | --- | --- |
-| `operator` on 12 conditions | One shared shape, three readings. The four `player_has_*` read `>=` with the number defaulting to 1 when no operator is written, and `==` with `value` defaulting to 0 when one is — so writing an operator silently abandons the `amount` beside it. `nth_time_this_turn` reads `== 1` when the card wrote nothing at all. |
-| `value` / `amount` on the same 12 | Entangled with the branch above. |
+| `operator` on 12 conditions | One shared shape, read per condition. The four `player_has_*`, with no operator, compare `>=` and take a missing number as 1; with an operator, they use that operator and take a missing number as 0, which is what every other comparison takes. `nth_time_this_turn` reads `== 1`, and `last_effect_did` `> 0`, when the card wrote nothing at all. |
+| `value` / `amount` / `count` on the four `player_has_*` | Three spellings of one number, declared `instead_of` one another and read in that order — `amount`, then `count`, then `value` — with or without an operator, since `c65699d`. Writing more than one is refused by the checker, and so by the Constructor's check; one alone loads and reads back as written. |
 | `minimum` / `maximum` on 11 targets | Default to whatever `count` turned out to be — an answer, not a literal, and `default=` cannot say it. |
 | `player` on 10 conditions | Defaults to the ability's controller, which is not a value at all. All 10 that declare it read it that way. |
 | `event_value.value` | Whatever the event carried; no default. |
@@ -240,14 +248,14 @@ tooling gap in §6 and is not fixed in this document's scope.
 # 6. Everything still open, in one place
 
 Nothing here stops a card being made, and the create-from-nothing path in the
-headline was measured with every one of them open. The first two are the form
-or the checker telling an author something untrue; the last four sit outside
-the Constructor. `repeat` with no count was here too, and is closed by
-`b76482b`.
+headline was measured with every one of them open. The first is the form
+telling an author something untrue; the last four sit outside the
+Constructor. `repeat` with no count was here too, and is closed by `b76482b`;
+so were branching defaults, closed by `c65699d` — what is still undeclared in
+§2 is undeclared on purpose.
 
 | Open | Where | Kind |
 | --- | --- | --- |
-| Branching defaults — `operator`, `value`, `amount`, `minimum`/`maximum`, `player`, `as` | §2 | Needs a Runtime decision before anything can be declared |
 | `promise.when` shown as raw JSON | §3 | The form does not draw structure it understands. `card.tags` was here too, and is drawn as a list of words since `55c450f` |
 | Two modes described identically are accepted | `cards/validator.py` | 0 occurrences in the corpus; the player sees two options they cannot tell apart |
 | Two `may` nodes under one name are answered together | `runtime/interpreter.py` | 33 `may` nodes in the corpus, 7 name one and none share a name; telling them apart needs the nodes to be identifiable |
@@ -308,7 +316,7 @@ domains, the vocabulary suggestions, and the unconditional defaults.
 | `counter` / `tag` / `named` | ✅ | ✅ (open) | ✅ | Open on purpose, and suggested from loaded content; `cb128d3` |
 | `key` on `modify_event` / `event_value` | ✅ | ✅ (open) | ⚠️ | Open on purpose; no honest source of suggestions — see §3 |
 | Unconditional defaults on conditions and targets | ✅ | ✅ | ✅ | 21 parameters say what a blank box means; `75a070b` |
-| Branching defaults (`operator`, `value`, `minimum`…) | ✅ | ❌ | ⚠️ | The engine reads them inconsistently; see §2 |
+| Branching defaults (`operator`, `value`, `minimum`…) | ✅ | ❌ | ⚠️ | Read one way each since `c65699d`, and undeclared on purpose; see §2 |
 | `card.tags` | ✅ | ✅ | ✅ | A list of words, one box each, offering the `tags` pool; `55c450f` |
 | `card.rewards`, `promise.when` | ✅ | ✅ | ⚠️ | Structure shown as raw JSON; see §3 |
 | `card.metadata` | ✅ | ✅ | ✅ | Free-form on purpose; a box is the honest control |
@@ -351,7 +359,8 @@ The four gaps this document first recorded:
 All four are closed, and two more have closed since: the zone and slot domains
 at `2bf8049`, and the unconditional defaults on conditions and targets at
 `75a070b`. What is still undeclared is in §2, and it is undeclared on purpose —
-the engine reads those parameters inconsistently, so there is no one value to
+the engine reads each of those parameters one way, but that way depends on
+what else the card wrote or is not a literal, so there is no one value to
 write down.
 
 ---
@@ -367,7 +376,6 @@ whether a person can say it by clicking.
 | Feature | Technical location | Difficulty | Value to authors |
 | --- | --- | --- | --- |
 | `card.rewards` as real fields | `capabilities._fields`, the renderer | Low — three known keys | 255 cards; every monster has them |
-| Branching defaults | `_compare`, `_has`, `_ask` | Needs a Runtime decision first | The blank box still lies on 12 conditions |
 | `promise.when` as real fields | the renderer | Medium | 1 card |
 
 ---
@@ -430,6 +438,22 @@ whether a person can say it by clicking.
     placeholder the form writes for any whole-number key that names its node,
     and `repeat` is the only such key. `repeat` has no uses in the shipped
     corpus.
+11. ~~Branching defaults~~ — **closed**, `c65699d`. The four `player_has_*`
+    read their number as `amount`, then `count`, then `value` — three
+    spellings of one parameter, declared `instead_of` one another — and now
+    read it that way whether or not an operator is written. Before, an
+    operator made them read `value` alone, so `{"operator": "<", "amount": 3}`
+    compared with 0 and meant "fewer than none". With no operator the
+    comparison is `>=` and a missing number is 1; with one, the comparison is
+    the one written and a missing number is 0. Those two defaults are not
+    changed. Writing two or three of the spellings together is refused by the
+    checker, which reads which keys are spellings of which from `instead_of`
+    rather than from any name, and the Constructor's check refuses it with
+    it. The runtime outside that branch, the metadata and the Constructor are
+    unchanged. No shipped card writes an operator beside `amount` or `count`,
+    or two spellings together: the corpus still checks 1045 of 1045, and the
+    replay of 1000 games is unchanged, MD5 `e64103a4013de99a2cf09f9ed44443b5`.
+    The defaults in §2 that are still undeclared are undeclared on purpose.
 
 ## Next small improvements
 
