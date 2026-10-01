@@ -263,3 +263,117 @@ def test_stop_stops_whatever_it_is_written_with(stop) -> None:
     assert [op.name for op in plan([{"gain_coins": 1}, stop, {"gain_coins": 99}])] == [
         "gain_coins"
     ]
+
+
+# ----------------------------------------------------------------------
+# Two questions, and where their answers are kept
+# ----------------------------------------------------------------------
+
+
+def asked_in_turn(nodes, replies) -> tuple[list[str], list[tuple[str, dict]]]:
+    """
+    Resolve a queue the way the Runtime does: whenever it stops for an
+    answer, answer it under the name it asked by and start over.
+
+    Returns the names asked by, in order, and what ran in the end.
+    """
+    from fsme.runtime.errors import DecisionRequired
+
+    context = AbilityContext(controller=0)
+    asked: list[str] = []
+
+    while True:
+        try:
+            ops = plan(nodes, context=context)
+        except DecisionRequired as decision:
+            asked.append(decision.bind)
+            context.bind(decision.bind, [replies.get(decision.bind, "yes")])
+
+            continue
+
+        return asked, [
+            (op.name, {k: v for k, v in op.params.items() if not k.startswith("__")})
+            for op in ops
+        ]
+
+
+def test_an_unnamed_question_is_kept_where_the_engine_says() -> None:
+    """
+    The name the engine's description gives a question written without one
+    is the name the interpreter keeps it under. The checker reads the first
+    to know the second, so the two are held together here.
+    """
+    from fsme.runtime.errors import DecisionRequired
+    from fsme.runtime.vocabulary import engine_vocabulary
+
+    shapes = engine_vocabulary().node_shapes
+
+    for node in ({"may": STEPS}, {"choose": OPTIONS}):
+        (head,) = node
+
+        with pytest.raises(DecisionRequired) as raised:
+            plan([node])
+
+        assert raised.value.bind == shapes[head].params["as"].default
+
+
+A_BRANCH_THAT_ASKS = {"if": [], "then": [{"may": [{"gain_coins": 1}]}]}
+
+
+def test_a_question_after_a_branch_that_asked_is_asked_itself() -> None:
+    """
+    The card the Constructor writes now: the second `may` named apart, so
+    each is put to the player and each answer does what it says.
+    """
+    asked, ran = asked_in_turn(
+        [A_BRANCH_THAT_ASKS, {"may": [{"gain_coins": 5}], "as": "may_2"}],
+        {"__may__": "no"},
+    )
+
+    assert asked == ["__may__", "may_2"]
+    assert ran == [("gain_coins", {"amount": 5})]
+
+
+def test_two_questions_under_one_name_are_answered_once() -> None:
+    """
+    And the card it used to write, which the checker now refuses: the second
+    finds the first's answer waiting and is never put to anybody.
+    """
+    asked, ran = asked_in_turn(
+        [A_BRANCH_THAT_ASKS, {"may": [{"gain_coins": 5}]}],
+        {"__may__": "no"},
+    )
+
+    assert asked == ["__may__"]
+    assert ran == []
+
+
+def test_questions_named_apart_are_asked_apart() -> None:
+    asked, ran = asked_in_turn(
+        [
+            {"may": [{"gain_coins": 1}], "as": "first"},
+            {"may": [{"gain_coins": 5}], "as": "second"},
+        ],
+        {"first": "yes", "second": "no"},
+    )
+
+    assert asked == ["first", "second"]
+    assert ran == [("gain_coins", {"amount": 1})]
+
+
+@pytest.mark.parametrize(
+    ("loop", "rounds"),
+    (({"repeat": 3}, 3), ({"for_each": "all_players"}, 2)),
+    ids=("repeat", "for_each"),
+)
+def test_one_question_in_a_loop_is_asked_once(loop: dict, rounds: int) -> None:
+    """
+    One `may` is one decision for the resolution, not one per time round:
+    asked the first time, and its answer found waiting every time after.
+    """
+    asked, ran = asked_in_turn(
+        [{**loop, "effects": [{"may": [{"gain_coins": 1}]}]}], {}
+    )
+
+    assert asked == ["__may__"]
+    assert [name for name, _ in ran] == ["gain_coins"] * rounds

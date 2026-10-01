@@ -3330,6 +3330,134 @@ def test_one_sort_inside_another_needs_no_name(
             assert len(chosen_in(bench, card)) == 2, (outer, inner)
 
 
+
+def unnamed_under(node: str) -> str:
+    """
+    The name a node of this sort keeps its reply under when the card gives none.
+    """
+    shape = engine_vocabulary().node_shape(node)
+    parameter = shape.params[answers_under(node)] if shape else None
+
+    return str(getattr(parameter, "default", "") or "")
+
+
+def names_given(card: Mapping[str, Any], node: str) -> list[str]:
+    """
+    The name each question of one sort was written with, in the card's order,
+    and nothing for the ones written without one.
+    """
+    kept = answers_under(node)
+
+    return [
+        str(one.get(kept, ""))
+        for one in _every_node(card["abilities"][0]["effects"])
+        if node in one
+    ]
+
+
+def test_a_question_after_a_branch_that_asked_is_told_apart(
+    can: dict[str, Any],
+) -> None:
+    """
+    The regression. A question inside an arm has its reply waiting after the
+    branch, whichever arm ran, so one written after the branch under the same
+    name is answered by it — and the card passed every check. The step after a
+    branch sees everything either arm asked.
+    """
+    for node in asking_nodes():
+        for arms in (("then",), ("then", "else")):
+            branch = {
+                "id": "if",
+                "fields": {
+                    "if": [A_PLAIN],
+                    **{arm: [offering(node, [a_coin(1)])] for arm in arms},
+                },
+                "groups": {},
+            }
+            card = holding(
+                [branch, offering(node, [a_coin(5)])], name=f"After {node}"
+            )
+
+            assert names_given(card, node) == [""] * len(arms) + [f"{node}_2"], (
+                node,
+                arms,
+            )
+            assert check_card(card) == [], check_card(card)
+
+
+def test_a_question_after_one_inside_another_is_told_apart(
+    can: dict[str, Any],
+) -> None:
+    """
+    The same, one level down: what the inner one asked is still waiting once
+    the outer is done.
+    """
+    for node in asking_nodes():
+        if not holds_steps_itself(node):
+            continue
+
+        card = holding(
+            [
+                one_asking(node, [one_asking(node, [a_coin(1)])]),
+                one_asking(node, [a_coin(5)]),
+            ],
+            name=f"Again {node}",
+        )
+
+        assert names_given(card, node) == ["", f"{node}_2", f"{node}_3"], node
+        assert check_card(card) == [], check_card(card)
+
+
+@pytest.mark.parametrize(
+    ("given", "written"),
+    (
+        (["{node}_2", None, None], ["{node}_2", "", "{node}_3"]),
+        ([None, "{node}_2", None], ["", "{node}_2", "{node}_3"]),
+        ([None, None, "{node}_2"], ["", "{node}_3", "{node}_2"]),
+        (["{unnamed}", None], ["{unnamed}", "{node}_2"]),
+        ([None, "{unnamed}"], ["{node}_2", "{unnamed}"]),
+        (["mine", None, None], ["mine", "", "{node}_2"]),
+    ),
+    ids=(
+        "named-first",
+        "named-between",
+        "named-last",
+        "default-named-first",
+        "default-named-last",
+        "named-otherwise",
+    ),
+)
+def test_a_name_the_card_gave_is_never_made_up_again(
+    can: dict[str, Any], given: list[str | None], written: list[str]
+) -> None:
+    """
+    A name the card gave is the name it keeps, so a name made up here is the
+    one that steps aside: `{node}_2` written by the card is not handed to
+    another question, before it or after it, and nor is the name the engine
+    keeps a question under when the card gives none.
+    """
+    for node in asking_nodes():
+        kept = answers_under(node)
+        spelling = {"node": node, "unnamed": unnamed_under(node)}
+
+        def spelled(one: str, spelling: dict[str, str] = spelling) -> str:
+            return one.format(**spelling)
+
+        card = holding(
+            [
+                offering(
+                    node,
+                    [a_coin(index + 1)],
+                    **({kept: spelled(name)} if name is not None else {}),
+                )
+                for index, name in enumerate(given)
+            ],
+            name=f"Spoken {node}",
+        )
+
+        assert names_given(card, node) == [spelled(one) for one in written], node
+        assert check_card(card) == [], check_card(card)
+
 def _every_node(held: Any) -> list[dict[str, Any]]:
     found: list[dict[str, Any]] = []
 

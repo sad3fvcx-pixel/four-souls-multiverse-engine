@@ -78,6 +78,30 @@ not listed here is walked with the enclosing context rather than a copy of it,
 which is what keeps that true. Adding ``sequence`` would quietly tighten it.
 """
 
+ASKS_ONCE = "may"
+"""
+The question whose answer can be mistaken for another one's.
+
+Every ``may`` offers the same two words, so two of them keeping their answers
+under one name are answered together by whichever is asked first — and the
+runtime has nothing to tell that from an answer of the node's own. ``choose``
+is not here: its options differ from node to node, and an answer that came
+from elsewhere is refused when it is read.
+"""
+
+ANSWERED_BODIES = {
+    "may": ("effects", "may"),
+    "sequence": ("effects", "sequence"),
+    "repeat": ("effects",),
+    "for_each": ("effects",),
+}
+"""
+Where a control node that runs its steps in one line keeps them.
+
+``if`` and ``choose`` are not here because only one of their bodies runs, and
+that is what lets two of them keep an answer under one name.
+"""
+
 PLAYERS = "players"
 CARDS = "cards"
 VALUES = "values"
@@ -111,6 +135,7 @@ def validate_references(
     effects: Mapping[str, Any] | None = None,
     worked_out: Any = None,
     conditions: Mapping[str, Any] | None = None,
+    nodes: Mapping[str, Any] | None = None,
 ) -> list[str]:
     """
     Check every name an ability uses against the names it binds.
@@ -129,6 +154,7 @@ def validate_references(
                 card_id=card_id,
                 worked_out=worked_out,
                 conditions=conditions or {},
+                nodes=nodes or {},
             ).check(ability, where)
         )
 
@@ -172,6 +198,7 @@ class _Ability:
         effects: Mapping[str, Any] | None = None,
         worked_out: Any = None,
         conditions: Mapping[str, Any] | None = None,
+        nodes: Mapping[str, Any] | None = None,
     ) -> None:
         self._shapes = shapes
         self._effects = effects or {}
@@ -193,6 +220,13 @@ class _Ability:
             for name, parameter in getattr(worked_out, "params", {}).items()
             if parameter.refers_to
         }
+        # Where a `may` written without `as` keeps its answer. Asked of the
+        # node's own description rather than spelled here, so that a question
+        # left unnamed and one named the same thing are seen to be one name.
+        # Without a description only the names a card writes are compared.
+        asked = getattr((nodes or {}).get(ASKS_ONCE), "params", {}).get("as")
+        unnamed = getattr(asked, "default", None)
+        self._unnamed = unnamed if isinstance(unnamed, str) else ""
         self._targets = targets
         self._card = card_id
         self._errors: list[str] = []
@@ -227,6 +261,8 @@ class _Ability:
             self._one_target(spec, groups, f"{where}.targets[{index}]")
 
         self._walk(ability.get("effects", ()) or (), groups, values, f"{where}.effects")
+
+        self._answers(ability.get("effects", ()) or (), {}, f"{where}.effects")
 
         return self._errors
 
@@ -520,6 +556,125 @@ class _Ability:
             return
 
         self._say(f"{path}: this acts on {wanted} and is aimed at {gives}")
+
+    # ------------------------------------------------------------------
+
+    def _answers(
+        self,
+        node: Any,
+        asked: Mapping[str, str],
+        path: str,
+    ) -> dict[str, str]:
+        """
+        The names a `may` keeps its answer under, along every way it can run.
+
+        Kept apart from the walk above because it is a different namespace
+        with a different rule. A target's name is visible only inside the
+        branch that bound it; an answer is held for the whole resolution, so a
+        `may` inside `then` still has its answer waiting when a later `may`
+        under the same name is asked — and that one is then answered without
+        anybody being asked. So what a branch asks is carried out of it: both
+        sides of an `if`, and every option of a `choose`, start from what was
+        asked before them, and whatever any of them asked is asked after.
+
+        A loop's body is walked once. One `may` inside it is one question,
+        answered once for the resolution; two inside it under one name are two
+        questions sharing an answer, wherever the loop is.
+
+        Returns what has been asked by the end of ``node``, by name, with
+        where it was asked.
+        """
+        seen: dict[str, str] = dict(asked)
+
+        if isinstance(node, (list, tuple)):
+            for index, item in enumerate(node):
+                seen = self._answers(item, seen, f"{path}[{index}]")
+
+            return seen
+
+        if not isinstance(node, Mapping):
+            return seen
+
+        if _head(node) in NEW_SCOPE:
+            # It runs later, in a context of its own, where nothing asked out
+            # here is waiting — and nothing it asks comes back.
+            self._answers(node.get("effects", ()) or (), {}, f"{path}.effects")
+
+            return seen
+
+        kind = "" if "effect" in node else next(
+            (key for key in node if key in (*ANSWERED_BODIES, "if", "choose")), ""
+        )
+
+        if kind == "if":
+            seen = {}
+
+            for key in ("then", "else"):
+                for name, where in self._answers(
+                    node.get(key, ()) or (), asked, f"{path}.{key}"
+                ).items():
+                    seen.setdefault(name, where)
+
+            return seen
+
+        if kind == "choose":
+            for key in ("modes", "choose"):
+                modes = node.get(key)
+
+                if not isinstance(modes, (list, tuple)):
+                    continue
+
+                for index, mode in enumerate(modes):
+                    if not isinstance(mode, Mapping):
+                        continue
+
+                    for name, where in self._answers(
+                        mode.get("effects", ()) or (),
+                        asked,
+                        f"{path}.{key}[{index}].effects",
+                    ).items():
+                        seen.setdefault(name, where)
+
+            return seen
+
+        if kind == ASKS_ONCE:
+            named = node.get("as")
+            name = named if isinstance(named, str) else self._unnamed
+
+            if name and name in seen:
+                said = (
+                    f"'{name}'"
+                    if isinstance(named, str)
+                    else f"'{name}', where a 'may' with no 'as' keeps it"
+                )
+                self._say(
+                    f"{path}: this 'may' keeps its answer under {said}, and "
+                    f"the 'may' at {seen[name]} already keeps its answer "
+                    f"there — one reply would answer both; give one of them "
+                    f"its own 'as'"
+                )
+            elif name:
+                seen[name] = path
+
+        if kind:
+            for key in ANSWERED_BODIES[kind]:
+                body = node.get(key)
+
+                if isinstance(body, (list, tuple)):
+                    seen = self._answers(body, seen, f"{path}.{key}")
+
+            return seen
+
+        # An effect. Whatever steps it holds run in this resolution, so they
+        # are walked in line — except the names it aims at and asks about.
+        for key, value in node.items():
+            if key in ("targets", "target", "for_each", *CONDITION_KEYS):
+                continue
+
+            if isinstance(value, (list, tuple, Mapping)):
+                seen = self._answers(value, seen, f"{path}.{key}")
+
+        return seen
 
     # ------------------------------------------------------------------
 

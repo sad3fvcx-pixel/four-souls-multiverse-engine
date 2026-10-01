@@ -1019,6 +1019,15 @@ def _control_field(node: str, key: str) -> ParamShape:
     return _ANY_NODE.get(key, ParamShape(key, TEXT))
 
 
+_UNNAMED_ANSWER = {"may": "__may__", "choose": "__choice__"}
+"""
+Where `may` and `choose` keep a reply when the card does not name it.
+
+The interpreter's own fallbacks, `params.get("as", "__may__")` and
+`params.get("as", "__choice__")`, written down where the rest of the node is.
+"""
+
+
 def _asking(node: str, key: str) -> ParamShape:
     """
     One of the two halves of a question a node puts to a player.
@@ -1043,6 +1052,11 @@ def _asking(node: str, key: str) -> ParamShape:
             defines=ANSWER,
             describes="the name this question's answer is kept under",
             asks="",
+            # The name the interpreter keeps the reply under when the card
+            # gives none — said here so that a checker can tell a question
+            # left unnamed from one named the same thing. A test holds the
+            # two together.
+            default=_UNNAMED_ANSWER.get(node),
         )
 
     return replace(generic, asked=FIRST)

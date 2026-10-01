@@ -459,3 +459,193 @@ def test_everything_already_written_still_passes() -> None:
     library = load_content(CONTENT_ROOT)
 
     assert len(library.registry()) > 1000
+
+
+# ----------------------------------------------------------------------
+# Two questions, one answer
+# ----------------------------------------------------------------------
+
+
+def asking(vocabulary: Vocabulary, *effects: Any) -> list[str]:
+    """
+    `naming`, with what the engine says about its control nodes as well.
+
+    That is where a `may` written without `as` says what its answer is kept
+    under, and the loader and the desk both hand it over.
+    """
+    return validate_card(
+        a_card(effects=list(effects)),
+        known_effects=vocabulary.effects,
+        known_triggers=vocabulary.triggers,
+        known_conditions=vocabulary.conditions,
+        known_targets=vocabulary.targets,
+        shapes=vocabulary.shapes,
+        condition_shapes=vocabulary.condition_shapes,
+        target_shapes=vocabulary.target_shapes,
+        node_shapes=vocabulary.node_shapes,
+    )
+
+
+def may(*, named: str | None = None, inside: Any = None) -> dict:
+    node: dict[str, Any] = {"may": list(inside) if inside else list(COINS)}
+
+    if named is not None:
+        node["as"] = named
+
+    return node
+
+
+def test_two_unnamed_questions_side_by_side_are_refused(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    Both keep their answer under the same name, so the first "yes" is found
+    waiting by the second and nobody is asked twice.
+    """
+    (message,) = asking(vocabulary, may(), may())
+
+    assert "effects[1]" in message
+    assert "'__may__'" in message
+    assert "already keeps its answer there" in message
+    assert "effects[0]" in message
+
+
+def test_two_questions_named_alike_are_refused(vocabulary: Vocabulary) -> None:
+    (message,) = asking(vocabulary, may(named="hit"), may(named="hit"))
+
+    assert "'hit'" in message
+    assert "already keeps its answer there" in message
+
+
+def test_a_question_named_what_an_unnamed_one_is_called_is_refused(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    `__may__` written out is the name the runtime gives one written without
+    it — which is the reason the default is asked of the node's description.
+    """
+    assert len(asking(vocabulary, may(), may(named="__may__"))) == 1
+    assert len(asking(vocabulary, may(named="__may__"), may())) == 1
+
+
+def test_a_question_inside_a_branch_still_holds_its_name_after_it(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    Unlike a target. A name bound in `then` is not visible after the `if`,
+    but an answer given there is still waiting — and the next `may` under it
+    takes that answer for its own.
+    """
+    (message,) = asking(
+        vocabulary,
+        {"if": ["player_alive"], "then": [may()]},
+        may(),
+    )
+
+    assert "effects[1]" in message
+    assert "effects[0].then[0]" in message
+
+
+def test_one_name_on_both_sides_of_a_branch_is_right(
+    vocabulary: Vocabulary,
+) -> None:
+    """Only one side runs, so only one of them is ever asked."""
+    assert (
+        asking(
+            vocabulary,
+            {"if": ["player_alive"], "then": [may()], "else": [may()]},
+        )
+        == []
+    )
+
+
+def test_one_name_in_separate_options_is_right(vocabulary: Vocabulary) -> None:
+    assert (
+        asking(
+            vocabulary,
+            {
+                "choose": [
+                    {"description": "One", "effects": [may()]},
+                    {"description": "Two", "effects": [may()]},
+                ]
+            },
+        )
+        == []
+    )
+
+
+def test_a_question_inside_another_under_its_name_is_refused(
+    vocabulary: Vocabulary,
+) -> None:
+    (message,) = asking(vocabulary, may(inside=[may()]))
+
+    assert "effects[0].may[0]" in message
+
+
+def test_a_question_inside_another_under_its_own_name_is_right(
+    vocabulary: Vocabulary,
+) -> None:
+    assert asking(vocabulary, may(inside=[may(named="again")])) == []
+
+
+@pytest.mark.parametrize(
+    "loop",
+    (
+        {"repeat": 2},
+        {"for_each": "all_players"},
+    ),
+    ids=("repeat", "for_each"),
+)
+def test_one_question_in_a_loop_is_one_question(
+    vocabulary: Vocabulary, loop: dict
+) -> None:
+    """
+    Asked once for the resolution and answered once, however many times the
+    loop goes round: one node is not two questions.
+    """
+    assert asking(vocabulary, {**loop, "effects": [may()]}) == []
+
+
+@pytest.mark.parametrize(
+    "loop",
+    (
+        {"repeat": 2},
+        {"for_each": "all_players"},
+    ),
+    ids=("repeat", "for_each"),
+)
+def test_two_questions_named_alike_in_a_loop_are_refused(
+    vocabulary: Vocabulary, loop: dict
+) -> None:
+    (message,) = asking(vocabulary, {**loop, "effects": [may(), may()]})
+
+    assert "effects[0].effects[1]" in message
+
+
+def test_a_watcher_asks_in_a_resolution_of_its_own(
+    vocabulary: Vocabulary,
+) -> None:
+    """
+    Its effects run later, against a context the runtime builds then, where
+    nothing answered out here is waiting. `promise` is the other effect that
+    runs later; it keeps no steps, so there is nothing in it to ask.
+    """
+    watching = {
+        "effect": "watch_for",
+        "event": "damage_dealt",
+        "effects": [may()],
+    }
+
+    assert asking(vocabulary, may(), watching) == []
+    assert asking(vocabulary, watching, may()) == []
+    assert len(asking(vocabulary, {**watching, "effects": [may(), may()]})) == 1
+
+
+def test_choose_is_not_held_to_it(vocabulary: Vocabulary) -> None:
+    """
+    Two of them under one name are refused when the second is answered —
+    its options differ from the first's — so the check is the runtime's.
+    """
+    option = {"description": "One", "effects": COINS}
+
+    assert asking(vocabulary, {"choose": [option]}, {"choose": [option]}) == []

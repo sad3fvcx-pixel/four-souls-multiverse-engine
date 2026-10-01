@@ -145,6 +145,9 @@ def validate_card(
             # What each condition takes, so that whichever of them reads a
             # stored value can be found by asking rather than by name.
             conditions=condition_shapes,
+            # What each control node is written with, which is where a `may`
+            # left unnamed says what name its answer is kept under.
+            nodes=node_shapes,
         )
     )
 

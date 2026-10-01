@@ -20,7 +20,6 @@ import json
 import os
 import re
 import shutil
-from collections import Counter
 from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any
@@ -956,6 +955,7 @@ def _written_part(
     # and appended the way it always was. So the list is the declared order
     # followed by whatever the steps needed and the part never named.
     if chosen is not None:
+        chosen.reserve(_named_questions(described))
         _declared(kept, described, ours, chosen)
 
     node = _written_node(shape, described, chosen)
@@ -964,6 +964,33 @@ def _written_part(
         node[kept] = list(node.get(kept, ())) + ours
 
     return node
+
+
+def _named_questions(described: Any) -> set[str]:
+    """
+    Every name a question below here was given by the card, not made up.
+    """
+    vocabulary = engine_vocabulary()
+    names: set[str] = set()
+
+    def walk(item: Any) -> None:
+        if isinstance(item, dict):
+            control = vocabulary.node_shape(str(item.get("id", "")))
+            answers = _answers_under(control) if control is not None else ""
+            fields = item.get("fields")
+
+            if answers and isinstance(fields, dict) and fields.get(answers):
+                names.add(str(fields[answers]))
+
+            for value in item.values():
+                walk(value)
+        elif isinstance(item, (list, tuple)):
+            for value in item:
+                walk(value)
+
+    walk(described)
+
+    return names
 
 
 def _declared(
@@ -1046,12 +1073,24 @@ def _written_step(name: str, described: Any, aimed: Any) -> Any:
         answers = _answers_under(control)
         given = described.get("fields") if isinstance(described, dict) else None
         already = (given or {}).get(answers) if answers else None
-        binding = (
-            aimed.answering(name)
-            if answers and not already and aimed is not None
-            else ""
-        )
+        unnamed = control.params[answers].default if answers else None
+        binding = ""
+
+        if answers and aimed is not None:
+            if already:
+                # A name the card gave is the name it keeps, and it is spoken
+                # for from here on: a question written after it is not given
+                # it again.
+                aimed.claim(str(already))
+            else:
+                binding = aimed.answering(name, str(unnamed or name))
+
         inside = _written_node(control, described, aimed)
+
+        if aimed is not None:
+            # Whatever its bodies asked is still waiting once it is done,
+            # whichever of them ran — so the step after it sees all of it.
+            aimed.settle()
 
         if binding:
             inside[answers] = binding
@@ -1072,6 +1111,23 @@ def _written_step(name: str, described: Any, aimed: Any) -> Any:
             inside.setdefault(head.name, _nothing_yet(head))
 
         return inside
+
+    written = _written_effect(name, described, aimed)
+
+    if aimed is not None:
+        # An effect's own steps run in a resolution of their own — `watch_for`
+        # is the one that keeps any — so nothing they asked is waiting after
+        # it, and what its bodies left is forgotten.
+        aimed.forget()
+
+    return written
+
+
+def _written_effect(name: str, described: Any, aimed: Any) -> Any:
+    """
+    One effect: a step that does something rather than holding more of them.
+    """
+    vocabulary = engine_vocabulary()
 
     node: dict[str, Any] = {"effect": name}
 
@@ -1480,7 +1536,15 @@ class _Chosen:
         # can see them. A name here is not something a step points at — it is
         # which question a reply belongs to, and two questions sharing one are
         # one question asked once.
-        self._asking: list[Counter[str]] = [Counter()]
+        self._asking: list[set[str]] = [set()]
+        # What the bodies a step holds asked between them, kept beside each
+        # body that holds a step until the step is done. Not in `_asking`
+        # yet, because a body beside the one that asked it must not see it.
+        self._reached: list[set[str]] = [set()]
+        # Every name the card itself gave a question, anywhere in this part.
+        # A name made up here never takes one: the card's own are never
+        # renamed, so the made-up one is the one that has to step aside.
+        self._spoken: set[str] = set()
         self._later: list[int] = []
 
     def opened(self) -> int:
@@ -1538,29 +1602,71 @@ class _Chosen:
         offered the option — and two of them took one name, one reply and one
         answer between them.
         """
-        self._asking.append(Counter(self._asking[-1]))
+        self._asking.append(set(self._asking[-1]))
+        self._reached.append(set())
 
     def leave(self) -> None:
         """
-        End it, and with it everything it was the only one to have asked.
+        End it. What it asked is no longer seen by the bodies beside it, and
+        is handed to the step that holds it, which sees it once it is done.
         """
         if len(self._asking) > 1:
-            self._asking.pop()
+            asked = self._asking.pop() | self._reached.pop()
+            self._reached[-1] |= asked
 
-    def answering(self, kind: str) -> str:
+    def settle(self) -> None:
+        """
+        A step holding bodies is done, and everything any of them asked is
+        still waiting for the steps after it.
+
+        An answer is not a target: it is held for the whole resolution, not
+        for the body it was given in. A "you may" inside one arm of a branch
+        has its answer waiting after the branch, and a question after that
+        written under the same name would be answered by it without anybody
+        being asked — so the name is spoken for whichever arm ran.
+        """
+        self._asking[-1] |= self._reached[-1]
+        self._reached[-1] = set()
+
+    def forget(self) -> None:
+        """
+        A step is done whose bodies run in a resolution of their own.
+        """
+        self._reached[-1] = set()
+
+    def reserve(self, names: set[str]) -> None:
+        """
+        The names the card gave its questions, wherever it gave them.
+        """
+        self._spoken |= names
+
+    def claim(self, name: str) -> None:
+        """
+        A question the card named itself, asked here.
+        """
+        self._asking[-1].add(name)
+
+    def answering(self, kind: str, unnamed: str) -> str:
         """
         The name this node's reply goes under, or nothing where it needs none.
 
         The first of its sort to ask here needs none: a node that writes no
-        name is read under the one the engine keeps for that sort, and one
-        question under one name is exactly right. It is the second that has to
-        say which it is, and the name it is given has to be the same every time
-        this card is written — so it is counted, not invented.
+        name is read under ``unnamed``, the one the engine keeps for that sort,
+        and one question under one name is exactly right. It is the second
+        that has to say which it is, and the name it is given has to be the
+        same every time this card is written — so it is counted, not invented:
+        the first of ``kind_2``, ``kind_3`` and so on that nothing asked where
+        this can see, and that the card has not given a question of its own.
         """
-        seen = self._asking[-1][kind]
-        self._asking[-1][kind] = seen + 1
+        taken = self._asking[-1] | self._spoken
+        count = 1
 
-        return f"{kind}_{seen + 1}" if seen else ""
+        while (name := f"{kind}_{count}" if count > 1 else unnamed) in taken:
+            count += 1
+
+        self._asking[-1].add(name)
+
+        return "" if count == 1 else name
 
     def _floor(self) -> int:
         """
