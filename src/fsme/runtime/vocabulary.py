@@ -948,9 +948,14 @@ def _control_field(node: str, key: str) -> ParamShape:
     # bare head is not a second way of writing the answer, it is an answer
     # thrown away: `{"repeat": true, "times": 2}` repeats once. That stays a
     # complaint.
+    #
+    # A marker is a marker by being there, and says it with `true`: anything
+    # else is either nothing at all or a different answer, and `false` reads
+    # like a node that does not ask while it still asks.
     placeholder = (
-        (Written(kind=UNCHECKED, describes="a marker, when the answer is "
-                                           "written under its other name"),)
+        (Written(kind=FLAG, values=(True,),
+                 describes="a marker, when the answer is "
+                           "written under its other name"),)
         if key == node and alias and alias == first
         else ()
     )

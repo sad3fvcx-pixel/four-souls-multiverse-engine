@@ -2166,3 +2166,143 @@ def test_a_set_holding_an_if_with_no_conditions_is_refused(tmp_path: Path) -> No
         load_content(root)
 
     assert "this 'if' says nothing under 'if'" in str(raised.value)
+
+
+# ----------------------------------------------------------------------
+# A control node's answer under one of its names, and a marker that is one
+# ----------------------------------------------------------------------
+#
+# Six control nodes have a second name for their answer. Writing both is
+# writing one answer twice, and the interpreter keeps whichever it reads first,
+# so the other is dropped in silence: refused, whatever the two say. Where the
+# interpreter reads the other name first, the head may instead be the bare
+# marker `true`, which is not an answer and is not counted twice; anything else
+# written as a marker is refused by its description, and a marker with nothing
+# under the other name has nothing to do. `stop` is not decided here.
+
+STEPS = [{"effect": "gain_coins", "amount": 1}]
+OTHER_STEPS = [{"effect": "draw_loot", "count": 2}]
+MODES = [{"description": "a", "effects": STEPS}]
+OTHER_MODES = [{"description": "b", "effects": OTHER_STEPS}]
+
+BOTH_NAMES = {
+    "if": {"if": ["player_alive"], "conditions": ["player_dead"], "then": STEPS},
+    "repeat": {"repeat": 1, "times": 3, "effects": STEPS},
+    "for_each": {"for_each": "all_players", "of": "opponents", "effects": STEPS},
+    "may": {"may": STEPS, "effects": OTHER_STEPS},
+    "choose": {"choose": MODES, "modes": OTHER_MODES},
+    "sequence": {"sequence": STEPS, "effects": OTHER_STEPS},
+}
+BOTH_EMPTY = {
+    "if": {"if": [], "conditions": [], "then": STEPS},
+    "may": {"may": [], "effects": []},
+    "choose": {"choose": [], "modes": []},
+    "sequence": {"sequence": [], "effects": []},
+}
+BOTH_THE_SAME = {
+    "if": {"if": ["player_alive"], "conditions": ["player_alive"], "then": STEPS},
+    "repeat": {"repeat": 2, "times": 2, "effects": STEPS},
+    "for_each": {"for_each": "opponents", "of": "opponents", "effects": STEPS},
+    "may": {"may": STEPS, "effects": STEPS},
+    "choose": {"choose": MODES, "modes": MODES},
+    "sequence": {"sequence": STEPS, "effects": STEPS},
+}
+MARKED = {
+    "may": ("effects", STEPS),
+    "choose": ("modes", MODES),
+    "sequence": ("effects", STEPS),
+}
+
+
+def _said_once_about_names(said: list[str], node: str) -> None:
+    assert len(said) == 1, said
+    assert f"'{node}' gives " in said[0], said
+    assert f"spellings of '{node}'; write one" in said[0], said
+
+
+@pytest.mark.parametrize("node", sorted(BOTH_NAMES))
+def test_a_control_node_answered_under_both_names_is_refused_once(
+    vocabulary: Vocabulary, node: str
+) -> None:
+    _said_once_about_names(wholly(vocabulary, BOTH_NAMES[node]), node)
+
+
+@pytest.mark.parametrize("node", sorted(BOTH_EMPTY))
+def test_both_names_written_empty_are_still_both_names(
+    vocabulary: Vocabulary, node: str
+) -> None:
+    _said_once_about_names(wholly(vocabulary, BOTH_EMPTY[node]), node)
+
+
+@pytest.mark.parametrize("node", sorted(BOTH_THE_SAME))
+def test_both_names_saying_the_same_thing_are_still_both_names(
+    vocabulary: Vocabulary, node: str
+) -> None:
+    _said_once_about_names(wholly(vocabulary, BOTH_THE_SAME[node]), node)
+
+
+def test_a_loop_head_written_as_true_beside_its_other_name_is_refused(
+    vocabulary: Vocabulary,
+) -> None:
+    said = wholly(vocabulary, {"for_each": True, "of": "opponents", "effects": STEPS})
+
+    assert len(said) == 1, said
+
+
+def test_a_repeat_head_written_as_true_is_refused_once_by_its_own_kind(
+    vocabulary: Vocabulary,
+) -> None:
+    said = wholly(vocabulary, {"repeat": True, "times": 2, "effects": STEPS})
+
+    assert len(said) == 1, said
+    assert ".repeat: this takes a whole number" in said[0], said
+
+
+@pytest.mark.parametrize("node", sorted(MARKED))
+def test_a_marker_with_its_answer_under_the_other_name_passes(
+    vocabulary: Vocabulary, node: str
+) -> None:
+    other, answer = MARKED[node]
+
+    assert wholly(vocabulary, {node: True, other: answer}) == []
+
+
+@pytest.mark.parametrize(
+    "marker", (False, 1, "yes", None, {}), ids=("false", "one", "yes", "null", "map")
+)
+@pytest.mark.parametrize("node", sorted(MARKED))
+def test_a_marker_is_true_and_nothing_else(
+    vocabulary: Vocabulary, node: str, marker: Any
+) -> None:
+    other, answer = MARKED[node]
+    said = wholly(vocabulary, {node: marker, other: answer})
+
+    assert len(said) == 1, said
+    assert f".{node}: " in said[0], said
+    assert "spellings of" not in said[0], said
+
+
+@pytest.mark.parametrize("node", sorted(MARKED))
+def test_an_empty_head_beside_the_other_name_is_an_answer_not_a_marker(
+    vocabulary: Vocabulary, node: str
+) -> None:
+    other, answer = MARKED[node]
+
+    _said_once_about_names(wholly(vocabulary, {node: [], other: answer}), node)
+
+
+@pytest.mark.parametrize("empty", (False, True), ids=("alone", "beside nothing"))
+@pytest.mark.parametrize("node", sorted(MARKED))
+def test_a_marker_with_no_answer_has_nothing_to_do(
+    vocabulary: Vocabulary, node: str, empty: bool
+) -> None:
+    other, _ = MARKED[node]
+    written: dict[str, Any] = {node: True}
+
+    if empty:
+        written[other] = []
+
+    said = wholly(vocabulary, written)
+
+    assert len(said) == 1, said
+    assert f"this '{node}' has nothing to do" in said[0], said

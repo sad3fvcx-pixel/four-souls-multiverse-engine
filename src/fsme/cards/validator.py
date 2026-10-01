@@ -764,7 +764,47 @@ def _one_node(
     errors.extend(_only_one(node, shape, card_id, path))
     errors.extend(_the_right_domain(node, shape, card_id, path))
 
+    if not errors:
+        # One answer under two of its names, the same rule conditions keep.
+        # A head written only as one of its other ways — the marker that says
+        # the answer is under the other name — is not an answer, so it is left
+        # out: `{"may": true, "effects": [...]}` says it once.
+        answers = {
+            key: value
+            for key, value in node.items()
+            if not _only_marks(shape.params.get(key), value, card_id, path, nodes)
+        }
+        errors.extend(_one_spelling(shape.name, answers, shape, f"{card_id}: {path}"))
+
     return errors
+
+
+def _only_marks(
+    parameter: Any,
+    value: Any,
+    card_id: str,
+    path: str,
+    nodes: Mapping[str, Any] | None,
+) -> bool:
+    """
+    Whether a key that names its node is written as a marker, not as its answer.
+
+    Read off the parameter. Its own way is the answer, and so is any other way
+    that can say more than one thing — a loop's group written as a name is the
+    group. A way that admits exactly one value says nothing but that it is
+    there, and a head written that way is the bare marker.
+    """
+    if parameter is None or not getattr(parameter, "names_the_node", False):
+        return False
+
+    if not _written_this_way(parameter, value, card_id, path, nodes):
+        return False
+
+    return any(
+        len(getattr(way, "values", ())) == 1
+        and not _written_this_way(way, value, card_id, path, nodes)
+        for way in getattr(parameter, "also", ())
+    )
 
 
 def _each_one(
@@ -1179,7 +1219,13 @@ def _does_something(
     if not bodies:
         return []
 
-    if any(node.get(key) for key in bodies):
+    # A body is a list of things to do. A marker written where the answer
+    # could have been is not one, and neither is an empty list: the
+    # interpreter builds nothing out of either.
+    if any(
+        isinstance(node.get(key), (list, tuple)) and len(node[key]) > 0
+        for key in bodies
+    ):
         return []
 
     return [
