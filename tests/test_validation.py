@@ -2306,3 +2306,19 @@ def test_a_marker_with_no_answer_has_nothing_to_do(
 
     assert len(said) == 1, said
     assert f"this '{node}' has nothing to do" in said[0], said
+
+
+@pytest.mark.parametrize(
+    "stop",
+    ("stop", {"stop": True}, {"stop": False}, {"stop": None}, {"stop": "no"}, {"stop": []}),
+    ids=("bare", "true", "false", "null", "no", "empty"),
+)
+def test_stop_is_accepted_whatever_it_is_written_with(
+    vocabulary: Vocabulary, stop: Any
+) -> None:
+    """
+    An accepted contract, not an oversight: `stop` stops by being present, and
+    its value is never read — so none is refused. The bare word is the way to
+    write it.
+    """
+    assert wholly(vocabulary, {"effect": "gain_coins", "amount": 1}, stop) == []

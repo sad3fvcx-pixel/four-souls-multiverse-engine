@@ -2306,6 +2306,15 @@ def _read_control(
         other = parameter.instead_of
 
         if other and key in written and other in written:
+            if _a_bare_marker(shape.params.get(other), written[other]):
+                # `{"may": true, "effects": [...]}`: the head only says the
+                # answer is under its other name, so nothing is dropped by
+                # reading the answer as the head's own. The card comes back
+                # written the one way this writes it, `{"may": [...]}`, which
+                # the interpreter reads as the same steps.
+                written[other] = written.pop(key)
+                continue
+
             raise UnreadableCard(
                 f"{name!r} says both {other!r} and {key!r}, which are two "
                 "spellings of one question. The engine reads one of them and "
@@ -2352,6 +2361,25 @@ def _read_control(
         f"{name!r} is aimed at something of its own. Folding that up to the "
         "ability would change which steps it reaches, so this card is edited "
         "in full."
+    )
+
+
+def _a_bare_marker(parameter: Any, value: Any) -> bool:
+    """
+    Whether a key that names its node is written as the marker, not an answer.
+
+    Read off the parameter: one of the other ways it may be written admits
+    exactly one value, and this is that value, of that value's own type — so
+    `1` is not taken for `true`.
+    """
+    if parameter is None or not parameter.names_the_node:
+        return False
+
+    return any(
+        len(way.values) == 1
+        and type(value) is type(way.values[0])
+        and value == way.values[0]
+        for way in parameter.also
     )
 
 

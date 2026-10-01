@@ -5800,3 +5800,113 @@ def test_an_answer_naming_a_catalogue_is_still_read_as_a_list() -> None:
     )
 
     assert read_back is not None, why
+
+
+# ----------------------------------------------------------------------
+# A marker opens as the node it marks
+# ----------------------------------------------------------------------
+#
+# `{"may": true, "effects": [...]}` keeps its answer under the other name and
+# says so with the head. Nothing is dropped by reading that answer as the
+# head's own, so the desk opens it and writes it back the one way it writes
+# every node, `{"may": [...]}` — not the file's spelling, the same steps.
+# Two real answers are still refused: one of them would be lost.
+
+MARKER_STEPS = [{"effect": "gain_coins", "amount": 1}]
+MARKER_OPTIONS = [{"description": "b", "effects": MARKER_STEPS}]
+MARKED = {
+    "may": ({"may": True, "effects": MARKER_STEPS}, MARKER_STEPS),
+    "choose": ({"choose": True, "modes": MARKER_OPTIONS}, MARKER_OPTIONS),
+    "sequence": ({"sequence": True, "effects": MARKER_STEPS}, MARKER_STEPS),
+}
+
+
+def a_card_doing(*effects: Any) -> dict[str, Any]:
+    return {
+        "id": "probe-marker",
+        "name": "Marker",
+        "type": "loot",
+        "expansion": "probe",
+        "abilities": [{"trigger": "on_play", "effects": list(effects)}],
+    }
+
+
+@pytest.mark.parametrize("node", sorted(MARKED))
+def test_a_marker_form_opens_as_its_head_form(node: str) -> None:
+    marked, answer = MARKED[node]
+
+    said = read_card(a_card_doing(marked))
+    step = said["card"]["fields"]["abilities"][0]["fields"]["effects"][0]
+
+    # The answer is held under the head, and the marker is gone: the desk has
+    # nowhere to keep a second name, and needs none.
+    assert step["id"] == node
+    assert list(step["fields"]) == [node]
+    assert len(step["fields"][node]) == len(answer)
+
+    written = build_card(said)
+
+    assert written["abilities"][0]["effects"] == [{node: answer}]
+    assert check_card(written) == []
+
+
+@pytest.mark.parametrize("node", sorted(MARKED))
+def test_a_marker_form_comes_back_the_same_the_second_time(node: str) -> None:
+    once = build_card(read_card(a_card_doing(MARKED[node][0])))
+    twice = build_card(read_card(once))
+
+    assert twice == once
+
+
+@pytest.mark.parametrize(
+    "written",
+    (
+        {"may": MARKER_STEPS, "effects": [{"effect": "draw_loot", "count": 2}]},
+        {"choose": MARKER_OPTIONS, "modes": MARKER_OPTIONS},
+        {"sequence": MARKER_STEPS, "effects": MARKER_STEPS},
+    ),
+    ids=("may", "choose", "sequence"),
+)
+def test_two_real_answers_are_still_edited_in_full(written: dict) -> None:
+    with pytest.raises(UnreadableCard, match="two spellings of one question"):
+        read_card(a_card_doing(written))
+
+
+@pytest.mark.parametrize(
+    ("written", "other"),
+    (
+        ({"may": True}, None),
+        ({"choose": True}, None),
+        ({"sequence": True}, None),
+        ({"may": True}, "effects"),
+        ({"choose": True}, "modes"),
+        ({"sequence": True}, "effects"),
+    ),
+    ids=("may", "choose", "sequence", "may empty", "choose empty", "sequence empty"),
+)
+def test_a_marker_with_no_answer_is_never_a_finished_card(
+    written: dict, other: str | None
+) -> None:
+    node = {**written, **({other: []} if other else {})}
+    card = a_card_doing(node)
+
+    assert check_card(card), node
+
+    try:
+        written_back = build_card(read_card(card))
+    except UnreadableCard:
+        return
+
+    assert check_card(written_back), written_back
+
+
+def test_a_sequence_comes_back_the_same_the_second_time() -> None:
+    card = a_card_doing(
+        {"sequence": [{"effect": "draw_loot", "count": 2}, {"effect": "gain_coins", "amount": 1}]}
+    )
+
+    once = build_card(read_card(card))
+
+    assert once["abilities"][0]["effects"] == card["abilities"][0]["effects"]
+    assert build_card(read_card(once)) == once
+    assert check_card(once) == []

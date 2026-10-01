@@ -200,3 +200,66 @@ def test_a_runaway_loop_is_stopped() -> None:
 def test_a_mixed_control_node_is_rejected() -> None:
     with pytest.raises(InterpreterError):
         interpreter().build([{"if": [], "repeat": 2}])
+
+
+# ----------------------------------------------------------------------
+# A marker, a sequence, and a stop
+# ----------------------------------------------------------------------
+
+
+def answered() -> AbilityContext:
+    """A context that has already said yes, and picked the first option."""
+    from fsme.runtime.ability_context import CHOSEN_AT
+
+    context = AbilityContext(controller=0)
+    context.bind("__may__", ["yes"])
+    context.bind("__choice__", ["b"])
+    context.store(CHOSEN_AT, {"__choice__": [0]})
+
+    return context
+
+
+def what_runs(nodes) -> list[tuple[str, dict]]:
+    return [
+        (op.name, {k: v for k, v in op.params.items() if not k.startswith("__")})
+        for op in plan(nodes, context=answered())
+    ]
+
+
+STEPS = [{"gain_coins": 1}, {"draw_loot": 2}]
+OPTIONS = [{"description": "b", "effects": STEPS}]
+
+
+@pytest.mark.parametrize(
+    ("marked", "headed"),
+    (
+        ({"may": True, "effects": STEPS}, {"may": STEPS}),
+        ({"choose": True, "modes": OPTIONS}, {"choose": OPTIONS}),
+        ({"sequence": True, "effects": STEPS}, {"sequence": STEPS}),
+    ),
+    ids=("may", "choose", "sequence"),
+)
+def test_a_marker_runs_what_the_head_form_runs(marked: dict, headed: dict) -> None:
+    assert what_runs([marked]) == what_runs([headed])
+    assert what_runs([marked]) == [("gain_coins", {"amount": 1}), ("draw_loot", {"count": 2})]
+
+
+def test_a_sequence_runs_its_steps_in_order() -> None:
+    assert what_runs([{"sequence": [{"draw_loot": 2}, {"gain_coins": 1}]}]) == [
+        ("draw_loot", {"count": 2}),
+        ("gain_coins", {"amount": 1}),
+    ]
+
+
+@pytest.mark.parametrize(
+    "stop",
+    ("stop", {"stop": True}, {"stop": False}, {"stop": None}, {"stop": "no"}, {"stop": []}),
+    ids=("bare", "true", "false", "null", "no", "empty"),
+)
+def test_stop_stops_whatever_it_is_written_with(stop) -> None:
+    """
+    `stop` stops by being there; what is written under it is never read.
+    """
+    assert [op.name for op in plan([{"gain_coins": 1}, stop, {"gain_coins": 99}])] == [
+        "gain_coins"
+    ]

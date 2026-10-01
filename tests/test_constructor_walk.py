@@ -2544,26 +2544,73 @@ def test_a_structure_saved_and_opened_says_the_same_thing() -> None:
 
 def test_a_structure_that_says_both_names_is_refused_rather_than_guessed_at() -> None:
     """
-    A node saying both is one the engine reads by dropping one of them, so an
-    editor that opened it would drop it too — quietly, and on save.
+    A node giving its answer under both names is one the engine reads by
+    dropping one of them, so an editor that opened it would drop it too —
+    quietly, and on save. It is refused with the two names in the message
+    rather than half-read.
 
-    Nothing writes this any more, and no shipped card ever did. It is refused
-    with the two names in the message rather than half-read.
+    A head written as the bare marker `true` is not a second answer: it only
+    says the answer is under the other name. Where a node has that marker, the
+    desk opens it as the node it marks and writes it back the one way it
+    writes every node. Where it does not, `true` is no marker, and the node is
+    refused as before.
     """
     from fsme.lab.desk.author import UnreadableCard, read_card
     from fsme.runtime.interpreter import CONTROL_SPELLINGS
 
-    for node in TWO_NAMED:
+    def other_name(node: str) -> str:
         first, second = CONTROL_SPELLINGS[node]
-        alias = second if first == node else first
-        held = a_structure(node)["abilities"][0]["effects"][0][node]
-        card = a_structure(node)
-        card["abilities"][0]["effects"][0] = {node: True, alias: held}
 
+        return second if first == node else first
+
+    def saying(card: dict[str, Any], node_written: dict[str, Any]) -> dict[str, Any]:
+        card["abilities"][0]["effects"][0] = node_written
+
+        return card
+
+    for node in TWO_NAMED:
+        alias = other_name(node)
+        held = a_structure(node)["abilities"][0]["effects"][0][node]
+
+        # The marker: opened, and written back under the head alone.
+        once = build_card(read_card(saying(a_structure(node), {node: True, alias: held}),
+                                    set_id="demo"))
+
+        assert once["abilities"][0]["effects"] == [{node: held}], node
+        assert build_card(read_card(once, set_id="demo")) == once, node
+
+        # Two real answers: refused, naming both.
         with pytest.raises(UnreadableCard) as said:
-            read_card(card, set_id="demo")
+            read_card(saying(a_structure(node), {node: held, alias: held}), set_id="demo")
 
         assert node in str(said.value) and alias in str(said.value), node
+        assert "two spellings of one question" in str(said.value), node
+
+    steps = [{"effect": "gain_coins", "amount": 1}]
+    without_a_marker = {
+        "if": (["player_alive"], {"then": steps}),
+        "repeat": (2, {"effects": steps}),
+        "for_each": ("all_players", {"effects": steps}),
+    }
+
+    for node, (answer, rest) in without_a_marker.items():
+        alias = other_name(node)
+
+        for written in ({node: True, alias: answer, **rest},
+                        {node: answer, alias: answer, **rest}):
+            card = {
+                "id": "probe-both",
+                "name": "Both",
+                "type": "loot",
+                "expansion": "probe",
+                "abilities": [{"trigger": "on_play", "effects": [written]}],
+            }
+
+            with pytest.raises(UnreadableCard) as said:
+                read_card(card, set_id="demo")
+
+            assert node in str(said.value) and alias in str(said.value), written
+            assert "two spellings of one question" in str(said.value), written
 
 
 def test_every_shipped_structure_is_written_back_exactly() -> None:
