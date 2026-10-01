@@ -100,7 +100,9 @@ def validate_card(
             errors.append(f"{card_id}: 'rewards' must be an object")
         else:
             for key, value in rewards.items():
-                if not isinstance(value, int):
+                # True is an int to Python, and a reward of true used to be
+                # paid as one. Read the way the printed numbers are read.
+                if _kind_written(value) != WHOLE:
                     errors.append(
                         f"{card_id}: reward '{key}' must be an integer"
                     )

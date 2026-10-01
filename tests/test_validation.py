@@ -1825,3 +1825,113 @@ def test_every_shipped_card_is_written_as_its_fields_say(
             )
 
     assert complaints_made == []
+
+
+# ----------------------------------------------------------------------
+# What a monster pays, written as true or false
+# ----------------------------------------------------------------------
+
+
+def a_monster_paying(**rewards: Any) -> dict:
+    """A monster card whose rewards say exactly what is given."""
+    return {
+        "id": "example_expansion-monster-gaper",
+        "name": "Gaper",
+        "type": "monster",
+        "expansion": EXPANSION,
+        "schema_version": "1",
+        "health": 2,
+        "attack": 1,
+        "roll": 3,
+        "souls": 0,
+        "rewards": rewards,
+        "abilities": [],
+    }
+
+
+@pytest.mark.parametrize(("key", "written"), (("cents", True), ("loot", False)))
+def test_a_reward_of_true_or_false_is_refused_once(
+    vocabulary: Vocabulary, key: str, written: bool
+) -> None:
+    """
+    Python counts true as 1, and the reward check used to: a monster that paid
+    true cents paid one.
+    """
+    said = judged(vocabulary, a_monster_paying(**{key: written}))
+
+    assert said == [
+        f"example_expansion-monster-gaper: reward '{key}' must be an integer"
+    ]
+
+
+@pytest.mark.parametrize(
+    "rewards",
+    (
+        {"cents": 3},
+        {"cents": 0},
+        {"loot": 1, "treasure": 2},
+        # A name the engine never pays is still a card's to write: what a
+        # monster may say it gives is an open set, and stays one.
+        {"a_reward_nobody_pays": 4},
+    ),
+)
+def test_a_reward_of_a_whole_number_still_passes(
+    vocabulary: Vocabulary, rewards: dict
+) -> None:
+    assert judged(vocabulary, a_monster_paying(**rewards)) == []
+
+
+def test_a_reward_written_as_text_is_still_one_complaint(
+    vocabulary: Vocabulary,
+) -> None:
+    said = judged(vocabulary, a_monster_paying(cents="3"))
+
+    assert said == [
+        "example_expansion-monster-gaper: reward 'cents' must be an integer"
+    ]
+
+
+def test_a_set_holding_a_reward_of_true_is_refused(tmp_path: Path) -> None:
+    root = a_set(tmp_path, a_monster_paying(cents=True))
+
+    with pytest.raises(InvalidContentError) as raised:
+        load_content(root)
+
+    said = str(raised.value)
+
+    assert "reward 'cents' must be an integer" in said
+    assert "loot.json" in said
+
+
+def test_the_constructor_s_check_refuses_a_reward_of_true() -> None:
+    from fsme.lab.desk.author import check_card
+
+    # A card that does nothing is told that first and nothing else, so this
+    # one does something.
+    monster = a_monster_paying(cents=True)
+    monster["abilities"] = [
+        {"trigger": "monster_killed", "effects": [{"gain_coins": {"amount": 1}}]}
+    ]
+
+    assert check_card(monster) == [
+        "example_expansion-monster-gaper: reward 'cents' must be an integer"
+    ]
+
+
+def test_no_shipped_card_pays_a_reward_of_true_or_false(
+    vocabulary: Vocabulary,
+) -> None:
+    complaints_made = []
+
+    for path in sorted(CONTENT_ROOT.rglob("*.json")):
+        data = json.loads(path.read_text("utf-8"))
+
+        if not isinstance(data, dict) or not isinstance(data.get("cards"), list):
+            continue
+
+        for card in data["cards"]:
+            complaints_made.extend(
+                said for said in judged(vocabulary, card) if "reward '" in said
+            )
+
+    assert complaints_made == []
