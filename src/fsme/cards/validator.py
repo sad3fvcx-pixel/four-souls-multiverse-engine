@@ -74,6 +74,8 @@ def validate_card(
         ):
             errors.append(f"{card_id}: missing required field '{field_name}'")
 
+    errors.extend(_written_as_described(data, card_shape, card_id))
+
     if "type" in data:
         try:
             CardType(data["type"])
@@ -83,7 +85,10 @@ def validate_card(
     for field_name in _OPTIONAL_INT_FIELDS:
         value = data.get(field_name)
 
-        if value is not None and not isinstance(value, int):
+        # `_kind_written` before `isinstance`: true is an int to Python and a
+        # mistake to a card, and a card that writes it where a number belongs
+        # is told so rather than given one.
+        if value is not None and _kind_written(value) != WHOLE:
             errors.append(
                 f"{card_id}: field '{field_name}' must be an integer"
             )
@@ -157,6 +162,64 @@ def validate_card(
                 shapes=shapes,
                 node_shapes=node_shapes,
             )
+        )
+
+    return errors
+
+
+_CHECKED_ON_THEIR_OWN = ("type", "abilities", "rewards", *_OPTIONAL_INT_FIELDS)
+"""
+The fields of a card `validate_card` already judges by name, each in words of
+its own. Judging them again by kind would be one mistake and two complaints.
+"""
+
+
+def _written_as_described(
+    data: Mapping[str, Any], card_shape: Any, card_id: Any
+) -> list[str]:
+    """
+    Every field the card writes as a different kind from the one it is.
+
+    The card's own shape says what each of its fields is, and what a card wrote
+    is read in the same words by `_kind_written`. Without this a card loaded
+    whatever it said: families written as one word became its letters, a name
+    written as a number became the number's digits, and notes or statics written
+    as text were refused by nothing until loading fell over on them.
+
+    Nothing is judged without a shape to judge it by, and a kind this does not
+    know how to recognise is left alone rather than guessed at.
+    """
+    if card_shape is None:
+        return []
+
+    errors: list[str] = []
+
+    for name, value in data.items():
+        parameter = card_shape.params.get(str(name))
+
+        if parameter is None or name in _CHECKED_ON_THEIR_OWN:
+            continue
+
+        if value is None:
+            if parameter.nullable:
+                continue
+
+            written = "nothing"
+        elif parameter.kind == MAPPING:
+            if isinstance(value, Mapping):
+                continue
+
+            written = _kind_written(value)
+        elif parameter.kind in (TEXT, WHOLE, LIST):
+            written = MAPPING if isinstance(value, Mapping) else _kind_written(value)
+
+            if written == parameter.kind:
+                continue
+        else:
+            continue
+
+        errors.append(
+            f"{card_id}: field '{name}' must be {parameter.wants()}, not {written}"
         )
 
     return errors

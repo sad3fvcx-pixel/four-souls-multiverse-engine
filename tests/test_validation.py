@@ -1649,3 +1649,179 @@ def test_a_set_holding_a_nameless_card_is_refused(tmp_path: Path) -> None:
 
     assert "missing required field 'name'" in said
     assert "loot.json" in said
+
+
+# ----------------------------------------------------------------------
+# A card's own field, written as a different kind from the one it is
+# ----------------------------------------------------------------------
+
+
+WRITTEN_AS_SOMETHING_ELSE = {
+    "metadata": ("text", "a set of named values, not text"),
+    "statics": ("x", "a list, not text"),
+    "tags": ("trinket", "a list, not text"),
+    "name": (5, "text, not a whole number"),
+    "id": (7, "text, not a whole number"),
+    "expansion": (3, "text, not a whole number"),
+}
+
+
+@pytest.mark.parametrize("field", sorted(WRITTEN_AS_SOMETHING_ELSE))
+def test_a_card_s_field_of_the_wrong_kind_is_refused_once(
+    vocabulary: Vocabulary, field: str
+) -> None:
+    """
+    These used to load as whatever they said: families written as one word
+    became its letters, a name written as a number its digits, and notes or
+    statics written as text were refused by nothing until loading fell over.
+    """
+    written, said = WRITTEN_AS_SOMETHING_ELSE[field]
+    card_id = written if field == "id" else a_card()["id"]
+
+    assert judged(vocabulary, a_card_saying(field, written)) == [
+        f"{card_id}: field '{field}' must be {said}"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("field", "written"),
+    (
+        ("name", "Dark Coin"),
+        ("id", "example_expansion-loot-dark_coin"),
+        ("expansion", EXPANSION),
+        ("tags", ["trinket", "guppy"]),
+        ("tags", ("trinket",)),
+        ("tags", []),
+        ("statics", []),
+        ("metadata", {"text": "Gain 1¢."}),
+        ("metadata", {}),
+        ("health", 2),
+        ("souls", 1),
+    ),
+)
+def test_a_card_s_field_of_its_own_kind_passes(
+    vocabulary: Vocabulary, field: str, written: Any
+) -> None:
+    assert judged(vocabulary, a_card_saying(field, written)) == []
+
+
+def a_card_writing_nothing_for(field: str) -> dict:
+    """A card that does something, with one of its own fields written as null."""
+    card = a_card({"effect": "gain_coins", "amount": 1})
+    card[field] = None
+
+    return card
+
+
+@pytest.mark.parametrize("field", ("health", "attack", "roll", "cost"))
+def test_a_number_a_card_may_leave_empty_may_be_written_as_nothing(
+    vocabulary: Vocabulary, field: str
+) -> None:
+    assert judged(vocabulary, a_card_writing_nothing_for(field)) == []
+
+
+@pytest.mark.parametrize("field", ("name", "tags", "metadata", "statics"))
+def test_a_field_that_may_not_be_empty_written_as_nothing_is_refused_once(
+    vocabulary: Vocabulary, field: str
+) -> None:
+    said = judged(vocabulary, a_card_writing_nothing_for(field))
+
+    assert len(said) == 1, said
+    assert f"field '{field}' must be" in said[0] and "not nothing" in said[0]
+
+
+@pytest.mark.parametrize("field", ("health", "souls"))
+@pytest.mark.parametrize("written", (True, False))
+def test_true_or_false_where_a_number_belongs_is_refused(
+    vocabulary: Vocabulary, field: str, written: bool
+) -> None:
+    """
+    Python counts true as 1, and the check used to: a card that wrote true for
+    its health loaded with one.
+    """
+    assert judged(vocabulary, a_card_saying(field, written)) == [
+        f"{a_card()['id']}: field '{field}' must be an integer"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("field", "written", "said"),
+    (
+        ("health", "2", "field 'health' must be an integer"),
+        ("rewards", "lots", "'rewards' must be an object"),
+        ("type", 3, "unknown card type '3'"),
+    ),
+)
+def test_a_field_judged_on_its_own_is_still_one_complaint(
+    vocabulary: Vocabulary, field: str, written: Any, said: str
+) -> None:
+    """
+    These were already refused in words of their own; judging them again by
+    kind would be one mistake and two complaints.
+    """
+    assert judged(vocabulary, a_card_saying(field, written)) == [
+        f"{a_card()['id']}: {said}"
+    ]
+
+
+def test_a_list_of_abilities_written_as_something_else_is_still_one_complaint(
+    vocabulary: Vocabulary,
+) -> None:
+    said = judged(vocabulary, a_card_saying("abilities", {}))
+
+    assert said == [f"{a_card()['id']}: 'abilities' must be a list"]
+
+
+@pytest.mark.parametrize("field", ("name", "expansion"))
+def test_text_of_spaces_is_still_text(vocabulary: Vocabulary, field: str) -> None:
+    """
+    The kind of a value is not what it says: spaces are text, and whether text
+    of spaces will do is a different question that this does not answer.
+    """
+    assert judged(vocabulary, a_card_saying(field, "   ")) == []
+
+
+@pytest.mark.parametrize("field", ("metadata", "statics"))
+def test_a_set_holding_a_field_of_the_wrong_kind_is_refused_not_crashed(
+    tmp_path: Path, field: str
+) -> None:
+    """
+    Both used to pass the checker and then fail inside the loader with an
+    `AttributeError`, which names no card and no file.
+    """
+    root = a_set(tmp_path, a_card_saying(field, "x"))
+
+    with pytest.raises(InvalidContentError) as raised:
+        load_content(root)
+
+    said = str(raised.value)
+
+    assert f"field '{field}' must be" in said
+    assert "loot.json" in said
+
+
+def test_the_constructor_s_check_refuses_a_field_of_the_wrong_kind() -> None:
+    from fsme.lab.desk.author import check_card
+
+    said = check_card(a_card_saying("tags", "trinket"))
+
+    assert said == [f"{a_card()['id']}: field 'tags' must be a list, not text"]
+
+
+def test_every_shipped_card_is_written_as_its_fields_say(
+    vocabulary: Vocabulary,
+) -> None:
+    complaints_made = []
+
+    for path in sorted(CONTENT_ROOT.rglob("*.json")):
+        data = json.loads(path.read_text("utf-8"))
+
+        if not isinstance(data, dict) or not isinstance(data.get("cards"), list):
+            continue
+
+        for card in data["cards"]:
+            complaints_made.extend(
+                said for said in judged(vocabulary, card) if "must be" in said
+            )
+
+    assert complaints_made == []
