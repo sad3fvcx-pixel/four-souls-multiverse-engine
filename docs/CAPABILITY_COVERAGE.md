@@ -8,14 +8,14 @@ by reading either side and inferring the other.
 Measured at `75a070b`, against 1045 shipped cards, 63 effects, 44 conditions,
 46 targets, 66 triggers, 15 node shapes and 7 control nodes.
 
-Brought up to date at `36666fd` for the four changes made since: `10af2e4`,
+Brought up to date at `d763217` for the five changes made since: `10af2e4`,
 which refuses a blank required parameter of an effect or a condition,
 `55c450f`, which draws a card's `tags` as a list of words, `8df552b`, which
-refuses a blank `card.id`, `card.name` or `card.expansion`, and `36666fd`, which
+refuses a blank `card.id`, `card.name` or `card.expansion`, `36666fd`, which
 refuses a card's own field written as a different kind from the one its shape
-declares. Only the entries those four touch were changed. Nothing was
-remeasured for that update, so every figure below is still the one taken at
-`75a070b`.
+declares, and `d763217`, which refuses `true` or `false` as the value of a
+reward. Only the entries those five touch were changed. Nothing was remeasured
+for that update, so every figure below is still the one taken at `75a070b`.
 
 ## The headline
 
@@ -397,8 +397,14 @@ whether a person can say it by clicking.
    The fields the checker already judged in words of their own — the kind of
    card, the printed numbers, `rewards`, `abilities` — keep those words and are
    not told twice. No shipped card is written as the wrong kind. Still open,
-   and not part of it: what the words inside `tags` may be (`[1, 2]`, `[""]`),
-   and a reward written as `true`.
+   and not part of it: what the words inside `tags` may be (`[1, 2]`, `[""]`).
+   A reward written as `true` was open here too, and is closed by `d763217`.
+7. ~~A reward written as `true` or `false`~~ — **closed**, `d763217`. A
+   reward's value is now read the way the printed numbers are, so `true` and
+   `false` are no longer taken for whole numbers. The message is the one it
+   always was, `reward '<name>' must be an integer`, and which names a reward
+   may have is as open as before. No shipped card pays a reward of `true` or
+   `false`.
 
 ## Next small improvements
 
