@@ -139,7 +139,7 @@ Cards are plain JSON and nothing stops you editing them directly. It is the
 right tool for bulk changes across many cards, for anything the Constructor
 refuses, and for reading a diff.
 
-Two things to know if you do:
+A few things to know if you do:
 
 - Every field must be one the engine describes. Unknown fields at the top of a
   card are **not** kept — the Constructor will refuse to open such a card, and
@@ -148,6 +148,12 @@ Two things to know if you do:
 - A hand-written card is checked by the same validator: `fsme cards` loads
   everything and names the file, the card and the ability when something is
   wrong.
+- A control node is written under its own name. `may`, `choose` and `sequence`
+  may instead be written as a marker, `{"may": true, "effects": [...]}`; the
+  Constructor opens that and saves it as `{"may": [...]}`, which plays the
+  same. Writing the answer under both names, or a marker other than `true`, is
+  refused. `stop` is best written as the bare word `"stop"`; whatever is
+  written under a `{"stop": ...}` key is never read.
 
 The full vocabulary — every effect, condition, target and trigger, with what
 each one takes — is in [REFERENCE.md](REFERENCE.md), generated from the engine

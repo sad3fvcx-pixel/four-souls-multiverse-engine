@@ -26,6 +26,15 @@ still the one taken at `75a070b`; the corpus still checks 1045 of 1045 and the
 replay of 1000 games is unchanged. Since then `promise.when` has been decided
 open on purpose (§6) and pinned by tests; no engine code changed for it.
 
+Brought up to date again at `3d240e2` for three more: `099ede8`, which refuses
+an `if` with no conditions, `3511611`, which refuses a control node answered
+under both of its names and holds the marker on `may`, `choose` and `sequence`
+to exactly `true`, and `3d240e2`, which lets the desk open a marker form and
+write it back under its head. What `stop` may be written with is decided
+alongside them, as it is. The control-node contract they make is stated once,
+in §6; the corpus still checks 1045 of 1045 and the replay of 1000 games is
+unchanged, MD5 `e64103a4013de99a2cf09f9ed44443b5`.
+
 ## The headline
 
 **Every shipped card that carries rules can be walked by the form — 352 of 352,
@@ -77,7 +86,8 @@ Plus their own parameters, rendered recursively.
 
 `if`, `may`, `choose`, `for_each`, `repeat`, `sequence` and `stop`. Each is
 offered by the walk under its own sentence, each can be drawn, each can be
-finished, and each round-trips and plays. Measured one by one.
+finished, and each round-trips and plays. Measured one by one. What each may be
+written with — empty, under two names, as a marker — is the contract in §6.
 
 ## Card abilities — 10 of 10 fields
 
@@ -204,6 +214,7 @@ file.** Opening a card and saving it rewrites it, always:
 | An inline aim becomes a named binding (`target: "self"` → a bound group) | 170 |
 | A shorthand effect is written out in full (`{"draw_loot": 2}`) | 116 |
 | `schema_version` is added | 31 |
+| A marker form is written under its head (`{"may": true, "effects": [...]}` → `{"may": [...]}`) | 0 |
 
 The id is the one worth knowing about: a *shipped* card opened in the desk and
 saved is saved under a different identifier. An author's own cards were written
@@ -296,6 +307,66 @@ Pinned by the tests under *"What a promise waits for"* in
 `tests/test_promise_changes.py`; the one shipped use, Polycephalus's
 `{"attack": true}` on `roll_modified`, is pinned by its own tests. The
 analysis behind this is `CARD_CONSTRUCTOR_V09_WHEN_PLAN.md`.
+
+## Decided: what a control node may be written with
+
+Six of the seven control nodes have a second name for their answer:
+
+| Node | The head | Its other name | A marker |
+| --- | --- | --- | --- |
+| `if` | `if` | `conditions` | none |
+| `repeat` | `repeat` | `times` | none |
+| `for_each` | `for_each` | `of` | none |
+| `may` | `may` | `effects` | `true` |
+| `choose` | `choose` | `modes` | `true` |
+| `sequence` | `sequence` | `effects` | `true` |
+
+- **One answer, one name.** A node that gives its answer under both names is
+  refused, whatever the two say — empty, equal or different — because the
+  interpreter reads one and drops the other. `3511611`, by the same
+  `instead_of` rule conditions keep.
+- **The marker.** Where the interpreter reads the other name first — `may`,
+  `choose`, `sequence` — the head may instead be written as the bare marker,
+  and the marker is exactly `true`: the metadata says so, and `false`, a
+  number, text, `null` or a mapping is refused by the ordinary kind and value
+  check. A marker is not an answer and is not counted as one. On `if`,
+  `repeat` and `for_each` there is no marker, and `true` written there is a
+  head of the wrong kind. `3511611`.
+- **Something to do.** A marker with nothing under the other name, or with an
+  empty list there, has nothing to do and is refused as unfinished. More
+  generally a branch counts only as a non-empty list. `3511611`.
+- **Something to decide on.** An `if` must name at least one condition. `if: []`
+  is not "always": it is what a form writes for conditions nobody filled in,
+  and it is refused as unfinished. `099ede8`. An ability's own empty
+  `conditions` is unchanged — none of them means it always happens.
+- **The desk reads a marker as its node.** `{"may": true, "effects": [...]}`,
+  and the same for `choose` and `sequence`, opens in the desk and is written
+  back under the head, `{"may": [...]}` — the one way the desk writes every
+  node, read by the interpreter as the same steps. The marker spelling is not
+  kept, and need not be: the desk promises round-trip stability and runtime
+  neutrality (§4), not the file's spelling, and read → write → read is a fixed
+  point. Two real answers are still refused there too. `3d240e2`.
+- **`stop` stops by being there.** Its value is never read: the bare word
+  `"stop"` is the way to write it, and `{"stop": true}`, `{"stop": false}`,
+  `{"stop": null}`, `{"stop": "no"}` or `{"stop": []}` are all accepted and all
+  stop. The metadata keeps describing `stop` as a key that carries nothing,
+  which is what makes it never asked; giving its value a kind would have meant
+  declaring it carries one. Pinned by tests in `3d240e2`.
+
+The checker's own list of the keys under which control nodes keep their steps
+and options is a copy of the interpreter's table rather than an import,
+because the checker reads plain data and never reaches for an engine; a test
+pins the copy to the table.
+
+## Decided: accepted as they are
+
+- **A `choose` option may do nothing.** An option with an empty `effects` is a
+  real card's option — "Put this into discard." on three shipped cards — and
+  is accepted.
+- **A `repeat` count has no ceiling in the checker.** The interpreter refuses a
+  card that would expand into more operations than its budget allows, and only
+  it can see that: a loop inside a loop multiplies, and the checker reads one
+  node at a time. A very large count is accepted and stopped when it runs.
 
 ## Decided, and waiting on a second use
 
@@ -489,6 +560,22 @@ whether a person can say it by clicking.
     or two spellings together: the corpus still checks 1045 of 1045, and the
     replay of 1000 games is unchanged, MD5 `e64103a4013de99a2cf09f9ed44443b5`.
     The defaults in §2 that are still undeclared are undeclared on purpose.
+12. ~~An `if` with no conditions~~ — **closed**, `099ede8`. Written as `[]` by
+    the form for conditions left blank, it passed the checker and ran its
+    `then` every time and its `else` never. The checker now refuses it, read
+    off the metadata — a key that names its node, holds a list and is not one
+    of the node's bodies — so it applies to `if` without naming it. An
+    ability's own empty `conditions` is unchanged. No shipped `if` is empty.
+13. ~~One control node answered under two names, and the marker~~ —
+    **closed**, `3511611`. Two real answers are refused on all six nodes that
+    have a second name; the marker on `may`, `choose` and `sequence` is
+    described in the metadata as exactly `true`; a marker with no answer, or
+    an empty one, has nothing to do. The checker reads all of it off the
+    metadata. No shipped card writes any of these forms.
+14. ~~The desk refusing a marker form~~ — **closed**, `3d240e2`. A marker form
+    opens and is written back under its head; two real answers are still
+    refused. `stop` is decided as presence-based in the same change, with
+    tests and no code. The contract for all of it is in §6.
 
 ## Next small improvements
 
