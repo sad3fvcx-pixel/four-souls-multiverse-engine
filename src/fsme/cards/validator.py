@@ -216,6 +216,7 @@ def _written_as_described(
             written = MAPPING if isinstance(value, Mapping) else _kind_written(value)
 
             if written == parameter.kind:
+                errors.extend(_items_as_described(value, parameter, name, card_id))
                 continue
         else:
             continue
@@ -225,6 +226,37 @@ def _written_as_described(
         )
 
     return errors
+
+
+def _items_as_described(
+    value: Any, parameter: Any, name: Any, card_id: Any
+) -> list[str]:
+    """
+    The first item of a list of plain values that is not the kind it says.
+
+    What each item is comes from the field's own description, `item_kind`, and
+    a list that says nothing about its items is not judged here. One complaint
+    for the list, naming where it first goes wrong: a list of numbers where
+    words belong is one mistake, however many numbers it holds.
+    """
+    wanted = getattr(parameter, "item_kind", "")
+
+    if not wanted or not isinstance(value, (list, tuple)):
+        return []
+
+    for index, item in enumerate(value):
+        written = MAPPING if isinstance(item, Mapping) else _kind_written(item)
+
+        if item is None:
+            written = "nothing"
+
+        if written != wanted:
+            return [
+                f"{card_id}: field '{name}' must be a list of {wanted}, "
+                f"and item {index} is {written}"
+            ]
+
+    return []
 
 
 def _validate_ability(

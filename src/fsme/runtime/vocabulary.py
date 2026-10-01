@@ -258,6 +258,24 @@ def _kind_of(field: Field[Any]) -> str:
     return _ANNOTATIONS.get(str(field.type), UNCHECKED)
 
 
+_ITEMS = {
+    "frozenset[str]": TEXT,
+}
+"""
+What each item of a list of plain values is, read off the same annotation.
+
+A list of nodes says what it holds through ``a_list_of``; these are the lists
+of plain values, whose annotation already names what each value is.
+"""
+
+
+def _item_kind_of(field: Field[Any]) -> str:
+    """
+    The kind each item of a dataclass field holds, where it holds plain values.
+    """
+    return _ITEMS.get(str(field.type), "")
+
+
 OWN_NAMES = (ABILITY, STATIC)
 """
 The parts of a card that keep the names they make to themselves.
@@ -421,6 +439,7 @@ def _card_field(field: Field[Any]) -> ParamShape:
             tuple(str(kind) for kind in CardType) if field.name == "type" else ()
         ),
         a_list_of=lists.get(field.name, ""),
+        item_kind=_item_kind_of(field),
         role=STRUCTURE if field.name in theirs else "",
         written_as=BY_BINDING if field.name in ours else "",
         unless="type" if field.name in _EVERY_PRINTED_NUMBER else "",

@@ -1935,3 +1935,87 @@ def test_no_shipped_card_pays_a_reward_of_true_or_false(
             )
 
     assert complaints_made == []
+
+
+# ----------------------------------------------------------------------
+# A list of words holding something that is not a word
+# ----------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("written", "index", "said"),
+    (
+        ([1, 2], 0, "a whole number"),
+        (["trinket", 1], 1, "a whole number"),
+        (["trinket", True], 1, "true or false"),
+        (["trinket", None], 1, "nothing"),
+        (["trinket", ["guppy"]], 1, "a list"),
+        (["trinket", {"guppy": 1}], 1, "a set of named values"),
+    ),
+    ids=("numbers", "mixed", "true", "null", "list", "object"),
+)
+def test_a_list_of_words_holding_something_else_is_refused_once(
+    vocabulary: Vocabulary, written: list, index: int, said: str
+) -> None:
+    """
+    Families written as numbers loaded and matched nothing, since every lookup
+    asks for a word; a mix of the two stopped the content index from sorting
+    them at all. What each item must be comes from the field's own description.
+    """
+    assert judged(vocabulary, a_card_saying("tags", written)) == [
+        f"{a_card()['id']}: field 'tags' must be a list of text, "
+        f"and item {index} is {said}"
+    ]
+
+
+@pytest.mark.parametrize(
+    "written",
+    (["trinket", "guppy"], ("trinket",), [], [""]),
+    ids=("words", "tuple", "empty", "blank word"),
+)
+def test_a_list_of_words_still_passes(vocabulary: Vocabulary, written: Any) -> None:
+    """
+    A blank word is still a word as far as its kind goes; whether a blank family
+    is allowed is a separate question this does not answer.
+    """
+    assert judged(vocabulary, a_card_saying("tags", written)) == []
+
+
+def test_a_set_holding_families_written_as_numbers_is_refused(tmp_path: Path) -> None:
+    root = a_set(tmp_path, a_card_saying("tags", [1, "trinket"]))
+
+    with pytest.raises(InvalidContentError) as raised:
+        load_content(root)
+
+    said = str(raised.value)
+
+    assert "field 'tags' must be a list of text" in said
+    assert "loot.json" in said
+
+
+def test_the_constructor_s_check_refuses_families_written_as_numbers() -> None:
+    from fsme.lab.desk.author import check_card
+
+    assert check_card(a_card_saying("tags", [1, 2])) == [
+        f"{a_card()['id']}: field 'tags' must be a list of text, "
+        "and item 0 is a whole number"
+    ]
+
+
+def test_every_shipped_card_s_lists_hold_what_they_say(
+    vocabulary: Vocabulary,
+) -> None:
+    complaints_made = []
+
+    for path in sorted(CONTENT_ROOT.rglob("*.json")):
+        data = json.loads(path.read_text("utf-8"))
+
+        if not isinstance(data, dict) or not isinstance(data.get("cards"), list):
+            continue
+
+        for card in data["cards"]:
+            complaints_made.extend(
+                said for said in judged(vocabulary, card) if "must be a list of" in said
+            )
+
+    assert complaints_made == []

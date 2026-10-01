@@ -552,3 +552,41 @@ def test_a_single_ability_card_is_written_exactly_as_it_was_before() -> None:
     )
 
     assert old == new
+
+
+# ----------------------------------------------------------------------
+# What each item of a list of plain values is
+# ----------------------------------------------------------------------
+
+
+def test_a_list_of_plain_values_says_what_each_item_is() -> None:
+    """
+    Read off the annotation, the way the field's own kind is: a card's families
+    are a set of strings, so each one is text. Nothing names the field.
+    """
+    shape = engine_vocabulary().node_shape("card")
+
+    assert shape is not None
+
+    said = {
+        field.name: shape.params[field.name].item_kind
+        for field in fields(CardDefinition)
+        if field.name in shape.params
+    }
+
+    assert said["tags"] == "text"
+    # Every other field is either not a list, or a list of nodes that says
+    # what it holds another way.
+    assert {name for name, kind in said.items() if kind} == {"tags"}
+
+
+def test_only_a_list_of_plain_values_may_say_what_its_items_are() -> None:
+    from fsme.content.vocabulary import A_LIST, ParamShape
+
+    assert ParamShape("words", A_LIST, item_kind="text").item_kind == "text"
+
+    with pytest.raises(ValueError, match="cannot say what each of its items is"):
+        ParamShape("word", "text", item_kind="text")
+
+    with pytest.raises(ValueError, match="cannot say what each of its items is"):
+        ParamShape("steps", A_LIST, a_list_of="step", item_kind="text")

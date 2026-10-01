@@ -499,6 +499,17 @@ class ParamShape:
     at any depth, because they are all this.
     """
 
+    item_kind: str = ""
+    """
+    What each value in this list is, where the list holds plain values.
+
+    Not ``a_list_of``, which is a list of nodes of the language and says which.
+    This is the other sort of list — several words, several numbers — and says
+    what every one of them must be, in the same words ``kind`` uses. Read off
+    the annotation the way ``kind`` is, so a list of text says so wherever it
+    is declared, and nothing has to be told which list it is.
+    """
+
     shaped_like: str = ""
     """
     This parameter holds exactly one node of one of the kinds in ``NODES``.
@@ -619,6 +630,14 @@ class ParamShape:
             raise ValueError(
                 f"'{self.name}' cannot have both values and "
                 f"suggest_from='{self.suggest_from}'"
+            )
+
+        if self.item_kind and (self.kind != A_LIST or self.a_list_of):
+            # What each item is means something only of a list of plain
+            # values; said of anything else it is a description of nothing.
+            raise ValueError(
+                f"'{self.name}' is not a list of plain values and cannot say "
+                f"what each of its items is"
             )
 
         if self.suggest_from and self.suggest_from not in POOLS:
