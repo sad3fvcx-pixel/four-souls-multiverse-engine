@@ -8,17 +8,18 @@ by reading either side and inferring the other.
 Measured at `75a070b`, against 1045 shipped cards, 63 effects, 44 conditions,
 46 targets, 66 triggers, 15 node shapes and 7 control nodes.
 
-Brought up to date at `10863bd` for the seven changes made since: `10af2e4`,
+Brought up to date at `b76482b` for the eight changes made since: `10af2e4`,
 which refuses a blank required parameter of an effect or a condition,
 `55c450f`, which draws a card's `tags` as a list of words, `8df552b`, which
 refuses a blank `card.id`, `card.name` or `card.expansion`, `36666fd`, which
 refuses a card's own field written as a different kind from the one its shape
 declares, `d763217`, which refuses `true` or `false` as the value of a
 reward, `67f9744`, which refuses an item of a list written as a different kind
-from the one the metadata declares for its items, and `10863bd`, which refuses
-an item of a list of text written as `""`. Only the entries those seven touch
-were changed. Nothing was remeasured for that update, so every figure below is
-still the one taken at `75a070b`.
+from the one the metadata declares for its items, `10863bd`, which refuses
+an item of a list of text written as `""`, and `b76482b`, which writes a
+`repeat` count left blank as `null` rather than `0`, so the checker refuses it.
+Only the entries those eight touch were changed. Nothing was remeasured for
+that update, so every figure below is still the one taken at `75a070b`.
 
 ## The headline
 
@@ -239,14 +240,14 @@ tooling gap in §6 and is not fixed in this document's scope.
 # 6. Everything still open, in one place
 
 Nothing here stops a card being made, and the create-from-nothing path in the
-headline was measured with every one of them open. The first three are the form
+headline was measured with every one of them open. The first two are the form
 or the checker telling an author something untrue; the last four sit outside
-the Constructor.
+the Constructor. `repeat` with no count was here too, and is closed by
+`b76482b`.
 
 | Open | Where | Kind |
 | --- | --- | --- |
 | Branching defaults — `operator`, `value`, `amount`, `minimum`/`maximum`, `player`, `as` | §2 | Needs a Runtime decision before anything can be declared |
-| `repeat` with no count runs the body no times | `runtime/interpreter.py` | Contract undecided; 0 uses in the corpus |
 | `promise.when` shown as raw JSON | §3 | The form does not draw structure it understands. `card.tags` was here too, and is drawn as a list of words since `55c450f` |
 | Two modes described identically are accepted | `cards/validator.py` | 0 occurrences in the corpus; the player sees two options they cannot tell apart |
 | Two `may` nodes under one name are answered together | `runtime/interpreter.py` | 33 `may` nodes in the corpus, 7 name one and none share a name; telling them apart needs the nodes to be identifiable |
@@ -366,7 +367,6 @@ whether a person can say it by clicking.
 | Feature | Technical location | Difficulty | Value to authors |
 | --- | --- | --- | --- |
 | `card.rewards` as real fields | `capabilities._fields`, the renderer | Low — three known keys | 255 cards; every monster has them |
-| A contract for `repeat` with no count | `interpreter._expand_repeat` | Low, once decided | A blank count silently runs the body no times |
 | Branching defaults | `_compare`, `_has`, `_ask` | Needs a Runtime decision first | The blank box still lies on 12 conditions |
 | `promise.when` as real fields | the renderer | Medium | 1 card |
 
@@ -420,19 +420,26 @@ whether a person can say it by clicking.
    text, and item <n> is blank`. Only `""` is blank: a word of spaces and a
    word with spaces round it still pass, and nothing is trimmed or rewritten.
    No shipped card has a blank tag.
+10. ~~A contract for `repeat` with no count~~ — **closed**, `b76482b`. A count
+    left blank in the form used to be written as `0`, which the checker had to
+    accept, so a repeat of no times was saved as finished. It is now written
+    as `null`, which the checker refuses as it refuses `null` anywhere a whole
+    number belongs, and the card is reported unfinished. An explicit `0` is
+    still written and accepted and means no times; `1` and above are as they
+    were. The runtime and the metadata are unchanged. What changed is the
+    placeholder the form writes for any whole-number key that names its node,
+    and `repeat` is the only such key. `repeat` has no uses in the shipped
+    corpus.
 
 ## Next small improvements
 
 Still metadata the engine already has, or a contract that needs stating. No new
 UI concepts, no DSL change.
 
-1. **A contract for `repeat` with no count.** Reproducible by clicking: pick
-   `repeat`, add an effect, leave the count empty — checker-clean, the walk
-   calls it finished, and the body runs no times. `repeat` has no uses in the
-   shipped corpus, so this is a trap for new cards rather than a live bug.
-2. **`card.rewards` as real fields.** `card.tags` was here too, and is done.
+1. **`card.rewards` as real fields.** `card.tags` was here too, and is done.
+   So was a contract for `repeat` with no count, closed by `b76482b`.
 
-None of them blocks a card being made.
+It does not block a card being made.
 
 ## Beyond that
 
