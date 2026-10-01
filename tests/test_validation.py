@@ -1970,14 +1970,10 @@ def test_a_list_of_words_holding_something_else_is_refused_once(
 
 @pytest.mark.parametrize(
     "written",
-    (["trinket", "guppy"], ("trinket",), [], [""]),
-    ids=("words", "tuple", "empty", "blank word"),
+    (["trinket", "guppy"], ("trinket",), []),
+    ids=("words", "tuple", "empty"),
 )
 def test_a_list_of_words_still_passes(vocabulary: Vocabulary, written: Any) -> None:
-    """
-    A blank word is still a word as far as its kind goes; whether a blank family
-    is allowed is a separate question this does not answer.
-    """
     assert judged(vocabulary, a_card_saying("tags", written)) == []
 
 
@@ -2019,3 +2015,81 @@ def test_every_shipped_card_s_lists_hold_what_they_say(
             )
 
     assert complaints_made == []
+
+
+# ----------------------------------------------------------------------
+# A list of words holding a word written as nothing
+# ----------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("written", "index"),
+    (([""], 0), (["trinket", ""], 1), (["", "trinket"], 0), (["trinket", "", ""], 1)),
+    ids=("alone", "after a word", "before a word", "twice"),
+)
+def test_a_list_of_words_holding_a_blank_is_refused_once(
+    vocabulary: Vocabulary, written: list, index: int
+) -> None:
+    """
+    A family written as nothing loaded and could be found only by asking for
+    nothing. The form never writes one and the suggestions never offer one;
+    the checker now says so too, from what the list says each item is.
+    """
+    assert judged(vocabulary, a_card_saying("tags", written)) == [
+        f"{a_card()['id']}: field 'tags' must be a list of text, "
+        f"and item {index} is blank"
+    ]
+
+
+@pytest.mark.parametrize(
+    "written",
+    (["trinket"], ["trinket", "guppy"], [" ", "\t"], [" trinket "]),
+    ids=("a word", "two words", "spaces", "padded"),
+)
+def test_a_list_of_words_that_are_not_blank_still_passes(
+    vocabulary: Vocabulary, written: list
+) -> None:
+    """
+    Only nothing at all is blank. Spaces are text, and a word with spaces round
+    it is the word it is: nothing here trims or rewrites what a card says.
+    """
+    assert judged(vocabulary, a_card_saying("tags", written)) == []
+
+
+def test_a_blank_item_is_judged_by_the_kind_of_item_not_the_field() -> None:
+    """
+    The rule belongs to a list of text, wherever one is declared, and to no
+    other list: what each item is comes from the description, not the name.
+    """
+    from fsme.cards.validator import _items_as_described
+    from fsme.content.vocabulary import A_LIST, ParamShape
+
+    words = ParamShape("anything_at_all", A_LIST, item_kind="text")
+    numbers = ParamShape("anything_at_all", A_LIST, item_kind="a whole number")
+    nothing_said = ParamShape("anything_at_all", A_LIST)
+
+    assert _items_as_described(["x", ""], words, "anything_at_all", "c") == [
+        "c: field 'anything_at_all' must be a list of text, and item 1 is blank"
+    ]
+    assert _items_as_described([0, 1], numbers, "anything_at_all", "c") == []
+    assert _items_as_described([""], nothing_said, "anything_at_all", "c") == []
+
+
+def test_a_set_holding_a_blank_family_is_refused(tmp_path: Path) -> None:
+    root = a_set(tmp_path, a_card_saying("tags", ["trinket", ""]))
+
+    with pytest.raises(InvalidContentError) as raised:
+        load_content(root)
+
+    said = str(raised.value)
+
+    assert "field 'tags' must be a list of text, and item 1 is blank" in said
+    assert "loot.json" in said
+
+
+def test_the_constructor_s_check_refuses_a_blank_family() -> None:
+    from fsme.lab.desk.author import check_card
+
+    assert check_card(a_card_saying("tags", [""])) == [
+        f"{a_card()['id']}: field 'tags' must be a list of text, and item 0 is blank"
+    ]

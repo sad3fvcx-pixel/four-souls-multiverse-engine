@@ -256,6 +256,15 @@ def _items_as_described(
                 f"and item {index} is {written}"
             ]
 
+        # Text written as nothing at all is no word, here as anywhere else a
+        # card must say one. Only nothing: spaces are text, and what text of
+        # spaces may mean is a different question this does not answer.
+        if wanted == TEXT and item == "":
+            return [
+                f"{card_id}: field '{name}' must be a list of {wanted}, "
+                f"and item {index} is blank"
+            ]
+
     return []
 
 
