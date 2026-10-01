@@ -8,10 +8,11 @@ by reading either side and inferring the other.
 Measured at `75a070b`, against 1045 shipped cards, 63 effects, 44 conditions,
 46 targets, 66 triggers, 15 node shapes and 7 control nodes.
 
-Brought up to date at `55c450f` for the two changes made since: `10af2e4`,
-which refuses a blank required parameter of an effect or a condition, and
-`55c450f`, which draws a card's `tags` as a list of words. Only the entries
-those two touch were changed. Nothing was remeasured for that update, so every
+Brought up to date at `8df552b` for the three changes made since: `10af2e4`,
+which refuses a blank required parameter of an effect or a condition,
+`55c450f`, which draws a card's `tags` as a list of words, and `8df552b`, which
+refuses a blank `card.id`, `card.name` or `card.expansion`. Only the entries
+those three touch were changed. Nothing was remeasured for that update, so every
 figure below is still the one taken at `75a070b`.
 
 ## The headline
@@ -233,14 +234,13 @@ tooling gap in §6 and is not fixed in this document's scope.
 # 6. Everything still open, in one place
 
 Nothing here stops a card being made, and the create-from-nothing path in the
-headline was measured with every one of them open. The first four are the form
+headline was measured with every one of them open. The first three are the form
 or the checker telling an author something untrue; the last four sit outside
 the Constructor.
 
 | Open | Where | Kind |
 | --- | --- | --- |
 | Branching defaults — `operator`, `value`, `amount`, `minimum`/`maximum`, `player`, `as` | §2 | Needs a Runtime decision before anything can be declared |
-| Empty required values — `card.id`, `card.name` and `card.expansion` accept `""` | `cards/validator.py` | The checker, on a card written by hand: three make a nameless card. The Constructor cannot make one — it refuses a blank name and a blank set, and writes the identifier itself. The three effect and condition parameters that raised mid-game or were silently false are refused since `10af2e4` |
 | `repeat` with no count runs the body no times | `runtime/interpreter.py` | Contract undecided; 0 uses in the corpus |
 | `promise.when` shown as raw JSON | §3 | The form does not draw structure it understands. `card.tags` was here too, and is drawn as a list of words since `55c450f` |
 | Two modes described identically are accepted | `cards/validator.py` | 0 occurrences in the corpus; the player sees two options they cannot tell apart |
@@ -362,7 +362,6 @@ whether a person can say it by clicking.
 | --- | --- | --- | --- |
 | `card.rewards` as real fields | `capabilities._fields`, the renderer | Low — three known keys | 255 cards; every monster has them |
 | A contract for `repeat` with no count | `interpreter._expand_repeat` | Low, once decided | A blank count silently runs the body no times |
-| Refusing an empty required value on the card itself | `cards/validator.py` | Low | `card.id`, `card.name` and `card.expansion` written blank by hand make a nameless card; the effect and condition parameters are refused since `10af2e4` |
 | Branching defaults | `_compare`, `_has`, `_ask` | Needs a Runtime decision first | The blank box still lies on 12 conditions |
 | `promise.when` as real fields | the renderer | Medium | 1 card |
 
@@ -381,8 +380,9 @@ whether a person can say it by clicking.
 4. ~~Refusing an empty required value~~ — **closed for the parameters of
    effects and conditions**, `10af2e4`: `add_counter.counter`,
    `modify_event.key` and `event_value.key` written as `""` are refused as
-   missing. Still open for the card's own `card.id`, `card.name` and
-   `card.expansion` — see below.
+   missing. **Closed for the card's own** `card.id`, `card.name` and
+   `card.expansion`, `8df552b`: written as `""` by hand, each is refused as
+   missing, the same as when it is left out.
 5. ~~`card.tags` as a real field~~ — **closed**, `55c450f`, as a list of words
    offering the `tags` pool.
 
@@ -391,16 +391,11 @@ whether a person can say it by clicking.
 Still metadata the engine already has, or a contract that needs stating. No new
 UI concepts, no DSL change.
 
-1. **Refusing an empty required value on the card itself.** `card.id`,
-   `card.name` and `card.expansion` accept `""` from a card written by hand and
-   make a nameless card. The Constructor cannot make one: it refuses a blank
-   name and a blank set, and writes the identifier itself. The effect and
-   condition parameters are refused since `10af2e4`.
-2. **A contract for `repeat` with no count.** Reproducible by clicking: pick
+1. **A contract for `repeat` with no count.** Reproducible by clicking: pick
    `repeat`, add an effect, leave the count empty — checker-clean, the walk
    calls it finished, and the body runs no times. `repeat` has no uses in the
    shipped corpus, so this is a trap for new cards rather than a live bug.
-3. **`card.rewards` as real fields.** `card.tags` was here too, and is done.
+2. **`card.rewards` as real fields.** `card.tags` was here too, and is done.
 
 None of them blocks a card being made.
 
