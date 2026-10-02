@@ -271,10 +271,33 @@ Invalid cards are rejected before the game starts.
 
 The engine must never load partially valid content.
 
-Validation covers four things, and each is checked against what the engine
+Validation covers five things, and each is checked against what the engine
 actually implements rather than against a document:
 
-1. **Structure.** Required fields, and fields of the right kind.
+1. **Structure.** Required fields, and fields of the right kind. A control
+   node — `if`, `repeat`, `for_each`, `may`, `choose`, `sequence`, `stop` —
+   is held to the same, and to four rules of its own:
+
+   - **One answer, one name.** Six of them can take their answer under a
+     second name: `if` / `conditions`, `repeat` / `times`, `for_each` / `of`,
+     `may` / `effects`, `choose` / `modes`, `sequence` / `effects`. Writing
+     both on one node is refused, whatever the two say.
+   - **A marker only where there is one.** `may`, `choose` and `sequence` may
+     instead write their head as the marker `true` and keep the answer under
+     the other name: `{"may": true, "effects": [...]}`. The marker is exactly
+     `true`. `if`, `repeat` and `for_each` have no marker, and `true` there is
+     a head of the wrong kind.
+   - **Something to do.** A body counts only as a non-empty list, and a node
+     with no body that counts is refused — `{"may": []}`, or a marker with
+     nothing under the other name, or an empty list there.
+   - **Something to decide on.** An `if` names at least one condition;
+     `if: []` is refused. An ability's own empty `conditions` is unaffected:
+     none of them means it always happens.
+
+   `stop` stops by being there, and whatever is written under a `stop` key is
+   never read. How these were decided is in
+   [CAPABILITY_COVERAGE.md](CAPABILITY_COVERAGE.md) §6, "Decided: what a
+   control node may be written with".
 2. **Names.** Every effect, trigger, condition and target the card mentions.
 3. **Arguments.** What the card gives each effect, each condition and each
    target: the kind of value, the values allowed where only a few are, and the
@@ -298,7 +321,7 @@ target would silently drop.
 5. **References.** The names an ability gives things, and the places it uses
    them again. An ability binds a group with `as` — or with a bare target's
    own name — and reads it back with `of`, `chooser`, `exclude`, `for_each`,
-   or an effect's `target`. Four rules:
+   or an effect's `target`. Five rules:
 
    - A name must be bound before it is read, and is visible only inside the
      branch that bound it. `then`, `else`, `may` and a `choose` mode each keep
@@ -312,6 +335,15 @@ target would silently drop.
    - A group's kind must suit its reader. The engine tells two kinds apart —
      players and everything else — so `chooser` and an `of` that means "whose
      hand" want players, while `exclude` and `holder` want cards.
+   - Two `may` nodes that can both run in one resolution may not keep their
+     answer under the same name. A `may` keeps it under its `as`, or under
+     `__may__` when it has none, and an answer is kept for the whole
+     resolution — so the second would find the first one's reply and never be
+     asked. Such a card is refused. Questions on the two sides of an `if`, or
+     in different options of a `choose`, never both run and may share a name;
+     one `may` inside a `repeat` or `for_each` is one question, answered once;
+     `watch_for` asks in a resolution of its own. Give one of the two its own
+     `as`. The Constructor names them apart itself.
 
    `of` on the `values_equal` condition is not a group at all: it names what
    an ability *stored* with `store`. The two namespaces never meet.

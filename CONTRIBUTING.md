@@ -29,14 +29,18 @@ there is unintended.
 
 Cards are data. Nothing you write here is code.
 
-1. Find the card in `content/<set>/cards/` — it will have a name, a type and
-   its printed text, and no `abilities`.
-2. Write the ability into `content/<set>/_abilities.json`, keyed by card id.
-3. `fsme cards` validates it. Mistakes are named where they are, with the
+1. Find the card in the `cards/` directory of its set — for example
+   `content/base_game/cards/` or `content/expansions/<set>/cards/`. It will
+   have a name, a type and its printed text, and no `abilities`.
+2. Write the ability into that set's `_abilities.json`, keyed by card id.
+3. `python tools/import_cards.py --refresh --content content` merges it into
+   the card files. A file whose name begins with `_` is never loaded, so until
+   this runs nothing else sees the ability.
+4. `fsme cards` validates it. Mistakes are named where they are, with the
    nearest thing the engine knows.
-4. Write a test in `tests/test_official_cards.py` — one per card, asserting
+5. Write a test in `tests/test_official_cards.py` — one per card, asserting
    what the printed text says.
-5. `pytest -q`.
+6. `pytest -q`.
 
 Two rules that are not negotiable:
 

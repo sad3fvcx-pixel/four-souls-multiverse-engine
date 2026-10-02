@@ -318,6 +318,9 @@ analysis behind this is `CARD_CONSTRUCTOR_V09_WHEN_PLAN.md`.
 
 ## Decided: what a control node may be written with
 
+The rules for writing a card by hand are stated for authors in
+[CARD_SCHEMA.md](CARD_SCHEMA.md) §13; this section is how they were decided.
+
 Six of the seven control nodes have a second name for their answer:
 
 | Node | The head | Its other name | A marker |
