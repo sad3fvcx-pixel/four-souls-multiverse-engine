@@ -64,6 +64,31 @@ mypy --strict src/fsme
 All three must pass. There are no exceptions configured and adding one needs a
 reason in the pull request.
 
+Tests build any content they need under `tmp_path` and never write to the
+shipped `content/`.
+
+### Two gates pytest does not run
+
+`python tools/gates.py check` rewrites every shipped card through the
+Constructor and plays a fixed range of seeds, and compares both against
+`tools/gate_references.json`. Run it when you change the engine, the cards or
+the Constructor; it takes a few minutes. Exit code 0 means both hold, 1 means
+one does not, 2 means the check could not be run.
+
+When it fails, `python tools/gates.py diagnose --against <commit>` names the
+cards or seeds that differ. It works in a temporary directory, leaves the
+checkout alone and never fetches.
+
+A reference that stops matching is a finding, not a chore. Change one only when:
+
+- the change in behaviour was decided before it was made;
+- `diagnose` against the previous commit explains every difference;
+- two runs give the same new hash, and every other gate passes.
+
+Then change it in a commit of its own that names the gate, the old and new
+hash and the cause, and set `confirmed_at` to the commit that changed the
+behaviour.
+
 ### The one architectural rule
 
 The **core** plays Four Souls: rules, cards, effects, events, state, the stack,
