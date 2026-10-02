@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import Field, fields, replace
+from functools import cache
 from types import MappingProxyType
 from typing import Any
 
@@ -97,8 +98,29 @@ def engine_vocabulary(effects: EffectRegistry | None = None) -> Vocabulary:
     This is the one function that knows both sides. What goes in is a registry
     full of callables; what comes out is names and plain descriptions, and the
     pipeline that receives it never learns there was an engine to ask.
+
+    The engine's own vocabulary is built once and the same one is handed out
+    after that. Building it means registering every effect again, and the desk
+    asks for it many times over while writing a single card. It can be shared
+    because nothing in it can be changed. A registry passed in is read afresh
+    every time, since whoever holds it may register more.
     """
-    registry = effects if effects is not None else builtin_registry()
+    if effects is None:
+        return _builtin_vocabulary()
+
+    return _vocabulary_of(effects)
+
+
+@cache
+def _builtin_vocabulary() -> Vocabulary:
+    """The vocabulary of the engine as it ships, built the first time it is asked for."""
+    return _vocabulary_of(builtin_registry())
+
+
+def _vocabulary_of(registry: EffectRegistry) -> Vocabulary:
+    """
+    Everything the engine knows, as plain data, with these effects in it.
+    """
     conditions = ConditionEvaluator()
     targets = TargetResolver()
 
@@ -592,10 +614,12 @@ def _ability_field(field: Field[Any]) -> ParamShape:
         "zone": ABILITY_ZONES,
     }
 
+    # Read-only views, because what this builds is shared: the vocabulary is
+    # made once and handed to everybody who asks.
     glosses = {
         "trigger": TRIGGER_WORDS,
-        "scope": ABILITY_SCOPE_WORDS,
-        "zone": ZONE_WORDS,
+        "scope": MappingProxyType(ABILITY_SCOPE_WORDS),
+        "zone": MappingProxyType(ZONE_WORDS),
     }
 
     return ParamShape(
@@ -657,9 +681,9 @@ def _static_field(field: Field[Any]) -> ParamShape:
     half the time is worse than none.
     """
     glosses = {
-        "scope": SCOPE_WORDS,
-        "forbids": ACTION_WORDS,
-        "stat": STAT_WORDS,
+        "scope": MappingProxyType(SCOPE_WORDS),
+        "forbids": MappingProxyType(ACTION_WORDS),
+        "stat": MappingProxyType(STAT_WORDS),
     }
 
     return ParamShape(
