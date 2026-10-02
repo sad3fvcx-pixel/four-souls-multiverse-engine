@@ -687,7 +687,7 @@ def test_a_whole_number_the_save_does_not_hold_keeps_its_default(
         (("ids",), -1, "identifiers"),
         (("modifiers", 0, "duration"), "for ever", "unknown duration"),
         (("turn", "phase"), "nonsense", "unknown phase"),
-        (("format",), "2", "format"),
+        (("format",), "3", "format"),
     ),
 )
 def test_a_save_that_cannot_be_read_is_refused_as_one(
@@ -1004,13 +1004,25 @@ AN_ABILITY: dict[str, Any] = {
 }
 
 
+# What a stack object is written down with besides what it is, as the writer
+# puts it: none of it may be left out of a save in the current format.
+A_STACK_OBJECT_S_OWN = {
+    "payload": {},
+    "stack_id": "stack:900",
+    "order": 900,
+    "cancellable": True,
+}
+
+
 def with_an_ability(saved: dict[str, Any], ability: dict[str, Any]) -> dict[str, Any]:
     """
     The save with one ability waiting on the stack.
     """
     data = dict(json.loads(json.dumps(saved)))
 
-    data["stack"] = [{"kind": "activated_ability", "ability": ability}]
+    data["stack"] = [
+        {"kind": "activated_ability", "ability": ability, **A_STACK_OBJECT_S_OWN}
+    ]
 
     return data
 
@@ -1065,7 +1077,11 @@ def test_a_malformed_ability_on_the_stack_is_refused(
 # Each entry says how to write one in, and how to read the controller back.
 CONTROLLED: dict[str, tuple[Any, Any]] = {
     "stack": (
-        lambda: {"kind": "activated_ability", "ability": dict(AN_ABILITY)},
+        lambda: {
+            "kind": "activated_ability",
+            "ability": dict(AN_ABILITY),
+            **A_STACK_OBJECT_S_OWN,
+        },
         lambda state: next(iter(state.stack)).controller,
     ),
     "events": (

@@ -153,6 +153,7 @@ class Game:
             self._runtime.state,
             engine_version=engine_version,
             rng_state=self._runtime.rng.get_state(),
+            interactive_priority=self._interactive_priority,
         )
 
     @classmethod
@@ -161,7 +162,7 @@ class Game:
         data: Mapping[str, Any],
         library: ContentLibrary,
         *,
-        interactive_priority: bool = False,
+        interactive_priority: bool | None = None,
     ) -> Game:
         """
         Rebuild a saved game against the content it was played with.
@@ -169,12 +170,22 @@ class Game:
         The cards come from the library, not from the file: a save holds what
         happened to a card, never what is printed on it, so reloading against
         different content is a content mismatch and is refused as one.
+
+        Whether the table answers priority is the save's to say, and is what a
+        game loads with when nothing is passed: the same position played the
+        other way is another game. Passing true or false overrides it. A save
+        in format 1 never said, so for one of those it is what is passed, and
+        no priority when nothing is.
         """
         from fsme.rng.rng import RNG
         from fsme.serialization import SaveError, load_game
+        from fsme.serialization.game_save import saved_interactive_priority
 
         registry = library.registry()
         state = load_game(data, registry)
+
+        if interactive_priority is None:
+            interactive_priority = bool(saved_interactive_priority(data))
 
         rng = RNG(state.seed)
 

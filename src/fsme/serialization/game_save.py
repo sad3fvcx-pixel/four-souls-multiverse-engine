@@ -54,13 +54,26 @@ from fsme.state import (
 )
 from fsme.util.errors import EngineError
 
-SAVE_FORMAT_VERSION = "1"
+SAVE_FORMAT_VERSION = "2"
 """
 The shape of a save file.
 
 A save written by one version of this format is only loadable by an engine that
 knows that version, which is what stops a half-understood file from becoming a
 half-restored game.
+
+Format 2 writes down what format 1 dropped: a card that is in no zone because it
+is being played, what a stack object carries besides its source, how long an
+attack has gone without a hit landing, and whether the table answers priority.
+"""
+
+READABLE_FORMATS = (SAVE_FORMAT_VERSION, "1")
+"""
+Every format this engine loads.
+
+Format 1 is read only where it lost nothing. A game it saved with an empty stack
+and no attack going on is the whole game, and loads as one; anything more held
+state that format 1 never wrote down, and is refused rather than guessed at.
 """
 
 CARD = "$card"
@@ -100,6 +113,7 @@ def save_game(
     *,
     engine_version: str | None = None,
     rng_state: Any = None,
+    interactive_priority: bool = False,
 ) -> dict[str, Any]:
     """
     Write a game out as plain data.
@@ -111,14 +125,19 @@ def save_game(
     ``rng_state`` is the live generator's position, which is not kept in
     GameState while a game is running: the Runtime owns the generator, and a
     save that forgot it would reload into a game that rolls different dice.
+
+    ``interactive_priority`` is the Runtime's too, and for the same reason: a
+    table that answers priority and one that does not play different games from
+    the same position, so the save says which it was.
     """
     _refuse_if_mid_ability(state)
 
-    return {
+    saved: dict[str, Any] = {
         "format": SAVE_FORMAT_VERSION,
         "engine": __version__ if engine_version is None else engine_version,
         "seed": state.seed,
         "rng": _plain(rng_state if rng_state is not None else state.rng_state),
+        "interactive_priority": bool(interactive_priority),
         "started": state.started,
         "game_over": state.game_over,
         "winner": state.winner,
@@ -141,6 +160,7 @@ def save_game(
             "round_number": state.combat.round_number,
             "settled_roll": state.combat.settled_roll,
             "active": state.combat.active,
+            "stalled_rounds": state.combat.stalled_rounds,
         },
         "players": [_save_player(player) for player in state.players],
         "zones": {name: _save_zone(getattr(state, name)) for name in GLOBAL_ZONES},
@@ -198,6 +218,123 @@ def save_game(
         "pending_decision": _save_decision(state.pending_decision),
         "pending_roll": _save_roll(state.pending_roll),
     }
+
+    saved["in_flight"] = [_save_card(card) for card in _in_flight(state)]
+    _refuse_if_pointing_nowhere(saved, state)
+
+    return saved
+
+
+def _zoned(state: GameState) -> set[str]:
+    """
+    The identifiers of every card a save writes down where it lies.
+
+    The same places the reader looks in, so that what is not here is exactly
+    what the reader would not find.
+    """
+    found: set[str] = set()
+
+    def note(cards: Sequence[Any]) -> None:
+        found.update(card.instance_id for card in cards if isinstance(card, CardInstance))
+
+    for name in GLOBAL_ZONES:
+        note(getattr(state, name).cards)
+
+    for slot in state.monster_area:
+        note(slot.cards)
+
+    for player in state.players:
+        if isinstance(player.character, CardInstance):
+            note([player.character])
+
+        for name in PLAYER_ZONES:
+            note(getattr(player, name).cards)
+
+    return found
+
+
+def _in_flight(state: GameState) -> list[CardInstance]:
+    """
+    The cards something points at that are in no zone, each once.
+
+    A loot card being played has left its owner's hand and not yet reached the
+    discard pile: the stack holds it and nothing else does. Written down by
+    where it lies, it would be written nowhere, and the stack would reload
+    pointing at nothing. Found by looking where pointers are kept rather than by
+    listing the cases, so a card that is in flight for some other reason is
+    written down too. Nothing in the game is moved to find them.
+    """
+    zoned = _zoned(state)
+    found: dict[str, CardInstance] = {}
+
+    def visit(value: Any) -> None:
+        if isinstance(value, CardInstance):
+            if value.instance_id not in zoned:
+                found.setdefault(value.instance_id, value)
+        elif isinstance(value, (StackItem, Event)):
+            visit(value.source)
+            visit(value.targets)
+            visit(value.payload)
+
+            if isinstance(value, StackItem):
+                visit(value.event)
+        elif isinstance(value, Mapping):
+            for item in value.values():
+                visit(item)
+        elif isinstance(value, (list, tuple, set, frozenset)):
+            for item in value:
+                visit(item)
+
+    visit(list(state.stack))
+    visit(list(state.events))
+    visit(state.combat.monster)
+    visit([watcher.source for watcher in state.watchers])
+
+    if state.pending_decision is not None:
+        visit(state.pending_decision.options)
+
+    return list(found.values())
+
+
+def _refuse_if_pointing_nowhere(saved: Mapping[str, Any], state: GameState) -> None:
+    """
+    Make sure every card the save points at is a card the save holds.
+
+    A pointer to a card that is written down nowhere reloads as nothing, which
+    is how a card being played used to vanish from the game.
+    """
+    held = _zoned(state) | {
+        str(card["instance_id"]) for card in saved["in_flight"] if "instance_id" in card
+    }
+
+    for pointed in _pointers(saved):
+        if pointed not in held:
+            raise SaveError(
+                f"this game points at card '{pointed}', which is in no zone and "
+                f"was not found to be in flight; it cannot be saved without losing it"
+            )
+
+
+def _pointers(value: Any) -> list[str]:
+    """
+    Every card identifier a written save points at.
+    """
+    found: list[str] = []
+
+    def visit(item: Any) -> None:
+        if isinstance(item, Mapping):
+            if CARD in item and len(item) == 1:
+                found.append(str(item[CARD]))
+            else:
+                for inner in item.values():
+                    visit(inner)
+        elif isinstance(item, list):
+            for inner in item:
+                visit(inner)
+
+    visit(value)
+
+    return found
 
 
 def _refuse_if_mid_ability(state: GameState) -> None:
@@ -327,8 +464,15 @@ def _save_stack_item(item: StackItem) -> dict[str, Any]:
         "ability": _save_ability(item.ability),
         "controller": item.controller,
         "targets": [_ref(target) for target in item.targets],
+        # What the rules read when the object resolves: whether a purchase came
+        # off the deck or the shelf, and which; whether an attack was on the
+        # deck or a slot.
+        "payload": _plain(item.payload),
         "event": _save_event(item.event) if item.event is not None else None,
+        "stack_id": item.stack_id,
+        "order": item.order,
         "status": str(item.status),
+        "cancellable": item.cancellable,
     }
 
 
@@ -467,11 +611,21 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
 
     written = str(data.get("format", ""))
 
-    if written != SAVE_FORMAT_VERSION:
+    if written not in READABLE_FORMATS:
         raise SaveError(
             f"this save is in format '{written}', and this engine reads "
-            f"format '{SAVE_FORMAT_VERSION}'"
+            f"format '{SAVE_FORMAT_VERSION}' and format "
+            f"{', '.join(repr(one) for one in READABLE_FORMATS[1:])}"
         )
+
+    current = written == SAVE_FORMAT_VERSION
+
+    if current:
+        # Read by `Game.load`, which owns the Runtime; checked here so that a
+        # save missing it is refused by whoever reads it.
+        _needed_flag(data, "interactive_priority")
+    else:
+        _refuse_what_format_1_lost(data)
 
     state = GameState(seed=_integer(data, "seed", 0))
 
@@ -525,6 +679,18 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
     for saved_player in _entries(data, "players"):
         state.add_player(_load_player(saved_player, cards, index))
 
+    # Before anything that points at a card is read, so that a card being
+    # played is there to be found when the stack points at it.
+    for written_card in _entries(data, "in_flight"):
+        identifier = str(written_card.get("instance_id", ""))
+
+        if identifier in index:
+            raise SaveError(
+                f"this save holds card '{identifier}' both in a zone and in flight"
+            )
+
+        _load_card(written_card, cards, index)
+
     _load_turn(state, _section(data, "turn"), index)
     _check_seats(state)
 
@@ -543,6 +709,9 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
     state.combat.round_number = _integer(combat, "round_number", 0)
     state.combat.settled_roll = combat.get("settled_roll")
     state.combat.active = _flag(combat, "active", False)
+    state.combat.stalled_rounds = (
+        _integer(combat, "stalled_rounds") if current else 0
+    )
     _check_combat(state)
 
     for saved_item in _entries(data, "stack"):
@@ -766,6 +935,51 @@ def _flag(saved: Mapping[str, Any], key: str, default: bool) -> bool:
         )
 
     return value
+
+
+def _refuse_what_format_1_lost(data: Mapping[str, Any]) -> None:
+    """
+    Refuse a format 1 save that held more than format 1 wrote down.
+
+    Format 1 did not write what a stack object carried besides its source, nor
+    a card being played, nor how long an attack had gone on without a hit. A
+    save with nothing on the stack and no attack going on lost none of that;
+    one with either would reload into a different game, so it is not loaded.
+    """
+    if _listing(data, "stack"):
+        raise SaveError(
+            "this save is in format '1' and was made with something on the stack; "
+            "format 1 did not write a stack down whole, so it cannot be restored "
+            "as it was"
+        )
+
+    if _section(data, "combat").get("active") is True:
+        raise SaveError(
+            "this save is in format '1' and was made during an attack; format 1 "
+            "did not write an attack down whole, so it cannot be restored as it was"
+        )
+
+
+def saved_interactive_priority(data: Mapping[str, Any]) -> bool | None:
+    """
+    Whether the game in a save was played answering priority.
+
+    Format 1 did not say, which is ``None``: the caller decides, as it always
+    did. A save in the current format has to say, with true or false.
+    """
+    if str(data.get("format", "")) != SAVE_FORMAT_VERSION:
+        return None
+
+    return _needed_flag(data, "interactive_priority")
+
+
+def _needed_flag(saved: Mapping[str, Any], key: str) -> bool:
+    """
+    A yes-or-no the save cannot be read without.
+    """
+    _needed(saved, key)
+
+    return _flag(saved, key, False)
 
 
 def _needed(saved: Mapping[str, Any], key: str) -> Any:
@@ -1116,13 +1330,19 @@ def _load_stack_item(
         targets=[
             _resolve(target, state, index) for target in _listing(saved, "targets")
         ],
+        payload=dict(
+            _object(_resolve(_needed(saved, "payload"), state, index), "payload")
+        ),
         event=(
             _load_event(event, state, index)
             if (event := _maybe_section(saved, "event")) is not None
             else None
         ),
+        cancellable=_needed_flag(saved, "cancellable"),
     )
 
+    item.stack_id = str(_needed(saved, "stack_id"))
+    item.order = _integer(saved, "order")
     item.status = _member(
         StackItemStatus, saved.get("status", StackItemStatus.CREATED), "status"
     )
@@ -1171,7 +1391,16 @@ def _resolve(value: Any, state: GameState, index: Mapping[str, Any]) -> Any:
     """
     if isinstance(value, Mapping):
         if CARD in value:
-            return index.get(str(value[CARD]))
+            # A card the save points at and does not hold used to come back as
+            # nothing, and the game carried on without it.
+            pointed = str(value[CARD])
+
+            if pointed not in index:
+                raise SaveError(
+                    f"this save points at card '{pointed}', which it does not hold"
+                )
+
+            return index[pointed]
 
         if TOKEN in value:
             return index.get(str(value[TOKEN]))

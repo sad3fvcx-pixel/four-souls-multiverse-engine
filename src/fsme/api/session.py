@@ -278,3 +278,6 @@ class Session:
 
     def load(self, data: dict[str, Any]) -> None:
         self._game = Game.load(data, self._library)
+        # The loaded game says whether it answers priority; the session follows
+        # it rather than going on believing what it was started with.
+        self._interactive = self._game.interactive_priority
