@@ -117,7 +117,6 @@ Match the file you are editing. Beyond that:
 Written down so nobody spends an evening on it. `docs/NEXT.md` has the
 reasoning.
 
-- a card maker or card editor UI
 - a story, narrative or lore generator
 - network play, accounts, matchmaking, a mobile client
 - a plugin or module system — there is no second implementation of anything

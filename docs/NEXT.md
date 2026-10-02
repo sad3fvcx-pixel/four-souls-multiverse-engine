@@ -98,9 +98,8 @@ other two want somebody with a real set to balance.
 Written down so that "we never thought of it" is not mistaken for "we thought
 about it and said no".
 
-- **A card maker.** Cards are JSON, the validator names mistakes and suggests
-  spellings, and a form that writes the same JSON is a large amount of
-  interface for a small amount of typing.
+- **A card maker** was on this list once. Since 0.6.1 the Constructor
+  (`fsme desk`) does that job — see [CONSTRUCTOR_GUIDE.md](CONSTRUCTOR_GUIDE.md).
 - **A story or lore generator.** The reports describe what the record shows.
   A narrator would produce sentences that read as findings and are not.
 - **A playable game.** No accounts, no network play, no rules-lawyering

@@ -35,6 +35,14 @@ alongside them, as it is. The control-node contract they make is stated once,
 in §6; the corpus still checks 1045 of 1045 and the replay of 1000 games is
 unchanged, MD5 `e64103a4013de99a2cf09f9ed44443b5`.
 
+Brought up to date at `813917d` for one more: two `may` nodes that can both
+run in one resolution and keep their answer under the same name are refused by
+the checker, and the desk no longer writes such a card — a question after a
+branch, or after a name the card gave itself, is named apart. Only the §6 entry
+it closes was changed, and every other figure is still the one taken at
+`75a070b`; `tools/gates.py check` finds the corpus checking 1045 of 1045 and
+the replay of 1000 games unchanged.
+
 ## The headline
 
 **Every shipped card that carries rules can be walked by the form — 352 of 352,
@@ -263,8 +271,9 @@ tooling gap in §6 and is not fixed in this document's scope.
 # 6. Everything still open, in one place
 
 Nothing here stops a card being made, and the create-from-nothing path in the
-headline was measured with every one of them open. All four sit outside the
-Constructor. `repeat` with no count was here too, and is closed by `b76482b`;
+headline was measured with every one of them open. All three sit outside the
+Constructor. Two `may` nodes under one name were here too, and are closed by
+`813917d`. `repeat` with no count was here too, and is closed by `b76482b`;
 so were branching defaults, closed by `c65699d` — what is still undeclared in
 §2 is undeclared on purpose. `promise.when` was here too, and is decided:
 open on purpose, below. `card.tags` was with it, and is drawn as a list of
@@ -273,7 +282,6 @@ words since `55c450f`.
 | Open | Where | Kind |
 | --- | --- | --- |
 | Two modes described identically are accepted | `cards/validator.py` | 0 occurrences in the corpus; the player sees two options they cannot tell apart |
-| Two `may` nodes under one name are answered together | `runtime/interpreter.py` | 33 `may` nodes in the corpus, 7 name one and none share a name; telling them apart needs the nodes to be identifiable |
 | The bot observer reads a card's spelling | §5 | `fsme.lab.bot` — playtesting advice, not rules |
 | `runtime.py:122` names `_where_it_stands`, a function that has never existed | `runtime/runtime.py` | One word of documentation; the method is `_where_it_works` |
 
