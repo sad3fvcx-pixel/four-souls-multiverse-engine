@@ -1,0 +1,8 @@
+{
+  "id": "mewgenics",
+  "name": "Mewgenics",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Mewgenics: 4 cards imported from the card database."
+}

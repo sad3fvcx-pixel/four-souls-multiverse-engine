@@ -1,0 +1,20 @@
+{
+  "cards": [
+    {
+      "id": "room_deck-the_summer_of_isaac-everything_must_go",
+      "name": "Everything Must Go",
+      "type": "room",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When this enters play, expand shop slots by 2.\n------------------------------\nAt the start of each turn, put a counter on this.\nThis turn, shop items the active player purchases\ncost 2¢ less for each counter on this and they\nmust purchase a shop item if able.\n------------------------------\nShop slots don't refill while this has a counter on it.\n------------------------------\nThis can't be put into discard till the shop is empty.",
+        "set": "The Summer of Isaac",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-the_summer_of_isaac-everything_must_go",
+        "notes": "Design by CHAOS_FANTAZY\n\nArt by @HamBerry_art\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    }
+  ]
+}

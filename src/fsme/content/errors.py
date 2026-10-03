@@ -1,33 +1,30 @@
-# src/fsme/content/errors.py
-
 """
 Content-related exceptions for Four Souls Multiverse Engine.
 """
 
 from __future__ import annotations
 
+from fsme.util.errors import ContentLoadError, ContentValidationError, EngineError
 
-class ContentError(Exception):
+
+class ContentError(EngineError):
     """
     Base exception for the content subsystem.
     """
 
 
-class ContentLoadError(ContentError):
+class InvalidContentError(ContentValidationError):
     """
-    Raised when content cannot be loaded.
-    """
+    Raised when content fails validation.
 
-
-class ContentUnloadError(ContentError):
-    """
-    Raised when content cannot be unloaded.
+    Carries every problem found in one pass, because someone fixing an
+    expansion should see the whole list rather than one line at a time.
     """
 
 
 class DuplicateContentError(ContentError):
     """
-    Raised when attempting to register duplicate content.
+    Raised when two expansions claim the same identifier.
     """
 
 
@@ -37,7 +34,17 @@ class ContentNotFoundError(ContentError):
     """
 
 
-class InvalidContentError(ContentError):
+class MissingDependencyError(ContentError):
     """
-    Raised when content validation fails.
+    Raised when an expansion requires a set that was not loaded.
     """
+
+
+__all__ = [
+    "ContentError",
+    "ContentLoadError",
+    "ContentNotFoundError",
+    "DuplicateContentError",
+    "InvalidContentError",
+    "MissingDependencyError",
+]

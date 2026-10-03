@@ -1,0 +1,92 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-cards_miscellaneous-alt_art-xiii_death",
+      "name": "XIII. Death",
+      "type": "loot",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "kill",
+              "target": "all_players"
+            }
+          ],
+          "description": "Kill all players."
+        }
+      ],
+      "metadata": {
+        "text": "Kill all players.",
+        "set": "Alt Art",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-alt_art-xiii_death",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Alt Ability",
+        "artist": "@WinslowDumaine",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-alt_art-xvii_the_stars",
+      "name": "XVII. The Stars",
+      "type": "loot",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "gain_treasure",
+              "count": 1,
+              "target": "all_players"
+            },
+            {
+              "effect": "gain_treasure",
+              "count": 1,
+              "target": "controller"
+            }
+          ],
+          "description": "Each player gains +1 treasure, then you gain +1 treasure."
+        }
+      ],
+      "metadata": {
+        "text": "Each player gains\n+1 treasure, then\nyou gain +1 treasure.",
+        "set": "Alt Art",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-alt_art-xvii_the_stars",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Alt Ability",
+        "artist": "@RainyDayFelt",
+        "notes": "Unlocked via 34,000 backers for the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-lost_soul-alt_art-lost_soul",
+      "name": "Lost Soul",
+      "type": "loot",
+      "expansion": "alt_art",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "As this enters play, this becomes\na soul. Give it to another player.\n------------------------------\nOther players may attack you.\nYou have 4+ DC for the attack.\n------------------------------\nWhen a player kills you, give\nthis soul to that player.\n------------------------------\n-Trinket-",
+        "set": "Alt Art",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-lost_soul-alt_art-lost_soul",
+        "subcategory": "Lost Soul",
+        "version": "Alt Ability",
+        "artist": "@gobo3D",
+        "notes": "Unlocked via 37,000 backers for the Requiem Kickstarter."
+      }
+    }
+  ]
+}

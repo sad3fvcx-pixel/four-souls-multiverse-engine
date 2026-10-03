@@ -1,0 +1,2495 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-1-base_game-a_penny",
+      "name": "A Penny!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 1
+            }
+          ],
+          "description": "Gain 1¢."
+        }
+      ],
+      "metadata": {
+        "text": "Gain 1¢.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 6,
+        "source_id": "loot_deck-1-base_game-a_penny",
+        "subcategory": "1¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-2-base_game-2_cents",
+      "name": "2 Cents!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 2
+            }
+          ],
+          "description": "Gain 2¢."
+        }
+      ],
+      "metadata": {
+        "text": "Gain 2¢.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 12,
+        "source_id": "loot_deck-2-base_game-2_cents",
+        "subcategory": "2¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-3-base_game-3_cents",
+      "name": "3 Cents!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 3
+            }
+          ],
+          "description": "Gain 3¢."
+        }
+      ],
+      "metadata": {
+        "text": "Gain 3¢.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 15,
+        "source_id": "loot_deck-3-base_game-3_cents",
+        "subcategory": "3¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-4-base_game-4_cents",
+      "name": "4 Cents!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 4
+            }
+          ],
+          "description": "Gain 4¢."
+        }
+      ],
+      "metadata": {
+        "text": "Gain 4¢.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 9,
+        "source_id": "loot_deck-4-base_game-4_cents",
+        "subcategory": "4¢",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-batteries-base_game-lil_battery",
+      "name": "Lil Battery",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_treasure": {
+                "as": "item"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "item"
+            }
+          ],
+          "description": "Recharge an item."
+        }
+      ],
+      "metadata": {
+        "text": "Recharge\nan item.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 4,
+        "source_id": "loot_deck-batteries-base_game-lil_battery",
+        "subcategory": "Batteries",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-batteries-base_game-mega_battery",
+      "name": "Mega Battery",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "who"
+              }
+            },
+            {
+              "owned_treasure": {
+                "of": "who",
+                "as": "their_items"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "their_items"
+            }
+          ],
+          "description": "Choose a player. Recharge each item they control."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player.\nRecharge each item\nthey control.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-batteries-base_game-mega_battery",
+        "subcategory": "Batteries",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-bombs-base_game-bomb",
+      "name": "Bomb!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "victim"
+            }
+          ],
+          "description": "Deal 1 damage to a monster or player."
+        }
+      ],
+      "metadata": {
+        "text": "Deal 1 damage\nto a monster\nor player.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 4,
+        "source_id": "loot_deck-bombs-base_game-bomb",
+        "subcategory": "Bombs",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-bombs-base_game-gold_bomb",
+      "name": "Gold Bomb!!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 3,
+              "target": "victim"
+            }
+          ],
+          "description": "Deal 3 damage to a monster or player."
+        }
+      ],
+      "metadata": {
+        "text": "Deal 3 damage\nto a monster\nor player.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-bombs-base_game-gold_bomb",
+        "subcategory": "Bombs",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-butter_beans-base_game-butter_bean",
+      "name": "Butter Bean!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_stack_item": {
+                "triggers": [
+                  "on_play",
+                  "on_activate"
+                ],
+                "as": "cancelled"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "cancel_stack",
+              "target": "cancelled"
+            }
+          ],
+          "description": "Cancel the ↷ or $ ability of an item or a loot being played."
+        }
+      ],
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "Cancel the ↷ or $\nability of an item\nor a loot being\nplayed.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 3,
+        "source_id": "loot_deck-butter_beans-base_game-butter_bean",
+        "subcategory": "Butter Beans",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-i_the_magician",
+      "name": "I. The Magician",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Change the result to a 1.",
+                  "effects": [
+                    {
+                      "set_roll": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Change the result to a 2.",
+                  "effects": [
+                    {
+                      "set_roll": 2
+                    }
+                  ]
+                },
+                {
+                  "description": "Change the result to a 3.",
+                  "effects": [
+                    {
+                      "set_roll": 3
+                    }
+                  ]
+                },
+                {
+                  "description": "Change the result to a 4.",
+                  "effects": [
+                    {
+                      "set_roll": 4
+                    }
+                  ]
+                },
+                {
+                  "description": "Change the result to a 5.",
+                  "effects": [
+                    {
+                      "set_roll": 5
+                    }
+                  ]
+                },
+                {
+                  "description": "Change the result to a 6.",
+                  "effects": [
+                    {
+                      "set_roll": 6
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Change the result of a dice roll to a number of your choosing."
+        }
+      ],
+      "metadata": {
+        "text": "Change the result\nof a dice roll\nto a number of\nyour choosing.\n(Rolls can't go\nbelow 1 or above 6.)",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-i_the_magician",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-ii_the_high_priestess",
+      "name": "II. The High Priestess",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "effect": "deal_damage",
+              "amount": {
+                "from": "dice"
+              },
+              "target": "victim"
+            }
+          ],
+          "description": "Choose a player or monster, then roll- Deal damage to them equal to the result."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player or\nmonster, then roll-\nDeal damage to\nthem equal to\nthe result.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-ii_the_high_priestess",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-iii_the_empress",
+      "name": "III. The Empress",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "blessed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "blessed"
+            },
+            {
+              "effect": "add_modifier",
+              "stat": "roll",
+              "amount": 1,
+              "target": "blessed"
+            }
+          ],
+          "description": "Choose a player. They gain +1 AT and +1 to dice rolls till end of turn."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player.\nThey gain +1 AT and\n+1 to dice rolls\ntill end of turn.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-iii_the_empress",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-iv_the_emperor",
+      "name": "IV. The Emperor",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "monster",
+                "from_top": 5,
+                "as": "kept"
+              }
+            },
+            {
+              "deck_top": {
+                "deck": "monster",
+                "count": 5,
+                "exclude": "kept",
+                "as": "rest"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "monster",
+              "position": "bottom",
+              "target": "rest"
+            }
+          ],
+          "description": "Look at the top 5 cards of the monster deck. Put 1 on top and the rest on the bottom."
+        }
+      ],
+      "metadata": {
+        "text": "Look at the top\n5 cards of the\nmonster deck. Put\n1 on top and the\nrest on the bottom.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-iv_the_emperor",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-ix_the_hermit",
+      "name": "IX. The Hermit",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "treasure",
+                "from_top": 5,
+                "as": "kept"
+              }
+            },
+            {
+              "deck_top": {
+                "deck": "treasure",
+                "count": 5,
+                "exclude": "kept",
+                "as": "rest"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "treasure",
+              "position": "bottom",
+              "target": "rest"
+            }
+          ],
+          "description": "Look at the top 5 cards of the treasure deck. Put 1 on the top and the rest on the bottom."
+        }
+      ],
+      "metadata": {
+        "text": "Look at the top\n5 cards of the\ntreasure deck. Put\n1 on the top and the\nrest on the bottom.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-ix_the_hermit",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-o_the_fool",
+      "name": "O. The Fool",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "cancel_stack",
+              "target": "all_stack"
+            },
+            {
+              "end_turn": {}
+            }
+          ],
+          "description": "End the turn. Cancel everything that hasn't resolved."
+        }
+      ],
+      "metadata": {
+        "text": "End the turn.\nCancel everything\nthat hasn't resolved.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-o_the_fool",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-v_the_hierophant",
+      "name": "V. The Hierophant",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "shielded"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "prevent_next_damage",
+              "amount": 2,
+              "target": "shielded"
+            }
+          ],
+          "description": "Choose a player or monster. Prevent the next instance of up to 2 damage they would take this turn."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player\nor monster. Prevent\nthe next instance\nof up to 2 damage\nthey would take\nthis turn.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-v_the_hierophant",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-vi_the_lovers",
+      "name": "VI. The Lovers",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "blessed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "max_hp",
+              "amount": 2,
+              "target": "blessed"
+            }
+          ],
+          "description": "Choose a player. They gain +2 HP till end of turn."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player.\nThey gain +2 HP\ntill end of turn.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-vi_the_lovers",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-vii_the_chariot",
+      "name": "VII. The Chariot",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "blessed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "blessed"
+            },
+            {
+              "effect": "add_modifier",
+              "stat": "max_hp",
+              "amount": 1,
+              "target": "blessed"
+            }
+          ],
+          "description": "Choose a player. They gain +1 AT and +1 HP till end of turn."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player.\nThey gain +1 AT\nand +1 HP till\nend of turn.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-vii_the_chariot",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-viii_justice",
+      "name": "VIII. Justice",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "exclude_controller": true,
+                "as": "rival"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "draw_loot",
+              "count": {
+                "count": "loot",
+                "of": "rival",
+                "minus": "controller"
+              }
+            },
+            {
+              "effect": "gain_coins",
+              "amount": {
+                "count": "coins",
+                "of": "rival",
+                "minus": "controller"
+              }
+            }
+          ],
+          "description": "Choose a player. Loot and gain ¢ until you have the same number of each as they do."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player.\nLoot and gain ¢\nuntil you have the\nsame number of\neach as they do.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-viii_justice",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-x_wheel_of_fortune",
+      "name": "X. Wheel of Fortune",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 1
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 2
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "controller"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 3
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 3
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 4
+                }
+              ],
+              "then": [
+                {
+                  "lose_coins": 4
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 5
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 5
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 6
+                }
+              ],
+              "then": [
+                {
+                  "gain_treasure": 1
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1 gain 1¢, 2 take 2 damage, 3 loot 3, 4 lose 4¢, 5 gain 5¢, 6 gain +1 treasure."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1: Gain 1¢.\n------------------------------\n2: Take 2 damage.\n------------------------------\n3: Loot 3.\n------------------------------\n4: Lose 4¢.  5: Gain 5¢.\n------------------------------\n6: Gain +1 treasure.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-x_wheel_of_fortune",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xi_strength",
+      "name": "XI. Strength",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "blessed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "blessed"
+            },
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "blessed"
+            }
+          ],
+          "description": "Choose a player. They gain +1 AT till end of turn and may attack an additional time this turn."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player.\nThey gain +1 AT till\nend of turn and\nmay attack an\nadditional time\nthis turn.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xi_strength",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xii_the_hanged_man",
+      "name": "XII. The Hanged Man",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "deck_top": {
+                "deck": "loot",
+                "count": 1,
+                "as": "loot_top"
+              }
+            },
+            {
+              "deck_top": {
+                "deck": "treasure",
+                "count": 1,
+                "as": "treasure_top"
+              }
+            },
+            {
+              "deck_top": {
+                "deck": "monster",
+                "count": 1,
+                "as": "monster_top"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "reveal_cards",
+              "deck": "loot",
+              "count": 1
+            },
+            {
+              "effect": "reveal_cards",
+              "deck": "treasure",
+              "count": 1
+            },
+            {
+              "effect": "reveal_cards",
+              "deck": "monster",
+              "count": 1
+            },
+            {
+              "may": [
+                {
+                  "effect": "move_cards",
+                  "deck": "loot",
+                  "position": "bottom",
+                  "target": "loot_top"
+                }
+              ],
+              "as": "bury_loot",
+              "prompt": "Put the top card of the loot deck on the bottom?"
+            },
+            {
+              "may": [
+                {
+                  "effect": "move_cards",
+                  "deck": "treasure",
+                  "position": "bottom",
+                  "target": "treasure_top"
+                }
+              ],
+              "as": "bury_treasure",
+              "prompt": "Put the top card of the treasure deck on the bottom?"
+            },
+            {
+              "may": [
+                {
+                  "effect": "move_cards",
+                  "deck": "monster",
+                  "position": "bottom",
+                  "target": "monster_top"
+                }
+              ],
+              "as": "bury_monster",
+              "prompt": "Put the top card of the monster deck on the bottom?"
+            },
+            {
+              "draw_loot": 2
+            }
+          ],
+          "description": "Look at the top card of each deck. You may put any of those cards on the bottom of their deck, then loot 2."
+        }
+      ],
+      "metadata": {
+        "text": "Look at the top card\nof each deck. You may\nput any of those cards\non the bottom of their\ndeck, then loot 2.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xii_the_hanged_man",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xiii_death",
+      "name": "XIII. Death",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "doomed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "kill",
+              "target": "doomed"
+            }
+          ],
+          "description": "Kill a player."
+        }
+      ],
+      "metadata": {
+        "text": "Kill a player.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xiii_death",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xiv_temperance",
+      "name": "XIV. Temperance",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Take 1 damage and gain 4¢.",
+                  "effects": [
+                    {
+                      "effect": "deal_damage",
+                      "amount": 1,
+                      "target": "controller"
+                    },
+                    {
+                      "gain_coins": 4
+                    }
+                  ]
+                },
+                {
+                  "description": "Take 2 damage and gain 8¢.",
+                  "effects": [
+                    {
+                      "effect": "deal_damage",
+                      "amount": 2,
+                      "target": "controller"
+                    },
+                    {
+                      "gain_coins": 8
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Choose one- Take 1 damage and gain 4¢, or take 2 damage and gain 8¢."
+        }
+      ],
+      "metadata": {
+        "text": "Choose one-\nTake 1 damage\nand gain 4¢.\n------------------------------\nTake 2 damage\nand gain 8¢.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xiv_temperance",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xix_the_sun",
+      "name": "XIX. The Sun",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "conditions": [
+            "player_active"
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "loot",
+              "position": "bottom",
+              "target": "self"
+            },
+            {
+              "effect": "take_extra_turn",
+              "target": "controller"
+            }
+          ],
+          "description": "Put this on the bottom of the loot deck. If you do, take an extra turn after this one if it's your turn."
+        }
+      ],
+      "metadata": {
+        "text": "Put this on the\nbottom of the loot\ndeck. If you do, take\nan extra turn after\nthis one if it's\nyour turn.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xix_the_sun",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xv_the_devil",
+      "name": "XV. The Devil",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_treasure": {
+                "owner": "controller",
+                "as": "sacrifice"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "destroy_treasure",
+              "target": "sacrifice"
+            },
+            {
+              "if": [
+                "last_effect_did"
+              ],
+              "then": [
+                {
+                  "effect": "steal_treasure",
+                  "target": {
+                    "target_treasure": {
+                      "owner": "opponents",
+                      "include_shop": true,
+                      "exclude_eternal": true,
+                      "as": "spoils"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "description": "Destroy an item you control. If you do, steal a non-eternal item from a player or from the shop."
+        }
+      ],
+      "metadata": {
+        "text": "Destroy an item\nyou control. If you\ndo, steal a non-\neternal item from\na player or from\nthe shop.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xv_the_devil",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xvi_the_tower",
+      "name": "XVI. The Tower",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "all_monsters"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "all_players"
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 each player takes 1 damage, 3-4 each monster takes 1 damage, 5-6 each player takes 2 damage."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1-2: Each player takes\n1 damage.\n------------------------------\n3-4: Each monster takes\n1 damage.\n------------------------------\n5-6: Each player takes\n2 damage.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xvi_the_tower",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xvii_the_stars",
+      "name": "XVII. The Stars",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_treasure": 1
+            }
+          ],
+          "description": "Gain +1 treasure."
+        }
+      ],
+      "metadata": {
+        "text": "Gain +1\ntreasure.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xvii_the_stars",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xviii_the_moon",
+      "name": "XVIII. The Moon",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "loot",
+                "from_top": 5,
+                "as": "kept"
+              }
+            },
+            {
+              "deck_top": {
+                "deck": "loot",
+                "count": 5,
+                "exclude": "kept",
+                "as": "rest"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "loot",
+              "position": "bottom",
+              "target": "rest"
+            }
+          ],
+          "description": "Look at the top 5 cards of the loot deck. Put 1 on top and the rest on the bottom."
+        }
+      ],
+      "metadata": {
+        "text": "Look at the top\n5 cards of the\nloot deck. Put\n1 on top and the\nrest on the bottom.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xviii_the_moon",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xx_judgement",
+      "name": "XX. Judgement",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "most": "souls",
+                "as": "richest"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "lose_soul",
+              "count": 1,
+              "target": "richest"
+            }
+          ],
+          "description": "Choose a player who controls the most souls or tied for the most. That player destroys a soul they control."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player\nwho controls the\nmost souls or tied\nfor the most. That\nplayer destroys a\nsoul they control.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xx_judgement",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-base_game-xxi_the_world",
+      "name": "XXI. The World",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "reveal_hand",
+              "target": "all_players"
+            },
+            {
+              "draw_loot": 2
+            }
+          ],
+          "description": "Look at each player's hand, then loot 2."
+        }
+      ],
+      "metadata": {
+        "text": "Look at each\nplayer's hand,\nthen loot 2.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-base_game-xxi_the_world",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-dice_shards_soul_hearts-base_game-dice_shard",
+      "name": "Dice Shard",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "reroll": 6
+            }
+          ],
+          "description": "Choose a dice roll. Its controller rerolls it."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a dice roll.\nIts controller\nrerolls it.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 3,
+        "source_id": "loot_deck-dice_shards_soul_hearts-base_game-dice_shard",
+        "subcategory": "Dice Shards / Soul Hearts",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-dice_shards_soul_hearts-base_game-soul_heart",
+      "name": "Soul Heart",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "target_player": {
+                "as": "shielded"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "prevent_next_damage",
+              "amount": 1,
+              "target": "shielded"
+            }
+          ],
+          "description": "Choose a player. Prevent the next 1 damage they would take this turn."
+        }
+      ],
+      "metadata": {
+        "text": "Choose a player.\nPrevent the next 1\ndamage they would\ntake this turn.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 2,
+        "source_id": "loot_deck-dice_shards_soul_hearts-base_game-soul_heart",
+        "subcategory": "Dice Shards / Soul Hearts",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-lost_soul-base_game-lost_soul",
+      "name": "Lost Soul",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "claim_soul",
+              "target": "controller"
+            }
+          ],
+          "description": "When this enters play, it becomes a soul."
+        }
+      ],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "When this enters\nplay, it becomes\na soul.\n(It's no longer an item.)\n------------------------------\n-Trinket-\n\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-lost_soul-base_game-lost_soul",
+        "subcategory": "Lost Soul",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-nickels-base_game-a_dime",
+      "name": "A Dime!!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 10
+            }
+          ],
+          "description": "Gain 10¢."
+        }
+      ],
+      "metadata": {
+        "text": "Gain 10¢.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-nickels-base_game-a_dime",
+        "subcategory": "Nickels",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-nickels-base_game-a_nickel",
+      "name": "A Nickel!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "gain_coins": 5
+            }
+          ],
+          "description": "Gain 5¢."
+        }
+      ],
+      "metadata": {
+        "text": "Gain 5¢.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 5,
+        "source_id": "loot_deck-nickels-base_game-a_nickel",
+        "subcategory": "Nickels",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-base_game-blank_rune",
+      "name": "Blank Rune",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 1
+                }
+              ],
+              "then": [
+                {
+                  "effect": "gain_coins",
+                  "amount": 1,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 2
+                }
+              ],
+              "then": [
+                {
+                  "effect": "draw_loot",
+                  "count": 2,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 3
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 3,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "gain_coins",
+                  "amount": 4,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 5
+                }
+              ],
+              "then": [
+                {
+                  "effect": "draw_loot",
+                  "count": 5,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 6
+                }
+              ],
+              "then": [
+                {
+                  "effect": "gain_coins",
+                  "amount": 6,
+                  "target": "all_players"
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1 each player gains 1¢, 2 each player loots 2, 3 each player takes 3 damage, 4 each player gains 4¢, 5 each player loots 5, 6 each player gains 6¢."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1: Each player gains 1¢.\n------------------------------\n2: Each player loots 2.\n------------------------------\n3: Each player takes 3 damage.\n------------------------------\n4: Each player gains 4¢.\n------------------------------\n5: Each player loots 5.\n------------------------------\n6: Each player gains 6¢.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-base_game-blank_rune",
+        "subcategory": "Pills / Runes",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-base_game-dagaz",
+      "name": "Dagaz",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Destroy a curse.",
+                  "effects": [
+                    {
+                      "effect": "remove_curse",
+                      "target": {
+                        "target_curse": {
+                          "as": "doomed_curse"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Choose a player. Prevent the next 1 damage they would take this turn.",
+                  "effects": [
+                    {
+                      "effect": "prevent_next_damage",
+                      "amount": 1,
+                      "target": {
+                        "target_player": {
+                          "as": "shielded"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Choose one- Destroy a curse, or choose a player and prevent the next 1 damage they would take this turn."
+        }
+      ],
+      "metadata": {
+        "text": "Choose one-\n•Destroy a curse.\n------------------------------\n•Choose a player.\nPrevent the next 1\ndamage they would\ntake this turn.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-base_game-dagaz",
+        "subcategory": "Pills / Runes",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-base_game-ehwaz",
+      "name": "Ehwaz",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "targets": [
+            {
+              "all_monsters": {
+                "exclude_attacked": true,
+                "as": "bystanders"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "discard_monsters",
+              "target": "bystanders"
+            }
+          ],
+          "description": "Put each monster not being attacked into discard and replace each with the top card of the monster deck."
+        }
+      ],
+      "metadata": {
+        "text": "Put each monster not\nbeing attacked into\ndiscard and replace\neach with the top card\nof the monster deck.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-base_game-ehwaz",
+        "subcategory": "Pills / Runes",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via dealing 700,000 damage to Delirium during the original Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-base_game-pills",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 4
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "gain_coins": 7
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "lose_coins": 4
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 gain 4¢, 3-4 gain 7¢, 5-6 lose 4¢."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1-2: Gain 4¢.\n------------------------------\n3-4: Gain 7¢.\n------------------------------\n5-6: Lose 4¢.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-base_game-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-base_game-pills-v2",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "draw_loot": 3
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "discard_cards",
+                  "target": "target_loot"
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 loot 1, 3-4 loot 3, 5-6 discard 1 loot card."
+        }
+      ],
+      "metadata": {
+        "text": "Roll-\n1-2: Loot 1.\n------------------------------\n3-4: Loot 3.\n------------------------------\n5-6: Discard 1\nloot card.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-base_game-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-base_game-pills-v3",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 3
+                }
+              ],
+              "then": [
+                {
+                  "effect": "add_modifier",
+                  "stat": "attack",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "and": [
+                    {
+                      "dice_greater": 2
+                    },
+                    {
+                      "dice_less": 5
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "effect": "add_modifier",
+                  "stat": "max_hp",
+                  "amount": 1
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "controller"
+                }
+              ]
+            }
+          ],
+          "description": "Roll: 1-2 you gain +1 AT till end of turn, 3-4 you gain +1 HP till end of turn, 5-6 take 1 damage."
+        }
+      ],
+      "metadata": {
+        "text": "Roll:\n1-2: You gain +1 AT\ntill end of turn.\n------------------------------\n3-4: You gain +1 HP\ntill end of turn.\n------------------------------\n5-6: Take 1 damage.",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-base_game-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-base_game-bloody_penny",
+      "name": "Bloody Penny",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        },
+        {
+          "trigger": "player_died",
+          "scope": "any",
+          "effects": [
+            {
+              "effect": "draw_loot",
+              "count": 1,
+              "target": "controller"
+            }
+          ],
+          "description": "Each time a player dies, loot 1."
+        }
+      ],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "Each time a player\ndies, before paying\npenalties, loot 1.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-base_game-bloody_penny",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-base_game-broken_ankh",
+      "name": "Broken Ankh",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        },
+        {
+          "trigger": "before_death",
+          "scope": "controller",
+          "replacement": true,
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 6
+                }
+              ],
+              "then": [
+                {
+                  "effect": "cancel_event"
+                },
+                {
+                  "if": [
+                    "player_active"
+                  ],
+                  "then": [
+                    {
+                      "effect": "cancel_stack",
+                      "target": "all_stack"
+                    },
+                    {
+                      "effect": "end_turn"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "When you would die, roll- 6: Prevent death. If it's your turn, cancel everything that hasn't resolved and end it."
+        }
+      ],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "When you would die, roll-\n6: Prevent death. If\nit's your turn, cancel\neverything that hasn't\nresolved and end it.\n------------------------------\n-Trinket-",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-base_game-broken_ankh",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-base_game-cain_s_eye",
+      "name": "Cain's Eye",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        },
+        {
+          "trigger": "turn_start",
+          "scope": "controller",
+          "targets": [
+            {
+              "deck_top": {
+                "deck": "loot",
+                "count": 1,
+                "as": "top"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "reveal_cards",
+              "deck": "loot",
+              "count": 1
+            },
+            {
+              "may": [
+                {
+                  "effect": "move_cards",
+                  "deck": "loot",
+                  "position": "bottom",
+                  "target": "top"
+                }
+              ],
+              "prompt": "Put the top card of the loot deck on the bottom?"
+            }
+          ],
+          "description": "At the start of your turn, look at the top card of the loot deck. You may put it on the bottom."
+        }
+      ],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "At the start of your turn,\nlook at the top card of\nthe loot deck. You may\nput it on the bottom.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-base_game-cain_s_eye",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-base_game-counterfeit_penny",
+      "name": "Counterfeit Penny",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        },
+        {
+          "trigger": "before_coins_gained",
+          "scope": "controller",
+          "replacement": true,
+          "effects": [
+            {
+              "effect": "modify_event",
+              "key": "amount",
+              "delta": 1
+            }
+          ],
+          "description": "If you would gain any number of ¢, gain that much +1¢ instead."
+        }
+      ],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "If you would gain any\nnumber of ¢, gain that\nmuch +1¢ instead.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-base_game-counterfeit_penny",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-base_game-curved_horn",
+      "name": "Curved Horn",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        }
+      ],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "You have +1 AT for\nyour first attack\nroll each turn.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-base_game-curved_horn",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      },
+      "statics": [
+        {
+          "stat": "attack",
+          "amount": 1,
+          "scope": "self",
+          "conditions": [
+            "first_attack_roll"
+          ],
+          "description": "You have +1 AT for your first attack roll each turn."
+        }
+      ]
+    },
+    {
+      "id": "loot_deck-trinkets-base_game-golden_horseshoe",
+      "name": "Golden Horseshoe",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        },
+        {
+          "trigger": "turn_start",
+          "scope": "controller",
+          "targets": [
+            {
+              "deck_top": {
+                "deck": "treasure",
+                "count": 1,
+                "as": "top"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "reveal_cards",
+              "deck": "treasure",
+              "count": 1
+            },
+            {
+              "may": [
+                {
+                  "effect": "move_cards",
+                  "deck": "treasure",
+                  "position": "bottom",
+                  "target": "top"
+                }
+              ],
+              "prompt": "Put the top card of the treasure deck on the bottom?"
+            }
+          ],
+          "description": "At the start of your turn, look at the top card of the treasure deck. You may put it on the bottom."
+        }
+      ],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "At the start of your turn,\nlook at the top card of\nthe treasure deck. You\nmay put it on the bottom.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-base_game-golden_horseshoe",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-base_game-guppy_s_hairball",
+      "name": "Guppy's Hairball",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        },
+        {
+          "trigger": "before_damage",
+          "scope": "controller",
+          "replacement": true,
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 6
+                }
+              ],
+              "then": [
+                {
+                  "prevent_damage": 1
+                }
+              ]
+            }
+          ],
+          "description": "Each time you would take damage, roll- 6: Prevent 1 of that damage."
+        }
+      ],
+      "tags": [
+        "guppy",
+        "trinket"
+      ],
+      "metadata": {
+        "text": "Each time you would\ntake damage, roll-\n6: Prevent 1 of\nthat damage.\n------------------------------\n-Trinket, Guppy-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-base_game-guppy_s_hairball",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-base_game-purple_heart",
+      "name": "Purple Heart",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        },
+        {
+          "trigger": "turn_start",
+          "scope": "controller",
+          "targets": [
+            {
+              "deck_top": {
+                "deck": "monster",
+                "count": 1,
+                "as": "top"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "reveal_cards",
+              "deck": "monster",
+              "count": 1
+            },
+            {
+              "may": [
+                {
+                  "effect": "move_cards",
+                  "deck": "monster",
+                  "position": "bottom",
+                  "target": "top"
+                }
+              ],
+              "prompt": "Put the top card of the monster deck on the bottom?"
+            }
+          ],
+          "description": "At the start of your turn, look at the top card of the monster deck. You may put it on the bottom."
+        }
+      ],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "At the start of your turn,\nlook at the top card of\nthe monster deck. You\nmay put it on the bottom.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-base_game-purple_heart",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-base_game-swallowed_penny",
+      "name": "Swallowed Penny",
+      "type": "loot",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {
+              "effect": "put_into_play",
+              "target": "self"
+            }
+          ],
+          "description": "This loot becomes an item under your control when it resolves."
+        },
+        {
+          "trigger": "after_damage",
+          "scope": "controller",
+          "effects": [
+            {
+              "gain_coins": 1
+            }
+          ],
+          "description": "Each time you take damage, gain 1¢."
+        }
+      ],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "Each time you\ntake damage,\ngain 1¢.\n------------------------------\n-Trinket-\n(This loot becomes an item under\nyour control when it resolves.)",
+        "set": "Base Game",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-base_game-swallowed_penny",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

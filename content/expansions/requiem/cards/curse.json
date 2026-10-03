@@ -1,0 +1,76 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-curses-requiem-curse_of_empathy",
+      "name": "Curse of Empathy",
+      "type": "curse",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a monster\ndies, discard a loot\ncard and lose 1¢.\n------------------------------\n-Curse-\n(When this enters player, give\nthis to a player. When they die,\nthey put this into discard.)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-requiem-curse_of_empathy",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-curses-requiem-curse_of_the_hollow",
+      "name": "Curse of the Hollow",
+      "type": "curse",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the end of your\nturn, discard x loot\ncards and lose x¢,\nwhere x is the number\nof souls you control.\n------------------------------\n-Curse-",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-requiem-curse_of_the_hollow",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-curses-requiem-curse_of_the_hunted",
+      "name": "Curse of the Hunted",
+      "type": "curse",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Monsters have +1 AT\non your turn.\n------------------------------\n-Curse-\n(When this enters player, give\nthis to a player. When they die,\nthey put this into discard.)",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-requiem-curse_of_the_hunted",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "monster_deck-curses-requiem-curse_of_the_soulless",
+      "name": "Curse of the Soulless",
+      "type": "curse",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "You can't gain souls.\n------------------------------\nIf this would be put into\ndiscard, instead give it\nto another player.\n------------------------------\n-Curse-",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-requiem-curse_of_the_soulless",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}
