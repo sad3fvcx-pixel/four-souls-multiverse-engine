@@ -624,6 +624,10 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
         # Read by `Game.load`, which owns the Runtime; checked here so that a
         # save missing it is refused by whoever reads it.
         _needed_flag(data, "interactive_priority")
+        # Empty when nothing is being played. Missing is a save that could
+        # have lost a card on the way, so it is refused rather than read as
+        # empty.
+        _needed(data, "in_flight")
     else:
         _refuse_what_format_1_lost(data)
 

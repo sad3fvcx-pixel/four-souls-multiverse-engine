@@ -536,6 +536,7 @@ def test_a_save_pointing_at_a_card_it_does_not_hold_is_refused(
         ("stack", 0, "payload"),
         ("stack", 0, "stack_id"),
         ("stack", 0, "order"),
+        ("in_flight",),
     ),
 )
 def test_the_current_format_does_not_read_without(
@@ -553,6 +554,120 @@ def test_the_current_format_does_not_read_without(
 
     with pytest.raises(SaveError, match=f"missing '{path[-1]}'"):
         Game.load(data, everything)
+
+
+def test_nothing_in_flight_is_written_as_nothing_not_left_out(
+    everything: ContentLibrary, positions: dict[str, Game]
+) -> None:
+    """
+    With nothing being played the list is empty, and loads; without the list
+    at all, nothing would say whether a card was lost on the way.
+    """
+    data = saved(positions["an ordinary game"])
+    assert data is not None and data["format"] == SAVE_FORMAT_VERSION
+
+    assert data["in_flight"] == []
+    Game.load(data, everything)
+
+    del data["in_flight"]
+
+    with pytest.raises(SaveError, match="missing 'in_flight'"):
+        Game.load(data, everything)
+
+
+# ----------------------------------------------------------------------
+# A stack object carrying cards
+# ----------------------------------------------------------------------
+
+
+def _cards_reached(value: Any, found: dict[str, set[int]]) -> None:
+    """Every card object under ``value``, by identifier and by identity."""
+    if isinstance(value, CardInstance):
+        found.setdefault(value.instance_id, set()).add(id(value))
+    elif isinstance(value, Mapping):
+        for item in value.values():
+            _cards_reached(item, found)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            _cards_reached(item, found)
+
+
+def test_cards_a_stack_object_carries_come_back_as_the_cards_they_were(
+    everything: ContentLibrary,
+) -> None:
+    """
+    Nothing in the game puts a card in a stack object's payload yet, so one is
+    put there: a card in a zone, the same card further in, and the card being
+    played. What is checked is the save, not anything the rules do with them.
+    """
+    game = first_position(everything, 0, a_loot_card_being_played)
+    before = saved(game)
+    assert before is not None
+
+    flying_id = before["in_flight"][0]["instance_id"]
+    flying = next(
+        card
+        for item in game.state.stack
+        for card in (item.source, item.event.source if item.event else None)
+        if isinstance(card, CardInstance) and card.instance_id == flying_id
+    )
+    zoned = game.state.players[0].character
+    assert isinstance(zoned, CardInstance)
+
+    item = next(iter(game.state.stack))
+    item.payload["a_card"] = zoned
+    item.payload["nested"] = {"list": [zoned, {"deep": flying}]}
+    item.payload["in_flight_card"] = flying
+
+    data = saved(game)
+    assert data is not None
+
+    # Written as pointers, however deep, and the card being played once.
+    written = next(one for one in data["stack"] if one["stack_id"] == item.stack_id)
+
+    assert written["payload"]["a_card"] == {"$card": zoned.instance_id}
+    assert written["payload"]["nested"] == {
+        "list": [{"$card": zoned.instance_id}, {"deep": {"$card": flying_id}}]
+    }
+    assert written["payload"]["in_flight_card"] == {"$card": flying_id}
+    assert [card["instance_id"] for card in data["in_flight"]] == [
+        card["instance_id"] for card in before["in_flight"]
+    ]
+
+    back = Game.load(data, everything)
+
+    assert differences(game.state, back.state, Compared()) == []
+
+    # The very cards the loaded game holds, not copies of them and not nothing.
+    loaded = next(one for one in back.state.stack if one.stack_id == item.stack_id)
+    loaded_zoned = back.state.players[0].character
+    loaded_flying = next(
+        card
+        for one in back.state.stack
+        for card in (one.source, one.event.source if one.event else None)
+        if isinstance(card, CardInstance) and card.instance_id == flying_id
+    )
+
+    assert loaded.payload["a_card"] is loaded_zoned
+    assert loaded.payload["nested"]["list"][0] is loaded_zoned
+    assert loaded.payload["nested"]["list"][1]["deep"] is loaded_flying
+    assert loaded.payload["in_flight_card"] is loaded_flying
+
+    reached: dict[str, set[int]] = {}
+
+    for one in back.state.stack:
+        _cards_reached([one.source, one.targets, one.payload], reached)
+
+        if one.event is not None:
+            _cards_reached([one.event.source, one.event.targets, one.event.payload], reached)
+
+    _cards_reached([player.character for player in back.state.players], reached)
+
+    assert all(len(objects) == 1 for objects in reached.values()), reached
+
+    # And it writes out the same again, every time.
+    assert saved(back) == data
+    assert saved(game) == saved(game)
 
 
 # ----------------------------------------------------------------------
