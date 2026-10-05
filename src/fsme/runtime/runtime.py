@@ -19,7 +19,7 @@ from fsme.commands import (
 )
 from fsme.effects import EffectOp, EffectRegistry, builtin_registry
 from fsme.events import Event, EventBus, EventType
-from fsme.rng.rng import RNG
+from fsme.rng.rng import RNG, rng_for
 from fsme.stack import SETTLE_ROLL, StackItem, StackItemType
 from fsme.state import GameState, PendingDecision, PendingRoll, PlayerState
 
@@ -338,7 +338,7 @@ class Runtime:
         self._procedures = (
             procedures if procedures is not None else default_procedure_registry()
         )
-        self._rng = rng if rng is not None else RNG(state.seed)
+        self._rng = rng if rng is not None else rng_for(state.seed, state.rng_model)
 
         self._bus = EventBus()
         self._conditions = ConditionEvaluator()

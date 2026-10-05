@@ -30,6 +30,15 @@ two runs differ everywhere and not only where the card is. When a card reached
 the table in a handful of games, a difference in the averages is the deck
 moving, not the card working — and the reading says so rather than leaving the
 reader to notice.
+
+All of that is about RNG model 1, which is what a run is played on unless it
+asks. A card test asks for model 2 (``PAIRED_RNG_MODEL``), where each deck is
+shuffled by a key per card: taking a card out moves no other card, and a game
+the card never reached plays out the same with it and without it. The
+populations are then paired by seed as well as alike. The numbers here are
+still worked out as if they were not — the interval is the same one, which
+only makes it wider than it needs to be — and only the sentences that would be
+false on model 2 are said differently.
 """
 
 from __future__ import annotations
@@ -38,6 +47,8 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
+
+from fsme.rng.rng import DEFAULT_RNG_MODEL, LEGACY_MODEL
 
 from .tally import Tally
 
@@ -128,6 +139,21 @@ class Comparison:
     errors_with: int = 0
     errors_without: int = 0
 
+    rng_model: str = DEFAULT_RNG_MODEL
+    """
+    The generator both runs were played on, which decides what a difference
+    between them can be: on model 1 the deck moving, on model 2 only the card.
+    """
+
+    @property
+    def reshuffled(self) -> bool:
+        """
+        Whether taking the card out dealt every game differently.
+
+        True on model 1, where it did. On model 2 it moved nothing else.
+        """
+        return self.rng_model == LEGACY_MODEL
+
     @property
     def can_be_about_the_card(self) -> bool:
         """
@@ -171,6 +197,13 @@ class Comparison:
             return f"the card never reached the table in {self.games} games"
 
         if not self.can_be_about_the_card:
+            if not self.reshuffled:
+                return (
+                    f"too scarce to say — it reached the table in {self.appeared}"
+                    f" of {self.games} games, too few for a difference to be its"
+                    f" doing"
+                )
+
             return (
                 f"too scarce to say — it reached the table in {self.appeared}"
                 f" of {self.games} games, and the rest of the difference is the"
@@ -202,6 +235,7 @@ class Comparison:
             "differences": [difference.to_dict() for difference in self.differences],
             "errors_with": self.errors_with,
             "errors_without": self.errors_without,
+            "rng_model": self.rng_model,
         }
 
 
@@ -213,6 +247,7 @@ def compare(
     appeared: int = 0,
     errors_with: int = 0,
     errors_without: int = 0,
+    rng_model: str = DEFAULT_RNG_MODEL,
 ) -> Comparison:
     """
     Measure the same handful of things in both runs.
@@ -221,6 +256,9 @@ def compare(
     it ran, how often somebody died, how often an attack landed. A card's
     effect on *whose* game it is cannot be read from a run where only one table
     in three even drew it, so it is not offered.
+
+    ``rng_model`` is the generator both runs were played on. It changes what
+    the reading may say about the deck, and nothing that is measured.
     """
     return Comparison(
         subject=subject,
@@ -228,6 +266,7 @@ def compare(
         appeared=appeared,
         errors_with=errors_with,
         errors_without=errors_without,
+        rng_model=rng_model,
         differences=(
             _mean(
                 "turns a game",
@@ -347,6 +386,12 @@ def read_out(comparison: Comparison, *, width: int = 78) -> str:
         f"  it turned up in {comparison.appeared} of them",
     ]
 
+    if not comparison.reshuffled:
+        lines += [
+            f"  played on RNG model {comparison.rng_model}: taking the card out"
+            f" moves no other card",
+        ]
+
     if comparison.errors_with or comparison.errors_without:
         lines += [
             "",
@@ -367,12 +412,19 @@ def read_out(comparison: Comparison, *, width: int = 78) -> str:
             "",
             "  The card never reached the table, so nothing below is about it.",
         ]
-    elif not comparison.can_be_about_the_card:
+    elif not comparison.can_be_about_the_card and comparison.reshuffled:
         lines += [
             "",
             "  It reached the table too rarely for the numbers below to be its",
             "  doing: taking a card out of the deck reshuffles every game, so",
             "  the two runs differ everywhere, not only where the card is.",
+        ]
+    elif not comparison.can_be_about_the_card:
+        lines += [
+            "",
+            "  It reached the table too rarely for the numbers below to be its",
+            "  doing: a game it never touched plays out the same in both runs,",
+            "  so whatever differs comes from too few games to read.",
         ]
 
     lines += ["", "-" * width, f"  {'':<22}{'with':>12}{'without':>12}{'change':>20}", "-" * width]
@@ -410,10 +462,16 @@ def read_out(comparison: Comparison, *, width: int = 78) -> str:
             "    is within the noise of this many games and says nothing.",
             "",
         ]
-    else:
+    elif comparison.reshuffled:
         lines += [
             "  Nothing is marked: with the card this scarce, the difference",
             "  between the runs is the deck rather than the card.",
+            "",
+        ]
+    else:
+        lines += [
+            "  Nothing is marked: the card was too scarce for a difference",
+            "  between the runs to be read as its doing.",
             "",
         ]
 

@@ -10,10 +10,16 @@ from dataclasses import replace
 from types import MappingProxyType
 
 from fsme.commands import Command, CommandResult
+from fsme.rng.rng import KEYED_MODEL
 from fsme.runtime import Runtime
 
 from .digest import full_checkpoint, state_digest, state_digest_v2
-from .recording import RecordedCommand, Recording
+from .recording import (
+    KEYED_REPLAY_FORMAT,
+    REPLAY_FORMAT_VERSION,
+    RecordedCommand,
+    Recording,
+)
 
 
 class Recorder:
@@ -78,8 +84,14 @@ class Recorder:
                 commands[-1], full_digest=state_digest_v2(self._runtime.state)
             )
 
+        model = self._runtime.state.rng_model
+
         return Recording(
             seed=self._runtime.state.seed,
             commands=tuple(commands),
+            format_version=(
+                KEYED_REPLAY_FORMAT if model == KEYED_MODEL else REPLAY_FORMAT_VERSION
+            ),
             content_version=self._content_version,
+            rng_model=model,
         ).sealed()

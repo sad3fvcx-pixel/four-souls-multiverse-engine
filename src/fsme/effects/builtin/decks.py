@@ -112,7 +112,7 @@ def restock(ctx: EffectContext, name: str) -> bool:
     deck.cards.extend(discard.cards)
     discard.clear()
 
-    ctx.rng.shuffle(deck.cards)
+    ctx.rng.shuffle_for(f"deck:{name}", deck.cards)
 
     ctx.emit(EventType.DECK_REBUILT, deck=name, cards=len(deck.cards))
 
@@ -153,7 +153,7 @@ def shuffle_deck(ctx: EffectContext, targets: Sequence[Any], deck: str = "loot")
     """
     cards = deck_zone(ctx.state, deck).cards
 
-    ctx.rng.shuffle(cards)
+    ctx.rng.shuffle_for(f"deck:{deck}", cards)
 
     return len(cards)
 
@@ -266,7 +266,7 @@ def take_card(
         )
 
     if shuffle:
-        ctx.rng.shuffle(deck_zone(state, shuffle).cards)
+        ctx.rng.shuffle_for(f"deck:{shuffle}", deck_zone(state, shuffle).cards)
 
     return taken
 

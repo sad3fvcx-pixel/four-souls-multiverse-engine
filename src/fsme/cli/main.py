@@ -735,9 +735,14 @@ def _one_card_test(
 ) -> tuple[Any, dict[str, list[str]]]:
     """
     Play both runs for one card and compare them.
+
+    Both runs are played on ``PAIRED_RNG_MODEL``, so the same seed deals the
+    same game with the card and without it until the card does something. A
+    game that comes back from another model is a run that lost its
+    configuration, and is refused rather than counted.
     """
     from fsme.lab.analysis import Tally, compare
-    from fsme.lab.simulation import run_on_many_cores
+    from fsme.lab.simulation import PAIRED_RNG_MODEL, run_on_many_cores
 
     root = content_root(args.content)
 
@@ -755,7 +760,14 @@ def _one_card_test(
             jobs=max(1, args.jobs),
             first_seed=args.seed,
             without=drop,
+            rng_model=PAIRED_RNG_MODEL,
         ):
+            if done.rng_model != PAIRED_RNG_MODEL:
+                raise RuntimeError(
+                    f"seed {done.seed} of the card test came back played on RNG "
+                    f"model {done.rng_model}, not model {PAIRED_RNG_MODEL}"
+                )
+
             tally.merge(done.tally)
 
             if done.broke:
@@ -775,6 +787,7 @@ def _one_card_test(
             appeared=appeared,
             errors_with=len(broken["with"]),
             errors_without=len(broken["without"]),
+            rng_model=PAIRED_RNG_MODEL,
         ),
         broken,
     )

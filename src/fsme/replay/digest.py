@@ -296,6 +296,11 @@ EXCLUDED: dict[tuple[type, str], str] = {
     (GameState, "seed"): (
         "fixed for the game; where the generator stands is included as rng_state"
     ),
+    (GameState, "rng_model"): (
+        "fixed for the game, and said by rng_state once anything has been played: "
+        "model 1 holds the generator's own tuple, model 2 a mapping that names "
+        "its model"
+    ),
     (GameState, "souls_to_win"): "configuration, fixed before the game starts",
     (GameState, "monster_slots"): "configuration, fixed before the game starts",
     (GameState, "shop_slots"): "configuration, fixed before the game starts",

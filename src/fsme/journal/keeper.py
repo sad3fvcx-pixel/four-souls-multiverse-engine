@@ -72,6 +72,7 @@ class JournalKeeper:
 
         self._journal = Journal(
             seed=game.state.seed,
+            rng_model=game.state.rng_model,
             players=tuple(player.name for player in game.state.players),
             characters=tuple(
                 str(getattr(player.character, "name", "")) for player in game.state.players

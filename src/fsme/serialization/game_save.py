@@ -33,6 +33,7 @@ from fsme.cards import (
     UnknownCardError,
 )
 from fsme.events import Event, EventStatus, EventType
+from fsme.rng.rng import KEYED_MODEL, LEGACY_MODEL, RNGError, keyed_state
 from fsme.stack import StackItem, StackItemStatus, StackItemType
 from fsme.state import (
     CardModifier,
@@ -67,7 +68,18 @@ is being played, what a stack object carries besides its source, how long an
 attack has gone without a hit landing, and whether the table answers priority.
 """
 
-READABLE_FORMATS = (SAVE_FORMAT_VERSION, "1")
+KEYED_SAVE_FORMAT = "3"
+"""
+The shape of a save of a game played on RNG model 2.
+
+Format 2 with one more key, ``rng_model``, and a generator state that is a
+mapping of streams and shuffle counts. A game on model 1 is still saved in
+format 2, byte for byte as before; format 3 exists so that an engine which
+knows only model 1 refuses a model 2 save by name instead of loading it and
+dealing every later shuffle from the wrong generator.
+"""
+
+READABLE_FORMATS = (SAVE_FORMAT_VERSION, KEYED_SAVE_FORMAT, "1")
 """
 Every format this engine loads.
 
@@ -132,8 +144,10 @@ def save_game(
     """
     _refuse_if_mid_ability(state)
 
+    keyed = state.rng_model == KEYED_MODEL
+
     saved: dict[str, Any] = {
-        "format": SAVE_FORMAT_VERSION,
+        "format": KEYED_SAVE_FORMAT if keyed else SAVE_FORMAT_VERSION,
         "engine": __version__ if engine_version is None else engine_version,
         "seed": state.seed,
         "rng": _plain(rng_state if rng_state is not None else state.rng_state),
@@ -220,6 +234,10 @@ def save_game(
     }
 
     saved["in_flight"] = [_save_card(card) for card in _in_flight(state)]
+
+    if keyed:
+        saved["rng_model"] = KEYED_MODEL
+
     _refuse_if_pointing_nowhere(saved, state)
 
     return saved
@@ -618,7 +636,7 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
             f"{', '.join(repr(one) for one in READABLE_FORMATS[1:])}"
         )
 
-    current = written == SAVE_FORMAT_VERSION
+    current = written in (SAVE_FORMAT_VERSION, KEYED_SAVE_FORMAT)
 
     if current:
         # Read by `Game.load`, which owns the Runtime; checked here so that a
@@ -633,7 +651,12 @@ def load_game(data: Mapping[str, Any], cards: CardRegistry) -> GameState:
 
     state = GameState(seed=_integer(data, "seed", 0))
 
-    state.rng_state = _tuples(data.get("rng"))
+    state.rng_model = _rng_model(data, written)
+    state.rng_state = (
+        _keyed_rng(data.get("rng"))
+        if state.rng_model == KEYED_MODEL
+        else _tuples(data.get("rng"))
+    )
     state.started = _flag(data, "started", False)
 
     # Before the start nothing has rolled, and no state means the one the seed
@@ -971,7 +994,7 @@ def saved_interactive_priority(data: Mapping[str, Any]) -> bool | None:
     Format 1 did not say, which is ``None``: the caller decides, as it always
     did. A save in the current format has to say, with true or false.
     """
-    if str(data.get("format", "")) != SAVE_FORMAT_VERSION:
+    if str(data.get("format", "")) not in (SAVE_FORMAT_VERSION, KEYED_SAVE_FORMAT):
         return None
 
     return _needed_flag(data, "interactive_priority")
@@ -1423,6 +1446,47 @@ def _resolve(value: Any, state: GameState, index: Mapping[str, Any]) -> Any:
         return [_resolve(item, state, index) for item in value]
 
     return value
+
+
+def _rng_model(saved: Mapping[str, Any], written: str) -> str:
+    """
+    Which generator the saved game was played on.
+
+    Format 3 is a model 2 save and has to say so; every older format is model
+    1, which is all there was, and a key claiming otherwise is refused rather
+    than believed.
+    """
+    if written == KEYED_SAVE_FORMAT:
+        if saved.get("rng_model") != KEYED_MODEL:
+            raise SaveError(
+                f"this save is in format '{KEYED_SAVE_FORMAT}', which is a game "
+                f"played on RNG model {KEYED_MODEL}, and it does not say so"
+            )
+
+        return KEYED_MODEL
+
+    if "rng_model" in saved:
+        raise SaveError(
+            f"this save is in format '{written}', which has no 'rng_model'; "
+            f"a game on another RNG model is saved in format '{KEYED_SAVE_FORMAT}'"
+        )
+
+    return LEGACY_MODEL
+
+
+def _keyed_rng(value: Any) -> Any:
+    """
+    A model 2 generator state read back, or None before anything was played.
+    """
+    if value is None:
+        return None
+
+    try:
+        return keyed_state(value)
+    except (TypeError, ValueError, RNGError) as error:
+        raise SaveError(
+            f"this save holds a random generator state that cannot be restored: {error}"
+        ) from error
 
 
 def _tuples(value: Any) -> Any:

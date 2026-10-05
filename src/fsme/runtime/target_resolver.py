@@ -591,7 +591,7 @@ def _random_loot(
         if not holder.hand.cards:
             continue
 
-        cards.append(holder.hand.cards[rng.randint(0, len(holder.hand.cards) - 1)])
+        cards.append(holder.hand.cards[rng.randint_for("target", 0, len(holder.hand.cards) - 1)])
 
     return cards
 
@@ -618,7 +618,7 @@ def _random_player(
     if not candidates:
         return []
 
-    return [candidates[rng.randint(0, len(candidates) - 1)]]
+    return [candidates[rng.randint_for("target", 0, len(candidates) - 1)]]
 
 
 BY_SEAT = {
@@ -1277,7 +1277,7 @@ def _random_monster(
     if not monsters:
         return []
 
-    return [monsters[rng.randint(0, len(monsters) - 1)]]
+    return [monsters[rng.randint_for("target", 0, len(monsters) - 1)]]
 
 
 OWN_ITEMS = _shape(
@@ -1621,7 +1621,7 @@ def _random_treasure(
     if not options:
         return []
 
-    return [options[rng.randint(0, len(options) - 1)]]
+    return [options[rng.randint_for("target", 0, len(options) - 1)]]
 
 
 def _vote(

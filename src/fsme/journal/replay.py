@@ -176,6 +176,7 @@ def replay_journal(
         seed=journal.seed,
         interactive_priority=interactive_priority,
         scenario=scenario_of(journal),
+        rng_model=journal.rng_model,
     )
 
     if not deals_itself(journal):

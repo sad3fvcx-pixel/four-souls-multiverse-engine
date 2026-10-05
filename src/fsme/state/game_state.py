@@ -128,6 +128,15 @@ class GameState:
     seed: int = 0
     rng_state: Any = None
 
+    rng_model: str = "1"
+    """
+    Which generator the game is played on, fixed when it is dealt.
+
+    "1" is the engine's original generator and what every game is dealt on
+    unless it asks otherwise; "2" is the one with a stream per domain
+    (``fsme.rng.rng``).
+    """
+
     souls_to_win: int = 4
 
     monster_slots: int = 2

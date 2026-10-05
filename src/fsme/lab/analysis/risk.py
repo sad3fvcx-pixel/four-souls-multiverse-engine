@@ -249,16 +249,18 @@ def risks(
     told = Risks(seed=journal.seed, by=bot.name, bot_seats=_who_thought(journal))
 
     # Rebuilt the way replay rebuilds it, and for the same reasons: the
-    # scenario comes out of the journal, and the deal is done here only when
-    # the journal does not record one. Dealing unconditionally meant a journal
-    # kept by a Session — which records the deal as its first command — had its
-    # own `start_game` refused, and nothing could be weighed at all.
+    # scenario and the RNG model come out of the journal, and the deal is done
+    # here only when the journal does not record one. Dealing unconditionally
+    # meant a journal kept by a Session — which records the deal as its first
+    # command — had its own `start_game` refused, and nothing could be weighed
+    # at all.
     game = Game.from_content(
         library,
         list(journal.players),
         seed=journal.seed,
         interactive_priority=how_it_was_played(journal),
         scenario=scenario_of(journal),
+        rng_model=journal.rng_model,
     )
 
     if not deals_itself(journal):

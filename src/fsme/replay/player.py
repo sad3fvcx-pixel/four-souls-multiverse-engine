@@ -12,12 +12,12 @@ from enum import StrEnum
 
 from fsme import __version__
 from fsme.cards import CardRegistry
-from fsme.rng.rng import RNG
+from fsme.rng.rng import rng_for
 from fsme.runtime import Runtime
 from fsme.state import GameState
 
 from .digest import state_digest, state_digest_v2
-from .errors import ReplayDivergence, ReplayRejectedCommand
+from .errors import ReplayDivergence, ReplayFormatError, ReplayRejectedCommand
 from .recording import Recording
 
 StateFactory = Callable[[], GameState]
@@ -156,7 +156,19 @@ class ReplayPlayer:
         state = self._factory()
         state.seed = self._recording.seed
 
-        return Runtime(state, cards=self._cards, rng=RNG(state.seed))
+        # The table is laid out by the caller, so whoever dealt it has to have
+        # dealt it on the generator the recording was played on; playing a
+        # model 2 recording on a model 1 deal would be replaying another game.
+        if state.rng_model != self._recording.rng_model:
+            raise ReplayFormatError(
+                f"this recording was played on RNG model {self._recording.rng_model}, "
+                f"and the starting position given for it was dealt on model "
+                f"{state.rng_model}"
+            )
+
+        return Runtime(
+            state, cards=self._cards, rng=rng_for(state.seed, state.rng_model)
+        )
 
     @property
     def runtime(self) -> Runtime:

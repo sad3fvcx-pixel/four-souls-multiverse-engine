@@ -687,7 +687,7 @@ def test_a_whole_number_the_save_does_not_hold_keeps_its_default(
         (("ids",), -1, "identifiers"),
         (("modifiers", 0, "duration"), "for ever", "unknown duration"),
         (("turn", "phase"), "nonsense", "unknown phase"),
-        (("format",), "3", "format"),
+        (("format",), "4", "format"),
     ),
 )
 def test_a_save_that_cannot_be_read_is_refused_as_one(

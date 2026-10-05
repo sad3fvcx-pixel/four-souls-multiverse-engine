@@ -21,6 +21,7 @@ from typing import Any
 
 from fsme import __version__
 from fsme.commands import Command, CommandType
+from fsme.rng.rng import KEYED_MODEL, LEGACY_MODEL
 
 from .errors import ReplayFormatError, ReplayIntegrityError
 
@@ -33,7 +34,17 @@ Two, because a command may carry a full digest as well
 playback faithful that the recording says came out differently.
 """
 
-READABLE_REPLAY_FORMATS = (REPLAY_FORMAT_VERSION, "1")
+KEYED_REPLAY_FORMAT = "3"
+"""
+The format of a recording of a game played on RNG model 2.
+
+Format 2 with one more field, ``rng_model``. A game on model 1 is still
+recorded in format 2, byte for byte as before; a build that knows only model 1
+would play a model 2 recording on the wrong generator, so it refuses one by
+name instead.
+"""
+
+READABLE_REPLAY_FORMATS = (REPLAY_FORMAT_VERSION, KEYED_REPLAY_FORMAT, "1")
 """
 The formats this build plays back.
 
@@ -124,6 +135,13 @@ class Recording:
 
     checksum: str = ""
 
+    rng_model: str = LEGACY_MODEL
+    """
+    The generator the game was played on: model 1 unless the recording is in
+    format 3. Written, and checksummed, only when it is model 2, so a model 1
+    recording is the file it always was.
+    """
+
     def __len__(self) -> int:
         return len(self.commands)
 
@@ -131,16 +149,17 @@ class Recording:
         """
         Return the integrity value for this recording's contents.
         """
-        payload = json.dumps(
-            {
-                "seed": self.seed,
-                "format_version": self.format_version,
-                "content_version": self.content_version,
-                "commands": [command.to_dict() for command in self.commands],
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        )
+        covered: dict[str, Any] = {
+            "seed": self.seed,
+            "format_version": self.format_version,
+            "content_version": self.content_version,
+            "commands": [command.to_dict() for command in self.commands],
+        }
+
+        if self.rng_model != LEGACY_MODEL:
+            covered["rng_model"] = self.rng_model
+
+        payload = json.dumps(covered, sort_keys=True, separators=(",", ":"))
 
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
 
@@ -155,6 +174,7 @@ class Recording:
             engine_version=self.engine_version,
             content_version=self.content_version,
             checksum=self.compute_checksum(),
+            rng_model=self.rng_model,
         )
 
     def verify(self) -> None:
@@ -184,8 +204,20 @@ class Recording:
                 f"this engine reads format {readable}"
             )
 
+        keyed = self.format_version == KEYED_REPLAY_FORMAT
+
+        if keyed != (self.rng_model == KEYED_MODEL) or self.rng_model not in (
+            LEGACY_MODEL,
+            KEYED_MODEL,
+        ):
+            raise ReplayFormatError(
+                f"a recording in format '{self.format_version}' cannot be of a game "
+                f"played on RNG model {self.rng_model!r}; a model {KEYED_MODEL} game "
+                f"is recorded in format '{KEYED_REPLAY_FORMAT}' and only there"
+            )
+
     def to_dict(self) -> dict[str, Any]:
-        return {
+        written: dict[str, Any] = {
             "format_version": self.format_version,
             "engine_version": self.engine_version,
             "content_version": self.content_version,
@@ -193,6 +225,11 @@ class Recording:
             "checksum": self.checksum,
             "commands": [command.to_dict() for command in self.commands],
         }
+
+        if self.rng_model != LEGACY_MODEL:
+            written["rng_model"] = self.rng_model
+
+        return written
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> Recording:
@@ -210,6 +247,7 @@ class Recording:
                 engine_version=str(data.get("engine_version", "")),
                 content_version=str(data.get("content_version", "")),
                 checksum=str(data.get("checksum", "")),
+                rng_model=str(data.get("rng_model", LEGACY_MODEL)),
             )
         except KeyError as error:
             raise ReplayFormatError(f"replay is missing {error}") from error

@@ -289,15 +289,15 @@ def test_a_journal_from_the_future_is_refused_by_name(
     journal, _ = play_one(everything, seed=13, players=2)
 
     ahead = journal.to_dict()
-    ahead["format"] = "4"
+    ahead["format"] = "5"
 
     with pytest.raises(JournalFormatError) as raised:
         Journal.from_dict(ahead)
 
     said = str(raised.value)
 
-    assert "format 4" in said
-    assert "reads 1, 2, 3" in said
+    assert "format 5" in said
+    assert "reads 1, 2, 3, 4" in said
 
 
 def test_a_journal_whose_scenario_was_tampered_with_is_refused(

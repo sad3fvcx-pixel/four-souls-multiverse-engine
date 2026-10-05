@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from fsme.lab.analysis import GameSummary, Tally
+from fsme.rng.rng import DEFAULT_RNG_MODEL
 
 from .runner import DEFAULT_STEPS, play_one
 
@@ -32,6 +33,7 @@ _library = None
 _root: Path | None = None
 _drop: frozenset[str] = frozenset()
 _scenario: Any = None
+_rng_model: str = DEFAULT_RNG_MODEL
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,11 +70,22 @@ class Finished:
     and watch it happen.
     """
 
+    rng_model: str = DEFAULT_RNG_MODEL
+    """
+    The generator the game was played on, read off the game itself.
+
+    A game that fell over says the model it was asked to be played on. Whoever
+    ran a paired experiment checks this rather than trusting that the worker
+    was told: a model that went missing on the way would otherwise come back as
+    an ordinary result about a different experiment.
+    """
+
 
 def _prepare(
     root: str,
     drop: tuple[str, ...],
     scenario: Mapping[str, Any] | None = None,
+    rng_model: str = DEFAULT_RNG_MODEL,
 ) -> None:
     """
     Load the content once per worker.
@@ -85,8 +98,11 @@ def _prepare(
     configuration that had to be reconstructible rather than merely readable
     would be a configuration that could arrive subtly different in each worker.
     It is parsed here, in the worker, by the same loader that read the file.
+
+    The RNG model crosses with it, so every game the worker plays is dealt on
+    the generator the run asked for.
     """
-    global _library, _root, _drop, _scenario
+    global _library, _root, _drop, _scenario, _rng_model
 
     from fsme.api import load_content
     from fsme.scenario import parse
@@ -94,6 +110,7 @@ def _prepare(
     _root = Path(root)
     _drop = frozenset(drop)
     _scenario = None if scenario is None else parse(dict(scenario))
+    _rng_model = rng_model
 
     loaded = load_content(_root)
 
@@ -118,6 +135,7 @@ def _one(work: tuple[int, int, int, str | None, bool, tuple[int, ...]]) -> Finis
             offers=offers,
             thinking_seats=thinking_seats,
             scenario=_scenario,
+            rng_model=_rng_model,
         )
     except Exception as error:  # noqa: BLE001 - a game that falls over is data
         return Finished(
@@ -128,6 +146,7 @@ def _one(work: tuple[int, int, int, str | None, bool, tuple[int, ...]]) -> Finis
             commands=0,
             tally=Tally(),
             broke=f"{type(error).__name__}: {error}",
+            rng_model=_rng_model,
         )
 
     if journals_into:
@@ -146,6 +165,7 @@ def _one(work: tuple[int, int, int, str | None, bool, tuple[int, ...]]) -> Finis
         commands=len(journal),
         tally=tally,
         summary=summarise(journal),
+        rng_model=game.state.rng_model,
     )
 
 
@@ -162,6 +182,7 @@ def run_on_many_cores(
     without: tuple[str, ...] = (),
     thinking_seats: tuple[int, ...] = (),
     scenario: Mapping[str, Any] | None = None,
+    rng_model: str = DEFAULT_RNG_MODEL,
 ) -> Iterator[Finished]:
     """
     Play a run across several processes, yielding each game as it finishes.
@@ -171,6 +192,9 @@ def run_on_many_cores(
 
     Games come back in whatever order they finish. Nothing downstream may
     depend on that order, which is why what comes back is a tally.
+
+    ``rng_model`` is the generator every game is played on, model 1 unless a
+    paired experiment asks for another.
     """
     work = [
         (
@@ -190,7 +214,12 @@ def run_on_many_cores(
         max_workers=max(1, jobs),
         mp_context=None if how is None else multiprocessing.get_context(how),
         initializer=_prepare,
-        initargs=(str(root), tuple(without), None if scenario is None else dict(scenario)),
+        initargs=(
+            str(root),
+            tuple(without),
+            None if scenario is None else dict(scenario),
+            rng_model,
+        ),
     ) as pool:
         yield from pool.map(_one, work, chunksize=_chunk(games, jobs))
 

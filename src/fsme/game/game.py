@@ -13,7 +13,7 @@ from fsme.cards import CardRegistry
 from fsme.commands import Command, CommandResult, CommandType
 from fsme.content import ContentLibrary
 from fsme.events import Event, EventType
-from fsme.rng.rng import RNG
+from fsme.rng.rng import DEFAULT_RNG_MODEL, RNG, rng_for
 from fsme.runtime import Runtime
 from fsme.scenario import Scenario
 from fsme.state import GameState
@@ -78,7 +78,7 @@ class Game:
         self._runtime = Runtime(
             game_state,
             cards=cards,
-            rng=rng if rng is not None else RNG(game_state.seed),
+            rng=rng if rng is not None else rng_for(game_state.seed, game_state.rng_model),
             interactive_priority=interactive_priority,
         )
 
@@ -100,6 +100,7 @@ class Game:
         interactive_priority: bool = False,
         rng: RNG | None = None,
         scenario: Scenario | None = None,
+        rng_model: str = DEFAULT_RNG_MODEL,
     ) -> Game:
         """
         Lay out a game from loaded content and hand back the session.
@@ -121,12 +122,21 @@ class Game:
         **With no scenario this deals exactly what it dealt before there were
         any**, which is what lets every measurement the project has taken stay
         comparable. An empty scenario is the same as none.
+
+        ``rng_model`` is the generator the game is dealt and played on. Left
+        out, it is model 1, the one every game so far was played on.
         """
         from fsme.rules import new_game
 
         chosen = narrow(library, scenario)
 
-        state = new_game(library=chosen, players=players, seed=seed, scenario=scenario)
+        state = new_game(
+            library=chosen,
+            players=players,
+            seed=seed,
+            scenario=scenario,
+            rng_model=rng_model,
+        )
 
         return cls(
             state,
@@ -177,7 +187,6 @@ class Game:
         in format 1 never said, so for one of those it is what is passed, and
         no priority when nothing is.
         """
-        from fsme.rng.rng import RNG
         from fsme.serialization import SaveError, load_game
         from fsme.serialization.game_save import saved_interactive_priority
 
@@ -187,7 +196,7 @@ class Game:
         if interactive_priority is None:
             interactive_priority = bool(saved_interactive_priority(data))
 
-        rng = RNG(state.seed)
+        rng = rng_for(state.seed, state.rng_model)
 
         if state.rng_state is not None:
             # The generator checks its own state, and says what is wrong with

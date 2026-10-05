@@ -228,7 +228,7 @@ class ExecutionContext:
         if sides < 1:
             raise ValueError("dice must have at least one side")
 
-        return self._rng.randint(1, sides)
+        return self._rng.randint_for("dice", 1, sides)
 
     def apply(
         self,

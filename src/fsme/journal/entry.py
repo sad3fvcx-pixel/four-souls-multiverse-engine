@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Any
 
 from fsme.commands import CommandType
+from fsme.rng.rng import KEYED_MODEL, LEGACY_MODEL
 
 JOURNAL_FORMAT_VERSION = "3"
 """
@@ -45,7 +46,16 @@ Three, because some entries carry a full digest as well
 that its own record says came out differently.
 """
 
-READABLE_FORMATS = frozenset({"1", "2", "3"})
+KEYED_JOURNAL_FORMAT = "4"
+"""
+The format of a journal of a game played on RNG model 2.
+
+Format 3 with one more key, ``rng_model``. A game on model 1 is still written
+in format 3, exactly as before; a build that knows only model 1 would deal a
+model 2 game on the wrong generator, so it is made to refuse one by name.
+"""
+
+READABLE_FORMATS = frozenset({"1", "2", "3", KEYED_JOURNAL_FORMAT})
 """
 The formats this build can read.
 
@@ -341,6 +351,12 @@ class Journal:
     deleting the library breaks nothing.
     """
 
+    rng_model: str = "1"
+    """
+    The generator the game was dealt and played on. Model 1 unless the journal
+    is in format 4, which is how a model 2 game is written down.
+    """
+
     interactive_priority: bool | None = None
     """
     Whether the table was offered priority after every push.
@@ -370,8 +386,10 @@ class Journal:
         return entry
 
     def to_dict(self) -> dict[str, Any]:
+        keyed = self.rng_model == KEYED_MODEL
+
         written: dict[str, Any] = {
-            "format": JOURNAL_FORMAT_VERSION,
+            "format": KEYED_JOURNAL_FORMAT if keyed else JOURNAL_FORMAT_VERSION,
             "engine": self.engine_version,
             "content": self.content_version,
             "seed": self.seed,
@@ -395,6 +413,9 @@ class Journal:
         if self.interactive_priority is not None:
             written["interactive_priority"] = self.interactive_priority
 
+        if keyed:
+            written["rng_model"] = KEYED_MODEL
+
         return written
 
     @classmethod
@@ -413,6 +434,7 @@ class Journal:
 
         return cls(
             seed=int(data.get("seed", 0)),
+            rng_model=_rng_model(data, written),
             players=tuple(str(name) for name in data.get("players", ())),
             characters=tuple(str(name) for name in data.get("characters", ())),
             engine_version=str(data.get("engine", "")),
@@ -475,3 +497,30 @@ class Journal:
             replayable.append((kind, entry.player, dict(entry.payload)))
 
         return replayable
+
+
+def _rng_model(data: Mapping[str, Any], written: str) -> str:
+    """
+    Which generator a journal's game was played on.
+
+    Format 4 is a model 2 journal and has to say so; every older format is
+    model 1, and a key claiming otherwise is refused rather than believed.
+    """
+    said = data.get("rng_model")
+
+    if written == KEYED_JOURNAL_FORMAT:
+        if said != KEYED_MODEL:
+            raise JournalFormatError(
+                f"this journal is written in format {KEYED_JOURNAL_FORMAT}, which is "
+                f"a game played on RNG model {KEYED_MODEL}, and it does not say so"
+            )
+
+        return KEYED_MODEL
+
+    if said is not None:
+        raise JournalFormatError(
+            f"this journal is written in format {written}, which has no rng_model; "
+            f"a game on another RNG model is written in format {KEYED_JOURNAL_FORMAT}"
+        )
+
+    return LEGACY_MODEL

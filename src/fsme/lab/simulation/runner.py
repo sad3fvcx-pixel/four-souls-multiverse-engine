@@ -25,6 +25,7 @@ from fsme.content import ContentLibrary
 from fsme.game import Game
 from fsme.journal import Journal, JournalKeeper
 from fsme.lab.bot import HeuristicBot
+from fsme.rng.rng import DEFAULT_RNG_MODEL
 from fsme.scenario import Scenario
 
 from .agent import ScriptedAgent
@@ -87,6 +88,7 @@ def play_one(
     offers: bool = False,
     thinking_seats: tuple[int, ...] = (),
     scenario: Scenario | None = None,
+    rng_model: str = DEFAULT_RNG_MODEL,
 ) -> tuple[Journal, Game]:
     """
     Play one game to its end, keeping a journal of it.
@@ -99,9 +101,17 @@ def play_one(
     not from the scenario: a run over a thousand games is one scenario and a
     thousand seeds, so a seed folded into the scenario would make the run
     meaningless.
+
+    ``rng_model`` is the generator the game is dealt and played on. Left out,
+    it is model 1, the one every run so far was played on; a paired experiment
+    asks for model 2 by name.
     """
     game = Game.from_content(
-        library, list(NAMES[:players]), seed=seed, scenario=scenario
+        library,
+        list(NAMES[:players]),
+        seed=seed,
+        scenario=scenario,
+        rng_model=rng_model,
     )
 
     game.start()
@@ -180,6 +190,7 @@ def run(
     thinking_seats: tuple[int, ...] = (),
     scenario: Scenario | None = None,
     watching: Callable[[Progress], None] | None = None,
+    rng_model: str = DEFAULT_RNG_MODEL,
 ) -> Iterator[Outcome]:
     """
     Play a run of games, yielding each outcome as it finishes.
@@ -205,6 +216,7 @@ def run(
             offers=offers,
             thinking_seats=thinking_seats,
             scenario=scenario,
+            rng_model=rng_model,
         )
 
         finished = bool(game.state.game_over)

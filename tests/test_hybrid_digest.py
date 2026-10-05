@@ -222,7 +222,7 @@ def test_a_journal_in_an_older_format_is_checked_by_the_cheap_digest_alone(
 
 def test_a_journal_in_a_later_format_is_refused(finished: Journal) -> None:
     ahead = finished.to_dict()
-    ahead["format"] = "4"
+    ahead["format"] = "5"
 
     with pytest.raises(JournalFormatError):
         Journal.from_dict(ahead)
@@ -374,7 +374,7 @@ def test_a_recording_in_format_one_is_checked_by_the_cheap_digest_alone(
 
 
 def test_a_recording_in_a_later_format_is_refused(recorded: Recording) -> None:
-    later = Recording(seed=recorded.seed, commands=recorded.commands, format_version="3").sealed()
+    later = Recording(seed=recorded.seed, commands=recorded.commands, format_version="4").sealed()
 
     with pytest.raises(ReplayFormatError):
         replay(later, build_state)

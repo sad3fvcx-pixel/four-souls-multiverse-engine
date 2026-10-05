@@ -459,7 +459,7 @@ class Workbench:
         self, job: Job, card: str, games: int, players: int, jobs: int
     ) -> None:
         from fsme.lab.analysis import Tally, compare, read_out
-        from fsme.lab.simulation import run_on_many_cores
+        from fsme.lab.simulation import PAIRED_RNG_MODEL, run_on_many_cores
 
         named = self._library.registry().get(card)
 
@@ -478,7 +478,16 @@ class Workbench:
                 players,
                 jobs=max(1, jobs),
                 without=drop,
+                rng_model=PAIRED_RNG_MODEL,
             ):
+                # The same check the command makes: a game from another model
+                # is a run that lost its configuration, not a result.
+                if done.rng_model != PAIRED_RNG_MODEL:
+                    raise RuntimeError(
+                        f"seed {done.seed} of the card test came back played on "
+                        f"RNG model {done.rng_model}, not model {PAIRED_RNG_MODEL}"
+                    )
+
                 job.done += 1
                 tally.merge(done.tally)
 
@@ -494,6 +503,7 @@ class Workbench:
                 runs["with"],
                 runs["without"],
                 appeared=appeared,
+                rng_model=PAIRED_RNG_MODEL,
             )
         )
 

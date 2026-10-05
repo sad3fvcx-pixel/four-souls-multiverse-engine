@@ -18,7 +18,7 @@ from collections.abc import Sequence
 
 from fsme.cards import CardDefinition, CardInstance, CardType
 from fsme.content import ContentLibrary
-from fsme.rng.rng import RNG
+from fsme.rng.rng import DEFAULT_RNG_MODEL, RNG, RNG_MODELS, rng_for
 from fsme.scenario import Scenario, Seat
 from fsme.state import GameState, PlayerState
 
@@ -42,6 +42,7 @@ def new_game(
     monster_slots: int = MONSTER_SLOTS,
     shop_slots: int = SHOP_SLOTS,
     scenario: Scenario | None = None,
+    rng_model: str = DEFAULT_RNG_MODEL,
 ) -> GameState:
     """
     Build a starting position for the given players.
@@ -57,9 +58,18 @@ def new_game(
 
     A scenario that asks for nothing deals the game FSME deals today. That is
     not a happy accident but the property everything else rests on.
+
+    ``rng_model`` is the generator the game is dealt and played on, and stays
+    with it to the end. Left out, it is model 1, which deals exactly what this
+    always dealt.
     """
     if not players:
         raise SetupError("a game needs at least one player")
+
+    if rng_model not in RNG_MODELS:
+        raise SetupError(
+            f"there is no RNG model {rng_model!r}; the models are {', '.join(RNG_MODELS)}"
+        )
 
     wanted = scenario if scenario is not None else Scenario()
 
@@ -68,9 +78,10 @@ def new_game(
         souls_to_win=_number(wanted.table.souls_to_win, souls_to_win),
         monster_slots=_number(wanted.table.monster_slots, monster_slots),
         shop_slots=_number(wanted.table.shop_slots, shop_slots),
+        rng_model=rng_model,
     )
 
-    rng = RNG(seed)
+    rng = rng_for(seed, rng_model)
 
     index = _index(library)
 
@@ -147,7 +158,7 @@ def _build_decks(
             )
 
         cards = _instances(definitions, kind, state)
-        rng.shuffle(cards)
+        rng.shuffle_for(f"deal:{kind}", cards)
 
         zone.cards.extend(cards)
 
@@ -159,7 +170,7 @@ def _build_decks(
 
     if rooms:
         cards = _instances(rooms, "room", state)
-        rng.shuffle(cards)
+        rng.shuffle_for("deal:room", cards)
 
         state.room_deck.cards.extend(cards)
 
@@ -212,7 +223,7 @@ def _seat_players(
             f"the loaded content has {len(characters)}"
         )
 
-    rng.shuffle(characters)
+    rng.shuffle_for("deal:characters", characters)
 
     by_id = {definition.id: definition for definition in characters}
 
