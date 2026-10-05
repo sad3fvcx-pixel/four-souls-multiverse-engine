@@ -254,8 +254,8 @@ def test_the_same_experiment_written_two_ways_fingerprints_the_same() -> None:
 # ----------------------------------------------------------------------
 
 
-def test_the_format_is_two() -> None:
-    assert JOURNAL_FORMAT_VERSION == "2"
+def test_the_format_is_three() -> None:
+    assert JOURNAL_FORMAT_VERSION == "3"
 
 
 def test_a_journal_from_before_scenarios_still_reads(
@@ -289,15 +289,15 @@ def test_a_journal_from_the_future_is_refused_by_name(
     journal, _ = play_one(everything, seed=13, players=2)
 
     ahead = journal.to_dict()
-    ahead["format"] = "3"
+    ahead["format"] = "4"
 
     with pytest.raises(JournalFormatError) as raised:
         Journal.from_dict(ahead)
 
     said = str(raised.value)
 
-    assert "format 3" in said
-    assert "reads 1, 2" in said
+    assert "format 4" in said
+    assert "reads 1, 2, 3" in said
 
 
 def test_a_journal_whose_scenario_was_tampered_with_is_refused(

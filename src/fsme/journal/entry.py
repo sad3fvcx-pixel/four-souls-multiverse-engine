@@ -31,24 +31,29 @@ from typing import Any
 
 from fsme.commands import CommandType
 
-JOURNAL_FORMAT_VERSION = "2"
+JOURNAL_FORMAT_VERSION = "3"
 """
 The format this build writes.
 
-Two, because a journal now carries the scenario the game was set up from, and
-a build that did not know about scenarios would read one, ignore the field,
-deal an ordinary game and report a divergence it could not explain. Bumping
-turns that silent wrong answer into a refusal by name.
+Two, because a journal carries the scenario the game was set up from, and a
+build that did not know about scenarios would read one, ignore the field, deal
+an ordinary game and report a divergence it could not explain. Bumping turns
+that silent wrong answer into a refusal by name.
+
+Three, because some entries carry a full digest as well
+(``Entry.full_digest``), and a build that ignored it would call a game faithful
+that its own record says came out differently.
 """
 
-READABLE_FORMATS = frozenset({"1", "2"})
+READABLE_FORMATS = frozenset({"1", "2", "3"})
 """
 The formats this build can read.
 
 A version-1 journal is a journal from before scenarios existed, which means it
 has no scenario — a true statement about it, not a missing field. So it reads,
 replays and says so, and nothing anybody has already recorded is orphaned by
-the bump.
+the bump. Versions 1 and 2 hold no full digests, and are checked the way they
+always were: by the cheap one, after every command.
 """
 
 
@@ -211,6 +216,16 @@ class Entry:
     replayed and diverge loudly at the command that diverged.
     """
 
+    full_digest: str = ""
+    """
+    The full fingerprint of the game once the command had been carried out.
+
+    ``state_digest_v2``, which sees what ``digest`` does not — how long an
+    attack has gone without a hit, what a stack object carries, the counters on
+    a card. It is taken after every eighth command and after the last, and is
+    empty everywhere else: an entry without one is not a gap.
+    """
+
     def to_dict(self) -> dict[str, Any]:
         written: dict[str, Any] = {
             "index": self.index,
@@ -221,6 +236,9 @@ class Entry:
             "events": [event.to_dict() for event in self.events],
             "digest": self.digest,
         }
+
+        if self.full_digest:
+            written["full_digest"] = self.full_digest
 
         if self.label:
             written["label"] = self.label
@@ -251,6 +269,7 @@ class Entry:
                     dict(data["decision"]) if data.get("decision") is not None else None
                 ),
                 digest=str(data.get("digest", "")),
+                full_digest=str(data.get("full_digest", "")),
             )
         except (KeyError, TypeError, ValueError) as error:
             raise JournalFormatError(f"unreadable journal entry: {error}") from error

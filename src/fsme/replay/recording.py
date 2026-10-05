@@ -24,7 +24,22 @@ from fsme.commands import Command, CommandType
 
 from .errors import ReplayFormatError, ReplayIntegrityError
 
-REPLAY_FORMAT_VERSION = "1"
+REPLAY_FORMAT_VERSION = "2"
+"""
+The format this build writes.
+
+Two, because a command may carry a full digest as well
+(``RecordedCommand.full_digest``), and a build that ignored it would call a
+playback faithful that the recording says came out differently.
+"""
+
+READABLE_REPLAY_FORMATS = (REPLAY_FORMAT_VERSION, "1")
+"""
+The formats this build plays back.
+
+A recording in format 1 holds no full digests, and is checked the way it always
+was: by the cheap digest, after every command.
+"""
 
 _EMPTY: Mapping[str, Any] = MappingProxyType({})
 
@@ -48,6 +63,12 @@ class RecordedCommand:
     it rather than at the end of the game.
     """
 
+    full_digest: str = ""
+    """
+    The full fingerprint of the game right after this command, when it is a
+    full check: every eighth command and the last. Empty everywhere else.
+    """
+
     def to_command(self) -> Command:
         """
         Rebuild a submittable command.
@@ -59,12 +80,19 @@ class RecordedCommand:
         )
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        written: dict[str, Any] = {
             "type": str(self.type),
             "player": self.player,
             "payload": dict(self.payload),
             "digest": self.digest,
         }
+
+        # Only when there is one, so that a command without one writes and
+        # checksums exactly as it did in format 1.
+        if self.full_digest:
+            written["full_digest"] = self.full_digest
+
+        return written
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> RecordedCommand:
@@ -74,6 +102,7 @@ class RecordedCommand:
                 player=int(data["player"]),
                 payload=MappingProxyType(dict(data.get("payload", {}))),
                 digest=str(data.get("digest", "")),
+                full_digest=str(data.get("full_digest", "")),
             )
         except (KeyError, ValueError) as error:
             raise ReplayFormatError(f"invalid recorded command: {error}") from error
@@ -147,10 +176,12 @@ class Recording:
         """
         Refuse a recording this engine cannot play back.
         """
-        if self.format_version != REPLAY_FORMAT_VERSION:
+        if self.format_version not in READABLE_REPLAY_FORMATS:
+            readable = " and ".join(f"'{one}'" for one in READABLE_REPLAY_FORMATS)
+
             raise ReplayFormatError(
                 f"replay format '{self.format_version}' is not supported; "
-                f"this engine reads format '{REPLAY_FORMAT_VERSION}'"
+                f"this engine reads format {readable}"
             )
 
     def to_dict(self) -> dict[str, Any]:

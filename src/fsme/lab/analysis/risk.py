@@ -45,6 +45,7 @@ from fsme.journal.replay import deals_itself, how_it_was_played, scenario_of
 from fsme.lab.bot import HeuristicBot
 from fsme.lab.bot.evaluation import Evaluation, Reason
 from fsme.replay import state_digest
+from fsme.replay.digest import state_digest_v2
 
 WORTH_MENTIONING = 1.0
 """
@@ -207,6 +208,12 @@ class Risks:
     position no longer matched the fingerprint written beside it — and every
     number here is about a different game. Why it came out differently is not
     something a divergence says on its own.
+
+    True means every check the journal holds matched: the cheap digest after
+    every command and the full digest at every full check reached. It does not
+    mean every position matched in full — a difference that came and went
+    between two full checks without touching what the cheap digest sees would
+    not have been seen.
     """
 
     def to_dict(self) -> dict[str, Any]:
@@ -259,6 +266,11 @@ def risks(
 
     weighed: list[Risky] = []
 
+    # What each entry was counted as, so that the ones a full check later
+    # disowns can be taken back out.
+    counted: list[tuple[int, str]] = []
+    confirmed = -1
+
     for entry, (kind, player, payload) in zip(
         journal.entries, journal.commands(), strict=True
     ):
@@ -270,13 +282,16 @@ def risks(
 
         if judged is None:
             told.skipped += 1
+            counted.append((entry.index, "skipped"))
         else:
             told.weighed += 1
 
             if judged.was_a_choice:
                 weighed.append(judged)
+                counted.append((entry.index, "weighed"))
             else:
                 told.forced += 1
+                counted.append((entry.index, "forced"))
 
         if not game.submit(
             Command(type=kind, player=player, payload=dict(payload))
@@ -297,6 +312,33 @@ def risks(
             told.faithful = False
 
             break
+
+        # The full digest sees what the cheap one does not, and is only taken
+        # every eighth command. A mismatch here says the game came out
+        # differently somewhere after the last full check that matched, not
+        # where, so every move weighed since then may have been weighed in
+        # another game, and none of them is kept.
+        if entry.full_digest:
+            if state_digest_v2(game.state) != entry.full_digest:
+                weighed[:] = [risk for risk in weighed if risk.index <= confirmed]
+
+                for index, what in counted:
+                    if index <= confirmed:
+                        continue
+
+                    if what == "skipped":
+                        told.skipped -= 1
+                    else:
+                        told.weighed -= 1
+
+                        if what == "forced":
+                            told.forced -= 1
+
+                told.faithful = False
+
+                break
+
+            confirmed = entry.index
 
     told.worst = _the_distinct_ones(
         sorted(

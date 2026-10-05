@@ -16,7 +16,7 @@ from fsme.rng.rng import RNG
 from fsme.runtime import Runtime
 from fsme.state import GameState
 
-from .digest import state_digest
+from .digest import state_digest, state_digest_v2
 from .errors import ReplayDivergence, ReplayRejectedCommand
 from .recording import Recording
 
@@ -149,6 +149,7 @@ class ReplayPlayer:
 
         self._runtime: Runtime = self._build()
         self._position = 0
+        self._fully_checked = 0
         self._status = ReplayStatus.READY
 
     def _build(self) -> Runtime:
@@ -173,8 +174,24 @@ class ReplayPlayer:
     def position(self) -> int:
         """
         How many commands have been replayed.
+
+        When verifying, each of them was held to the cheap digest written
+        beside it.
         """
         return self._position
+
+    @property
+    def fully_checked(self) -> int:
+        """
+        How many commands from the start a full check has confirmed.
+
+        The full digest is written after every eighth command and after the
+        last, so this trails ``position`` by up to seven commands, and stays at
+        0 for a recording in format 1, which holds none. It says how far the
+        replay is known to match in full — not that every position up to there
+        was compared in full.
+        """
+        return self._fully_checked
 
     @property
     def status(self) -> ReplayStatus:
@@ -190,6 +207,7 @@ class ReplayPlayer:
         """
         self._runtime = self._build()
         self._position = 0
+        self._fully_checked = 0
         self._status = ReplayStatus.READY
 
     def step(self) -> bool:
@@ -226,6 +244,26 @@ class ReplayPlayer:
                 engines = which_engines(self._recording.engine_version, __version__)
 
                 raise ReplayDivergence(f"{said}; {engines}" if engines else said)
+
+        if self._verify and entry.full_digest:
+            reproduced = state_digest_v2(self._runtime.state)
+
+            if reproduced != entry.full_digest:
+                first = self._fully_checked
+                where = (
+                    f"command {first}" if first == self._position
+                    else f"one of commands {first} to {self._position}"
+                )
+                said = (
+                    f"the full check at command {self._position} ({entry.type}) "
+                    f"does not match: {where} produced a different game; recorded "
+                    f"{entry.full_digest}, reproduced {reproduced}"
+                )
+                engines = which_engines(self._recording.engine_version, __version__)
+
+                raise ReplayDivergence(f"{said}; {engines}" if engines else said)
+
+            self._fully_checked = self._position + 1
 
         self._position += 1
         self._status = (

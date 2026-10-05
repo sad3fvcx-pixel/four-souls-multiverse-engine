@@ -552,3 +552,44 @@ def state_fingerprint_v2(state: GameState) -> tuple[Any, ...]:
     The version 2 summary: every field in ``INCLUDED``, in that order.
     """
     return (2,) + _record(state)
+
+
+def state_digest_v2(state: GameState) -> str:
+    """
+    Return a short hexadecimal digest of the version 2 fingerprint.
+
+    Hashed the way ``state_digest`` hashes version 1, and as long. The two can
+    never be equal for the same position: a version 2 fingerprint begins with
+    its version.
+    """
+    return hashlib.sha256(
+        repr(state_fingerprint_v2(state)).encode("utf-8")
+    ).hexdigest()[:32]
+
+
+FULL_DIGEST_EVERY = 8
+"""
+How often a record carries the full digest as well as the cheap one.
+
+A journal and a recording hold ``state_digest`` after every command, and
+``state_digest_v2`` after every eighth and after the last. Version 2 costs
+several times what version 1 does, too much to take after every command; taken
+every eighth it bounds how long a difference version 1 cannot see goes
+unnoticed, for about five per cent of a game's time on the replay benchmark.
+
+What is given up for that is worth knowing. A difference that comes and goes
+between two checkpoints without touching anything version 1 sees is not seen at
+all. And one that is seen is placed between the last checkpoint that matched
+and the first that did not, never at the command that made it — the full
+digest was not taken in between, so there is nothing to say which it was.
+"""
+
+
+def full_checkpoint(index: int) -> bool:
+    """
+    Whether the command at ``index`` (counted from 0) carries the full digest.
+
+    Every eighth: 7, 15, 23 and on. The last command of a record carries one as
+    well, which is up to whoever finishes the record.
+    """
+    return index % FULL_DIGEST_EVERY == FULL_DIGEST_EVERY - 1

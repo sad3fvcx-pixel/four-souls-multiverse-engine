@@ -6,12 +6,13 @@ Recording a game as it is played.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from types import MappingProxyType
 
 from fsme.commands import Command, CommandResult
 from fsme.runtime import Runtime
 
-from .digest import state_digest
+from .digest import full_checkpoint, state_digest, state_digest_v2
 from .recording import RecordedCommand, Recording
 
 
@@ -43,12 +44,19 @@ class Recorder:
         result = self._runtime.submit(command)
 
         if result.accepted:
+            index = len(self._commands)
+
             self._commands.append(
                 RecordedCommand(
                     type=command.type,
                     player=command.player,
                     payload=MappingProxyType(dict(command.payload)),
                     digest=state_digest(self._runtime.state),
+                    full_digest=(
+                        state_digest_v2(self._runtime.state)
+                        if full_checkpoint(index)
+                        else ""
+                    ),
                 )
             )
 
@@ -57,9 +65,21 @@ class Recorder:
     def recording(self) -> Recording:
         """
         Return the sealed recording of everything accepted so far.
+
+        Its last command carries the full digest whatever its index, taken of
+        the position the game is in now — which is the position after that
+        command, since a refused command changes nothing. What the recorder
+        keeps is left as it was, so sealing twice gives the same recording.
         """
+        commands = list(self._commands)
+
+        if commands and not commands[-1].full_digest:
+            commands[-1] = replace(
+                commands[-1], full_digest=state_digest_v2(self._runtime.state)
+            )
+
         return Recording(
             seed=self._runtime.state.seed,
-            commands=tuple(self._commands),
+            commands=tuple(commands),
             content_version=self._content_version,
         ).sealed()

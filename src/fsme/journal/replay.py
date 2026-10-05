@@ -9,6 +9,12 @@ rather than only that it did. Both matter, and the second is the one that makes
 a journal worth keeping: a game that no longer replays is a game whose engine
 changed under it, and the entry that first disagrees is the change.
 
+There are two fingerprints. The cheap one is after every command, and a
+difference it sees is placed at the command. The full one is after every eighth
+command and after the last, and sees what the cheap one does not; a difference
+only it sees is placed between the last full check that matched and the one
+that did not, because nothing was checked in full in between.
+
 The commands go through the ordinary engine. There is no replay path, and there
 must not be one — a shortcut would prove the shortcut works.
 """
@@ -23,6 +29,7 @@ from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary
 from fsme.game import Game
 from fsme.replay import state_digest
+from fsme.replay.digest import state_digest_v2
 from fsme.replay.player import which_engines
 from fsme.scenario import Scenario, parse
 
@@ -41,6 +48,12 @@ to add, and first when there is, so the fact is never replaced by its context.
 class Divergence:
     """
     The first command whose outcome no longer matches what was written down.
+
+    When the cheap digest disagreed, or the command was refused, ``index`` is
+    that command and ``after`` is ``None``. When only the full digest disagreed,
+    ``index`` is the entry where it was checked and ``after`` the last entry a
+    full check confirmed, ``-1`` if none had: the game came out differently
+    somewhere after ``after`` and by ``index``, and nothing says where.
     """
 
     index: int
@@ -52,7 +65,22 @@ class Divergence:
 
     reason: str = ""
 
+    after: int | None = None
+
     def __str__(self) -> str:
+        if self.after is not None:
+            first = self.after + 1
+            where = (
+                f"entry {first}" if first == self.index
+                else f"one of entries {first} to {self.index}"
+            )
+            said = (
+                f"the full check at entry {self.index} ({self.command}) does not "
+                f"match: {where} {_ANOTHER_GAME}"
+            )
+
+            return f"{said}; {self.reason}" if self.reason else said
+
         if self.reason:
             return f"entry {self.index} ({self.command}): {self.reason}"
 
@@ -69,8 +97,25 @@ class Playback:
     replayed: int
     divergence: Divergence | None = None
 
+    fully_checked: int = 0
+    """
+    How many commands from the start a full check has confirmed.
+
+    Every one of the ``replayed`` commands was held to the cheap digest; only
+    the first ``fully_checked`` are known to match in full, up to the last full
+    check that was reached. A journal without full digests has none.
+    """
+
     @property
     def faithful(self) -> bool:
+        """
+        Whether everything the journal holds to check against matched.
+
+        The cheap digest after every replayed command and the full digest at
+        every full check reached — not that every position matched in full: a
+        difference that came and went between two full checks without
+        touching what the cheap digest sees would not have been seen.
+        """
         return self.divergence is None
 
 
@@ -137,6 +182,8 @@ def replay_journal(
         game.start()
 
     played = 0
+    fully_checked = 0
+    last_full = -1
 
     for entry, (kind, player, payload) in zip(
         journal.entries, journal.commands(), strict=True
@@ -150,6 +197,7 @@ def replay_journal(
             return Playback(
                 game=game,
                 replayed=played,
+                fully_checked=fully_checked,
                 divergence=Divergence(
                     index=entry.index,
                     command=entry.command,
@@ -170,6 +218,7 @@ def replay_journal(
             return Playback(
                 game=game,
                 replayed=played,
+                fully_checked=fully_checked,
                 divergence=Divergence(
                     index=entry.index,
                     command=entry.command,
@@ -184,7 +233,29 @@ def replay_journal(
                 ),
             )
 
-    return Playback(game=game, replayed=played)
+        if entry.full_digest:
+            found = state_digest_v2(game.state)
+
+            if found != entry.full_digest:
+                return Playback(
+                    game=game,
+                    replayed=played,
+                    fully_checked=fully_checked,
+                    divergence=Divergence(
+                        index=entry.index,
+                        command=entry.command,
+                        player=entry.player,
+                        expected=entry.full_digest,
+                        found=found,
+                        reason=_because(content, engine) if content or engine else "",
+                        after=last_full,
+                    ),
+                )
+
+            fully_checked = played
+            last_full = entry.index
+
+    return Playback(game=game, replayed=played, fully_checked=fully_checked)
 
 
 def why_the_content_differs(journal: Journal, library: ContentLibrary) -> str:
@@ -320,6 +391,7 @@ def summarise(playback: Playback, journal: Journal) -> dict[str, Any]:
     return {
         "commands": len(journal),
         "replayed": playback.replayed,
+        "fully_checked": playback.fully_checked,
         "faithful": playback.faithful,
         "divergence": None if playback.faithful else str(playback.divergence),
         "over": bool(playback.game.state.game_over),

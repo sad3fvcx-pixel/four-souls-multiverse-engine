@@ -18,12 +18,14 @@ without paying for the part nobody will read.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
+from dataclasses import replace
 from typing import Any
 
 from fsme.commands import Command, CommandResult
 from fsme.events import Event
 from fsme.game import Game
 from fsme.replay import state_digest
+from fsme.replay.digest import full_checkpoint, state_digest_v2
 
 from .entry import Entry, Happening, Journal, Position
 
@@ -123,9 +125,11 @@ class JournalKeeper:
         if not result.accepted:
             return result
 
+        index = len(self._journal)
+
         self._journal.add(
             Entry(
-                index=len(self._journal),
+                index=index,
                 command=str(command.type),
                 player=command.player,
                 payload=dict(command.payload),
@@ -135,6 +139,9 @@ class JournalKeeper:
                 events=tuple(_happening(event) for event in result.events),
                 decision=dict(decision) if decision is not None else None,
                 digest=state_digest(self._game.state),
+                full_digest=(
+                    state_digest_v2(self._game.state) if full_checkpoint(index) else ""
+                ),
             )
         )
 
@@ -150,6 +157,15 @@ class JournalKeeper:
 
         if not state.game_over or self._journal.outcome:
             return
+
+        # The last position is checked in full whatever its index, so that a
+        # replay that reaches the end of a finished game has been held to all
+        # of it at least once. A journal of a game that never finished has no
+        # last position yet, and its tail is checked by the cheap digest alone.
+        last = self._journal.entries[-1] if self._journal.entries else None
+
+        if last is not None and not last.full_digest:
+            self._journal.entries[-1] = replace(last, full_digest=state_digest_v2(state))
 
         winner = state.winner
 
