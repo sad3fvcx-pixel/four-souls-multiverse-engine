@@ -407,8 +407,9 @@ def test_a_shop_slot_refills_however_it_was_emptied() -> None:
     assert len(state.treasure_shop) == SHOP_SLOTS - 1
 
     # Any accepted command lets the engine settle, which is when slots refill.
+    # Whoever the deal seated first is the one who may end the phase.
     assert game.submit(
-        Command(type=CommandType.END_PHASE, player=0)
+        Command(type=CommandType.END_PHASE, player=state.turn.active_player)
     ).accepted
 
     assert len(state.treasure_shop) == SHOP_SLOTS, (
@@ -429,7 +430,9 @@ def test_an_empty_shop_refills_to_every_slot() -> None:
     while state.treasure_shop.cards:
         state.treasure_shop.draw()
 
-    assert game.submit(Command(type=CommandType.END_PHASE, player=0)).accepted
+    assert game.submit(
+        Command(type=CommandType.END_PHASE, player=state.turn.active_player)
+    ).accepted
 
     assert len(state.treasure_shop) == SHOP_SLOTS
 
@@ -445,7 +448,9 @@ def test_a_shop_stays_short_when_the_deck_is_out() -> None:
     state.treasure_deck.clear()
     state.treasure_shop.draw()
 
-    assert game.submit(Command(type=CommandType.END_PHASE, player=0)).accepted
+    assert game.submit(
+        Command(type=CommandType.END_PHASE, player=state.turn.active_player)
+    ).accepted
 
     assert len(state.treasure_shop) == 1
     assert game.runtime.is_stable()

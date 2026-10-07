@@ -35,6 +35,7 @@ from fsme.journal import (
     summarise,
 )
 from fsme.replay import state_digest
+from fsme.rng.rng import DEFAULT_RNG_MODEL
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
@@ -51,12 +52,13 @@ def scripted(
     steps: int = 120,
     *,
     offers: bool = False,
+    rng_model: str = DEFAULT_RNG_MODEL,
 ) -> JournalKeeper:
     """
     Play a game through a keeper, the way the CLI does.
     """
     game = Game.from_content(
-        library, ["Ann", "Bo", "Cy", "Di"][:players], seed=seed
+        library, ["Ann", "Bo", "Cy", "Di"][:players], seed=seed, rng_model=rng_model
     )
 
     game.start()
@@ -513,8 +515,11 @@ def _written(everything: ContentLibrary, **changed: Any) -> dict[str, Any]:
 
     A value of ``None`` removes the field, the way a journal written before it
     existed would lack it.
+
+    Played on RNG model 1, which is what every journal written before a field
+    existed was played on: a model 2 game cannot be written in an older format.
     """
-    data = scripted(everything, seed=7, steps=120).journal.to_dict()
+    data = scripted(everything, seed=7, steps=120, rng_model="1").journal.to_dict()
 
     for key, value in changed.items():
         if value is None:

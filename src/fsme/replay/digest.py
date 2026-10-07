@@ -67,6 +67,16 @@ def state_fingerprint(state: GameState) -> tuple[Any, ...]:
     """
     Return an ordered, comparable summary of everything gameplay depends on.
     """
+    return _fingerprint_head(state) + (repr(state.rng_state),)
+
+
+def _fingerprint_head(state: GameState) -> tuple[Any, ...]:
+    """
+    The version 1 summary without its last field, where the generator stands.
+
+    Kept apart so that ``state_digest`` can write that last field without
+    building it twice; the summary itself is ``state_fingerprint``.
+    """
     players = tuple(
         (
             player.player_id,
@@ -113,17 +123,102 @@ def state_fingerprint(state: GameState) -> tuple[Any, ...]:
         state.priority.passes,
         state.priority.is_open,
         state.pending_decision.decision_id if state.pending_decision else "",
-        repr(state.rng_state),
     )
 
 
 def state_digest(state: GameState) -> str:
     """
     Return a short hexadecimal digest of a game position.
+
+    The bytes hashed are ``repr(state_fingerprint(state))``, exactly. For a
+    model 2 generator they are put together here rather than by ``repr`` of
+    the whole tuple: the last field is that state written out — thousands of
+    characters, most of them unchanged since the last command — and ``repr``
+    would write it out afresh and then again to quote it. A model 1 state is a
+    new tuple after every command, so it is written the plain way.
     """
+    head = _fingerprint_head(state)
+
+    if type(state.rng_state) is not dict:
+        return hashlib.sha256(
+            repr(head + (repr(state.rng_state),)).encode("utf-8")
+        ).hexdigest()[:32]
+
     return hashlib.sha256(
-        repr(state_fingerprint(state)).encode("utf-8")
+        (
+            "("
+            + ", ".join(map(repr, head))
+            + ", "
+            + _quoted(_rng_text(state.rng_state))
+            + ")"
+        ).encode("utf-8")
     ).hexdigest()[:32]
+
+
+_HELD_LIMIT = 16
+
+_held_texts: dict[int, tuple[Any, str]] = {}
+"""
+``repr`` of a stream's state, by the identity of the tuple it was taken from.
+
+A stream's state is an immutable tuple of six hundred numbers, and a generator
+hands back the same tuple until the stream draws again. Its text is kept with
+the tuple itself, so an entry is only ever used for the object it was made from.
+"""
+
+
+def _held_text(value: tuple[Any, ...]) -> str:
+    held = _held_texts.get(id(value))
+
+    if held is not None and held[0] is value:
+        return held[1]
+
+    said = repr(value)
+
+    # Emptied rather than trimmed when full: one call that cannot fail halfway,
+    # whichever thread a desk job is digesting from.
+    if len(_held_texts) >= _HELD_LIMIT:
+        _held_texts.clear()
+
+    _held_texts[id(value)] = (value, said)
+
+    return said
+
+
+def _rng_text(value: Any) -> str:
+    """
+    ``repr(value)`` of a generator's state, the same string, written in parts.
+
+    A plain dict is written the way ``repr`` writes one — ``{k: v, ...}`` in
+    its own order — so that the long tuples inside it can be taken from
+    ``_held_text``. Anything else is ``repr`` itself.
+    """
+    if type(value) is dict:
+        return (
+            "{"
+            + ", ".join(f"{_rng_text(key)}: {_rng_text(item)}" for key, item in value.items())
+            + "}"
+        )
+
+    if type(value) is tuple and len(value) == 3 and type(value[1]) is tuple:
+        return _held_text(value)
+
+    return repr(value)
+
+
+def _quoted(text: str) -> str:
+    """
+    ``repr(text)``: the same quote ``repr`` chooses, and ``repr`` itself
+    whenever anything in the text would need escaping.
+    """
+    if "\\" not in text and text.isprintable():
+        if "'" not in text:
+            return "'" + text + "'"
+
+        if '"' not in text:
+            return '"' + text + '"'
+
+    return repr(text)
 
 
 # ----------------------------------------------------------------------
@@ -508,7 +603,58 @@ def _rng(value: Any) -> Any:
     if value is None or type(value) is tuple:
         return value
 
+    if type(value) is dict:
+        return _rng_map(value)
+
     return _canon(value)
+
+
+_PLAIN = frozenset({type(None), bool, int, float, str})
+"""The kinds ``_canon`` hands back unchanged."""
+
+
+def _rng_map(value: dict[Any, Any]) -> Any:
+    """
+    ``_canon(value)`` for a generator state held as a mapping (model 2), built
+    without walking every number.
+
+    The same ``("map", ...)`` pairs in the same order: keys and small values
+    go through ``_canon`` as before, and a stream's state — a tuple of plain
+    numbers, which ``_canon`` would copy number by number into an equal tuple
+    — is used as it is.
+    """
+    return (
+        "map",
+        tuple(
+            sorted(
+                ((_canon(key), _rng_item(item)) for key, item in value.items()),
+                key=lambda pair: repr(pair[0]),
+            )
+        ),
+    )
+
+
+def _rng_item(value: Any) -> Any:
+    if type(value) is dict:
+        return _rng_map(value)
+
+    if type(value) is tuple and _plain_tuple(value):
+        return value
+
+    return _canon(value)
+
+
+def _plain_tuple(value: tuple[Any, ...]) -> bool:
+    """Whether ``_canon`` would give back a tuple equal to this one, item by item."""
+    kinds = set(map(type, value))
+
+    if kinds <= _PLAIN:
+        return True
+
+    if not kinds <= _PLAIN | {tuple}:
+        return False
+
+    return all(_plain_tuple(item) for item in value if type(item) is tuple)
 
 
 _WRITTEN_AS: dict[tuple[type, str], Callable[[Any], Any]] = {

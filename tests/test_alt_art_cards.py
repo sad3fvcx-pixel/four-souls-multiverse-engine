@@ -66,11 +66,14 @@ def new_game(
 ) -> Game:
     from test_combat import FixedRNG
 
+    # Dealt on RNG model 1: these tests are about cards, and the deal they were
+    # written against is the one model 1 deals from this seed.
     game = Game.from_content(
         alt_art,
         ["Ann", "Bo", "Cy"][:players],
         seed=seed,
         rng=FixedRNG(rolls) if rolls is not None else None,
+        rng_model="1",
     )
 
     assert game.start().accepted
@@ -109,7 +112,9 @@ def seated_as(
     seat: int = 0,
     players: int = 2,
 ) -> Game:
-    game = Game.from_content(alt_art, ["Ann", "Bo", "Cy"][:players], seed=1234)
+    game = Game.from_content(
+        alt_art, ["Ann", "Bo", "Cy"][:players], seed=1234, rng_model="1"
+    )
 
     player = game.state.player(seat)
 

@@ -193,8 +193,8 @@ def run_on_many_cores(
     Games come back in whatever order they finish. Nothing downstream may
     depend on that order, which is why what comes back is a tally.
 
-    ``rng_model`` is the generator every game is played on, model 1 unless a
-    paired experiment asks for another.
+    ``rng_model`` is the generator every game is played on: ``DEFAULT_RNG_MODEL``
+    unless the run asks for another.
     """
     work = [
         (

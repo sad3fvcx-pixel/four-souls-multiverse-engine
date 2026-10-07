@@ -55,9 +55,14 @@ def everything() -> ContentLibrary:
 
 @pytest.fixture(scope="module")
 def finished(everything: ContentLibrary) -> Journal:
-    """A finished game whose last command is not itself an eighth."""
+    """
+    A finished game whose last command is not itself an eighth.
+
+    Played on RNG model 1, so that its journal is the format 3 journal the
+    tests below rewrite into the formats that came before it.
+    """
     for seed in range(40):
-        journal, game = play_one(everything, seed, 2)
+        journal, game = play_one(everything, seed, 2, rng_model="1")
 
         if game.is_over and not full_checkpoint(len(journal) - 1) and len(journal) > 24:
             return journal
@@ -260,7 +265,9 @@ RECORDED_SEED = 5
 def dealt(everything: ContentLibrary, change: Any = None) -> Any:
     """The position before the deal, built the same way every time."""
     def build() -> GameState:
-        state = Game.from_content(everything, PLAYERS, seed=RECORDED_SEED).state
+        state = Game.from_content(
+            everything, PLAYERS, seed=RECORDED_SEED, rng_model="1"
+        ).state
 
         if change is not None:
             change(state)
@@ -272,8 +279,13 @@ def dealt(everything: ContentLibrary, change: Any = None) -> Any:
 
 @pytest.fixture(scope="module")
 def recorded(everything: ContentLibrary) -> Recording:
-    """Twenty-one commands of a real game: full checks at 7, 15 and the last."""
-    game = Game.from_content(everything, PLAYERS, seed=RECORDED_SEED)
+    """
+    Twenty-one commands of a real game: full checks at 7, 15 and the last.
+
+    On RNG model 1, so the recording is format 2 and can be rewritten into the
+    format before it.
+    """
+    game = Game.from_content(everything, PLAYERS, seed=RECORDED_SEED, rng_model="1")
     recorder = Recorder(game.runtime)
     assert recorder.submit(Command(type=CommandType.START_GAME, player=0)).accepted
 

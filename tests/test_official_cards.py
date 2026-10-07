@@ -56,11 +56,14 @@ def new_game(
     face, and a test that hopes for the face it wants is a test that checks one
     sixth of the card.
     """
+    # Dealt on RNG model 1: these tests are about cards, and the deal they were
+    # written against is the one model 1 deals from this seed.
     game = Game.from_content(
         base_game,
         ["Ann", "Bo", "Cy"][:players],
         seed=seed,
         rng=FixedRNG(rolls) if rolls is not None else None,
+        rng_model="1",
     )
 
     assert game.start().accepted
@@ -3024,12 +3027,14 @@ def answering_game(
     The opening loot step is let through first: a turn begins by putting a loot
     into the queue, and with the table answering that is a window of its own.
     """
+    # Dealt on RNG model 1, the deal these tests were written against.
     game = Game.from_content(
         base_game,
         ["Ann", "Bo", "Cy"][:players],
         seed=1234,
         rng=FixedRNG(rolls),
         interactive_priority=True,
+        rng_model="1",
     )
 
     assert game.start().accepted
@@ -4522,7 +4527,9 @@ def seated_as(
     Which character a player gets is the shuffle's business, and a test about
     Cain cannot wait for Cain to turn up.
     """
-    game = Game.from_content(base_game, ["Ann", "Bo", "Cy"][:players], seed=1234)
+    game = Game.from_content(
+        base_game, ["Ann", "Bo", "Cy"][:players], seed=1234, rng_model="1"
+    )
 
     player = game.state.player(seat)
 

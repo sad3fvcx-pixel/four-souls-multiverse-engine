@@ -54,8 +54,10 @@ def without_a_card() -> ContentLibrary:
 def test_a_game_that_will_not_settle_names_what_kept_happening(
     without_a_card: ContentLibrary, seed: int
 ) -> None:
+    # The looping deal is a model 1 deal; on model 2 the same seed deals
+    # another game, and the search that found this one would find another.
     with pytest.raises(StabilityError) as raised:
-        play_one(without_a_card, seed, 2)
+        play_one(without_a_card, seed, 2, rng_model="1")
 
     said = str(raised.value)
 

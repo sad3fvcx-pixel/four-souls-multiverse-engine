@@ -36,6 +36,7 @@ from fsme.lab.bot import HeuristicBot
 from fsme.lab.simulation.runner import NAMES, _whose_move
 from fsme.runtime.vocabulary import engine_vocabulary
 from fsme.serialization import SAVE_FORMAT_VERSION, SaveError
+from fsme.serialization.game_save import KEYED_SAVE_FORMAT
 from fsme.state import PlayerState
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
@@ -210,11 +211,26 @@ def _fields(a: Any, b: Any, path: str, compared: Compared, seen: set[Any]) -> No
 # ----------------------------------------------------------------------
 
 
+def current_format(game: Game) -> str:
+    """The format a game on its RNG model is saved in now."""
+    return KEYED_SAVE_FORMAT if game.state.rng_model == "2" else SAVE_FORMAT_VERSION
+
+
 def saved(game: Game) -> dict[str, Any] | None:
     try:
         return dict(json.loads(json.dumps(game.save(engine_version="test"))))
     except SaveError:
         return None
+
+
+SEEDS_TRIED = 16
+"""
+How many seeds, counted on from the one named, a position is looked for in.
+
+The positions are what the contract is about, not the seeds: which seed reaches
+an attack that stalls depends on the generator the game is dealt on. On model 1
+the seed named is still the first that does.
+"""
 
 
 def first_position(
@@ -224,12 +240,38 @@ def first_position(
     *,
     interactive: bool = True,
     moves: int = 3000,
+    rng_model: str,
 ) -> Game:
     """
-    Play until a position the save can hold has what is being looked for.
+    Play until a position the save can hold has what is being looked for, on
+    the first seed from ``seed`` on whose game reaches one.
     """
+    for candidate in range(seed, seed + SEEDS_TRIED):
+        game = _played_to(everything, candidate, found, interactive, moves, rng_model)
+
+        if game is not None:
+            return game
+
+    raise AssertionError(
+        f"no seed from {seed} to {seed + SEEDS_TRIED - 1} reached the position "
+        f"looked for on RNG model {rng_model}"
+    )
+
+
+def _played_to(
+    everything: ContentLibrary,
+    seed: int,
+    found: Callable[[Game, dict[str, Any]], bool],
+    interactive: bool,
+    moves: int,
+    rng_model: str,
+) -> Game | None:
     game = Game.from_content(
-        everything, list(NAMES[:4]), seed=seed, interactive_priority=interactive
+        everything,
+        list(NAMES[:4]),
+        seed=seed,
+        interactive_priority=interactive,
+        rng_model=rng_model,
     )
     assert game.start().accepted
 
@@ -254,7 +296,7 @@ def first_position(
 
         assert keeper.submit(command, label=label, decision=working.to_dict()).accepted
 
-    raise AssertionError(f"seed {seed} never reached the position looked for")
+    return None
 
 
 def a_loot_card_being_played(game: Game, data: dict[str, Any]) -> bool:
@@ -284,31 +326,55 @@ def counted(game: Game) -> Game:
     return game
 
 
-@pytest.fixture(scope="module")
-def positions(everything: ContentLibrary) -> dict[str, Game]:
+_REACHED: dict[str, dict[str, Game]] = {}
+
+
+def positions_on(everything: ContentLibrary, rng_model: str) -> dict[str, Game]:
+    """Every position the contract is checked at, on one RNG model, played once."""
+    if rng_model in _REACHED:
+        return _REACHED[rng_model]
+
     plain = first_position(
         everything, 2, lambda game, data: game.state.turn.turn_number >= 3,
-        interactive=False,
+        interactive=False, rng_model=rng_model,
     )
 
-    return {
+    _REACHED[rng_model] = {
         "an ordinary game": plain,
         "a loot card being played": first_position(
-            everything, 0, a_loot_card_being_played
+            everything, 0, a_loot_card_being_played, rng_model=rng_model
         ),
         "a stack object carrying something": first_position(
-            everything, 0, a_stack_object_carrying_something
+            everything, 0, a_stack_object_carrying_something, rng_model=rng_model
         ),
         "an attack that has stalled": first_position(
-            everything, 1, an_attack_that_has_stalled
+            everything, 1, an_attack_that_has_stalled, rng_model=rng_model
         ),
         "counters on a card and a player": counted(
             first_position(
                 everything, 3, lambda game, data: game.state.turn.turn_number >= 2,
-                interactive=False,
+                interactive=False, rng_model=rng_model,
             )
         ),
     }
+
+    return _REACHED[rng_model]
+
+
+@pytest.fixture(scope="module", params=("1", "2"), ids=("model 1", "model 2"))
+def positions(everything: ContentLibrary, request: pytest.FixtureRequest) -> dict[str, Game]:
+    """The positions on each RNG model: a save holds a game whatever it was dealt on."""
+    return positions_on(everything, request.param)
+
+
+@pytest.fixture(scope="module")
+def legacy_positions(everything: ContentLibrary) -> dict[str, Game]:
+    """
+    The positions on RNG model 1, which is what a save in format 1 was of.
+
+    A model 2 game cannot be written in format 1, and is refused when it is.
+    """
+    return positions_on(everything, "1")
 
 
 POSITIONS = (
@@ -332,7 +398,7 @@ def test_every_field_comes_back_or_is_named(
     game = positions[where]
     data = saved(game)
 
-    assert data is not None and data["format"] == SAVE_FORMAT_VERSION
+    assert data is not None and data["format"] == current_format(game)
 
     back = Game.load(data, everything)
     compared = Compared()
@@ -481,8 +547,9 @@ def pointed_in_flight(data: dict[str, Any]) -> list[str]:
     ]
 
 
+@pytest.mark.parametrize("rng_model", ("1", "2"))
 def test_a_card_being_played_is_written_once_and_left_where_it_is(
-    everything: ContentLibrary,
+    everything: ContentLibrary, rng_model: str
 ) -> None:
     """
     The loot card and its own ability point at the same card, which is written
@@ -493,6 +560,7 @@ def test_a_card_being_played_is_written_once_and_left_where_it_is(
         0,
         lambda game, data: len(pointed_in_flight(data))
         > len(set(pointed_in_flight(data))),
+        rng_model=rng_model,
     )
     stack_before = list(game.state.stack)
     hands_before = [list(player.hand.cards) for player in game.state.players]
@@ -564,7 +632,7 @@ def test_nothing_in_flight_is_written_as_nothing_not_left_out(
     at all, nothing would say whether a card was lost on the way.
     """
     data = saved(positions["an ordinary game"])
-    assert data is not None and data["format"] == SAVE_FORMAT_VERSION
+    assert data is not None and data["format"] == current_format(positions["an ordinary game"])
 
     assert data["in_flight"] == []
     Game.load(data, everything)
@@ -592,15 +660,16 @@ def _cards_reached(value: Any, found: dict[str, set[int]]) -> None:
             _cards_reached(item, found)
 
 
+@pytest.mark.parametrize("rng_model", ("1", "2"))
 def test_cards_a_stack_object_carries_come_back_as_the_cards_they_were(
-    everything: ContentLibrary,
+    everything: ContentLibrary, rng_model: str
 ) -> None:
     """
     Nothing in the game puts a card in a stack object's payload yet, so one is
     put there: a card in a zone, the same card further in, and the card being
     played. What is checked is the save, not anything the rules do with them.
     """
-    game = first_position(everything, 0, a_loot_card_being_played)
+    game = first_position(everything, 0, a_loot_card_being_played, rng_model=rng_model)
     before = saved(game)
     assert before is not None
 
@@ -693,9 +762,9 @@ def as_format_1(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def test_format_1_that_lost_nothing_loads(
-    everything: ContentLibrary, positions: dict[str, Game]
+    everything: ContentLibrary, legacy_positions: dict[str, Game]
 ) -> None:
-    game = positions["an ordinary game"]
+    game = legacy_positions["an ordinary game"]
     data = saved(game)
     assert data is not None and not data["stack"] and not data["combat"]["active"]
 
@@ -715,9 +784,9 @@ def test_format_1_that_lost_nothing_loads(
     ),
 )
 def test_format_1_that_lost_something_is_refused(
-    everything: ContentLibrary, positions: dict[str, Game], where: str, said: str
+    everything: ContentLibrary, legacy_positions: dict[str, Game], where: str, said: str
 ) -> None:
-    data = saved(positions[where])
+    data = saved(legacy_positions[where])
     assert data is not None
 
     with pytest.raises(SaveError, match=said):
@@ -725,9 +794,9 @@ def test_format_1_that_lost_something_is_refused(
 
 
 def test_format_1_during_an_attack_with_nothing_on_the_stack_is_refused(
-    everything: ContentLibrary, positions: dict[str, Game]
+    everything: ContentLibrary, legacy_positions: dict[str, Game]
 ) -> None:
-    data = as_format_1(saved(positions["an attack that has stalled"]) or {})
+    data = as_format_1(saved(legacy_positions["an attack that has stalled"]) or {})
     data["stack"] = []
 
     with pytest.raises(SaveError, match="during an attack"):

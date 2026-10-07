@@ -440,6 +440,7 @@ def test_a_verdict_says_what_a_card_test_found() -> None:
         Tally(games=20, finished=20),
         Tally(games=20, finished=20),
         appeared=0,
+        rng_model="1",
     )
 
     assert "never reached the table" in told.verdict
@@ -450,6 +451,7 @@ def test_a_verdict_says_what_a_card_test_found() -> None:
         Tally(games=20, finished=20),
         Tally(games=20, finished=20),
         appeared=1,
+        rng_model="1",
     )
 
     assert "too scarce to say" in scarce.verdict
@@ -491,7 +493,7 @@ def test_the_interval_is_measured_rather_than_assumed() -> None:
 
     assert steady.average_turns() == wild.average_turns() == 120
 
-    told = compare("x (x)", steady, wild, appeared=20)
+    told = compare("x (x)", steady, wild, appeared=20, rng_model="1")
 
     turns = told.differences[0]
 

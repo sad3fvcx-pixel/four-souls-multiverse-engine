@@ -103,8 +103,8 @@ def play_one(
     meaningless.
 
     ``rng_model`` is the generator the game is dealt and played on. Left out,
-    it is model 1, the one every run so far was played on; a paired experiment
-    asks for model 2 by name.
+    it is ``DEFAULT_RNG_MODEL``, which is model 2; a run that has to repeat a
+    model 1 game asks for model 1 by name.
     """
     game = Game.from_content(
         library,

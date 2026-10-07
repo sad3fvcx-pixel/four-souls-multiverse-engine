@@ -181,12 +181,19 @@ def test_a_watched_experiment_replays_too(everything: ContentLibrary) -> None:
     shop — are not finished by the lab bot within the six thousand moves the
     loop above allows, and that was so before any of the turn-ending work as
     well; the seeds in that class are simply not the same ones.
+
+    So the seed is looked for rather than written down: a Session deals on
+    whatever a new game is dealt on, and which seeds finish depends on that.
     """
     scenario = an_experiment()
 
-    journal, game = watched(everything, 2, scenario)
+    for seed in range(2, 22):
+        journal, game = watched(everything, seed, scenario)
 
-    assert game.is_over
+        if game.is_over:
+            break
+
+    assert game.is_over, "no seed in twenty gave a game the bots finish"
     assert journal.entries[0].command == "start_game"
     assert journal.scenario == scenario.to_dict()
     assert journal.interactive_priority is True
@@ -264,8 +271,11 @@ def test_a_journal_from_before_scenarios_still_reads(
     """
     A version-1 journal has no scenario, which is true about it rather than
     missing from it. It reads, it replays, and it says so.
+
+    Played on RNG model 1, because a version-1 journal is a model 1 game: a
+    model 2 game written in format 1 is refused, and rightly.
     """
-    journal, _ = play_one(everything, seed=13, players=2)
+    journal, _ = play_one(everything, seed=13, players=2, rng_model="1")
 
     old = journal.to_dict()
     old["format"] = "1"

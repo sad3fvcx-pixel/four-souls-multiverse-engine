@@ -20,8 +20,9 @@ The generator a paired experiment is played on: the one place it is chosen.
 A card test plays the same seeds with a card and without it. On model 2 a card
 taken out of the content leaves every other card where it was, so the two games
 stay one game until the card itself does something; on model 1 the deck it came
-out of is shuffled into another deck. Model 1 is still what every other run is
-played on.
+out of is shuffled into another deck. Model 2 is also what a new game is dealt
+on by default, but a card test does not rely on that: it names the model it
+needs.
 """
 
 __all__ = [

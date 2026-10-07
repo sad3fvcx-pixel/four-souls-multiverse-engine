@@ -68,11 +68,13 @@ def new_game(
     # and a test about a promo card is not about that, so a deal that seats
     # somebody else first is dealt again.
     for candidate in range(seed, seed + 64):
+        # Dealt on RNG model 1, the deal these tests were written against.
         game = Game.from_content(
             library,
             ["Ann", "Bo", "Cy"][:players],
             seed=candidate,
             rng=FixedRNG(rolls) if rolls is not None else None,
+            rng_model="1",
         )
 
         assert game.start().accepted

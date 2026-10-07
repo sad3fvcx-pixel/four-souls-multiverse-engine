@@ -31,8 +31,8 @@ the table in a handful of games, a difference in the averages is the deck
 moving, not the card working — and the reading says so rather than leaving the
 reader to notice.
 
-All of that is about RNG model 1, which is what a run is played on unless it
-asks. A card test asks for model 2 (``PAIRED_RNG_MODEL``), where each deck is
+All of that is about RNG model 1, which a run is played on only when it asks for
+it by name. A card test asks for model 2 (``PAIRED_RNG_MODEL``), where each deck is
 shuffled by a key per card: taking a card out moves no other card, and a game
 the card never reached plays out the same with it and without it. The
 populations are then paired by seed as well as alike. The numbers here are
@@ -45,10 +45,10 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
-from fsme.rng.rng import DEFAULT_RNG_MODEL, LEGACY_MODEL
+from fsme.rng.rng import LEGACY_MODEL
 
 from .tally import Tally
 
@@ -139,10 +139,14 @@ class Comparison:
     errors_with: int = 0
     errors_without: int = 0
 
-    rng_model: str = DEFAULT_RNG_MODEL
+    rng_model: str = field(kw_only=True)
     """
     The generator both runs were played on, which decides what a difference
     between them can be: on model 1 the deck moving, on model 2 only the card.
+
+    Required, and never taken from the default a new game is dealt on: the
+    comparison says what the runs were played on, and only whoever ran them
+    knows.
     """
 
     @property
@@ -247,7 +251,7 @@ def compare(
     appeared: int = 0,
     errors_with: int = 0,
     errors_without: int = 0,
-    rng_model: str = DEFAULT_RNG_MODEL,
+    rng_model: str,
 ) -> Comparison:
     """
     Measure the same handful of things in both runs.
@@ -257,8 +261,9 @@ def compare(
     effect on *whose* game it is cannot be read from a run where only one table
     in three even drew it, so it is not offered.
 
-    ``rng_model`` is the generator both runs were played on. It changes what
-    the reading may say about the deck, and nothing that is measured.
+    ``rng_model`` is the generator both runs were played on, and has no
+    default: only whoever played the runs knows it. It changes what the reading
+    may say about the deck, and nothing that is measured.
     """
     return Comparison(
         subject=subject,

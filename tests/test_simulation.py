@@ -326,6 +326,7 @@ def test_a_difference_within_the_noise_is_not_offered_as_a_finding() -> None:
         make_tally(50, 100),
         make_tally(50, 101),
         appeared=40,
+        rng_model="1",
     )
 
     turns = next(d for d in told.differences if d.name == "turns a game")
@@ -342,6 +343,7 @@ def test_a_difference_well_beyond_the_noise_is() -> None:
         make_tally(200, 100),
         make_tally(200, 140),
         appeared=150,
+        rng_model="1",
     )
 
     turns = next(d for d in told.differences if d.name == "turns a game")
@@ -361,6 +363,7 @@ def test_a_card_that_never_reached_the_table_explains_nothing() -> None:
         make_tally(200, 100),
         make_tally(200, 140),
         appeared=2,
+        rng_model="1",
     )
 
     assert not told.can_be_about_the_card
@@ -375,7 +378,7 @@ def test_a_card_that_never_reached_the_table_explains_nothing() -> None:
 def test_a_comparison_is_plain_data() -> None:
     from fsme.lab.analysis import compare
 
-    told = compare("a card", make_tally(10, 50), make_tally(10, 60), appeared=8)
+    told = compare("a card", make_tally(10, 50), make_tally(10, 60), appeared=8, rng_model="1")
 
     written = told.to_dict()
 

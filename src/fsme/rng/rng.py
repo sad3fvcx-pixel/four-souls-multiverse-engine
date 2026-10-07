@@ -4,15 +4,17 @@ Deterministic random number generator used by the engine.
 There are two models, and a game is played on one of them from the deal to the
 end.
 
-Model 1 is the generator the engine has always had: one ``random.Random`` per
-seed, consumed in a fixed order. Every recording, journal and save made so far
-was made on it, and it plays them back byte for byte.
+Model 1 is the generator the engine had first: one ``random.Random`` per seed,
+consumed in a fixed order. Every recording, journal and save made before model 2
+was made on it, and it still plays them back byte for byte.
 
 Model 2 gives each kind of randomness a stream of its own, so that one part of
 a game cannot move another. A deck is shuffled by a key per card rather than
 by a stream: taking a card out of the game leaves every other card where it
 was. That is what lets two games that differ by one card stay the same game
-until that card does something.
+until that card does something. A new game is dealt on model 2 unless it asks
+for model 1; a record of a game always says, or is from before there was a
+choice, and then it is model 1.
 
 Every call names its domain, on either model. Model 1 checks the name and then
 does exactly what it did before; model 2 needs it to know which stream or key
@@ -34,8 +36,14 @@ KEYED_MODEL = "2"
 RNG_MODELS = (LEGACY_MODEL, KEYED_MODEL)
 """Every model a game can be played on."""
 
-DEFAULT_RNG_MODEL = LEGACY_MODEL
-"""The model a game is dealt on when nobody asks for another."""
+DEFAULT_RNG_MODEL = KEYED_MODEL
+"""
+The model a new game is dealt on when nobody asks for another.
+
+Only a new game: a journal, recording or save that names no model is from
+before there was a choice, and is model 1 whatever this says; and a GameState
+built by hand is model 1 until it is told otherwise.
+"""
 
 DEAL_DOMAINS = frozenset(
     {"deal:loot", "deal:treasure", "deal:monster", "deal:room", "deal:characters"}
@@ -178,12 +186,14 @@ def shuffle_key(seed: int, domain: str, number: int, definition_id: str, copy: i
     by nothing about where it sat before — so the cards around it do not move
     it, and it does not move them.
     """
-    if not isinstance(definition_id, str):
-        raise TypeError(f"a card is keyed by its definition id, not {definition_id!r}")
-
-    named = definition_id.encode("utf-8")
-
     return hashlib.sha256(
+        _shuffle_prefix(seed, domain, number) + _card_part(definition_id, copy)
+    ).digest()
+
+
+def _shuffle_prefix(seed: int, domain: str, number: int) -> bytes:
+    """What every key of one shuffle begins with: the seed, the domain, the count."""
+    return (
         _TAG
         + b"shuffle\x00"
         + _decimal(_whole_seed(seed))
@@ -192,10 +202,17 @@ def shuffle_key(seed: int, domain: str, number: int, definition_id: str, copy: i
         + b"\x00"
         + _decimal(number)
         + b"\x00"
-        + len(named).to_bytes(4, "big")
-        + named
-        + _decimal(copy)
-    ).digest()
+    )
+
+
+def _card_part(definition_id: str, copy: int) -> bytes:
+    """What one card adds to its shuffle's prefix: its definition, length first, and its copy."""
+    if not isinstance(definition_id, str):
+        raise TypeError(f"a card is keyed by its definition id, not {definition_id!r}")
+
+    named = definition_id.encode("utf-8")
+
+    return len(named).to_bytes(4, "big") + named + _decimal(copy)
 
 
 def _definition_id(card: Any) -> str:
@@ -224,6 +241,10 @@ class KeyedRNG(RNG):
         self._seed = _whole_seed(seed)
         self._streams: dict[str, random.Random] = {}
         self._shuffles: dict[str, int] = {}
+        # Each stream's state as last taken, until the stream draws again. A
+        # state is a tuple of numbers and cannot be changed through the tuple,
+        # so handing out the same one twice hands out the same value twice.
+        self._held: dict[str, tuple[Any, ...]] = {}
 
     def _stream(self, domain: str) -> random.Random:
         stream = self._streams.get(domain)
@@ -246,7 +267,10 @@ class KeyedRNG(RNG):
         raise RNGError("a model 2 generator shuffles only for a named domain")
 
     def randint_for(self, domain: str, a: int, b: int) -> int:
-        return self._stream(_stream_domain(domain)).randint(a, b)
+        stream = self._stream(_stream_domain(domain))
+        self._held.pop(domain, None)
+
+        return stream.randint(a, b)
 
     def shuffle_for(self, domain: str, sequence: MutableSequence[Any]) -> None:
         _shuffle_domain(domain)
@@ -255,12 +279,19 @@ class KeyedRNG(RNG):
         copies: dict[str, int] = {}
         keyed: list[tuple[bytes, Any]] = []
 
+        # Every key of this shuffle starts with the same bytes; they are hashed
+        # once and each card's key carries on from there, which is the same
+        # SHA-256 as ``shuffle_key`` of the whole.
+        prefix = hashlib.sha256(_shuffle_prefix(self._seed, domain, number))
+
         for card in sequence:
             identifier = _definition_id(card)
             copy = copies.get(identifier, 0)
             copies[identifier] = copy + 1
 
-            keyed.append((shuffle_key(self._seed, domain, number, identifier, copy), card))
+            key = prefix.copy()
+            key.update(_card_part(identifier, copy))
+            keyed.append((key.digest(), card))
 
         keyed.sort(key=lambda pair: pair[0])
 
@@ -271,14 +302,21 @@ class KeyedRNG(RNG):
     def get_state(self) -> dict[str, Any]:
         return {
             "model": KEYED_MODEL,
-            "streams": {
-                domain: self._streams[domain].getstate() for domain in sorted(self._streams)
-            },
+            "streams": {domain: self._stream_state(domain) for domain in sorted(self._streams)},
             "shuffles": {domain: self._shuffles[domain] for domain in sorted(self._shuffles)},
         }
 
+    def _stream_state(self, domain: str) -> tuple[Any, ...]:
+        held = self._held.get(domain)
+
+        if held is None:
+            held = self._held[domain] = self._streams[domain].getstate()
+
+        return held
+
     def set_state(self, state: Any) -> None:
         written = keyed_state(state)
+        self._held = {}
 
         streams: dict[str, random.Random] = {}
 

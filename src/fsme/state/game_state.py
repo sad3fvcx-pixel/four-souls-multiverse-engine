@@ -132,9 +132,11 @@ class GameState:
     """
     Which generator the game is played on, fixed when it is dealt.
 
-    "1" is the engine's original generator and what every game is dealt on
-    unless it asks otherwise; "2" is the one with a stream per domain
-    (``fsme.rng.rng``).
+    "1" is the engine's original generator; "2" is the one with a stream per
+    domain (``fsme.rng.rng``). A game that is dealt gets the model it asks for,
+    or ``DEFAULT_RNG_MODEL``. A state built by hand is "1" until it is told
+    otherwise, because a hand-built state is run on whatever generator it is
+    handed, and the engine's plain one is model 1.
     """
 
     souls_to_win: int = 4

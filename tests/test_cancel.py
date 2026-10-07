@@ -88,18 +88,21 @@ def play_the_fool(everything: ContentLibrary) -> tuple[Any, Any]:
         if card.definition.id == THE_FOOL
     )
 
+    # Played by whoever the deal seated first, since only they may play loot.
+    seat = state.turn.active_player
+
     state.loot_deck.cards.remove(fool)
-    state.player(0).hand.add_top(fool)
+    state.player(seat).hand.add_top(fool)
 
     # Something of somebody's own on the stack, so the cancel has real work to
     # do and is not being tested against an empty stack.
     game.runtime.submit(
-        Command(type=CommandType.END_PHASE, player=0)
+        Command(type=CommandType.END_PHASE, player=seat)
     )
 
-    index = list(state.player(0).hand.cards).index(fool)
+    index = list(state.player(seat).hand.cards).index(fool)
     result = game.submit(
-        Command(type=CommandType.PLAY_LOOT, player=0, payload={"index": index})
+        Command(type=CommandType.PLAY_LOOT, player=seat, payload={"index": index})
     )
 
     assert result.accepted, result.reason
@@ -219,13 +222,30 @@ def test_no_loot_card_leaves_the_game_in_the_audited_deal(
     agent = ScriptedAgent(113)
 
     def loot_now() -> set[str]:
+        # Every zone a card can be in, because a loot card does not stay among
+        # the loot: a trinket becomes an item, and an item can be discarded,
+        # put back into the treasure deck and turned up in the shop.
         found: set[str] = set()
-        zones = [state.loot_deck, state.loot_discard]
+        zones = [
+            state.loot_deck,
+            state.loot_discard,
+            state.treasure_deck,
+            state.treasure_discard,
+            state.treasure_shop,
+            state.monster_deck,
+            state.monster_discard,
+            state.active_monsters,
+            state.room_deck,
+            state.room_discard,
+            state.room_area,
+            state.bonus_souls,
+        ]
 
         for player in state.players:
             zones += [player.hand, player.treasures, player.souls, player.curses]
 
-        zones += [state.treasure_discard, state.bonus_souls]
+        for slot in state.monster_area:
+            zones.append(slot)
 
         for zone in zones:
             for one in zone.cards:

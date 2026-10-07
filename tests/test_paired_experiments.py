@@ -309,28 +309,29 @@ def test_the_paired_model_is_model_two() -> None:
     assert PAIRED_RNG_MODEL == "2"
 
 
-def test_a_game_is_played_on_model_one_unless_a_run_asks(everything: ContentLibrary) -> None:
+def test_a_game_is_played_on_model_two_unless_a_run_asks(everything: ContentLibrary) -> None:
     plain, plain_game = play_one(everything, 3, 2, steps=120)
-    named_one, named_game = play_one(everything, 3, 2, steps=120, rng_model="1")
+    named_two, named_game = play_one(everything, 3, 2, steps=120, rng_model="2")
 
-    assert plain_game.state.rng_model == named_game.state.rng_model == "1"
-    assert plain.to_dict() == named_one.to_dict()
+    assert plain_game.state.rng_model == named_game.state.rng_model == "2"
+    assert plain.to_dict() == named_two.to_dict()
 
-    _, keyed_game = play_one(everything, 3, 2, steps=120, rng_model=PAIRED_RNG_MODEL)
+    _, legacy_game = play_one(everything, 3, 2, steps=120, rng_model="1")
 
-    assert keyed_game.state.rng_model == "2"
+    assert legacy_game.state.rng_model == "1"
 
     one = [outcome.journal.to_dict() for outcome in run(everything, 2, 2, steps=80)]
     other = [
-        outcome.journal.to_dict() for outcome in run(everything, 2, 2, steps=80, rng_model="1")
+        outcome.journal.to_dict() for outcome in run(everything, 2, 2, steps=80, rng_model="2")
     ]
 
     assert one == other
-    assert all(journal["format"] == "3" for journal in one)
+    assert all(journal["format"] == "4" and journal["rng_model"] == "2" for journal in one)
 
-    keyed = [outcome.journal for outcome in run(everything, 2, 2, steps=80, rng_model="2")]
+    legacy = [outcome.journal for outcome in run(everything, 2, 2, steps=80, rng_model="1")]
 
-    assert all(journal.rng_model == "2" for journal in keyed)
+    assert all(journal.rng_model == "1" for journal in legacy)
+    assert all(journal.to_dict()["format"] == "3" for journal in legacy)
 
 
 def played_on_many_cores(tmp_path: Path, **asked: Any) -> tuple[list[Finished], list[Any]]:
@@ -358,16 +359,23 @@ def test_a_run_on_many_cores_carries_the_model_into_every_worker(tmp_path: Path)
     assert all(Journal.from_dict(journal).rng_model == "2" for journal in written)
 
 
-def test_a_run_on_many_cores_is_model_one_unless_it_asks(tmp_path: Path) -> None:
+def test_a_run_on_many_cores_is_model_two_unless_it_asks(tmp_path: Path) -> None:
     plain, plain_written = played_on_many_cores(tmp_path / "plain")
-    named_one, named_written = played_on_many_cores(tmp_path / "named", rng_model="1")
+    named_two, named_written = played_on_many_cores(tmp_path / "named", rng_model="2")
 
-    assert [finished.rng_model for finished in plain] == ["1", "1"]
-    assert all(journal["format"] == "3" and "rng_model" not in journal for journal in plain_written)
+    assert [finished.rng_model for finished in plain] == ["2", "2"]
+    assert all(journal["format"] == "4" for journal in plain_written)
     assert plain_written == named_written
     assert [finished.tally.to_dict() for finished in plain] == [
-        finished.tally.to_dict() for finished in named_one
+        finished.tally.to_dict() for finished in named_two
     ]
+
+    legacy, legacy_written = played_on_many_cores(tmp_path / "legacy", rng_model="1")
+
+    assert [finished.rng_model for finished in legacy] == ["1", "1"]
+    assert all(
+        journal["format"] == "3" and "rng_model" not in journal for journal in legacy_written
+    )
 
 
 # ----------------------------------------------------------------------
@@ -449,8 +457,17 @@ def test_the_desk_card_test_is_played_on_model_two(
     assert RESHUFFLED not in job.text
 
 
+def test_a_comparison_has_to_be_told_its_model() -> None:
+    """
+    What the runs were played on is known to whoever played them, and to
+    nobody else — least of all the default a new game happens to be dealt on.
+    """
+    with pytest.raises(TypeError):
+        compare("a card", Tally(), Tally(), appeared=0)  # type: ignore[call-arg]
+
+
 def test_a_comparison_on_model_one_still_says_what_it_said() -> None:
-    scarce = compare("a card", Tally(), Tally(), appeared=0)
+    scarce = compare("a card", Tally(), Tally(), appeared=0, rng_model="1")
 
     assert scarce.rng_model == "1"
     assert scarce.to_dict()["rng_model"] == "1"
@@ -459,7 +476,7 @@ def test_a_comparison_on_model_one_still_says_what_it_said() -> None:
     one = Tally()
     one.games = 20
 
-    rarely = compare("a card", one, one, appeared=1)
+    rarely = compare("a card", one, one, appeared=1, rng_model="1")
 
     assert RESHUFFLED in read_out(rarely)
     assert rarely.verdict.endswith("the rest of the difference is the deck")

@@ -25,7 +25,7 @@ from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary, ContentLoader
 from fsme.game import Game
 from fsme.replay import state_digest
-from fsme.rng.rng import RNG
+from fsme.rng.rng import rng_for
 from fsme.runtime.vocabulary import engine_vocabulary
 from fsme.serialization import SAVE_FORMAT_VERSION, SaveError, load_game, save_game
 
@@ -350,7 +350,8 @@ def test_a_save_holding_a_copy_of_a_card_the_content_lacks_is_refused(
 
 
 def test_the_format_is_written_down(everything: ContentLibrary) -> None:
-    game = Game.from_content(everything, ["Ann", "Bo"], seed=3)
+    # Format 2 is the save of a model 1 game; model 2 is saved in format 3.
+    game = Game.from_content(everything, ["Ann", "Bo"], seed=3, rng_model="1")
 
     assert game.start().accepted
 
@@ -1321,8 +1322,9 @@ def test_a_saved_generator_rolls_on_as_it_would_have(
     back = Game.load(written(game), everything)
 
     assert back.runtime.rng.get_state() == game.runtime.rng.get_state()
-    assert [back.runtime.rng.randint(1, 6) for _ in range(20)] == [
-        game.runtime.rng.randint(1, 6) for _ in range(20)
+    # Rolled the way the game rolls dice, which every model answers.
+    assert [back.runtime.rng.randint_for("dice", 1, 6) for _ in range(20)] == [
+        game.runtime.rng.randint_for("dice", 1, 6) for _ in range(20)
     ]
 
 
@@ -1365,7 +1367,7 @@ def test_a_game_not_yet_started_needs_no_generator_state(
 
     back = Game.load(data, everything)
 
-    assert back.runtime.rng.get_state() == RNG(4).get_state()
+    assert back.runtime.rng.get_state() == rng_for(4, back.state.rng_model).get_state()
 
 
 @pytest.mark.parametrize("rng", (None, MISSING))

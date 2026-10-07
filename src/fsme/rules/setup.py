@@ -60,8 +60,8 @@ def new_game(
     not a happy accident but the property everything else rests on.
 
     ``rng_model`` is the generator the game is dealt and played on, and stays
-    with it to the end. Left out, it is model 1, which deals exactly what this
-    always dealt.
+    with it to the end. Left out, it is ``DEFAULT_RNG_MODEL``, which is model 2;
+    model 1 deals exactly what this dealt before there was a choice.
     """
     if not players:
         raise SetupError("a game needs at least one player")

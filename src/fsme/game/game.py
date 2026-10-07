@@ -124,7 +124,8 @@ class Game:
         comparable. An empty scenario is the same as none.
 
         ``rng_model`` is the generator the game is dealt and played on. Left
-        out, it is model 1, the one every game so far was played on.
+        out, it is ``DEFAULT_RNG_MODEL``, which is model 2; model 1 is asked for
+        by name.
         """
         from fsme.rules import new_game
 

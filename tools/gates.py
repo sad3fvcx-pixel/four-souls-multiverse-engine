@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import inspect
 import json
 import os
 import subprocess
@@ -73,7 +74,19 @@ def md5(data: bytes) -> str:
 _ROOT = Path()
 _PLAYERS = 0
 _STEPS = 0
+_RNG_MODEL = "1"
 _library: Any = None
+
+LEGACY_RNG_MODEL = "1"
+"""
+The RNG model the replay gate plays when its reference does not name one.
+
+The reference was taken on model 1, and every journal, recording and save made
+before model 2 existed plays back on model 1 — so the gate keeps asking the
+engine for model 1 by name, whatever a new game is dealt on by default. An
+engine from before there was a choice plays model 1 anyway, and is asked
+without the argument it would not know.
+"""
 
 
 def _use(root: Path) -> None:
@@ -97,11 +110,11 @@ def _use(root: Path) -> None:
         raise Unaskable(f"imported fsme from {found}, not from {root}")
 
 
-def _enter(root: str, players: int, steps: int) -> None:
+def _enter(root: str, players: int, steps: int, rng_model: str = LEGACY_RNG_MODEL) -> None:
     """Each replay worker: the same root and the same game, under fork or spawn."""
-    global _ROOT, _PLAYERS, _STEPS
+    global _ROOT, _PLAYERS, _STEPS, _RNG_MODEL
 
-    _ROOT, _PLAYERS, _STEPS = Path(root), players, steps
+    _ROOT, _PLAYERS, _STEPS, _RNG_MODEL = Path(root), players, steps, rng_model
     _use(_ROOT)
 
 
@@ -200,8 +213,15 @@ def _one_game(seed: int) -> dict[str, Any]:
     rec: dict[str, Any] = {"seed": seed, "broke": ""}
 
     try:
+        if "rng_model" in inspect.signature(play_one).parameters:
+            model: dict[str, Any] = {"rng_model": _RNG_MODEL}
+        elif _RNG_MODEL == LEGACY_RNG_MODEL:
+            model = {}
+        else:
+            raise Unaskable(f"this engine plays only RNG model {LEGACY_RNG_MODEL}")
+
         journal, game = play_one(_library_once(), seed, _PLAYERS, steps=_STEPS,
-                                 thinking_seats=tuple(range(_PLAYERS)))
+                                 thinking_seats=tuple(range(_PLAYERS)), **model)
         counted: Counter[str] = Counter()
 
         for entry in journal.entries:
@@ -226,11 +246,12 @@ def _one_game(seed: int) -> dict[str, Any]:
 def _replay(root: Path, reference: dict[str, Any]) -> tuple[bytes, dict[str, Any]]:
     first, last = (int(one) for one in reference["seeds"])
     players, steps = int(reference["players"]), int(reference["steps"])
+    model = str(reference.get("rng_model", LEGACY_RNG_MODEL))
 
     with ProcessPoolExecutor(
         max_workers=os.cpu_count(),
         initializer=_enter,
-        initargs=(str(root), players, steps),
+        initargs=(str(root), players, steps, model),
     ) as pool:
         rows = list(pool.map(_one_game, range(first, last + 1), chunksize=8))
 

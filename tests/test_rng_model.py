@@ -54,6 +54,7 @@ from fsme.rng.rng import (
 from fsme.rules.setup import SetupError, new_game
 from fsme.serialization import SAVE_FORMAT_VERSION, SaveError
 from fsme.serialization.game_save import KEYED_SAVE_FORMAT
+from fsme.state import GameState
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 NAMES = ["Ann", "Bo", "Cy", "Di"]
@@ -154,8 +155,9 @@ def test_there_is_no_third_model() -> None:
     with pytest.raises(RNGError):
         rng_for(5, "3")
 
-    assert DEFAULT_RNG_MODEL == "1"
-    assert type(rng_for(5)) is RNG
+    assert DEFAULT_RNG_MODEL == "2"
+    assert type(rng_for(5)) is KeyedRNG
+    assert type(rng_for(5, "1")) is RNG
     assert type(rng_for(5, "2")) is KeyedRNG
 
 
@@ -519,7 +521,7 @@ def test_model_one_deals_from_one_stream_in_the_order_it_always_did(
     Model 1, re-derived from nothing but ``random.Random(seed)``: loot,
     treasure, monsters, rooms, characters, one stream, in that order.
     """
-    state = new_game(everything, NAMES, seed=seed)
+    state = new_game(everything, NAMES, seed=seed, rng_model="1")
     grouped = definitions_by_type(everything)
     stream = random.Random(seed)
 
@@ -547,18 +549,31 @@ def test_model_one_deals_from_one_stream_in_the_order_it_always_did(
     ]
 
 
-def test_a_game_is_on_model_one_unless_it_asks(everything: ContentLibrary) -> None:
+def test_a_new_game_is_dealt_on_model_two_unless_it_asks(everything: ContentLibrary) -> None:
     plain = Game.from_content(everything, NAMES, seed=3)
-    named = Game.from_content(everything, NAMES, seed=3, rng_model="1")
+    named = Game.from_content(everything, NAMES, seed=3, rng_model="2")
 
-    assert plain.state.rng_model == "1"
-    assert type(plain.runtime.rng) is RNG
+    assert plain.state.rng_model == "2"
+    assert type(plain.runtime.rng) is KeyedRNG
     assert state_digest_v2(plain.state) == state_digest_v2(named.state)
 
-    keyed = Game.from_content(everything, NAMES, seed=3, rng_model="2")
+    assert new_game(everything, NAMES, seed=3).rng_model == "2"
 
-    assert keyed.state.rng_model == "2"
-    assert type(keyed.runtime.rng) is KeyedRNG
+    legacy = Game.from_content(everything, NAMES, seed=3, rng_model="1")
+
+    assert legacy.state.rng_model == "1"
+    assert type(legacy.runtime.rng) is RNG
+    assert new_game(everything, NAMES, seed=3, rng_model="1").rng_model == "1"
+
+
+def test_a_state_built_by_hand_is_model_one(everything: ContentLibrary) -> None:
+    """
+    Only a deal follows the default. A state put together by hand is run on
+    whatever generator it is handed, and on the engine's plain one when it is
+    handed none, which is model 1.
+    """
+    assert GameState().rng_model == "1"
+    assert type(Game().runtime.rng) is RNG
 
 
 def test_a_game_cannot_ask_for_a_model_there_is_not(everything: ContentLibrary) -> None:
@@ -591,8 +606,8 @@ def test_on_model_one_the_same_card_taken_out_reshuffles_its_whole_deck(
     """What model 2 is for: on model 1 the deck the card came out of is another deck."""
     gone = definitions_by_type(everything)[CardType.LOOT][0].id
 
-    whole = new_game(everything, NAMES, seed=5)
-    less = new_game(everything.without([gone]), NAMES, seed=5)
+    whole = new_game(everything, NAMES, seed=5, rng_model="1")
+    less = new_game(everything.without([gone]), NAMES, seed=5, rng_model="1")
 
     assert [one for one in ids(whole.loot_deck.cards) if one != gone] != ids(less.loot_deck.cards)
 
@@ -867,7 +882,7 @@ def test_a_recording_that_misstates_its_model_is_refused(everything: ContentLibr
 
 
 def test_the_model_is_not_a_field_of_the_full_fingerprint(everything: ContentLibrary) -> None:
-    game = Game.from_content(everything, NAMES, seed=8)
+    game = Game.from_content(everything, NAMES, seed=8, rng_model="1")
     game.start()
 
     before = (state_digest(game.state), state_digest_v2(game.state))
@@ -887,7 +902,36 @@ def test_a_model_two_position_has_a_fingerprint_of_its_own(everything: ContentLi
     assert state_digest(one.state) == state_digest(other.state)
     assert state_digest_v2(one.state) == state_digest_v2(other.state)
 
-    legacy = Game.from_content(everything, NAMES, seed=8)
+    legacy = Game.from_content(everything, NAMES, seed=8, rng_model="1")
     legacy.start()
 
     assert state_digest_v2(one.state) != state_digest_v2(legacy.state)
+
+
+# ----------------------------------------------------------------------
+# A record without a model is from before there was a choice
+# ----------------------------------------------------------------------
+
+
+def test_a_record_that_names_no_model_is_model_one_whatever_the_default(
+    everything: ContentLibrary,
+) -> None:
+    """
+    A new game is dealt on model 2 by default; a journal, recording or save
+    that names no model was written before there was a choice, and is read as
+    model 1. The default a new game is dealt on never decides what an old
+    record means.
+    """
+    assert DEFAULT_RNG_MODEL == "2"
+
+    journal = kept(everything, "1", commands=10).to_dict()
+    assert journal["format"] == "3" and "rng_model" not in journal
+    assert Journal.from_dict(journal).rng_model == "1"
+
+    _, _, save = a_saved_game(everything, "1")
+    assert save["format"] == "2" and "rng_model" not in save
+    assert Game.load(save, everything).state.rng_model == "1"
+
+    recording = recorded(everything, "1", commands=5).to_dict()
+    assert recording["format_version"] == "2" and "rng_model" not in recording
+    assert Recording.from_dict(recording).rng_model == "1"
