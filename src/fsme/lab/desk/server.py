@@ -16,20 +16,32 @@ allowed.
 
 Long work does not happen in a request. A study is started, and the page asks
 how it is going until it is done — see ``bench``.
+
+The game being watched is dealt from a library read when the desk started, and
+the desk is where an author writes new cards while it runs. So the desk keeps
+the library as well as the session: when the author's own sets have changed on
+disk it reads them again, and a game dealt after that is dealt from what is
+there now. A session is never told to read anything — it is replaced by a new
+one built from the new library, which is a thing ``Session`` already does.
 """
 
 from __future__ import annotations
 
 import json
+import os
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 from fsme.api import Session
+from fsme.content import ContentLibrary
+from fsme.content.workspace import SETS, home, identifier_for
+from fsme.scenario import Scenario
 from fsme.util.errors import EngineError
 from fsme.web.server import HTML, JSON, GameHandler, GameServer
 from fsme.web.server import STATIC as GAME_STATIC
 
-from . import author
+from . import author, games
 from .bench import Workbench
 from .capabilities import catalogue
 
@@ -192,6 +204,25 @@ class DeskHandler(GameHandler):
 
             return
 
+        if self.desk.library is not None and path in (
+            "/api/content",
+            "/api/games",
+            "/api/games/catalogue",
+        ):
+            with self.lock:
+                try:
+                    loaded = self.desk.library_now()
+                except EngineError as refused:
+                    # A set somebody edited by hand into something that does
+                    # not load. The game being watched is untouched.
+                    self._json({"error": str(refused)}, status=400)
+
+                    return
+
+                self._json(self._about_games(path, loaded))
+
+            return
+
         super().do_GET()
 
     def do_HEAD(self) -> None:  # noqa: N802 - the base class names it
@@ -200,11 +231,17 @@ class DeskHandler(GameHandler):
 
         The watch page asks about ``/api/autoplay`` to decide whether to show
         the button at all: the plain game server has no bot in it, and a button
-        that produced a 404 would be a lie about what this build can do.
+        that produced a 404 would be a lie about what this build can do. It
+        asks about ``/api/games`` the same way before showing custom games,
+        which need a library to deal them from.
         """
         path = self.path.split("?", 1)[0]
 
-        self.send_response(200 if path == "/api/autoplay" else 404)
+        offered = path == "/api/autoplay" or (
+            path == "/api/games" and self.desk.library is not None
+        )
+
+        self.send_response(200 if offered else 404)
         self.send_header("Content-Length", "0")
         self.end_headers()
 
@@ -245,6 +282,44 @@ class DeskHandler(GameHandler):
             except author.AuthorError as complaint:
                 # Something the person did, said in words meant for them.
                 self._json({"error": str(complaint)}, status=400)
+
+            return
+
+        if self.desk.library is not None and path in (
+            "/api/restart",
+            "/api/games/save",
+            "/api/games/delete",
+            "/api/games/start",
+            "/api/games/leave",
+        ):
+            try:
+                body = self._body()
+            except ValueError as error:
+                self._json({"error": str(error)}, status=400)
+
+                return
+
+            with self.lock:
+                try:
+                    answer = self._games(path, body)
+                except games.GameError as complaint:
+                    self._json(
+                        {"error": str(complaint), "problems": complaint.problems},
+                        status=400,
+                    )
+
+                    return
+                except (ValueError, EngineError) as refused:
+                    # A set that is not loaded, a character the deal cannot
+                    # find, a number of players nobody can seat. All of them are
+                    # answers to what was asked, and the game being watched is
+                    # still the one it was: nothing is replaced until the new
+                    # one has been dealt.
+                    self._json({"error": str(refused)}, status=400)
+
+                    return
+
+            self._json(answer)
 
             return
 
@@ -468,6 +543,106 @@ class DeskHandler(GameHandler):
                 "moments": [],
             }
 
+    def _about_games(self, path: str, loaded: ContentLibrary) -> dict[str, Any]:
+        """
+        What the watch page reads about content and custom games, from the
+        library as it is now rather than as it was when the desk started.
+        """
+        if path == "/api/content":
+            # The same answer the game server gives, read off the current
+            # library: a set made a minute ago is offered, and choosing it
+            # deals a new game from the library that holds it.
+            return {
+                "sets": [
+                    {"id": one.id, "name": one.manifest.name, "cards": len(one)}
+                    for one in sorted(loaded, key=lambda one: one.id)
+                ],
+                "chosen": list(self.session.chosen),
+            }
+
+        if path == "/api/games/catalogue":
+            return games.catalogue(loaded)
+
+        return {
+            "games": games.list_games(loaded),
+            "where": str(games.games_directory()),
+            "active": self.desk.active,
+        }
+
+    def _games(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
+        """
+        Deal, keep and throw away custom games, and deal ordinary games again.
+
+        Every path that deals builds a whole new session and only then puts it
+        in place of the old one, so a deal the engine refuses leaves the game
+        being watched exactly where it was.
+        """
+        desk = self.desk
+
+        if path == "/api/games/save":
+            saved = games.save_game(body.get("game"), replace=body.get("replace") is True)
+
+            return {"saved": True, **saved}
+
+        if path == "/api/games/delete":
+            games.delete_game(str(body.get("id") or ""))
+
+            return {"deleted": True}
+
+        current = self.session
+        seed = _given(body.get("seed"), "the seed")
+
+        if path == "/api/games/start":
+            scenario = games.load_game(str(body.get("id") or ""))
+            problems = games.availability(scenario, desk.library_now())
+
+            if problems:
+                raise games.GameError(problems[0], problems)
+
+            if seed is None:
+                seed = scenario.seed if scenario.seed is not None else 0
+
+            dealt = desk.deal(scenario=scenario, seed=seed)
+            desk.active = {
+                "id": identifier_for(str(body.get("id"))),
+                "name": scenario.name,
+            }
+
+            return {"view": dealt.view(0), "active": desk.active}
+
+        if seed is None:
+            seed = current.game.state.seed
+
+        if (
+            path == "/api/restart"
+            and desk.active is not None
+            and current.scenario is not None
+        ):
+            # Dealing a custom game again is dealing the same game from another
+            # seed. The chairs and the sets are the game's own, so what the page
+            # sends for those is not applied on top of it.
+            dealt = desk.deal(scenario=current.scenario, seed=seed)
+
+            return {"view": dealt.view(0)}
+
+        players = _given(body.get("players"), "the number of players")
+        sets = body.get("sets")
+
+        if sets is not None and not isinstance(sets, list):
+            raise ValueError("the sets are a list")
+
+        if path == "/api/games/leave":
+            players = players if players is not None else desk.players
+            sets = sets if sets is not None else []
+        else:
+            players = players if players is not None else len(current.game.state.players)
+            sets = sets if sets is not None else list(current.chosen)
+
+        dealt = desk.deal(scenario=None, seed=seed, players=players, sets=sets)
+        desk.active = None
+
+        return {"view": dealt.view(0)}
+
     def _json(self, payload: Any, status: int = 200) -> None:
         self._send(JSON, json.dumps(payload).encode("utf-8"), status=status)
 
@@ -475,10 +650,24 @@ class DeskHandler(GameHandler):
 class DeskServer(GameServer):
     """
     The game server, with somewhere to put work beside it.
+
+    ``library`` and ``reload`` are what lets the game being watched include
+    cards written since the desk started: the library the session was dealt
+    from, and how to read it again. A desk built without them deals from the
+    session it was handed and offers no custom games, which is what it did
+    before either existed.
     """
 
     def __init__(
-        self, address: tuple[str, int], session: Session, bench: Workbench
+        self,
+        address: tuple[str, int],
+        session: Session,
+        bench: Workbench,
+        *,
+        library: ContentLibrary | None = None,
+        reload: Callable[[], ContentLibrary] | None = None,
+        interactive_priority: bool = True,
+        players: int = 2,
     ) -> None:
         super().__init__(address, session)
 
@@ -486,6 +675,83 @@ class DeskServer(GameServer):
         self.RequestHandlerClass = DeskHandler
 
         self.bench = bench
+
+        self.library = library
+        self.reload = reload
+        self.interactive_priority = interactive_priority
+        self.players = players
+
+        self.active: dict[str, str] | None = None
+        """The custom game being watched, by id and name, or None."""
+
+        self._seen = _fingerprint(home() / SETS)
+
+    def library_now(self) -> ContentLibrary:
+        """
+        The library to deal from, read again if the author's sets changed.
+
+        Only the author's own sets are watched: they are the ones written while
+        the desk runs. The cards FSME ships are read again only when the desk
+        is started again, as they always were. Reading every set is not cheap,
+        so it happens when something on disk moved and not on every request.
+        Called with the server's lock held.
+        """
+        if self.library is None:
+            raise ValueError("this desk has no library to deal custom games from")
+
+        if self.reload is None:
+            return self.library
+
+        seen = _fingerprint(home() / SETS)
+
+        if seen != self._seen:
+            # Read first and remember after: a set that will not load leaves
+            # the library as it was, and is reported again on the next request
+            # rather than forgotten.
+            self.library = self.reload()
+            self._seen = seen
+
+        return self.library
+
+    def deal(
+        self,
+        *,
+        scenario: Scenario | None,
+        seed: int,
+        players: int | None = None,
+        sets: list[Any] | None = None,
+    ) -> Session:
+        """
+        Deal a new game from the current library and make it the one watched.
+
+        A custom game seats as many players as it has chairs and deals from its
+        own sets; an ordinary one takes both from the page. Nothing replaces
+        the game being watched until the new one has been dealt.
+        """
+        loaded = self.library_now()
+
+        if scenario is not None:
+            dealt = Session(
+                loaded,
+                players=len(scenario.players) or self.players,
+                seed=seed,
+                interactive_priority=self.interactive_priority,
+                scenario=scenario,
+            )
+        else:
+            dealt = Session(
+                loaded,
+                players=players if players is not None else self.players,
+                seed=seed,
+                interactive_priority=self.interactive_priority,
+            )
+
+            if sets:
+                dealt.restart(sets=[str(one) for one in sets])
+
+        self.session = dealt
+
+        return dealt
 
 
 def _whose_move(game: Any) -> int:
@@ -495,6 +761,74 @@ def _whose_move(game: Any) -> int:
     from fsme.lab.simulation.runner import _whose_move as asked
 
     return int(asked(game))
+
+
+def _fingerprint(directory: Path) -> tuple[tuple[str, int, int, int], ...]:
+    """
+    Every file under a directory, with what changes when it is written.
+
+    Path, size, inode and modification time. A card is saved by writing a file
+    beside itself and moving it into place, so even a save of the same size at
+    the same instant is a new inode. Files whose names start with a dot are the
+    half-written ones that move is made from, and are not content.
+    """
+    if not directory.is_dir():
+        return ()
+
+    found: list[tuple[str, int, int, int]] = []
+
+    for root, folders, files in os.walk(directory):
+        folders[:] = sorted(one for one in folders if not one.startswith("."))
+
+        for name in sorted(files):
+            if name.startswith("."):
+                continue
+
+            path = Path(root) / name
+
+            try:
+                facts = path.stat()
+            except OSError:
+                continue
+
+            found.append(
+                (
+                    str(path.relative_to(directory)),
+                    facts.st_size,
+                    facts.st_ino,
+                    facts.st_mtime_ns,
+                )
+            )
+
+    return tuple(found)
+
+
+def _given(value: Any, what: str) -> int | None:
+    """
+    A whole number from a page, or None when it was not sent.
+
+    Read the way the game server reads a seed — any whole number — but refused
+    out loud when it is not one, instead of failing somewhere further in.
+    """
+    if value is None or value == "":
+        return None
+
+    if isinstance(value, bool):
+        raise ValueError(f"{what} is a whole number, not {value!r}")
+
+    if isinstance(value, int):
+        return value
+
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+
+    if isinstance(value, str):
+        try:
+            return int(value.strip())
+        except ValueError:
+            pass
+
+    raise ValueError(f"{what} is a whole number, not {value!r}")
 
 
 def _within(given: Any, fallback: int, *, low: int, high: int) -> int:
@@ -514,8 +848,25 @@ def desk(
     bench: Workbench,
     host: str = "127.0.0.1",
     port: int = 8000,
+    *,
+    library: ContentLibrary | None = None,
+    reload: Callable[[], ContentLibrary] | None = None,
+    interactive_priority: bool = True,
+    players: int = 2,
 ) -> DeskServer:
     """
     Build the desk. The caller decides when to start serving.
+
+    ``library`` is what ``session`` was dealt from and ``reload`` reads it
+    again; with both, a set written while the desk runs can be watched without
+    starting it again, and custom games are offered.
     """
-    return DeskServer((host, port), session, bench)
+    return DeskServer(
+        (host, port),
+        session,
+        bench,
+        library=library,
+        reload=reload,
+        interactive_priority=interactive_priority,
+        players=players,
+    )

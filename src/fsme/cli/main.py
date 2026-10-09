@@ -237,8 +237,20 @@ def front(args: argparse.Namespace) -> int:
         interactive_priority=not args.no_priority,
     )
 
+    # The same question again, asked whenever the author's sets change on disk,
+    # so a set written on this page can be watched without starting it again.
     server = _bound(
-        lambda: build(session, bench, host=args.host, port=args.port), args
+        lambda: build(
+            session,
+            bench,
+            host=args.host,
+            port=args.port,
+            library=loaded,
+            reload=lambda: library(args),
+            interactive_priority=not args.no_priority,
+            players=args.players,
+        ),
+        args,
     )
     where = f"http://{args.host}:{args.port}/"
 

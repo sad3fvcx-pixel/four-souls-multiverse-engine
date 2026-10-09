@@ -212,7 +212,19 @@ body.viewing #moves-block,
 body.viewing #waiting-block,
 body.viewing #stack-block,
 body.viewing #live-controls,
+body.viewing #custom-panel,
 body.viewing #save-journal { display: none; }
+/* Custom games: shown only where the server says it can deal them. */
+#custom-panel { border-bottom: 1px solid var(--line); padding: 12px 16px; }
+#custom-panel select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); }
+#custom-panel input.wide { width: 16em; }
+.game-row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.game-row .why { color: var(--hot); font-size: 12px; width: 100%; padding-left: 1em; }
+.game-row .ready { color: var(--good); font-size: 12px; }
+.game-row .attention { color: var(--hot); font-size: 12px; }
+.seat-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 4px 0; }
+#custom-trouble { border: 1px solid var(--hot); padding: 6px 10px; margin-top: 8px; font-size: 13px; }
+#custom-said { color: var(--good); font-size: 13px; }
 body.viewing main { grid-template-columns: minmax(0, 1fr); }
 body.viewing aside { border-left: 0; }
 </style>
@@ -231,6 +243,9 @@ body.viewing aside { border-left: 0; }
         title="Which sets this game is dealt from. Nothing picked means all of them — including any you made yourself."></select></label>
     <button id="restart">Deal again</button>
     <button id="autoplay" hidden title="The bots take every seat and play it out while you watch.">Let the bots play</button>
+    <button id="custom-open" hidden title="Games you set up once — who plays whom, from which sets, starting with what — kept to deal again.">Custom games</button>
+    <span class="mode" id="custom-mode" hidden></span>
+    <button id="custom-leave" hidden title="Deal an ordinary game, with the players and sets chosen here.">Back to an ordinary game</button>
   </div>
   <div class="controls" id="journal-controls">
     <button id="save-journal" title="Write the whole journal of this game to a file — every command and every event, the same record this page reads.">Save journal</button>
@@ -244,6 +259,36 @@ body.viewing aside { border-left: 0; }
   </div>
   <div id="journal-trouble" hidden></div>
 </header>
+
+<section id="custom-panel" hidden>
+  <h2>Custom games</h2>
+  <div id="custom-list"></div>
+  <details id="custom-new">
+    <summary>Set up a new one</summary>
+    <div class="controls">
+      <label class="tag">name <input id="custom-name" class="wide" type="text"></label>
+      <label class="tag">players <select id="custom-players"></select></label>
+    </div>
+    <div id="custom-seats"></div>
+    <div class="controls">
+      <label class="tag">sets <select id="custom-sets" multiple size="5"
+        title="Which sets the game is dealt from. Nothing picked means all of them."></select></label>
+    </div>
+    <div class="controls">
+      <label class="tag">souls to win <input id="custom-souls" type="number" min="1"></label>
+      <label class="tag">monster slots <input id="custom-monsters" type="number" min="1"></label>
+      <label class="tag">shop slots <input id="custom-shop" type="number" min="0"></label>
+      <label class="tag">seed <input id="custom-seed" type="number"></label>
+    </div>
+    <div class="controls">
+      <button id="custom-save">Save this game</button>
+      <label class="tag"><input id="custom-replace" type="checkbox" style="width:auto"> replace a game with the same name</label>
+      <span id="custom-said"></span>
+    </div>
+    <p class="hint">A box left empty is dealt the way the game deals it: a character at random, the item it prints, the usual cents and loot.</p>
+  </details>
+  <div id="custom-trouble" hidden></div>
+</section>
 
 <main>
   <div id="table">
@@ -958,10 +1003,16 @@ el("journal-file").addEventListener("change", async (occasion) => {
 
 get("/api/view?since=0").then(draw);
 
+// Whether a custom game is the one being dealt; see "Custom games" below.
+let customOn = false;
+
 // Which sets this game can be dealt from. Offered only when there is a choice
 // to make: with one set loaded, picking it is the same as picking nothing, and
-// a control that cannot change anything is a control in the way.
-get("/api/content").then((content) => {
+// a control that cannot change anything is a control in the way. Asked again
+// when custom games are opened, because a set written since this page loaded
+// is one somebody will want to deal from.
+async function loadSets() {
+  const content = await get("/api/content");
   const sets = (content && content.sets) || [];
 
   if (sets.length < 2) return;
@@ -970,11 +1021,257 @@ get("/api/content").then((content) => {
   const box = el("sets");
 
   box.innerHTML = sets.map((one) =>
-    `<option value="${one.id}"${chosen.has(one.id) ? " selected" : ""}>` +
-    `${one.name} (${one.cards})</option>`).join("");
+    `<option value="${escape(one.id)}"${chosen.has(one.id) ? " selected" : ""}>` +
+    `${escape(one.name)} (${one.cards})</option>`).join("");
   box.size = Math.min(6, sets.length);
-  el("sets-tag").hidden = false;
-}).catch(() => {});
+  el("sets-tag").hidden = customOn;
+}
+
+loadSets().catch(() => {});
+
+// ----------------------------------------------------------------------
+// Custom games
+//
+// A custom game is a scenario the desk keeps: who sits where as whom, which
+// sets, what each seat opens with. Everything here is checked again by the
+// server, which is the only check that counts; the page only offers what the
+// loaded content holds. Shown only when the server answers for /api/games,
+// so the plain game server, which keeps no games, shows nothing.
+// ----------------------------------------------------------------------
+
+let catalogue = { sets: [], least: 2, most: 4 };
+let seedTouched = false;
+
+el("seed").addEventListener("input", () => { seedTouched = true; });
+el("roll-seed").addEventListener("click", () => { seedTouched = true; });
+
+function customTrouble(answer) {
+  const box = el("custom-trouble");
+  const problems = (answer && (answer.problems || (answer.error ? [answer.error] : []))) || [];
+
+  box.innerHTML = problems.map((one) => `<div>${escape(one)}</div>`).join("");
+  box.hidden = problems.length === 0;
+}
+
+function showActive(active) {
+  customOn = Boolean(active);
+  el("custom-mode").hidden = !customOn;
+  el("custom-mode").textContent = customOn ? `Custom: ${active.name}` : "";
+  el("custom-leave").hidden = !customOn;
+  // The chairs and the sets belong to the custom game while it is dealt.
+  el("player-count").closest("label").hidden = customOn;
+  if (el("sets").options.length > 1) el("sets-tag").hidden = customOn;
+}
+
+async function refreshGames() {
+  const answer = await get("/api/games");
+
+  if (answer.error) { customTrouble(answer); return; }
+
+  showActive(answer.active);
+
+  const games = answer.games || [];
+
+  el("custom-list").innerHTML = games.length
+    ? games.map((game) => {
+        const seats = (game.game && game.game.players) || [];
+        const status = game.ready
+          ? `<span class="ready">ready</span>`
+          : `<span class="attention">needs attention</span>`;
+        const why = (game.problems || []).map((one) =>
+          `<div class="why">${escape(one)}</div>`).join("");
+
+        return `<div class="game-row" data-game="${escape(game.id)}">`
+          + `<b>${escape(game.name)}</b>`
+          + `<span class="tag">${seats.length} players</span>${status}`
+          + `<button data-game-start="${escape(game.id)}"${game.ready ? "" : " disabled"}>Start</button>`
+          + `<button data-game-delete="${escape(game.id)}">Delete</button>${why}</div>`;
+      }).join("")
+    : `<div class="empty">No custom games yet.</div>`;
+}
+
+function chosenSets() {
+  return Array.from(el("custom-sets").selectedOptions).map((one) => one.value);
+}
+
+function offered(kind) {
+  // Everything of one kind in the chosen sets, or in every set when none is.
+  const wanted = new Set(chosenSets());
+  const seen = new Map();
+
+  for (const one of catalogue.sets) {
+    if (wanted.size && !wanted.has(one.id)) continue;
+
+    for (const item of one[kind]) {
+      if (!seen.has(item.id)) seen.set(item.id, `${item.name} (${one.name})`);
+    }
+  }
+
+  return [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+}
+
+function options(pairs, empty, picked) {
+  return `<option value="">${escape(empty)}</option>` + pairs.map(([id, label]) =>
+    `<option value="${escape(id)}"${id === picked ? " selected" : ""}>${escape(label)}</option>`).join("");
+}
+
+function readSeats() {
+  return Array.from(el("custom-seats").querySelectorAll(".seat-row")).map((row) => ({
+    name: row.querySelector("[data-key=name]").value,
+    character: row.querySelector("[data-key=character]").value,
+    starting_item: row.querySelector("[data-key=starting_item]").value,
+    coins: row.querySelector("[data-key=coins]").value,
+    loot: row.querySelector("[data-key=loot]").value,
+  }));
+}
+
+function drawSeats() {
+  const kept = readSeats();
+  const count = Number(el("custom-players").value) || catalogue.least;
+  const characters = offered("characters");
+  const items = offered("starting_items");
+  let rows = "";
+
+  for (let seat = 0; seat < count; seat += 1) {
+    const was = kept[seat] || {};
+
+    rows += `<div class="seat-row"><span class="tag">player ${seat + 1}</span>`
+      + `<input data-key="name" type="text" placeholder="name" value="${escape(was.name || "")}">`
+      + `<select data-key="character">${options(characters, "any character", was.character)}</select>`
+      + `<select data-key="starting_item">${options(items, "its printed item", was.starting_item)}</select>`
+      + `<label class="tag">cents <input data-key="coins" type="number" min="0" value="${escape(was.coins || "")}"></label>`
+      + `<label class="tag">loot <input data-key="loot" type="number" min="0" value="${escape(was.loot || "")}"></label></div>`;
+  }
+
+  el("custom-seats").innerHTML = rows;
+}
+
+async function openCustom() {
+  const panel = el("custom-panel");
+
+  panel.hidden = !panel.hidden;
+  if (panel.hidden) return;
+
+  customTrouble(null);
+  catalogue = await get("/api/games/catalogue");
+
+  if (catalogue.error) { customTrouble(catalogue); return; }
+
+  const counts = el("custom-players");
+  counts.innerHTML = "";
+  for (let count = catalogue.least; count <= catalogue.most; count += 1) {
+    counts.innerHTML += `<option value="${count}">${count}</option>`;
+  }
+
+  el("custom-sets").innerHTML = catalogue.sets.map((one) =>
+    `<option value="${escape(one.id)}">${escape(one.name)}</option>`).join("");
+
+  drawSeats();
+  await refreshGames();
+  await loadSets();
+}
+
+async function saveCustom() {
+  el("custom-said").textContent = "";
+
+  const answer = await post("/api/games/save", {
+    game: {
+      name: el("custom-name").value,
+      players: readSeats(),
+      sets: chosenSets(),
+      table: {
+        souls_to_win: el("custom-souls").value,
+        monster_slots: el("custom-monsters").value,
+        shop_slots: el("custom-shop").value,
+      },
+      seed: el("custom-seed").value,
+    },
+    replace: el("custom-replace").checked,
+  });
+
+  customTrouble(answer.error ? answer : null);
+
+  if (answer.saved) {
+    el("custom-said").textContent = `Kept as ${answer.name}.`;
+    await refreshGames();
+  }
+}
+
+function freshTable(view) {
+  forgetSteps();
+  el("story").innerHTML = "";
+  seen = 0;
+  draw(view);
+  el("seed").value = view.state.seed;
+  seedTouched = false;
+}
+
+async function startCustom(id) {
+  // The seed box is sent only when somebody set it here; otherwise the game
+  // is dealt from the seed it was saved with.
+  const body = { id };
+  if (seedTouched) body.seed = el("seed").value;
+
+  const answer = await post("/api/games/start", body);
+
+  customTrouble(answer.error ? answer : null);
+  if (answer.error) return;
+
+  freshTable(answer.view);
+  showActive(answer.active);
+}
+
+async function leaveCustom() {
+  const answer = await post("/api/games/leave", {
+    seed: el("seed").value,
+    players: Number(el("player-count").value),
+    sets: Array.from(el("sets").selectedOptions).map((one) => one.value),
+  });
+
+  if (answer.error) { customTrouble(answer); return; }
+
+  freshTable(answer.view);
+  showActive(null);
+  await loadSets();
+}
+
+el("custom-players").addEventListener("change", drawSeats);
+el("custom-sets").addEventListener("change", drawSeats);
+
+document.addEventListener("click", async (occasion) => {
+  const button = occasion.target.closest("button");
+  if (!button) return;
+
+  if (button.id === "custom-open") { await openCustom(); return; }
+  if (button.id === "custom-save") { await saveCustom(); return; }
+  if (button.id === "custom-leave") { await leaveCustom(); return; }
+
+  if (button.dataset.gameStart !== undefined) {
+    await startCustom(button.dataset.gameStart);
+    return;
+  }
+
+  if (button.dataset.gameDelete !== undefined) {
+    if (!confirm("Delete this custom game? The game being watched is not affected.")) return;
+
+    const answer = await post("/api/games/delete", { id: button.dataset.gameDelete });
+    customTrouble(answer.error ? answer : null);
+    await refreshGames();
+  }
+});
+
+(async () => {
+  try {
+    const answer = await fetch("/api/games", { method: "HEAD" });
+
+    if (answer.ok) {
+      el("custom-open").hidden = false;
+      await refreshGames();
+    }
+  } catch (error) {
+    /* no custom games here */
+  }
+})();
 </script>
 </body>
 </html>
