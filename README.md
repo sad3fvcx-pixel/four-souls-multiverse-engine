@@ -47,9 +47,11 @@ Worth knowing before you spend an afternoon on it.
 - **Not a strong player.** The bot looks one move ahead and does not know what
   most cards say. It exists to be readable, not good, so "the bot would have
   played X" is an opinion you can argue with rather than a verdict.
-- **Not a balance oracle.** Removing a card reshuffles every game it would have
-  been in, so a card test compares two populations rather than two versions of
-  one game. The reports say this in their own wording; believe the wording.
+- **Not a balance oracle.** A card test compares each game with the same game
+  without the card, but the games are played by a table choosing at random
+  among legal moves, on content that is two thirds inert, so what it finds is
+  true of that table and no more. The reports say this in their own wording;
+  believe the wording.
 - **Not official.** No affiliation with Studio71 or Edmund McMillen. Card text
   is transcribed from published cards for use with a game you own.
 
@@ -160,10 +162,13 @@ moves, and the report says so. A card's "won %" is how often the player holding
 it went on to win — a correlation, not the card's doing.
 
 `test-card` is the tool that can do better: it plays the same seeds with the
-card in the content and without it, and reports each difference with the noise
-it sits in. Taking a card out reshuffles every game, so when a card reached the
-table rarely the report marks nothing and says the difference is the deck
-rather than the card.
+card in the content and without it. The games are dealt on RNG model 2, where
+taking a card out moves no other card, so each seed is one game played twice
+and every game is read against its own game without the card. Each difference
+is reported with the noise it sits in and with the number of games it moved
+in, so a card that changed none of them is told apart from one that changed
+too few to read. [LIMITATIONS.md](docs/LIMITATIONS.md) says what a
+card test still cannot tell you.
 
 ### The bot
 

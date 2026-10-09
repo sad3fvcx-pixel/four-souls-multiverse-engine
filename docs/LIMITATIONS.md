@@ -81,22 +81,52 @@ counted and reported by seed rather than silently dropped.
 
 See `examples/a-problem-found.txt` for the whole thing.
 
-## The card test compares two populations, not two versions of one game
+## What a card test can and cannot tell you
 
-This is the largest limit on the tool most people will come for.
+`fsme test-card` plays the same seeds with the card and without it on RNG model
+2, where taking a card out moves no other card. Each seed is one game played
+twice, the same game until the card does something, and every game is read
+against its own game without the card — paired by seed, whatever order the
+games finish in. Two runs that did not play the same seeds, or that played a
+seed twice, are refused rather than quietly trimmed to match. (In the code this
+is `compare_paired()`, made only for model 2; `compare()` still reads two runs
+as independent populations, which is what model 1 needs.)
 
-Removing a card from the deck reshuffles **every game that deck deals**. So the
-run with the card and the run without it differ everywhere, not only where the
-card is. FSME reports this rather than working around it:
+How each number is worked out:
 
-- a card that reached the table in fewer than one game in ten gets nothing
-  marked at all, and the verdict is *too scarce to say*;
-- every difference is printed with the uncertainty it sits inside, measured
-  from the games actually played;
-- "no effect this run could see" is never shortened to "no effect".
+- turns, commands and deaths are averaged over the difference inside each pair,
+  and printed with one standard error of that difference;
+- the share of attacks that hit is compared with an error that treats a game,
+  not a single roll, as one observation;
+- the share of games that finished is marked by an exact McNemar test on the
+  pairs where only one of the two games finished, at p ≤ 0.0455 — the same line
+  as twice a standard error;
+- any other measure is marked only when it differed in at least ten pairs and
+  moved by more than twice its own uncertainty. Ten is a rule of thumb for when
+  that uncertainty can be trusted, not a test of anything;
+- a change that was exactly the same in every pair is printed without a ± and
+  not marked.
 
-Paired seeds — dealing the same game with and without the card — would fix
-this. It is the one item in [NEXT.md](NEXT.md) that needs no external signal.
+What it still cannot tell you:
+
+- **A game that fell over takes its pair with it.** If either game of a pair
+  raised an error, the pair is left out of every number and listed by seed with
+  the reason, and the games that fell over are counted on each side. The
+  verdict is about the pairs that were read.
+- **"No effect this run could see" is not "no effect".** A difference smaller
+  than its uncertainty, or one that moved in too few games, is reported as
+  exactly that, and the verdict says *too few games changed to say* when that
+  is all there was. Only *taking the card out changed none of N games* is a
+  statement that nothing moved, and it is about the measures printed, over
+  those games.
+- **How often the card was played is not how often it mattered.** The report
+  says how many games of the run with the card it was played, activated or
+  bought in. A card can change a game without being played, so that number
+  decides nothing, and it counts every game of that run that did not fall over
+  — it can be more than the number of pairs read when some were left out.
+- **It is a test of one table.** The games are played by a table that chooses
+  at random among legal moves, on content where most cards have no rules yet,
+  so an effect is an effect at that table — see the next section.
 
 ## Every number comes from a table of bots
 

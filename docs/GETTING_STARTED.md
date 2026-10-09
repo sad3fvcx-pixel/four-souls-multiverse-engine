@@ -230,19 +230,28 @@ cp -r content/base_game content/user/my_set /tmp/small/
 fsme test-card --content /tmp/small my_set-lucky_penny --games 200 --jobs 4
 ```
 
-FSME plays two hundred games with the card in the deck and two hundred without
-it, and compares. The verdict is one of three sentences:
+FSME plays two hundred seeds with the card in the deck and the same two hundred
+without it. Taking the card out moves no other card, so each seed is the same
+game twice until the card does something, and each game is read against its own
+game without the card. The verdict is one of four sentences:
 
-- **an effect, in N of 5 measures** — the runs differ by more than their own
-  uncertainty;
-- **no effect this run could see** — they do not. Note the wording: not "no
-  effect";
-- **too scarce to say** — the card barely reached the table, so the difference
-  between the runs is the deck rather than the card.
+- **taking the card out changed none of N games** — every pair came out the
+  same in every measure. That is what was observed, not an estimate;
+- **too few games changed to say** — some games differed, but fewer than ten in
+  each measure other than the share of games that finished, and that share did
+  not move by more than chance would;
+- **no effect this run could see** — enough games changed to read, and no
+  measure moved by more than its own uncertainty in enough of them. Note the
+  wording: not "no effect";
+- **an effect, in N of 5 measures** — those measures moved by more than their
+  own uncertainty.
 
-Read [LIMITATIONS.md](LIMITATIONS.md) before acting on any of it. The largest
-caveat: taking a card out reshuffles every game, so the two runs differ
-everywhere and not only where the card is.
+The report also says how many games the card was played in. That is a
+description, not part of the verdict: a card can change a game without ever
+being played, and a game whose pair fell over is left out of the numbers but
+still counted there.
+
+Read [LIMITATIONS.md](LIMITATIONS.md) before acting on any of it.
 
 ---
 

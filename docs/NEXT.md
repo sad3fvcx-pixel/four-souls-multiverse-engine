@@ -75,21 +75,19 @@ the least honest thing this project could do.
 
 **What it would be.** Several things that share a name:
 
-- *paired seeds* — deal the same game with and without the card, so the two
-  runs differ only where the card is. Today they differ everywhere, which is
-  the largest single weakness of `fsme test-card`, and it is stated in the
-  report rather than fixed;
+- *paired seeds* — done. The card test deals the same game with and without
+  the card on RNG model 2 and reads each game against its own game without the
+  card; [LIMITATIONS.md](LIMITATIONS.md) says what that does and does not
+  settle;
 - *per-character splits* — "this card does nothing in general but is strong
   for Isaac". Real, and a multiple-comparison trap: splitting by character
   multiplies the number of claims by the number of characters;
 - *more than one card at a time* — testing a whole set rather than a card.
 
-**Why it is interesting.** This is the tool people would come to FSME for, and
-the paired-seed problem is the one that limits what it can say.
+**Why it is interesting.** This is the tool people would come to FSME for.
 
-**What would justify starting.** Paired seeds need no signal at all — it is a
-known weakness of a shipped feature and would improve every card test. The
-other two want somebody with a real set to balance.
+**What would justify starting.** Both that remain want somebody with a real set
+to balance.
 
 ---
 
