@@ -164,6 +164,8 @@ so it cannot go stale. The shape of a card is in
 ## Where to go next
 
 - [Getting started](GETTING_STARTED.md) — install, demo, and the rest of FSME
+- [Watch a game you set up](GETTING_STARTED.md#6-watch-a-game-you-set-up) —
+  choose the characters, sets and starting cents, keep it, and deal it again
 - [What FSME cannot do](LIMITATIONS.md) — the engine's limits, stated plainly
 - [REFERENCE.md](REFERENCE.md) — the whole vocabulary, generated
 - [Architecture summary](CARD_CONSTRUCTOR_V09_ARCHITECTURE_SUMMARY.md) — how

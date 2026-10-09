@@ -10,3 +10,11 @@ A scenario is not a save. It says how a game *starts* — which sets are in the
 decks, who sits where, what the table is worth winning. What happened
 afterwards is a journal, and a journal carries a copy of the scenario inside
 it, so deleting a file from here never stops a game replaying.
+
+Games set up on the watch page of `fsme desk` are scenarios too, in the same
+format, kept in `FSME/my games` in your documents folder rather than here; the
+watch page lists those and not this folder. `fsme scenario validate FILE` and
+`fsme scenario list "<that folder>"` read them like any other, and
+`--scenario FILE` deals one — with `--players` set to its number of seats,
+because those commands take the number of players from `--players`, not from
+the file.

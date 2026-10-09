@@ -219,7 +219,53 @@ Working sets to copy rather than type are in
 
 ---
 
-## 6. Find out whether your card matters
+## 6. Watch a game you set up
+
+```bash
+fsme desk --open        # then: Watch a game, then Custom games
+```
+
+A custom game says how a game starts, and you keep it to deal again. The
+**Custom games** button is on the watch page of `fsme desk`; the plain
+`fsme serve` page does not have it.
+
+Under **Set up a new one**, give the game a name and choose 2 to 4 players.
+For each seat you can set a name, a character, a starting item, and the cents
+and loot it opens with; anything left empty is dealt the way the game deals it
+— a character at random, the item that character prints, the usual cents and
+loot. One character cannot sit in two seats. Below the seats: the sets to deal
+from (none picked means all of them), souls to win, monster slots, shop slots
+and a seed. **Save this game** keeps it; a name you have already used is
+refused unless **replace a game with the same name** is ticked.
+
+Saved games are listed with a status. **ready** means it can be dealt from the
+cards loaded now. **needs attention** comes with the reason it cannot: a set
+that is not loaded, a character or starting item that is not in the chosen
+sets, fewer characters than seats, or a file that cannot be read as a game.
+**Delete** asks first, then throws the game away and leaves the game being
+watched alone.
+
+**Start** deals it: as many players as it has seats, from its own sets. If you
+have not changed the seed box on the watch page — by typing in it or pressing
+**Random seed** — since the page opened, a custom game was last started or you
+last went back to an ordinary game, the game is dealt from the seed it was
+saved with, or 0 if it has none; if you have, from the seed in the box. **Deal
+again** deals the same custom game from the seed in the box, and the same game
+from the same seed is the same deal. **Back to an ordinary game** leaves it
+and deals an ordinary game with the players and sets chosen on the page.
+
+A set or card you make in the desk while it is running can be used straight
+away: the desk reads `FSME/my sets` again when something in it changes. The
+cards FSME ships are read when the desk starts.
+
+Custom games are kept in `FSME/my games` in your documents folder (or under
+`FSME_HOME` if you set it), one file each. Each is an ordinary `fsme-scenario`
+file, not a format of its own — see [`scenarios/`](../scenarios/README.md) for
+using one from the command line.
+
+---
+
+## 7. Find out whether your card matters
 
 One card among a thousand is rarely dealt, so make a smaller world for it:
 
