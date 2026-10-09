@@ -458,7 +458,7 @@ class Workbench:
     def _test_card(
         self, job: Job, card: str, games: int, players: int, jobs: int
     ) -> None:
-        from fsme.lab.analysis import Tally, compare, read_out
+        from fsme.lab.analysis import PairedRun, compare_paired, read_out
         from fsme.lab.simulation import PAIRED_RNG_MODEL, run_on_many_cores
 
         named = self._library.registry().get(card)
@@ -466,12 +466,12 @@ class Workbench:
         # Both runs, so the bar means what it says.
         job.total = games * 2
 
-        runs: dict[str, Tally] = {}
-        appeared = 0
+        # Every game is kept by its seed, a game that fell over included: it
+        # takes its pair out of the comparison and is named in the report,
+        # rather than vanishing from one run and leaving the other uneven.
+        paired = PairedRun(card)
 
         for label, drop in (("with", ()), ("without", (card,))):
-            tally = Tally()
-
             for done in run_on_many_cores(
                 self._root,
                 games,
@@ -489,20 +489,13 @@ class Workbench:
                     )
 
                 job.done += 1
-                tally.merge(done.tally)
-
-            runs[label] = tally
-
-            if label == "with":
-                seen = tally.cards.get(card)
-                appeared = seen.games if seen else 0
+                paired.add(label, done.seed, done.tally, done.broke)
 
         job.text = read_out(
-            compare(
+            compare_paired(
                 f"{named.name} ({card})",
-                runs["with"],
-                runs["without"],
-                appeared=appeared,
+                paired,
+                card=card,
                 rng_model=PAIRED_RNG_MODEL,
             )
         )

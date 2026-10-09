@@ -737,22 +737,20 @@ def _one_card_test(
     Play both runs for one card and compare them.
 
     Both runs are played on ``PAIRED_RNG_MODEL``, so the same seed deals the
-    same game with the card and without it until the card does something. A
-    game that comes back from another model is a run that lost its
-    configuration, and is refused rather than counted.
+    same game with the card and without it until the card does something, and
+    each game is read against its own game without the card. A game that comes
+    back from another model is a run that lost its configuration, and is
+    refused rather than counted.
     """
-    from fsme.lab.analysis import Tally, compare
+    from fsme.lab.analysis import PairedRun, compare_paired
     from fsme.lab.simulation import PAIRED_RNG_MODEL, run_on_many_cores
 
     root = content_root(args.content)
 
-    runs: dict[str, Tally] = {}
+    paired = PairedRun(card)
     broken: dict[str, list[str]] = {"with": [], "without": []}
-    appeared = 0
 
     for label, drop in (("with", ()), ("without", (card,))):
-        tally = Tally()
-
         for done in run_on_many_cores(
             root,
             args.games,
@@ -768,25 +766,16 @@ def _one_card_test(
                     f"model {done.rng_model}, not model {PAIRED_RNG_MODEL}"
                 )
 
-            tally.merge(done.tally)
+            paired.add(label, done.seed, done.tally, done.broke)
 
             if done.broke:
                 broken[label].append(f"seed {done.seed}: {done.broke}")
 
-        runs[label] = tally
-
-        if label == "with":
-            seen = tally.cards.get(card)
-            appeared = seen.games if seen else 0
-
     return (
-        compare(
+        compare_paired(
             f"{name} ({card})",
-            runs["with"],
-            runs["without"],
-            appeared=appeared,
-            errors_with=len(broken["with"]),
-            errors_without=len(broken["without"]),
+            paired,
+            card=card,
             rng_model=PAIRED_RNG_MODEL,
         ),
         broken,
@@ -939,8 +928,9 @@ def demo(args: argparse.Namespace) -> int:
         print(read_out(told_about_card))
 
         print(
-            "   Removing a card reshuffles every game, so the report says what"
-            " it\n   can and refuses to say what it cannot."
+            "   Both runs deal the same games, so each game is read against its own"
+            " game\n   without the card, and the report says what that can show and"
+            " no more."
         )
 
     print(f"\n{'─' * 78}")

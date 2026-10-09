@@ -35,10 +35,12 @@ All of that is about RNG model 1, which a run is played on only when it asks for
 it by name. A card test asks for model 2 (``PAIRED_RNG_MODEL``), where each deck is
 shuffled by a key per card: taking a card out moves no other card, and a game
 the card never reached plays out the same with it and without it. The
-populations are then paired by seed as well as alike. The numbers here are
-still worked out as if they were not — the interval is the same one, which
-only makes it wider than it needs to be — and only the sentences that would be
-false on model 2 are said differently.
+populations are then paired by seed as well as alike. ``compare`` still works
+its numbers out as if they were not — the interval is the same one, which only
+makes it wider than it needs to be — and only the sentences that would be false
+on model 2 are said differently. ``compare_paired`` (in ``paired.py``) is the
+one that reads a model 2 card test as pairs, and a comparison says which of the
+two it is in ``design``.
 """
 
 from __future__ import annotations
@@ -60,7 +62,38 @@ One in ten is not a statistical threshold and is not pretending to be one. It
 is the point below which the two runs plainly differ by more than the card —
 every shuffle having moved — and the reading stops offering its numbers as if
 they were about the card.
+
+A paired comparison does not use it: on model 2 a game the card never changed
+is the same game twice, so there is no deck moving for a share of games to
+guard against. What a pair needs instead is ``MIN_DIFFERING``.
 """
+
+MIN_DIFFERING = 10
+"""
+How many pairs a measure has to differ in before a paired difference in it can
+be marked.
+
+A rule of thumb for when the normal approximation behind "twice its standard
+error" starts to hold — the same ten usually asked of the discordant pairs of
+McNemar's test — and not a test of significance. Below it, a difference resting
+on a handful of games that moved is not offered as a finding, however its
+interval came out.
+"""
+
+MCNEMAR_LINE = 0.0455
+"""
+The two-sided p at or below which the exact McNemar test marks a paired share.
+
+The chance of landing two standard errors from zero, so that a share is marked
+at the same line every other measure is.
+"""
+
+INDEPENDENT = "independent"
+PAIRED = "paired"
+
+PAIRED_MEAN = "paired-mean"
+PAIRED_RATIO = "paired-ratio"
+MCNEMAR_EXACT = "mcnemar-exact"
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,7 +112,31 @@ class Difference:
     The uncertainty of the difference, as one standard error.
 
     None when it cannot be worked out, which is not the same as zero and is
-    printed differently.
+    printed differently. In a paired comparison it is also None when every
+    pair moved by exactly the same amount: the change is then exact.
+    """
+
+    method: str = INDEPENDENT
+    """
+    How the uncertainty was worked out: ``independent`` for two populations,
+    ``paired-mean``, ``paired-ratio`` or ``mcnemar-exact`` for pairs.
+    """
+
+    differing: int | None = None
+    """
+    In a paired comparison, how many pairs this measure differed in.
+    """
+
+    discordant: tuple[int, int] | None = None
+    """
+    For a paired share: pairs where only the game with the card had it, and
+    pairs where only the game without the card did.
+    """
+
+    p: float | None = None
+    """
+    For a paired share: the two-sided p of the exact McNemar test, or None
+    when no pair disagreed.
     """
 
     @property
@@ -95,11 +152,19 @@ class Difference:
         Whether the difference is bigger than the noise it sits in.
 
         Two standard errors, which is the usual line and is drawn here so that
-        a reader is not invited to draw it wherever suits them.
+        a reader is not invited to draw it wherever suits them. A paired
+        measure has to have differed in ``MIN_DIFFERING`` pairs as well, and a
+        paired share is marked by its exact test instead.
         """
+        if self.method == MCNEMAR_EXACT:
+            return self.p is not None and self.p <= MCNEMAR_LINE
+
         change = self.change
 
         if change is None or self.error is None or self.error <= 0:
+            return False
+
+        if self.method != INDEPENDENT and (self.differing or 0) < MIN_DIFFERING:
             return False
 
         return abs(change) >= 2 * self.error
@@ -112,6 +177,10 @@ class Difference:
             "change": self.change,
             "error": self.error,
             "beyond_noise": self.tells_us_anything,
+            "method": self.method,
+            "differing": self.differing,
+            "discordant": None if self.discordant is None else list(self.discordant),
+            "p": self.p,
         }
 
 
@@ -128,6 +197,11 @@ class Comparison:
     appeared: int = 0
     """
     Games in which the card actually turned up.
+
+    Counted over the whole run with the card. In a paired comparison that
+    includes games whose pair was left out because the game without the card
+    fell over, so it can be more than ``games``, which counts only the pairs
+    read.
 
     The number that decides whether the rest means anything: a card that never
     reached the table cannot have changed the game, and a comparison that shows
@@ -149,6 +223,39 @@ class Comparison:
     knows.
     """
 
+    design: str = field(default=INDEPENDENT, kw_only=True)
+    """
+    ``independent`` when the runs were read as two populations, ``paired``
+    when each game was read against its own game without the card.
+
+    In a paired comparison ``games`` is the number of pairs read, and the
+    averages on both sides are taken over those pairs.
+    """
+
+    excluded: tuple[tuple[int, str], ...] = field(default=(), kw_only=True)
+    """
+    The pairs left out of a paired comparison, by seed, with why: a game that
+    fell over on either side takes its other half out with it.
+    """
+
+    @property
+    def paired(self) -> bool:
+        return self.design == PAIRED
+
+    @property
+    def unchanged(self) -> bool:
+        """
+        Whether a paired comparison found every pair the same in every measure.
+        """
+        return self.paired and all(not difference.differing for difference in self.differences)
+
+    @property
+    def most_differing(self) -> int:
+        """
+        The most pairs any one measure of a paired comparison differed in.
+        """
+        return max((difference.differing or 0 for difference in self.differences), default=0)
+
     @property
     def reshuffled(self) -> bool:
         """
@@ -162,7 +269,20 @@ class Comparison:
     def can_be_about_the_card(self) -> bool:
         """
         Whether the card was in enough games for a difference to be its doing.
+
+        In a paired comparison: whether some measure moved in enough pairs to
+        be read — ``MIN_DIFFERING`` of them, or a share whose exact test says
+        so. How often the card was played does not decide it, since a card can
+        change a game without ever being played.
         """
+        if self.paired:
+            return any(
+                difference.tells_us_anything
+                if difference.method == MCNEMAR_EXACT
+                else (difference.differing or 0) >= MIN_DIFFERING
+                for difference in self.differences
+            )
+
         return bool(self.games) and self.appeared >= self.games * ENOUGH
 
     @property
@@ -197,7 +317,17 @@ class Comparison:
         if not self.games:
             return "nothing was played"
 
-        if not self.appeared:
+        if self.paired:
+            if self.unchanged:
+                return f"taking the card out changed none of {self.games} games"
+
+            if not self.can_be_about_the_card:
+                return (
+                    f"too few games changed to say: at most {self.most_differing}"
+                    f" of {self.games} differed in any one measure"
+                )
+
+        elif not self.appeared:
             return f"the card never reached the table in {self.games} games"
 
         if not self.can_be_about_the_card:
@@ -217,6 +347,12 @@ class Comparison:
         told = self.told_us
 
         if not told:
+            if self.paired:
+                return (
+                    f"no effect this run could see, over {self.games} games each"
+                    f" played with the card and without it"
+                )
+
             return (
                 f"no effect this run could see, over {self.games} games in each"
             )
@@ -240,6 +376,8 @@ class Comparison:
             "errors_with": self.errors_with,
             "errors_without": self.errors_without,
             "rng_model": self.rng_model,
+            "design": self.design,
+            "excluded": [{"seed": seed, "reason": reason} for seed, reason in self.excluded],
         }
 
 
@@ -379,6 +517,9 @@ def read_out(comparison: Comparison, *, width: int = 78) -> str:
     """
     Write a comparison out for a person.
     """
+    if comparison.paired:
+        return _read_out_paired(comparison, width=width)
+
     lines = [
         "=" * width,
         f"Card test — {comparison.subject}",
@@ -477,6 +618,120 @@ def read_out(comparison: Comparison, *, width: int = 78) -> str:
         lines += [
             "  Nothing is marked: the card was too scarce for a difference",
             "  between the runs to be read as its doing.",
+            "",
+        ]
+
+    return "\n".join(lines)
+
+
+def _read_out_paired(comparison: Comparison, *, width: int) -> str:
+    """
+    Write a paired comparison out: every game read against its own game
+    without the card.
+    """
+    lines = [
+        "=" * width,
+        f"Card test — {comparison.subject}",
+        "=" * width,
+        "",
+        f"  Verdict: {comparison.verdict}",
+        "",
+        f"  {comparison.games} games with it, {comparison.games} without,"
+        f" on the same seeds",
+        f"  it was played in {comparison.appeared} games with it",
+        f"  played on RNG model {comparison.rng_model}: taking the card out"
+        f" moves no other card,",
+        "  so each game is read against its own game without the card",
+    ]
+
+    if comparison.errors_with or comparison.errors_without:
+        lines += [
+            "",
+            f"  games that fell over: {comparison.errors_with} with it, "
+            f"{comparison.errors_without} without",
+            f"  {len(comparison.excluded)} pairs left out whole, a fallen game taking"
+            f" its other half with it:",
+        ]
+
+        lines += [f"    seed {seed}: {reason}" for seed, reason in comparison.excluded[:5]]
+
+        if len(comparison.excluded) > 5:
+            lines.append(f"    and {len(comparison.excluded) - 5} more")
+
+        if comparison.errors_without > comparison.errors_with:
+            lines += [
+                "  Games that could not be dealt without it are games where",
+                "  another card named it — a starting item, most likely.",
+            ]
+
+    lines += [
+        "",
+        "-" * width,
+        f"  {'':<22}{'with':>12}{'without':>12}{'change':>20}{'differed':>10}",
+        "-" * width,
+    ]
+
+    for difference in comparison.differences:
+        change = difference.change
+
+        told = (
+            "—"
+            if change is None
+            else f"{change:+.2f} ± {difference.error:.2f}"
+            if difference.error is not None
+            else f"{change:+.2f}"
+        )
+
+        mark = (
+            "  *"
+            if difference.tells_us_anything and comparison.can_be_about_the_card
+            else ""
+        )
+
+        differed = "—" if difference.differing is None else str(difference.differing)
+
+        lines.append(
+            f"  {difference.name:<22}"
+            f"{_number(difference.with_it):>12}"
+            f"{_number(difference.without_it):>12}"
+            f"{told:>20}"
+            f"{differed:>10}{mark}"
+        )
+
+    lines += ["-" * width, ""]
+
+    for difference in comparison.differences:
+        if difference.method == MCNEMAR_EXACT and difference.discordant is not None:
+            only_with, only_without = difference.discordant
+            tested = "no pair disagreed" if difference.p is None else f"p = {difference.p:.4f}"
+
+            lines += [
+                f"  {difference.name}: {only_with} only with it, {only_without} only"
+                f" without it; exact McNemar {tested}",
+                "",
+            ]
+
+    if comparison.unchanged:
+        lines += [
+            "  Nothing is marked: every game came out the same with the card and",
+            "  without it, in every measure.",
+            "",
+        ]
+    elif comparison.can_be_about_the_card:
+        lines += [
+            "  * bigger than twice its own uncertainty, in a measure that differed",
+            f"    in at least {MIN_DIFFERING} games — or, for a share of games, an exact",
+            f"    McNemar p of {MCNEMAR_LINE} or less. Everything unmarked is within",
+            "    the noise of this many games and says nothing. A change with no ±",
+            "    moved by the same amount in every game, or could not be measured.",
+            "",
+        ]
+    else:
+        lines += [
+            "  Nothing is marked: too few games differed for a difference to be",
+            f"  read — fewer than {MIN_DIFFERING} in every measure, and no share an"
+            f" exact test",
+            "  could tell from chance.",
             "",
         ]
 

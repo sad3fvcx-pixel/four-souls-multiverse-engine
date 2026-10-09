@@ -419,6 +419,8 @@ def test_a_card_test_is_played_on_model_two_and_says_so(
     told = json.loads(capsys.readouterr().out)
 
     assert told["rng_model"] == "2"
+    assert told["design"] == "paired"
+    assert told["excluded"] == []
     assert RESHUFFLED not in json.dumps(told)
 
     assert main(["test-card", UNDER_TEST[0], "--games", "2"]) == 0
@@ -454,7 +456,95 @@ def test_the_desk_card_test_is_played_on_model_two(
 
     assert job.state == "done", job.error
     assert "played on RNG model 2" in job.text
+    assert "each game is read against its own game without the card" in job.text
     assert RESHUFFLED not in job.text
+
+
+def stumbling(*_: Any, without: tuple[str, ...] = (), **__: Any) -> Iterator[Finished]:
+    """
+    A pool whose run without the card fell over on seed 1, and which hands its
+    games back last seed first.
+    """
+    for seed in (2, 1, 0):
+        if without and seed == 1:
+            yield Finished(
+                seed=seed,
+                finished=False,
+                winner=None,
+                turns=0,
+                commands=0,
+                tally=Tally(),
+                broke="RuntimeError: fell over",
+                rng_model=PAIRED_RNG_MODEL,
+            )
+            continue
+
+        tally = Tally(games=1, finished=1)
+        tally.turns = 40 + seed
+        tally.commands = 100 + seed
+
+        yield Finished(
+            seed=seed,
+            finished=True,
+            winner=0,
+            turns=tally.turns,
+            commands=tally.commands,
+            tally=tally,
+            rng_model=PAIRED_RNG_MODEL,
+        )
+
+
+def test_a_card_test_leaves_out_a_pair_that_fell_over_and_says_which(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(simulation, "run_on_many_cores", stumbling)
+
+    assert main(["test-card", UNDER_TEST[0], "--games", "3", "--json"]) == 0
+
+    told = json.loads(capsys.readouterr().out)
+
+    assert told["design"] == "paired"
+    assert told["games"] == 2
+    assert (told["errors_with"], told["errors_without"]) == (0, 1)
+    assert told["excluded"] == [{"seed": 1, "reason": "without it: RuntimeError: fell over"}]
+    assert told["verdict"] == "taking the card out changed none of 2 games"
+
+
+def test_the_desk_card_test_no_longer_drops_a_game_that_fell_over(
+    everything: ContentLibrary, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(simulation, "run_on_many_cores", stumbling)
+
+    bench = Workbench(everything, CONTENT_ROOT, tmp_path / "work")
+    job = finished(bench, bench.test_card(UNDER_TEST[0], games=3, players=2, jobs=1).id)
+
+    assert job.state == "done", job.error
+    assert "games that fell over: 0 with it, 1 without" in job.text
+    assert "seed 1: without it: RuntimeError: fell over" in job.text
+    assert "2 games with it, 2 without" in job.text
+
+
+def lopsided(*_: Any, without: tuple[str, ...] = (), **__: Any) -> Iterator[Finished]:
+    """A pool whose run without the card played a seed the other run did not."""
+    for seed in (0, 1, 5) if without else (0, 1):
+        yield Finished(
+            seed=seed,
+            finished=True,
+            winner=0,
+            turns=1,
+            commands=1,
+            tally=Tally(games=1, finished=1),
+            rng_model=PAIRED_RNG_MODEL,
+        )
+
+
+def test_a_card_test_whose_runs_played_different_seeds_is_refused(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(simulation, "run_on_many_cores", lopsided)
+
+    with pytest.raises(RuntimeError, match="did not play the same seeds"):
+        main(["test-card", UNDER_TEST[0], "--games", "2"])
 
 
 def test_a_comparison_has_to_be_told_its_model() -> None:

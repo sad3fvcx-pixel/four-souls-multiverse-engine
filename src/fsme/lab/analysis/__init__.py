@@ -15,6 +15,7 @@ from __future__ import annotations
 from .compare import Comparison, Difference, compare, read_out
 from .explain import explain
 from .moments import Contribution, Ledger, Moment, Turning, turning_points
+from .paired import PairedRun, compare_paired
 from .party import Review, review, reviewed
 from .report import report
 from .risk import Risks, Risky, risks
@@ -32,6 +33,7 @@ __all__ = [
     "Moment",
     "Oddity",
     "Pair",
+    "PairedRun",
     "Review",
     "Risks",
     "Risky",
@@ -44,6 +46,7 @@ __all__ = [
     "Thinking",
     "Turning",
     "compare",
+    "compare_paired",
     "explain",
     "read_out",
     "report",
