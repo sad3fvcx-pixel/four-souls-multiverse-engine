@@ -377,7 +377,16 @@ function drawCards() {
 
 async function cards() {
   try {
-    const read = await (await fetch("/api/cards")).json();
+    const answer = await fetch("/api/cards");
+    const read = await answer.json();
+
+    if (!answer.ok) {
+      // A set that will not load refuses the whole library, and saying so is
+      // the answer: an empty list would read as "there are no cards".
+      $("card").innerHTML = "<option value=''>could not load the cards</option>";
+      $("card-text").textContent = `could not load the cards — ${read.error || "the desk said no"}`;
+      return;
+    }
 
     known = read.cards || [];
 
@@ -441,6 +450,17 @@ $("loader").addEventListener("change", async (event) => {
 refresh();
 cards();
 setInterval(refresh, 900);
+
+// A set made in another tab, or on the front page before coming back, is in
+// the list by the time this page is looked at again. Asked when the page is
+// seen, not on a timer.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") cards();
+});
+
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) cards();
+});
 </script>
 </body>
 </html>

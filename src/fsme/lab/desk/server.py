@@ -145,7 +145,22 @@ class DeskHandler(GameHandler):
             return
 
         if path == "/api/cards":
-            self._json({"cards": self.bench.cards()})
+            if self.desk.library is None:
+                self._json({"cards": self.bench.cards()})
+
+                return
+
+            # The cards to choose a test from are the ones the desk would deal
+            # now, which a set written since the page opened can change.
+            with self.lock:
+                try:
+                    self.desk.library_now()
+                except EngineError as refused:
+                    self._json({"error": str(refused)}, status=400)
+
+                    return
+
+                self._json({"cards": self.bench.cards()})
 
             return
 
@@ -353,6 +368,18 @@ class DeskHandler(GameHandler):
             self._json({"error": str(error)}, status=400)
 
             return
+
+        if self.desk.library is not None and body.get("kind") == "test-card":
+            # A card is looked up when its test starts, so the library is
+            # brought up to date first: a card written since the list was last
+            # asked for would otherwise be unknown to the job testing it.
+            with self.lock:
+                try:
+                    self.desk.library_now()
+                except EngineError as refused:
+                    self._json({"error": str(refused)}, status=400)
+
+                    return
 
         try:
             job = self._run(body)
@@ -707,8 +734,11 @@ class DeskServer(GameServer):
         if seen != self._seen:
             # Read first and remember after: a set that will not load leaves
             # the library as it was, and is reported again on the next request
-            # rather than forgotten.
+            # rather than forgotten. The bench is handed the same library, so
+            # the cards it offers and tests are the ones dealt here; a set that
+            # will not load leaves both as they were.
             self.library = self.reload()
+            self.bench.use(self.library)
             self._seen = seen
 
         return self.library

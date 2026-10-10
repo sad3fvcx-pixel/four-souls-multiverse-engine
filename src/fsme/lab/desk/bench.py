@@ -142,6 +142,19 @@ class Workbench:
         """
         return self._roots
 
+    def use(self, library: ContentLibrary) -> None:
+        """
+        Deal from this library from now on.
+
+        The desk reads the author's sets again when they change on disk, and
+        hands the new library here so the list of cards and the next job see
+        them. A job already running keeps the library it started with: each
+        one is given its library when it starts, and nothing here reaches into
+        a job that has.
+        """
+        with self._lock:
+            self._library = library
+
     def show_card(self, card: Mapping[str, Any]) -> list[dict[str, Any]]:
         """
         Play one card in a game and say what happened, moment by moment.
@@ -253,6 +266,9 @@ class Workbench:
         come back "no effect", and finding that out after a two-minute run is a
         waste nobody should have to discover twice.
         """
+        with self._lock:
+            library = self._library
+
         return sorted(
             (
                 {
@@ -264,7 +280,7 @@ class Workbench:
                     ),
                     "text": str(definition.metadata.get("text", "")),
                 }
-                for definition in self._library.definitions()
+                for definition in library.definitions()
             ),
             key=lambda card: (str(card["name"]).lower(), str(card["set"])),
         )
@@ -280,7 +296,7 @@ class Workbench:
         return self._start(
             "play",
             f"a game — seed {seed}, {players} players",
-            lambda job: self._play(job, seed, players, bot_seats),
+            lambda job, library: self._play(job, library, seed, players, bot_seats),
         )
 
     def study(
@@ -292,7 +308,9 @@ class Workbench:
         return self._start(
             "study",
             f"a study — {games} games, {players} players",
-            lambda job: self._study(job, games, players, jobs, bot_seats),
+            lambda job, library: self._study(
+                job, library, games, players, jobs, bot_seats
+            ),
         )
 
     def test_card(self, card: str, games: int, players: int, jobs: int) -> Job:
@@ -302,7 +320,9 @@ class Workbench:
         return self._start(
             "test-card",
             f"a card test — {card}, {games} games each way",
-            lambda job: self._test_card(job, card, games, players, jobs),
+            lambda job, library: self._test_card(
+                job, library, card, games, players, jobs
+            ),
         )
 
     def bundle(self, number: int) -> dict[str, Any] | None:
@@ -368,7 +388,7 @@ class Workbench:
         return self._start(
             "report",
             f"a saved report — {given.get('title') or 'a game'}",
-            lambda job: self._loaded(job, given),
+            lambda job, library: self._loaded(job, library, given),
         )
 
     def open_report(self, name: str) -> Job:
@@ -378,17 +398,28 @@ class Workbench:
         return self._start(
             "report",
             f"a report — {name}",
-            lambda job: self._report(job, name),
+            lambda job, library: self._report(job, library, name),
         )
 
     # ------------------------------------------------------------------
 
-    def _start(self, kind: str, title: str, work: Callable[[Job], None]) -> Job:
+    def _start(
+        self,
+        kind: str,
+        title: str,
+        work: Callable[[Job, ContentLibrary], None],
+    ) -> Job:
         with self._lock:
             job = Job(id=self._next, kind=kind, title=title)
 
             self._jobs[job.id] = job
             self._next += 1
+
+            # The library this job deals from and reads with, taken once, now.
+            # The desk may hand over a newer one while the job runs; a game
+            # played from one library and reviewed against another would be
+            # read by cards it was never dealt.
+            library = self._library
 
         def run() -> None:
             job.state = RUNNING
@@ -405,7 +436,7 @@ class Workbench:
             # count progress into the job while it runs and the page draws it
             # as it goes, which is the whole point of running the work here.
             try:
-                work(job)
+                work(job, library)
             except Exception:
                 job.error = traceback.format_exc(limit=3)
                 job.state = FAILED
@@ -419,7 +450,12 @@ class Workbench:
         return job
 
     def _play(
-        self, job: Job, seed: int, players: int, bot_seats: tuple[int, ...]
+        self,
+        job: Job,
+        library: ContentLibrary,
+        seed: int,
+        players: int,
+        bot_seats: tuple[int, ...],
     ) -> None:
         from fsme.lab.analysis import review, reviewed
         from fsme.lab.simulation import play_one
@@ -427,7 +463,7 @@ class Workbench:
         job.total = 1
 
         journal, _ = play_one(
-            self._library, seed, players, thinking_seats=bot_seats
+            library, seed, players, thinking_seats=bot_seats
         )
 
         self._work.mkdir(parents=True, exist_ok=True)
@@ -437,11 +473,12 @@ class Workbench:
 
         job.saved = where.name
         job.done = 1
-        job.text = reviewed(review(journal, self._library))
+        job.text = reviewed(review(journal, library))
 
     def _study(
         self,
         job: Job,
+        library: ContentLibrary,
         games: int,
         players: int,
         jobs: int,
@@ -455,7 +492,7 @@ class Workbench:
 
         names = {
             definition.id: definition.name
-            for definition in self._library.definitions()
+            for definition in library.definitions()
         }
 
         summaries = []
@@ -476,12 +513,18 @@ class Workbench:
         job.text = written(ask(summaries, names=names))
 
     def _test_card(
-        self, job: Job, card: str, games: int, players: int, jobs: int
+        self,
+        job: Job,
+        library: ContentLibrary,
+        card: str,
+        games: int,
+        players: int,
+        jobs: int,
     ) -> None:
         from fsme.lab.analysis import PairedRun, compare_paired, read_out
         from fsme.lab.simulation import PAIRED_RNG_MODEL, run_on_many_cores
 
-        named = self._library.registry().get(card)
+        named = library.registry().get(card)
 
         # Both runs, so the bar means what it says.
         job.total = games * 2
@@ -520,7 +563,9 @@ class Workbench:
             )
         )
 
-    def _loaded(self, job: Job, given: dict[str, Any]) -> None:
+    def _loaded(
+        self, job: Job, library: ContentLibrary, given: dict[str, Any]
+    ) -> None:
         """
         Put the game from a saved report back on disk, and read it again.
 
@@ -542,9 +587,9 @@ class Workbench:
 
         job.saved = where.name
         job.done = 1
-        job.text = reviewed(review(journal, self._library))
+        job.text = reviewed(review(journal, library))
 
-    def _report(self, job: Job, name: str) -> None:
+    def _report(self, job: Job, library: ContentLibrary, name: str) -> None:
         from fsme.lab.analysis import review, reviewed
 
         job.total = 1
@@ -555,7 +600,7 @@ class Workbench:
 
         job.saved = where.name
         job.done = 1
-        job.text = reviewed(review(journal, self._library))
+        job.text = reviewed(review(journal, library))
 
     def _safe(self, name: str) -> Path:
         """

@@ -16,7 +16,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import threading
+import time
 import urllib.error
 import urllib.request
 from collections.abc import Iterator
@@ -25,6 +27,8 @@ from typing import Any
 
 import pytest
 
+import fsme.lab.analysis as analysis
+import fsme.lab.simulation as simulation
 from fsme.api import Session
 from fsme.cli.main import library
 from fsme.content import ContentLibrary
@@ -34,6 +38,7 @@ from fsme.web.server import GameServer
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 PAGE = Path(__file__).resolve().parents[1] / "src/fsme/web/static/index.html"
+DESK_PAGE = Path(__file__).resolve().parents[1] / "src/fsme/lab/desk/static/desk.html"
 
 CAIN = "characters-base_game-cain"
 EVE = "characters-base_game-eve"
@@ -754,3 +759,218 @@ def test_the_whole_path_from_a_new_card_to_a_custom_game_played_out(
     again = running.post("/api/restart", {"seed": 41})
 
     assert again["view"]["state"] == opening
+
+
+# ----------------------------------------------------------------------
+# The cards offered for a test follow the author's sets
+# ----------------------------------------------------------------------
+
+
+def offered(running: Desk) -> set[str]:
+    return {one["id"] for one in running.get("/api/cards")["cards"]}
+
+
+def jobs_now(running: Desk) -> int:
+    return len(running.get("/api/jobs")["jobs"])
+
+
+def run_card_test(running: Desk, card: str) -> dict[str, Any]:
+    """
+    Start a card test from the page and wait for it to end, either way.
+    """
+    started = running.post(
+        "/api/run", {"kind": "test-card", "card": card, "games": 1, "jobs": 1}
+    )
+
+    assert "id" in started, started
+
+    until = time.monotonic() + 300
+
+    while time.monotonic() < until:
+        job = running.get(f"/api/jobs/{started['id']}")
+
+        if job["state"] in ("done", "failed"):
+            return dict(job)
+
+        time.sleep(0.05)
+
+    raise AssertionError(f"the card test {started['id']} never finished")
+
+
+def a_card_written(running: Desk, name: str = "Late Set") -> str:
+    made = running.post("/api/sets/new", {"name": name})
+    kept = running.post("/api/cards/save", dict(A_PENNY, set=made["id"]))
+
+    assert kept["saved"], kept
+
+    return str(kept["card"]["id"])
+
+
+def test_a_card_written_while_the_desk_runs_is_offered_for_a_test(
+    running: Desk,
+) -> None:
+    before = offered(running)
+
+    card = a_card_written(running)
+
+    assert card not in before, "nothing the author wrote was there to begin with"
+    assert card in offered(running)
+    assert before <= offered(running), "the shipped cards are still offered"
+
+
+def test_a_card_written_while_the_desk_runs_can_be_tested(running: Desk) -> None:
+    card = a_card_written(running)
+
+    assert card in offered(running)
+
+    job = run_card_test(running, card)
+
+    assert job["state"] == "done", job["error"]
+    assert "UnknownCardError" not in job["error"]
+    assert "Card test" in job["text"]
+    assert f"Lucky Penny ({card})" in job["text"]
+
+
+def test_a_card_test_brings_the_library_up_to_date_by_itself(running: Desk) -> None:
+    # Nothing asks for the list or the sets in between: the run has to.
+    card = a_card_written(running)
+
+    job = run_card_test(running, card)
+
+    assert job["state"] == "done", job["error"]
+    assert f"Lucky Penny ({card})" in job["text"]
+
+
+def test_the_sets_the_cards_and_the_bench_agree(running: Desk) -> None:
+    card = a_card_written(running)
+
+    assert "late_set" in [one["id"] for one in running.get("/api/content")["sets"]]
+    assert card in offered(running)
+
+    bench = running.server.bench
+
+    assert bench._library is running.server.library
+    assert card in {one["id"] for one in bench.cards()}
+
+
+def test_a_job_keeps_the_library_it_started_with(
+    running: Desk, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bench = running.server.bench
+    started_with = running.server.library
+    newer = started_with.without(())
+
+    playing = threading.Event()
+    carry_on = threading.Event()
+    seen: dict[str, Any] = {}
+
+    real_play, real_review = simulation.play_one, analysis.review
+
+    def play_one(library: Any, *given: Any, **named: Any) -> Any:
+        seen["played"] = library
+        playing.set()
+
+        assert carry_on.wait(60), "the test never let the game go on"
+
+        return real_play(library, *given, **named)
+
+    def review(journal: Any, library: Any, *given: Any, **named: Any) -> Any:
+        seen["reviewed"] = library
+
+        return real_review(journal, library, *given, **named)
+
+    monkeypatch.setattr(simulation, "play_one", play_one)
+    monkeypatch.setattr(analysis, "review", review)
+
+    job = bench.play(3, 2, ())
+
+    assert playing.wait(60), "the game never started"
+
+    # A newer library arrives while the game is being played.
+    bench.use(newer)
+    carry_on.set()
+
+    until = time.monotonic() + 120
+
+    while bench.job(job.id).state not in ("done", "failed"):
+        assert time.monotonic() < until, "the game never finished"
+        time.sleep(0.05)
+
+    assert bench.job(job.id).state == "done", bench.job(job.id).error
+    assert seen["played"] is started_with
+    assert seen["reviewed"] is started_with
+    assert bench._library is newer, "the next job deals from the newer one"
+
+
+def test_a_set_that_will_not_load_refuses_the_cards_and_the_test(
+    running: Desk, home: Path
+) -> None:
+    card = a_card_written(running)
+
+    assert card in offered(running)
+
+    broken = home / "my sets" / "late_set" / "cards" / "bad.json"
+    broken.write_text("{ not json", encoding="utf-8")
+
+    jobs = jobs_now(running)
+
+    assert running.status("/api/cards") == 400
+    assert running.get("/api/cards")["error"]
+
+    asked = {"kind": "test-card", "card": card, "games": 1, "jobs": 1}
+
+    assert running.status("/api/run", asked) == 400
+    assert running.post("/api/run", asked)["error"]
+    assert jobs_now(running) == jobs, "a refused test is not a job"
+
+    # The desk and the bench still deal from the library both had.
+    assert running.server.bench._library is running.server.library
+    assert card in {one["id"] for one in running.server.bench.cards()}
+
+    broken.unlink()
+
+    assert running.status("/api/cards") == 200
+    assert card in offered(running)
+
+    job = run_card_test(running, card)
+
+    assert job["state"] == "done", job["error"]
+
+
+def test_the_list_reads_the_sets_again_only_when_they_change(running: Desk) -> None:
+    for _ in range(3):
+        offered(running)
+
+    assert running.reads == 0, "nothing on disk moved"
+
+    a_card_written(running)
+
+    for _ in range(3):
+        offered(running)
+
+    assert running.reads == 1
+
+
+def test_the_test_page_says_why_it_has_no_cards_and_asks_again_when_seen() -> None:
+    page = DESK_PAGE.read_text("utf-8")
+    listing = re.search(r"async function cards\(\) \{.*?\n\}\n", page, re.DOTALL)
+
+    assert listing is not None, "the page has a function that loads the cards"
+
+    # `post` answers a refusal the same way; it is the list that has to.
+    assert "if (!answer.ok)" in listing.group(0)
+    assert (
+        '$("card-text").textContent = `could not load the cards — ${read.error'
+        in listing.group(0)
+    )
+    assert re.search(
+        r'addEventListener\("visibilitychange", \(\) => \{\s*'
+        r'if \(document\.visibilityState === "visible"\) cards\(\);',
+        page,
+    )
+    assert re.search(
+        r'addEventListener\("pageshow", \(event\) => \{\s*'
+        r"if \(event\.persisted\) cards\(\);",
+        page,
+    )
+    assert "setInterval(cards" not in page, "the list is not polled"
