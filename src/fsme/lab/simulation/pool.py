@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import multiprocessing
 import threading
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,7 +30,7 @@ from fsme.rng.rng import DEFAULT_RNG_MODEL
 from .runner import DEFAULT_STEPS, play_one
 
 _library = None
-_root: Path | None = None
+_roots: tuple[Path, ...] = ()
 _drop: frozenset[str] = frozenset()
 _scenario: Any = None
 _rng_model: str = DEFAULT_RNG_MODEL
@@ -82,7 +82,7 @@ class Finished:
 
 
 def _prepare(
-    root: str,
+    roots: tuple[str, ...],
     drop: tuple[str, ...],
     scenario: Mapping[str, Any] | None = None,
     rng_model: str = DEFAULT_RNG_MODEL,
@@ -93,6 +93,10 @@ def _prepare(
     A worker plays many games and the library never changes, so loading it
     per game would cost more than the games do.
 
+    Every root is read into the one library, by the same loader and in the
+    same order as the library the run was asked about: the cards FSME ships
+    and the cards an author wrote are both ordinary content.
+
     The scenario crosses as the plain data it was read from, never as an
     object: what goes through a process boundary is pickled, and a
     configuration that had to be reconstructible rather than merely readable
@@ -102,17 +106,17 @@ def _prepare(
     The RNG model crosses with it, so every game the worker plays is dealt on
     the generator the run asked for.
     """
-    global _library, _root, _drop, _scenario, _rng_model
+    global _library, _roots, _drop, _scenario, _rng_model
 
     from fsme.api import load_content
     from fsme.scenario import parse
 
-    _root = Path(root)
+    _roots = tuple(Path(root) for root in roots)
     _drop = frozenset(drop)
     _scenario = None if scenario is None else parse(dict(scenario))
     _rng_model = rng_model
 
-    loaded = load_content(_root)
+    loaded = load_content(_roots)
 
     _library = loaded.without(_drop) if _drop else loaded
 
@@ -170,7 +174,7 @@ def _one(work: tuple[int, int, int, str | None, bool, tuple[int, ...]]) -> Finis
 
 
 def run_on_many_cores(
-    root: Path,
+    root: Path | Sequence[Path],
     games: int,
     players: int = 2,
     *,
@@ -188,7 +192,9 @@ def run_on_many_cores(
     Play a run across several processes, yielding each game as it finishes.
 
     The content is named by its directory rather than handed over: a loaded
-    library is a large object and every worker needs its own anyway.
+    library is a large object and every worker needs its own anyway. ``root``
+    is one directory or several, read into one library as ``load_content``
+    reads them.
 
     Games come back in whatever order they finish. Nothing downstream may
     depend on that order, which is why what comes back is a tally.
@@ -208,6 +214,8 @@ def run_on_many_cores(
         for offset in range(games)
     ]
 
+    roots = (root,) if isinstance(root, Path) else tuple(root)
+
     how = _how_to_start()
 
     with ProcessPoolExecutor(
@@ -215,7 +223,7 @@ def run_on_many_cores(
         mp_context=None if how is None else multiprocessing.get_context(how),
         initializer=_prepare,
         initargs=(
-            str(root),
+            tuple(str(one) for one in roots),
             tuple(without),
             None if scenario is None else dict(scenario),
             rng_model,

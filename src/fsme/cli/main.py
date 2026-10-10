@@ -228,7 +228,13 @@ def front(args: argparse.Namespace) -> int:
     root = content_root(args.content)
     loaded = library(args)
 
-    bench = Workbench(loaded, root, Path(args.work).expanduser().resolve())
+    # A card test is dealt from the same places its card was found in.
+    bench = Workbench(
+        loaded,
+        root,
+        Path(args.work).expanduser().resolve(),
+        roots=content_roots(args.content),
+    )
 
     session = Session(
         loaded,
@@ -753,18 +759,22 @@ def _one_card_test(
     each game is read against its own game without the card. A game that comes
     back from another model is a run that lost its configuration, and is
     refused rather than counted.
+
+    Both runs are dealt from every place the card could have been found in —
+    the cards FSME ships and the author's own sets — so a card somebody wrote
+    is in the games that measure it.
     """
     from fsme.lab.analysis import PairedRun, compare_paired
     from fsme.lab.simulation import PAIRED_RNG_MODEL, run_on_many_cores
 
-    root = content_root(args.content)
+    roots = content_roots(args.content)
 
     paired = PairedRun(card)
     broken: dict[str, list[str]] = {"with": [], "without": []}
 
     for label, drop in (("with", ()), ("without", (card,))):
         for done in run_on_many_cores(
-            root,
+            roots,
             args.games,
             args.players,
             jobs=max(1, args.jobs),

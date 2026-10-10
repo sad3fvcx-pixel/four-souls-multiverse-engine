@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import threading
 import traceback
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -102,9 +102,17 @@ class Workbench:
     card test holding a lock for two minutes would stop the page redrawing.
     """
 
-    def __init__(self, library: ContentLibrary, root: Path, work: Path) -> None:
+    def __init__(
+        self,
+        library: ContentLibrary,
+        root: Path,
+        work: Path,
+        *,
+        roots: Sequence[Path] | None = None,
+    ) -> None:
         self._library = library
         self._root = root
+        self._roots = (root,) if roots is None else tuple(roots)
         self._work = work
 
         self._lock = threading.Lock()
@@ -121,6 +129,18 @@ class Workbench:
         Where the cards we ship are, for whoever needs them as they were written.
         """
         return self._root
+
+    @property
+    def roots(self) -> tuple[Path, ...]:
+        """
+        Every place the library was read from, for the games that test a card.
+
+        A card is looked up in the library, so the games that measure it are
+        dealt from the same places — or a card an author wrote would be found,
+        never dealt, and measured against games it was never in. Without being
+        told otherwise, that is the one root.
+        """
+        return self._roots
 
     def show_card(self, card: Mapping[str, Any]) -> list[dict[str, Any]]:
         """
@@ -473,7 +493,7 @@ class Workbench:
 
         for label, drop in (("with", ()), ("without", (card,))):
             for done in run_on_many_cores(
-                self._root,
+                self._roots,
                 games,
                 players,
                 jobs=max(1, jobs),
