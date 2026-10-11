@@ -23,6 +23,7 @@ from typing import Any
 import pytest
 
 from fsme.api import load_content
+from fsme.cards import CardType
 from fsme.content.vocabulary import ANSWER, CARD, FIRST, NEVER, STEP
 from fsme.lab.desk import Workbench
 from fsme.lab.desk.author import build_card, check_card
@@ -1082,6 +1083,56 @@ def test_how_far_this_has_been_taken_is_published_not_written_down(
         assert kind in walked or kind in printing, f"{kind} is asked and never walked"
 
     assert walked <= asked, walked - asked
+
+
+WALKED_KINDS = frozenset(
+    {"loot", "treasure", "starting_item", "event", "monster", "character", "curse", "room"}
+)
+"""The kinds the walk takes from the moment a kind is chosen."""
+
+LEFT_TO_THE_EDITOR = frozenset({"bonus_soul", "soul", "token", "other"})
+"""
+The kinds `pickKind` hands straight to the editor, and why — a policy, not a
+verdict that they never will be walked.
+
+A bonus soul's shipped rules wait on a condition of the rule itself. The walk
+can only put a condition inside what a rule does, as an `if`, and the engine
+does not treat the two alike: a rule's own condition is asked before the rule
+is put on the stack, an `if` after it has been, every time the moment comes.
+So walking a bonus soul would make a different card from the ones it ships as,
+and one is not to stand in for the other.
+
+A soul, a token and an "other" have no card in the shipped sets and no part in
+a game the engine deals: nothing lays one out or makes one. There is nothing
+yet to design a walk against.
+
+Changing either list is a decision with tests of its own, the way a room was
+moved across.
+"""
+
+
+def test_every_kind_is_walked_or_left_to_the_editor(can: dict[str, Any]) -> None:
+    """
+    Every kind there is, on exactly one side, read off what the page reads.
+
+    `pickKind` walks a kind with a settled moment or one the walk asks for, and
+    hands any other to the editor; this asks the catalogue the same two
+    questions. A kind the engine gains, a kind it loses and a kind that moves
+    from one side to the other all fail here until the lists above are changed
+    on purpose.
+    """
+    every = {str(kind) for kind in CardType}
+    published = {one["id"] for one in can["kinds"]}
+
+    assert published == every, published ^ every
+
+    walked = {
+        one["id"] for one in can["kinds"] if one["used_by"] or one["moment_is_asked"]
+    }
+
+    assert walked == WALKED_KINDS, walked ^ WALKED_KINDS
+    assert published - walked == LEFT_TO_THE_EDITOR, (published - walked) ^ LEFT_TO_THE_EDITOR
+    assert not WALKED_KINDS & LEFT_TO_THE_EDITOR
 
 
 def test_the_page_names_no_kind_of_card_at_all() -> None:

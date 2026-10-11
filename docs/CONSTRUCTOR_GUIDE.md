@@ -75,6 +75,46 @@ questions; complicated ones are quicker to see all at once. The Constructor
 offers both and they produce the same card — you can move between them at any
 point, and nothing is converted or lost when you do.
 
+## Which kinds of card are walked
+
+Eight kinds are walked through the questions from the moment you choose them:
+**loot**, **treasure**, **starting item**, **event**, **monster**,
+**character**, **curse** and **room**. For the first four the engine already
+knows when the card acts — a loot card or an event is played, an item is used —
+so the Constructor goes straight to what it does. For the other four it asks
+when first, then the same questions follow.
+
+Four kinds open in the editor instead: **bonus soul**, **soul**, **token** and
+**other**. You can make all of them there, and they are checked and saved like
+any other card. They are not walked, for these reasons:
+
+- **A bonus soul** waits on a condition of its own rule — "the first player
+  with 25¢" is asked before the rule does anything at all. The questions can
+  only put a condition inside what a rule does, and the engine does not treat
+  the two alike, so the questions would make a different card from the bonus
+  souls that ship. Write its condition in the editor.
+- **A soul, a token and an "other"** have no card in the shipped sets, and
+  nothing in a game the engine deals lays one out or makes one. There is
+  nothing yet to design the questions against.
+
+This is where things stand, not a rule that they never will be walked.
+
+Three things are worth keeping apart. **Being walked** means the Constructor
+can make a card of that kind by asking questions. **Being kept faithfully**
+means the card it saves opens again as the same card, which is true of every
+kind. **Being played in full** is a question about the engine, not the
+Constructor, and it has gaps a walked card does not close:
+
+- **Events and curses are not dealt.** The rules put them into the monster
+  deck; the engine's own deck is built from monsters alone, so in an ordinary
+  game neither turns up, yours included. When one is revealed the engine does
+  play it — it is the deck that leaves it out.
+- **A room's rule that answers only to its controller never fires.** A room
+  belongs to nobody. What the Constructor offers if you leave "Whose is it?"
+  alone is never that, so a room's rule is caught out only by choosing it.
+- **A room that can be attacked is not modelled.** A room prints no health,
+  attack or roll here, and the Constructor does not ask for them.
+
 ## How it works
 
 ```

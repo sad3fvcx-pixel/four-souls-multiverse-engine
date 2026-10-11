@@ -43,6 +43,12 @@ it closes was changed, and every other figure is still the one taken at
 `75a070b`; `tools/gates.py check` finds the corpus checking 1045 of 1045 and
 the replay of 1000 games unchanged.
 
+Brought up to date after `bb00c75`, which walks a room from the moment it is
+chosen: which kinds the walk takes and which it leaves to the editor is now a
+policy, pinned by a test added with this update, with the criterion the walk
+is held to, in §3; the three gaps in the engine it brought to light are in §6.
+Nothing was remeasured, and no engine code changed.
+
 ## The headline
 
 **Every shipped card that carries rules can be walked by the form — 352 of 352,
@@ -154,6 +160,57 @@ none can be given a value without somebody deciding first.
 # 3. Authoring limitations
 
 Places where the path works and the experience does not.
+
+### Which kinds the walk takes — a policy, pinned by a test
+
+Every kind of card is on exactly one side, and
+`test_every_kind_is_walked_or_left_to_the_editor` holds both sides to their
+lists: a kind the engine gains, one it loses and one that moves across all fail
+it until the lists are changed on purpose. It reads the catalogue the page
+reads — a settled moment (`USED_BY`) or a moment the walk asks for
+(`MOMENT_IS_ASKED`) — and adds no rule of its own.
+
+| Side | Kinds | How the page reaches it |
+| --- | --- | --- |
+| Walked | loot, treasure, starting item, event | the moment is settled; straight to what the card does |
+| Walked | monster, character, curse, room | the moment is asked, then the same walk |
+| Left to the editor | bonus soul, soul, token, other | `pickKind` opens the editor with the kind set |
+
+Why the four are left to the editor, and why that is a decision rather than a
+gap to be closed by default:
+
+- **A bonus soul.** All three shipped bonus souls with rules wait on a
+  condition of the rule itself (`ability.conditions`). The walk asks a rule's
+  first questions and not its `more` ones, so the only condition it can write
+  is an `if` inside what the rule does. The engine does not treat them alike:
+  a rule's own conditions are asked before the rule goes on the stack, and an
+  `if` is asked after it has, every time the moment comes — a stack item, a
+  priority window and a counted trigger each time. A walk would make a
+  different card from the ones that ship, and one is not to stand in for the
+  other. Walking a bonus soul needs a step for a rule's own conditions first.
+- **A soul, a token and an "other".** No shipped card, no rule in the spec,
+  and nothing in a dealt game lays one out or makes one. There is nothing yet
+  to design a walk against.
+
+Three things are not the same here either. A kind being **walked** says the
+walk can make it; **round-trip stability** (§4) holds for every kind; and
+whether the engine **plays it in full** is the engine's question — §6 lists
+what it still does not do for an event, a curse and a room.
+
+**What the walk is held to.** The walk is complete when all five hold:
+
+1. Every kind is on exactly one side — the test above.
+2. Every walked kind is walked at a moment its own cards use, checks clean, and
+   opens again as the same card: `ASKED_AND_WALKED` for the asked kinds and the
+   tests of the settled ones in `tests/test_constructor_walk.py`.
+3. A kind that prints numbers is asked for them and keeps them.
+4. A card of several rules, and a card whose only rule waits for nothing, are
+   both made.
+5. `tools/gates.py check` holds — writeback and replay.
+
+A play test for every walked kind is worth having and is not one of the five.
+The room has one (`tests/test_rooms.py`); an event and a curse cannot have one
+in an ordinary game until they are dealt.
 
 ### Open vocabularies — suggested since `cb128d3`
 
@@ -270,8 +327,9 @@ tooling gap in §6 and is not fixed in this document's scope.
 
 # 6. Everything still open, in one place
 
-Nothing here stops a card being made, and the create-from-nothing path in the
-headline was measured with every one of them open. All three sit outside the
+Nothing here stops a card being made, except a room that can be attacked,
+which has nothing to be made with; the create-from-nothing path in the
+headline was measured with every one of them open. All six sit outside the
 Constructor. Two `may` nodes under one name were here too, and are closed by
 `813917d`. `repeat` with no count was here too, and is closed by `b76482b`;
 so were branching defaults, closed by `c65699d` — what is still undeclared in
@@ -284,6 +342,9 @@ words since `55c450f`.
 | Two modes described identically are accepted | `cards/validator.py` | 0 occurrences in the corpus; the player sees two options they cannot tell apart |
 | The bot observer reads a card's spelling | §5 | `fsme.lab.bot` — playtesting advice, not rules |
 | `runtime.py:122` names `_where_it_stands`, a function that has never existed | `runtime/runtime.py` | One word of documentation; the method is `_where_it_works` |
+| Events and curses are never dealt | `rules/setup.py`, `_build_decks` | The spec puts them in the monster deck and the reveal plays them, but the deck is built from monsters alone; 71 shipped cards, and every walked event and curse, never turn up in an ordinary game. Fixing it changes every dealt game and the replay reference |
+| A room's rule scoped to its controller never fires | `runtime/runtime.py`, `in_scope` | A room has no controller; the default scope is never `controller`. Known as R1 |
+| A room that can be attacked is not modelled | `cards/types.py`, `PRINTED_NUMBERS` | A room prints no health, attack or roll; 0 of 68 shipped rooms carry rules |
 
 ## Decided: open on purpose
 
