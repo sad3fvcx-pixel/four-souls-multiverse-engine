@@ -289,3 +289,47 @@ def test_the_turn_forgets_the_death_when_it_passes() -> None:
     played_out(runtime, state)
 
     assert state.turn.monster_died is False, "a new turn has seen nothing die"
+
+
+# ----------------------------------------------------------------------
+# A room that answers a moment
+# ----------------------------------------------------------------------
+
+
+def test_a_rooms_rule_at_the_start_of_a_turn_pays_the_player_whose_turn_it_is() -> None:
+    """
+    A room is not only tapped: it may wait for a moment, like anything else in
+    play. COMPREHENSIVE_RULES.md §12 says a room's "you" is the player whose turn
+    it is, so the turn that starts is the one paid — not the player who just
+    ended theirs.
+
+    The rule is left to its own scope. What a room's rule does when it is told
+    to answer only to a controller is a question about rooms this does not ask.
+    """
+    runtime, state = make_game(players=2)
+    runtime.submit(Command(type=CommandType.START_GAME, player=0))
+
+    room = open_room(
+        state,
+        make_definition(
+            "test.waiting_room",
+            name="Waiting Room",
+            card_type=CardType.ROOM,
+            abilities=(
+                Ability(
+                    trigger="turn_start",
+                    effects=({"effect": "gain_coins", "amount": 2},),
+                ),
+            ),
+        ),
+    )
+
+    assert state.room_area.cards == [room]
+    assert state.turn.active_player == 0
+
+    before = [player.pennies for player in state.players]
+
+    played_out(runtime, state)
+
+    assert state.turn.active_player == 1
+    assert [player.pennies for player in state.players] == [before[0], before[1] + 2]

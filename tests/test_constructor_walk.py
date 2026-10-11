@@ -1037,6 +1037,22 @@ def test_the_kinds_the_engine_settles_are_never_asked(can: dict[str, Any]) -> No
         ), kind
 
 
+ASKED_AND_WALKED = (
+    ("curse", "turn_end"),
+    ("character", "on_activate"),
+    ("room", "on_activate"),
+    ("room", "turn_start"),
+)
+"""
+Every kind whose moment the walk asks, walked at a moment its own cards use.
+
+The cards below are built from this, and the stage below is held to it: a kind
+the walk is said to ask about has to be one somebody walked. A room is here at
+both of its sorts of moment — one it is tapped for, and one it answers for
+whoever's turn it is.
+"""
+
+
 def test_how_far_this_has_been_taken_is_published_not_written_down(
     can: dict[str, Any],
 ) -> None:
@@ -1050,11 +1066,22 @@ def test_how_far_this_has_been_taken_is_published_not_written_down(
     """
     asked = {one["id"] for one in can["kinds"] if one["moment_is_asked"]}
 
-    assert asked == {"curse", "character", "monster"}
+    assert asked == {"curse", "character", "monster", "room"}
     # Every one of them is a kind the engine settles no moment for, or the
     # question would be a second one put about something already decided.
     for one in can["kinds"]:
         assert not (one["moment_is_asked"] and one["used_by"]), one["id"]
+
+    # And every one of them was walked. A kind that prints numbers is walked
+    # by the printed cards further down, which take every such kind the walk
+    # reaches; any other has to be walked here, at a moment of its own.
+    walked = {kind for kind, _ in ASKED_AND_WALKED}
+    printing = {one["id"] for one in can["kinds"] if one["printed"]}
+
+    for kind in asked:
+        assert kind in walked or kind in printing, f"{kind} is asked and never walked"
+
+    assert walked <= asked, walked - asked
 
 
 def test_the_page_names_no_kind_of_card_at_all() -> None:
@@ -1101,17 +1128,14 @@ def a_walked_card(can: dict[str, Any], kind: str, moment: str) -> Any:
     )
 
 
-@pytest.mark.parametrize(
-    ("kind", "moment"),
-    [("curse", "turn_end"), ("character", "on_activate")],
-)
+@pytest.mark.parametrize(("kind", "moment"), ASKED_AND_WALKED)
 def test_a_card_whose_moment_was_asked_for_is_a_card_the_engine_takes(
     can: dict[str, Any], kind: str, moment: str
 ) -> None:
     """
-    Both kinds this has been taken to, each at a moment its own shipped cards
-    use. The moment is the only thing that came from the question; everything
-    after it is the walk that was already there.
+    Every kind this has been taken to, each at a moment its own cards use. The
+    moment is the only thing that came from the question; everything after it
+    is the walk that was already there.
     """
     card = a_walked_card(can, kind, moment)
 
@@ -1120,10 +1144,7 @@ def test_a_card_whose_moment_was_asked_for_is_a_card_the_engine_takes(
     assert check_card(card) == [], check_card(card)
 
 
-@pytest.mark.parametrize(
-    ("kind", "moment"),
-    [("curse", "turn_end"), ("character", "on_activate")],
-)
+@pytest.mark.parametrize(("kind", "moment"), ASKED_AND_WALKED)
 def test_a_card_whose_moment_was_asked_for_opens_again_the_same(
     can: dict[str, Any], kind: str, moment: str
 ) -> None:
@@ -1185,6 +1206,8 @@ def test_what_each_kind_prints_is_published(can: dict[str, Any]) -> None:
     # being empty — and the walk has nothing to put for either.
     assert printed["loot"] == ()
     assert printed["soul"] == ()
+    # A room the walk now reaches, and has no numbers to ask it for.
+    assert printed["room"] == ()
 
 
 def test_the_two_halves_of_the_printed_numbers_agree(can: dict[str, Any]) -> None:

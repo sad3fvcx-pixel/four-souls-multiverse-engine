@@ -88,7 +88,7 @@ what exists. Everything the engine has is still offered; this decides what a
 person sees without opening "everything else".
 """
 
-MOMENT_IS_ASKED = ("curse", "character", "monster")
+MOMENT_IS_ASKED = ("curse", "character", "monster", "room")
 """
 The kinds the walk asks the moment of, of those the engine settles none for.
 
@@ -98,11 +98,13 @@ kind here could already be given any of those moments by hand in the editor.
 This is how far the walk has been taken and checked, and it is written here
 rather than in the page so that the page carries no list of kinds at all.
 
-It shrinks as the rest are checked. A monster joined it once the walk learned
+It grows as the rest are checked. A monster joined it once the walk learned
 to ask what is printed on a card, which was the thing it was waiting for — the
-moment was never the difficulty. What the rest are waiting for is not one
-question: a room and a soul do their work in ways the walk has no screen for
-yet.
+moment was never the difficulty. A room joined it once a room's own rules were
+checked in play: one that taps, and one that answers a moment for whoever's
+turn it is. It needed no screen of its own, because a room prints nothing the
+walk would have to ask for. What the rest are waiting for is not one question:
+a soul does its work in ways the walk has no screen for yet.
 """
 
 NEEDS_SOMETHING_EARLIER = "passthrough"
