@@ -1,0 +1,8 @@
+{
+  "id": "engine_demo",
+  "name": "Engine Demo Set",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": false,
+  "description": "An original set written to exercise the engine. Not Four Souls content and not balanced; it exists so the pipeline and the rules have something real to run on."
+}

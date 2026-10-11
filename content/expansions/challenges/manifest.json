@@ -1,0 +1,8 @@
+{
+  "id": "challenges",
+  "name": "Challenges",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Challenges: 1 cards imported from the card database."
+}

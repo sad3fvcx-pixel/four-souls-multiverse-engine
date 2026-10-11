@@ -1,0 +1,80 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-1-the_unboxing_of_isaac-butt_penny",
+      "name": "Butt Penny",
+      "type": "loot",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain 1¢,\nthen roll.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-1-the_unboxing_of_isaac-butt_penny",
+        "subcategory": "1¢",
+        "version": "Original",
+        "artist": "@Tikarathemew",
+        "notes": "@Tikarathemew\n\nIncluded with The Unboxing of Isaac #7: Binding Pale Kid for November, 2022."
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-the_unboxing_of_isaac-pills",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player at random.\nThat player gives you a non-\neternal item they control.\n------------------------------\n\"And the roof of thy mouth like the\nbest wine for my beloved, that goeth\ndown sweetly, causing the lips of\nthose that are asleep to speak.\"\nSong of Solomon 7:9",
+        "set": "The Unboxing of Isaac",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-the_unboxing_of_isaac-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@Tikarathemew",
+        "notes": "Included with The Unboxing of Isaac #12: Isaac in Wonderland for April, 2023.\n\nThis card represents the \"Pheromones\" pill from The Binding of Isaac: Rebirth"
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-the_unboxing_of_isaac-pills-v2",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n5-6: This becomes \nan item with \"+1 AT.\"\nGain it.\n------------------------------\n\"And there went out a champion\nout of the camp of the Philistines,\nnamed Goliath, of Gath, whose\nheight was six cubits and a span.\"\n1 Samuel 17:4",
+        "set": "The Unboxing of Isaac",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-the_unboxing_of_isaac-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@Tikarathemew",
+        "notes": "Included with The Unboxing of Isaac #12: Isaac in Wonderland for April, 2023.\n\nThis card represents the \"One makes you larger\" pill from The Binding of Isaac: Afterbirth."
+      }
+    },
+    {
+      "id": "loot_deck-pills_runes-the_unboxing_of_isaac-pills-v3",
+      "name": "Pills!",
+      "type": "loot",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n5-6: This becomes an item with\n\"Prevent the first 1 damage you\nwould take each turn.\" Gain it.\n------------------------------\n\"And when the Philistine looked\nabout, and saw David, he disdained\nhim: for he was but a youth, and\nruddy, and of a fair countenance.\"\n1 Samuel 17:42",
+        "set": "The Unboxing of Isaac",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-pills_runes-the_unboxing_of_isaac-pills",
+        "subcategory": "Pills / Runes",
+        "version": "Alt Ability",
+        "artist": "@Tikarathemew",
+        "notes": "Included with The Unboxing of Isaac #12: Isaac in Wonderland for April, 2023.\n\nThis card represents the \"One makes you small\" pill from The Binding of Isaac: Afterbirth."
+      }
+    }
+  ]
+}

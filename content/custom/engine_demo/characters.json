@@ -1,0 +1,40 @@
+{
+  "cards": [
+    {
+      "id": "engine_demo.the_tinkerer",
+      "name": "The Tinkerer",
+      "type": "character",
+      "expansion": "engine_demo",
+      "health": 2,
+      "metadata": { "starting_item": "engine_demo.spare_parts" },
+      "abilities": []
+    },
+    {
+      "id": "engine_demo.the_hoarder",
+      "name": "The Hoarder",
+      "type": "character",
+      "expansion": "engine_demo",
+      "health": 2,
+      "metadata": { "starting_item": "engine_demo.coin_purse" },
+      "abilities": []
+    },
+    {
+      "id": "engine_demo.the_stoic",
+      "name": "The Stoic",
+      "type": "character",
+      "expansion": "engine_demo",
+      "health": 3,
+      "metadata": { "starting_item": "engine_demo.worn_shield" },
+      "abilities": []
+    },
+    {
+      "id": "engine_demo.the_gambler",
+      "name": "The Gambler",
+      "type": "character",
+      "expansion": "engine_demo",
+      "health": 2,
+      "metadata": { "starting_item": "engine_demo.lucky_die" },
+      "abilities": []
+    }
+  ]
+}

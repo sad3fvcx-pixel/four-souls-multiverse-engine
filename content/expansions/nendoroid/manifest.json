@@ -1,0 +1,8 @@
+{
+  "id": "nendoroid",
+  "name": "Nendoroid",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Nendoroid: 2 cards imported from the card database."
+}

@@ -9,8 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from .serializer import Serializer
 from .deserializer import Deserializer
+from .serializer import Serializer
 
 
 @dataclass(slots=True)

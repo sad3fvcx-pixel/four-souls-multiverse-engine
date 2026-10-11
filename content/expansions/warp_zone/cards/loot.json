@@ -1,0 +1,238 @@
+{
+  "cards": [
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-bible_thump",
+      "name": "Bible Thump!",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Loot 2, then loot 2\nfor each player\nthat died this turn.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-bible_thump",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via The Closet social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-blanks",
+      "name": "Blanks",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player. Prevent\nthe next instance of\ndamage they would take\nthis turn. When that\ndamage is prevented,\ndeal that much damage\nto a monster or\nanother player.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-blanks",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Enter the Gungeon.\n\nUnlocked via the Lake of Fire social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-cheep_cheep_cheep",
+      "name": "Cheep Cheep Cheep!",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player. Till the\nstart of their next turn,\ntheir character is named\nChicken and must be\nattacked once by other\nactive players on their turns\nif able. The chosen player\nhas 3+ DC for the attacks.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-cheep_cheep_cheep",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the film The Room.\n\nUnlocked via The Credits social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-chunk_of_amber",
+      "name": "Chunk of Amber",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\nGain x¢, where\nx is 2 times\nthe result.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-chunk_of_amber",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Gish.\n\nUnlocked via the Downpour social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-cow_on_a_trash_farm",
+      "name": "Cow on a Trash Farm",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player. Until\nthe start of their next\nturn, their character is\nnamed Cow and loses all\nabilities and each item\nthey control is named\nTrash and loses all\nabilities, except eternal.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-cow_on_a_trash_farm",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via The Closet social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-demon_form",
+      "name": "Demon Form",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Gain +2 AT till\nend of turn.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-demon_form",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Slay the Spire.\n\nUnlocked via The Mausoleum social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-fiend_fire",
+      "name": "Fiend Fire",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "As a cost to play this,\ndiscard your hand.\n------------------------------\nDeal x damage divided\nas you choose to any\nnumber of monsters or\nplayers, where x is the\nnumber of loot cards\ndiscarded to play this.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-fiend_fire",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Slay the Spire.\n\nUnlocked via The Mausoleum social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-greed_butt",
+      "name": "Greed Butt!",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "HP: 8 | DC: 2+ | AT: 1\n\nWhen this is put in a monster\nslot, expand monster slots by 1.\n------------------------------\n-Ambush-\n(This becomes a monster in a monster slot\nnot being attacked. The active player must\nmake an additional attack on it this turn.)\n------------------------------\nRewards: 13¢",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-greed_butt",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@rojen241",
+        "notes": "Unlocked via The Closet social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-jester",
+      "name": "Jester",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Reroll any\nnumber of items\nyou control.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-jester",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Dicey Dungeons.\n\nUnlocked via The Planetarium social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-murder",
+      "name": "Murder!",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Players can be attacked\ntill end of turn. They\nhave 4+ DC for the attack.\n------------------------------\nAt the end of the turn this\nwas played, if a non-active\nplayer died, return this to\nthe hand of the player\nwho played it.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-murder",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the video game Among Us.\n\nUnlocked via the Static social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-cards_miscellaneous-warp_zone-witch",
+      "name": "Witch",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "Choose one-\n•Deal 1 damage to a\nmonster or player.\n------------------------------\n•Add or subtract 1\nfrom a roll.\n------------------------------\n•Cancel the ↷ or $\nability of an item or\na loot being played.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-cards_miscellaneous-warp_zone-witch",
+        "subcategory": "Cards / Miscellaneous",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Dicey Dungeons.\n\nUnlocked via The Planetarium social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "loot_deck-trinkets-warp_zone-loot_card",
+      "name": "Loot Card",
+      "type": "loot",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "trinket"
+      ],
+      "metadata": {
+        "text": "When this enters\nplay, loot 1.\n------------------------------\nAt the end of your\nturn, you may return\nthis to your hand.\n------------------------------\n-Trinket-\nJust use your loot.",
+        "set": "Warp Zone",
+        "deck": "Loot Deck",
+        "copies": 1,
+        "source_id": "loot_deck-trinkets-warp_zone-loot_card",
+        "subcategory": "Trinkets",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The White Light social goals to-do list during the Requiem Kickstarter."
+      }
+    }
+  ]
+}

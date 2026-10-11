@@ -1,0 +1,73 @@
+{
+  "cards": [
+    {
+      "id": "characters-anniversary-bum_bo_the_stout",
+      "name": "Bum-bo the Stout",
+      "type": "character",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\n\"Bum-bo remember there even more\nBum-bo! There a fat Bum-bo!\"\n------------------------------\nStarting item:\nBag-o-Holes",
+        "set": "Anniversary",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-anniversary-bum_bo_the_stout",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "starting_item": "starting_items-anniversary-bag_o_holes"
+      }
+    },
+    {
+      "id": "characters-anniversary-florian",
+      "name": "Florian",
+      "type": "character",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThe Binding of Isaac Four Souls:\nEternal Edition!\n------------------------------\nStarting item:\nGame Squid",
+        "set": "Anniversary",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-anniversary-florian",
+        "version": "Original",
+        "artist": "@rojen241",
+        "effect_3p_plus": true,
+        "starting_item": "starting_items-anniversary-game_squid"
+      }
+    },
+    {
+      "id": "characters-anniversary-level_one_isaac",
+      "name": "Level One Isaac",
+      "type": "character",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 3 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nAre you sure you\nwant me to die?\n------------------------------\nYou start the game with\n2 additional loot cards.",
+        "set": "Anniversary",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-anniversary-level_one_isaac",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-bad_events-star_promos-corrupted_data",
+      "name": "Corrupted Data",
+      "type": "event",
+      "expansion": "star_promos",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each player gives their hand\nto the player to their left.\n------------------------------\nEach player gives a\ncharacter and an eternal\nitem they control to the\nplayer to their right.\n------------------------------\nRecharge each eternal item\nand each character.",
+        "set": "Star Promos",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-star_promos-corrupted_data",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Along with Ultra Pride, this card is provided to all backers of the Requiem Kickstarter who subscribed to the expansion's newsletter prior to the Kickstarter's launch."
+      }
+    }
+  ]
+}

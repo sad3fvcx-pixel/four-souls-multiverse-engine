@@ -1,0 +1,17 @@
+blank_issues_enabled: true
+
+contact_links:
+  - name: A card that has no rules yet
+    url: https://github.com/sad3fvcx-pixel/four-souls-multiverse-engine/blob/main/docs/OFFICIAL_CARD_COVERAGE.md
+    about: >
+      693 of the 1045 known cards are data without behaviour. The coverage
+      document lists them; an issue per card is not needed, but a pull request
+      implementing one is very welcome.
+
+  - name: What FSME cannot do
+    url: https://github.com/sad3fvcx-pixel/four-souls-multiverse-engine/blob/main/docs/LIMITATIONS.md
+    about: Known limits, written down so they need not be rediscovered.
+
+  - name: How to start
+    url: https://github.com/sad3fvcx-pixel/four-souls-multiverse-engine/blob/main/docs/GETTING_STARTED.md
+    about: Install, run the demo, write a card, measure it.

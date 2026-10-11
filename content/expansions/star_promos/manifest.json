@@ -1,0 +1,8 @@
+{
+  "id": "star_promos",
+  "name": "Star Promos",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Star Promos: 25 cards imported from the card database."
+}

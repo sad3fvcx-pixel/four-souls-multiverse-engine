@@ -1,0 +1,23 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-good_events-the_unboxing_of_isaac-tv_static",
+      "name": "TV Static",
+      "type": "event",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Put each monster into\ndiscard, then expand\nmonster slots by 1.\n------------------------------\nThe active player may\nattack an additional\ntime this turn.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-the_unboxing_of_isaac-tv_static",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Included with The Unboxing of Isaac #1: Dogma for May, 2022."
+      }
+    }
+  ]
+}

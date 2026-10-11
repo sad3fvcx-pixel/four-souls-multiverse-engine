@@ -1,0 +1,20 @@
+{
+  "cards": [
+    {
+      "id": "bonus_souls-warp_zone-strawberry",
+      "name": "Strawberry",
+      "type": "bonus_soul",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The first active\nplayer to roll a 1\nthree times on the\nsame turn gains\nthis soul.\n\n(+1 soul)",
+        "set": "Warp Zone",
+        "deck": "Bonus Souls",
+        "copies": 1,
+        "source_id": "bonus_souls-warp_zone-strawberry",
+        "notes": "Art by @TikaratheMew\n\nThis card is a reference to the video game Celeste.\n\nUnlocked via the Home social goals to-do list during the Requiem Kickstarter."
+      }
+    }
+  ]
+}

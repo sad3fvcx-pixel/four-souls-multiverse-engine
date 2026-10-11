@@ -1,0 +1,452 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-the_unboxing_of_isaac-glitter_bombs",
+      "name": "Glitter Bombs",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Play with the top\ncard of the loot\ndeck revealed till end\nof turn. You may play\nthe top card of the loot\ndeck till end of turn.\n(Normal timing and cost\nrules still apply.)",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-the_unboxing_of_isaac-glitter_bombs",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #2: Rainbow Blight for June, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-the_unboxing_of_isaac-my_little_unicorn",
+      "name": "My Little Unicorn",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Prevent all damage\nyou would take till\nend of turn. When you\nroll a 1-3 this turn,\ncancel everything that\nhasn't resolved and\nend the turn.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-the_unboxing_of_isaac-my_little_unicorn",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #2: Rainbow Blight for June, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-active_items-the_unboxing_of_isaac-the_nail",
+      "name": "The Nail",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Till end of turn,\neach player has\n4+ DC and can be attacked.\n------------------------------\nEach time a player\nis killed by another\nplayer, loot 1.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-the_unboxing_of_isaac-the_nail",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #6: The Bloat!!!! for October, 2022.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-the_unboxing_of_isaac-a_dollar",
+      "name": "A Dollar!",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "one_use",
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Destroy this:\nSteal all shop items.\n------------------------------\n\"For the love of money is the root of\nall evil: which while some coveted\nafter, they have erred from the\nfaith, and pierced themselves\nthrough with many sorrows.\"\n1 Timothy 6:10",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-the_unboxing_of_isaac-a_dollar",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "@TikaratheMew\n\nIncluded with The Unboxing of Isaac #10: Lil Greed for February, 2023."
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-the_unboxing_of_isaac-a_quarter",
+      "name": "A Quarter!",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "one_use",
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Destroy this:\nGain 25¢\n------------------------------\n\"Notwithstanding, lest we should\noffend them, go thou to the sea, and\ncast an hook, and take up the fish\nthat first cometh up; and when thou\nhast opened his mouth, thou shalt\nfind a piece of money: that take,\nand give unto them for me and thee.\"\nMatthew 17:27",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-the_unboxing_of_isaac-a_quarter",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "@TikaratheMew\n\nIncluded with The Unboxing of Isaac #10: Lil Greed for February, 2023."
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-the_unboxing_of_isaac-eden_s_soul",
+      "name": "Eden's Soul",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "This enters play deactivated.\n------------------------------\n↷: Destroy this. If you\ndo, look at the top 7\ncards of the treasure deck.\nGain 2 of them, then put the\nrest on the bottom of the\ndeck in a random order.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-the_unboxing_of_isaac-eden_s_soul",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Included with The Unboxing of Isaac #4: The Ascent for August, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-paid_items-the_unboxing_of_isaac-satanic_bible",
+      "name": "Satanic Bible",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 1 HP:\nChoose a monster.\nPrevent the next\ninstance of damage\nit would take\nthis turn.\n------------------------------\nAve Satanas.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-paid_items-the_unboxing_of_isaac-satanic_bible",
+        "subcategory": "Paid Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #6: The Bloat!!!! for October, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-cube_of_meat",
+      "name": "Cube of Meat",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You take no combat\ndamage on attack\nrolls of 1.\n------------------------------\nWhile you control another\nitem or soul named Cube\nof Meat or Ultra Flesh\nKid!, you have +1 AT.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-cube_of_meat",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #3: Horsemen for July, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-cube_of_meat-v2",
+      "name": "Cube of Meat",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You take no combat\ndamage on attack\nrolls of 2.\n------------------------------\nWhile you control another\nitem or soul named Cube\nof Meat or Ultra Flesh\nKid!, you have +1 HP.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-cube_of_meat",
+        "subcategory": "Passive Items",
+        "version": "Alt Ability",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #3: Horsemen for July, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-cube_of_meat-v3",
+      "name": "Cube of Meat",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You take no combat\ndamage on attack\nrolls of 3.\n------------------------------\nWhile you control another\nitem or soul named Cube of\nMeat or Ultra Flesh Kid!, you\ntake no combat damage on\nattack rolls of 4.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-cube_of_meat",
+        "subcategory": "Passive Items",
+        "version": "Alt Ability",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #3: Horsemen for July, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-lil_delirium",
+      "name": "Lil Delirium",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "At the start of your turn,\nlook at the top 3 cards\nof the treasure deck and\nreveal one. This becomes a\ncopy of the revealed card\ntill end of turn. Put the\ncards on the bottom of the\ndeck in a random order.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-lil_delirium",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #8: Delirious for December, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-mom_s_heels",
+      "name": "Mom's Heels",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You may attack an\nadditional time on\nyour turn.\n------------------------------\nPrevent the first instance\nof combat damage you\nwould take each turn.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-mom_s_heels",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KayLousberg",
+        "notes": "Included with The Unboxing of Isaac #5: Super Isaac 64 for September, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-mom_s_lipstick",
+      "name": "Mom's Lipstick",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You may attack an\nadditional time on\nyour turn.\n------------------------------\nYou have +1 to the\nfirst attack roll\nyou make each turn.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-mom_s_lipstick",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KayLousberg",
+        "notes": "Included with The Unboxing of Isaac #5: Super Isaac 64 for September, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-mom_s_underwear",
+      "name": "Mom's Underwear",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You may attack an\nadditional time on\nyour turn.\n------------------------------\nYou have +2 AT for the\nsecond attack you\nmake each turn.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-mom_s_underwear",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@KayLousberg",
+        "notes": "Included with The Unboxing of Isaac #5: Super Isaac 64 for September, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-number_one",
+      "name": "Number One",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Monsters  have -1 DC\non your turn.\n------------------------------\nYour attack rolls\nof 1 or 6 count\nas misses.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-number_one",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #7: Binding Pale Kid for November, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-number_two",
+      "name": "Number Two",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 2, you may\ndeal 1 damage to a\nmonster or player.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-number_two",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #7: Binding Pale Kid for November, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-seraphim",
+      "name": "Seraphim",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You have +1 to the 1st,\n3rd, and 5th attack\nroll you make each turn.\n------------------------------\n\"Above it stood the seraphims:\neach one had six wings; with twain\nhe covered his face, and with twain\nhe covered his feet, and with\ntwain he did fly.\" Isaiah 6:2",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-seraphim",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Included with The Unboxing of Isaac #4: The Ascent for August, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-the_mark",
+      "name": "The Mark",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "You have 5+ DC and\ncan be attacked.\n------------------------------\nOn your turn, other\nplayers have 5+ DC and\ncan be attacked.\n------------------------------\n+1 AT",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-the_mark",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Included with The Unboxing of Isaac #6: The Bloat!!!! for October, 2022.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-the_stairway",
+      "name": "The Stairway",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you declare a\npurchase, before choosing\nwhat to purchase, you\nmay look at the top 7\ncards of the treasure\ndeck and put them back\nin any order.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-the_stairway",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Included with The Unboxing of Isaac #4: The Ascent for August, 2022."
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-the_unboxing_of_isaac-three_dollar_bill",
+      "name": "Three Dollar Bill",
+      "type": "treasure",
+      "expansion": "the_unboxing_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "Each time you would deal\ndamage to a monster or\nplayer, roll-\n4-5: You heal 1 HP.\n------------------------------\n6: Add 1 to that instance\nof damage.",
+        "set": "The Unboxing of Isaac",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-the_unboxing_of_isaac-three_dollar_bill",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Included with The Unboxing of Isaac #2: Rainbow Blight for June, 2022."
+      }
+    }
+  ]
+}

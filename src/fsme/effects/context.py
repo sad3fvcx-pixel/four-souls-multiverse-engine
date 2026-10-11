@@ -1,38 +1,137 @@
 # src/fsme/effects/context.py
 
 """
-Effect execution context for Four Souls Multiverse Engine.
+Execution surface available to effect handlers.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, Protocol
 
-from .effect import Effect
+from fsme.events import Event, EventType
+from fsme.rng.rng import RNG
+from fsme.stack import StackItem
+from fsme.state import GameState
 
 
-@dataclass(slots=True)
-class EffectContext:
+class EffectContext(Protocol):
     """
-    Context shared during effect execution.
+    Everything an effect is allowed to do, and nothing more.
+
+    This protocol is the boundary that keeps the dependency order intact.
+    Effects sit below the Runtime and must not import it, so the Runtime's
+    ExecutionContext satisfies this protocol structurally instead.
+
+    An effect changing GameState is therefore always doing so through an
+    object the Runtime created and handed to it.
     """
 
-    effect: Effect
+    @property
+    def state(self) -> GameState:
+        """
+        The single authoritative game state.
+        """
+        ...
 
-    values: dict[str, Any] = field(default_factory=dict)
+    @property
+    def rng(self) -> RNG:
+        """
+        The only source of randomness available to gameplay.
+        """
+        ...
 
-    def get(self, key: str, default: Any = None) -> Any:
-        return self.values.get(key, default)
+    @property
+    def actor(self) -> int | None:
+        """
+        The player this work is being done for, when there is one.
+        """
+        ...
 
-    def set(self, key: str, value: Any) -> None:
-        self.values[key] = value
+    @property
+    def source(self) -> Any | None:
+        """
+        The card whose ability is being resolved, when there is one.
+        """
+        ...
 
-    def has(self, key: str) -> bool:
-        return key in self.values
+    @property
+    def answerable_rolls(self) -> bool:
+        """
+        Whether a roll must be offered to the table before it counts.
+        """
+        ...
 
-    def remove(self, key: str) -> None:
-        self.values.pop(key, None)
+    def take_settled_roll(self) -> int | None:
+        """
+        Take the result of a roll the table has finished answering.
+        """
+        ...
 
-    def clear(self) -> None:
-        self.values.clear()
+    def request_roll(self, sides: int = 6, *, attack: bool = False) -> None:
+        """
+        Ask for a roll that the table may answer.
+        """
+        ...
+
+    @property
+    def event(self) -> Event | None:
+        """
+        The event currently open for replacement, if any.
+        """
+        ...
+
+    def propose(
+        self,
+        event_type: EventType,
+        *,
+        source: Any | None = None,
+        controller: int | None = None,
+        targets: list[Any] | None = None,
+        **payload: Any,
+    ) -> Event:
+        """
+        Offer an event for replacement before making it happen.
+        """
+        ...
+
+    def emit(
+        self,
+        event_type: EventType,
+        *,
+        source: Any | None = None,
+        controller: int | None = None,
+        targets: list[Any] | None = None,
+        **payload: Any,
+    ) -> Event:
+        """
+        Queue an event describing a change that just happened.
+        """
+        ...
+
+    def push(self, item: StackItem) -> StackItem:
+        """
+        Place a pending action on the stack.
+        """
+        ...
+
+    def roll(self, sides: int = 6) -> int:
+        """
+        Roll a die through the engine RNG.
+        """
+        ...
+
+    def apply(
+        self,
+        effect: str,
+        targets: Sequence[Any],
+        **params: Any,
+    ) -> Any:
+        """
+        Run another registered effect.
+
+        This is how a rule such as combat deals damage: it goes through the
+        same effect library as a card would, so there is one implementation of
+        "deal damage" and one place it can be changed.
+        """
+        ...

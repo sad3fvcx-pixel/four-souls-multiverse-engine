@@ -1,0 +1,8 @@
+{
+  "id": "gold_box",
+  "name": "Gold Box",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Gold Box: 64 cards imported from the card database."
+}

@@ -1,0 +1,26 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-tapeworm-pink_proglottid",
+      "name": "Pink Proglottid",
+      "type": "starting_item",
+      "expansion": "tapeworm",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Add or remove an egg counter\nfrom a player or monster.\n------------------------------\nEach time player or monster with\nan egg counter dies, each player\nwithout an egg counter loots equal\nto the number of egg counters\non that player or monster.\n------------------------------\n-Eternal-",
+        "set": "Tapeworm",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-tapeworm-pink_proglottid",
+        "version": "Original",
+        "artist": "TikaratheMew",
+        "notes": "Foil-only."
+      }
+    }
+  ]
+}

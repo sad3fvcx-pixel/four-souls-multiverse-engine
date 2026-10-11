@@ -1,0 +1,165 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-bad_events-warp_zone-brea_in_distress",
+      "name": "Brea in Distress",
+      "type": "event",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-4: Skip your next turn.\n------------------------------\n5-6: This becomes an item\nwith \"+1 HP\" and loses all\nother abilities. Gain it.",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-warp_zone-brea_in_distress",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Gish.\n\nUnlocked via the Downpour social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-warp_zone-fuck_bloat",
+      "name": "Fuck Bloat",
+      "type": "event",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The players to the active player's\nleft and right take 2 damage.\n------------------------------\nSearch the monster deck for\nany number of cards named The\nBloat and put them in one or more\nmonster slots not being attacked.\nShuffle the monster deck.",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-warp_zone-fuck_bloat",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@alexpardee",
+        "notes": "Unlocked via The Closet social goals to-do list during the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-warp_zone-golden_idol",
+      "name": "Golden Idol",
+      "type": "event",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "When this enters play, it becomes\nan item. The active player gains it.\n------------------------------\nAt the end of your turn, gain 10¢.\n------------------------------\nOther players may attack you.\nYou have 4+ DC for the attack.\n------------------------------\nWhen another player kills you,\ngive this to them.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-warp_zone-golden_idol",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Spelunky."
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-warp_zone-grubfather",
+      "name": "Grubfather",
+      "type": "event",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "When this enters play, it becomes\nan item. The active player gains it.\n------------------------------\nWhile you control 1 or more non-eternal\nitems, monsters have +1 DC on your turn.\n------------------------------\n$: Destroy an item\nyou control:\nGive this to another player.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-warp_zone-grubfather",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Hollow Knight.\n\nUnlocked via the Dross social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-warp_zone-trial_by_trolley",
+      "name": "Trial by Trolley!",
+      "type": "event",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each player votes for\n2 different players.\nEach player with the\nmost votes or tied\nfor the most dies.\n------------------------------\n\"This sounds like a real moral\nlife or death desicion, here!\"",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-warp_zone-trial_by_trolley",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the board game Trial by Trolley.\n\nUnlocked via the Lake of Fire social goals to-do list during the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-good_events-warp_zone-don_t_starve",
+      "name": "Don't Starve!",
+      "type": "event",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each player may discard\na loot card. If they don't,\nthey take 1 damage. Repeat\nthis process till there are\n1 or fewer living players.\n------------------------------\n\"Say pal, you don't look so\ngood. You better find something\nto eat before night comes!\"",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-warp_zone-don_t_starve",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Don't Starve.\n\nUnlocked via the Lake of Fire social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-good_events-warp_zone-nightmare_tick",
+      "name": "Nightmare Tick",
+      "type": "event",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Roll-\n1-4: You die. :(\n------------------------------\n5-6: This becomes an item\nwith \"When you would roll a\n1, you may change the result\nto a 2 or 3\" and loses all\nother abilities. Gain it.",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-warp_zone-nightmare_tick",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the board game Kingdom Death: Monster.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-good_events-warp_zone-qwop",
+      "name": "QWOP!",
+      "type": "event",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each player rolls 3 times-\nEach player who rolls\nthe highest sum or tied for\nit gains +1 treasure. Each\nplayer who rolls the\nlowest sum or tied for it\ndies. Each player gains 1¢.\n------------------------------\nEveryone is a winner",
+        "set": "Warp Zone",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-warp_zone-qwop",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game QWOP.\n\nUnlocked via The Planetarium social goals to-do list during the Requiem Kickstarter."
+      }
+    }
+  ]
+}

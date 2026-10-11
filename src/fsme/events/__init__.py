@@ -20,7 +20,7 @@ from .errors import (
     EventQueueError,
     EventRegistrationError,
 )
-from .event import Event
+from .event import Event, EventStatus
 from .filter import (
     EventFilter,
     accept_all,
@@ -41,6 +41,7 @@ from .utils import (
 
 __all__ = [
     "Event",
+    "EventStatus",
     "EventBus",
     "EventContext",
     "EventDispatcher",

@@ -1,0 +1,425 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-requiem-abyss",
+      "name": "Abyss",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Destroy an item\nyou control. If\nyou do, put a\ncounter on this.\n------------------------------\nYou have +1 AT for every\n2 counters on this.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-abyss",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-anima_sola_the_revenant",
+      "name": "Anima Sola // The Revenant",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Flip this item.\n------------------------------\nWhen this is flipped\nto this side, loot 1.\n------------------------------\n-Eternal-\n(This can't be destroyed\nor put into discard)\n\n//\n\nHP: 2 | DC: 3+ | AT: 2\n\nThis item can be attacked.\n------------------------------\nWhen this reaches 0 HP, the player\nattacking this gains its reward,\nthen you flip it. That player may\nattack an additional time this turn.\n------------------------------\n-Eternal-\n------------------------------\nRewards: Loot 2",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-anima_sola_the_revenant",
+        "version": "Original",
+        "artist": "Front: Private\n\nBack: @rojen241"
+      }
+    },
+    {
+      "id": "starting_items-requiem-bag_of_crafting",
+      "name": "Bag of Crafting",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard a loot card:\nPut a counter on this.\n------------------------------\n$: Remove 4 counters\nfrom this:\nGain +1 treasure.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-bag_of_crafting",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-berserk",
+      "name": "Berserk",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "You may attack an\nadditional time on\nyour turn.\n------------------------------\nEach time you kill a\nmonster, gain +1 HP\ntill end of turn.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-berserk",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-book_of_virtues",
+      "name": "Book of Virtues",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time you deal\ncombat damage, roll-\n5-6: Deal 1 damage to a\nmonster or player.\n------------------------------\nEach time you kill a monster,\nchoose another player.  You\nand that player each loot 1.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-book_of_virtues",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-ceremonial_blade",
+      "name": "Ceremonial Blade",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Play an additional\nloot card this turn.\n------------------------------\nAt the end of your turn, loot\n1 and discard a loot card.\n------------------------------\nEach time you kill a\nmonster, loot 1.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-ceremonial_blade",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-classic_roller",
+      "name": "Classic Roller",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a dice roll. Its\ncontroller rerolls it,\nbut rolls 2 dice instead.\nThey choose another player.\nThat player chooses one of\nthe rolls as the result.\n------------------------------\nAt the end of your\nturn, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-classic_roller",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "starting_items-requiem-dead_weight",
+      "name": "Dead Weight",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "You take no combat damage\non attack rolls of 1.\n------------------------------\n↷: Cancel the triggered ability of\na monster or non-eternal item.\n------------------------------\nAt the end of your\nturn, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-dead_weight",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "starting_items-requiem-flip",
+      "name": "Flip",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time you die, after\npaying penalties, flip\nyour character if able\nthen recharge it. Discard\nyour hand and loot 3.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-flip",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-gello",
+      "name": "Gello",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a monster being\nattacked. Heal that\nmonster to full HP, then\ndeal damage equal to the\nnumber of HP healed in this way\nto another monster. If it's not\nyour turn, cancel the attack and\nthe active player may attack\nan additional time this turn.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-gello",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-glitch",
+      "name": "Glitch",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "As your turn starts, choose a\nshop item. This gains the abilities\nof that item till end of turn.\n------------------------------\nAs your turn ends, choose a\nshop item. This gains the abilities\nof that item till the start of\nyour next turn. Recharge this.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-glitch",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-hemoptysis",
+      "name": "Hemoptysis",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "↷: Put a counter on this.\n------------------------------\n$: Remove a counter from this:\nChoose a monster.\nIts AT becomes 1.\n------------------------------\n$: Remove 2 counters from this:\nDeal 1 damage to up to 2\nmonsters or players.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-hemoptysis",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-hypercoagulation",
+      "name": "Hypercoagulation",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "At the start of your turn,\nput a counter on this.\n------------------------------\nYou have +1 HP for each\ncounter on this.\n------------------------------\nAt the end of your turn, if\nthis has 3+ counters, remove\nall of them and loot 3.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-hypercoagulation",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-ibs",
+      "name": "IBS",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard a loot card:\nChoose one-\n•Cancel your attack on a monster.\n------------------------------\n•Gain 3¢.\n------------------------------\n$: Discard 2 loot cards:\nCancel the ↷ or $ ability of\nan item or a loot being played.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-ibs",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-keeper_s_bargain",
+      "name": "Keeper's Bargain",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Each other player\nmay choose to gain\n1¢. Gain 1¢, then 1¢ for\neach player who did.\n------------------------------\nShop items you purchase\ncost 3¢ less.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-keeper_s_bargain",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-lemegeton",
+      "name": "Lemegeton",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Gain +1 treasure.\nThe next time your\nturn ends, destroy an\nitem you control.\n------------------------------\n-Eternal-\n(This can't be destroyed\nor put into discard.)",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-lemegeton",
+        "version": "Original",
+        "artist": "Private"
+      }
+    },
+    {
+      "id": "starting_items-requiem-sibling_rivalry",
+      "name": "Sibling Rivalry",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a non-active player.\nThe next time the active\nplayer declares an attack\nthis turn, the chosen player must\nmake an attack roll after each\nattack roll the active player makes\nfor the attack. If that monster dies\nthis attack, the chosen player\nalso gains the rewards.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-sibling_rivalry",
+        "version": "Original",
+        "artist": "Private",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "starting_items-requiem-soulbond",
+      "name": "Soulbond",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time you die,\nchoose another player.\nThat player dies.\n------------------------------\nYou don't lose ¢ or\ndiscard loot cards when\npaying the death penalty.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-soulbond",
+        "version": "Original",
+        "artist": "Private",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "starting_items-requiem-spindown_dice",
+      "name": "Spindown Dice",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Destroy an item.\nIf it was controlled\nby a player, they may\nsteal an item from\nthe shop.\n------------------------------\nAt the end of your turn, roll-\n\n4-6: Recharge this.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-spindown_dice",
+        "version": "Original",
+        "artist": "Private",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "starting_items-requiem-sumptorium",
+      "name": "Sumptorium",
+      "type": "starting_item",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "Each time you take damage,\nput a counter on this.\n------------------------------\n$: Remove 2 counters\nfrom this:\nA monster gains\n-1 DC till end of turn.\n------------------------------\n-Eternal-",
+        "set": "Requiem",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-requiem-sumptorium",
+        "version": "Original",
+        "artist": "Private"
+      }
+    }
+  ]
+}
