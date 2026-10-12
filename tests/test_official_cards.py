@@ -43,11 +43,50 @@ def base_game() -> ContentLibrary:
     return only
 
 
+def dealt_from_monsters(
+    library: ContentLibrary,
+    players: list[str],
+    *,
+    seed: int,
+    rng: Any = None,
+    interactive_priority: bool = False,
+) -> Game:
+    """
+    A game dealt as if the monster deck held monsters alone, with every card
+    still known by name.
+
+    The monster deck holds events and curses too (COMPREHENSIVE_RULES.md §2 and
+    §9). A test of one card was written against the deal its seed gave before
+    they were shuffled in, and on model 1 a longer monster deck deals every
+    later card differently — another character, a question as the game opens —
+    which is a change in the table, not in the card. So such a test asks for
+    this deal by name. It is not for a test of the deck, of a refill, or of what
+    a revealed event or curse does: those are dealt the ordinary way.
+    """
+    from fsme.rules import new_game as lay_out
+
+    monsters = library.without(
+        definition.id
+        for definition in library.definitions()
+        if definition.type in (CardType.EVENT, CardType.CURSE)
+    )
+
+    return Game(
+        lay_out(monsters, players, seed=seed, rng_model="1"),
+        cards=library.registry(),
+        interactive_priority=interactive_priority,
+        rng=rng,
+        content_version=library.identity(),
+    )
+
+
 def new_game(
     base_game: ContentLibrary,
     players: int = 2,
     seed: int = 1234,
     rolls: list[int] | None = None,
+    *,
+    monsters_only: bool = False,
 ) -> Game:
     """
     Start a base game and get past the opening draw.
@@ -55,16 +94,21 @@ def new_game(
     ``rolls`` scripts the dice. A card that says "roll" has one behaviour per
     face, and a test that hopes for the face it wants is a test that checks one
     sixth of the card.
+
+    ``monsters_only`` deals as `dealt_from_monsters` does, for a test of one
+    card that was written against that deal.
     """
-    # Dealt on RNG model 1: these tests are about cards, and the deal they were
-    # written against is the one model 1 deals from this seed.
-    game = Game.from_content(
-        base_game,
-        ["Ann", "Bo", "Cy"][:players],
-        seed=seed,
-        rng=FixedRNG(rolls) if rolls is not None else None,
-        rng_model="1",
-    )
+    seats = ["Ann", "Bo", "Cy"][:players]
+    rng = FixedRNG(rolls) if rolls is not None else None
+
+    if monsters_only:
+        game = dealt_from_monsters(base_game, seats, seed=seed, rng=rng)
+    else:
+        # Dealt on RNG model 1: these tests are about cards, and the deal they
+        # were written against is the one model 1 deals from this seed.
+        game = Game.from_content(
+            base_game, seats, seed=seed, rng=rng, rng_model="1"
+        )
 
     assert game.start().accepted
 
@@ -256,7 +300,7 @@ def test_a_bomb_may_be_thrown_at_a_player(base_game: ContentLibrary) -> None:
 def test_a_bomb_offers_every_monster_and_every_living_player(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     assert play(game, deal(game, "loot_deck-bombs-base_game-bomb")).accepted
 
@@ -330,7 +374,7 @@ def test_the_stars_takes_a_treasure_from_the_deck(base_game: ContentLibrary) -> 
 
 
 def test_death_kills_the_player_it_chooses(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     assert play(game, deal(game, "loot_deck-cards_miscellaneous-base_game-xiii_death")).accepted
 
@@ -385,7 +429,7 @@ def test_the_wheel_of_fortune_has_six_different_faces(
 def test_the_tower_hurts_every_player_on_a_low_roll(
     base_game: ContentLibrary, roll: int
 ) -> None:
-    game = new_game(base_game, players=3, rolls=[roll])
+    game = new_game(base_game, players=3, rolls=[roll], monsters_only=True)
     before = [player.hp for player in game.state.players]
 
     assert play(
@@ -399,7 +443,7 @@ def test_the_tower_hurts_every_player_on_a_low_roll(
 def test_the_tower_hurts_every_monster_in_the_middle(
     base_game: ContentLibrary, roll: int
 ) -> None:
-    game = new_game(base_game, players=3, rolls=[roll])
+    game = new_game(base_game, players=3, rolls=[roll], monsters_only=True)
 
     monsters = list(game.state.active_monsters.cards)
     before = [monster.hp for monster in monsters]
@@ -417,7 +461,7 @@ def test_the_tower_hurts_every_monster_in_the_middle(
 def test_the_tower_hurts_every_player_twice_on_a_high_roll(
     base_game: ContentLibrary, roll: int
 ) -> None:
-    game = new_game(base_game, players=3, rolls=[roll])
+    game = new_game(base_game, players=3, rolls=[roll], monsters_only=True)
     before = [player.hp for player in game.state.players]
 
     assert play(
@@ -443,7 +487,7 @@ def test_the_tower_hurts_every_player_twice_on_a_high_roll(
 def test_the_blank_rune_treats_every_player_alike(
     base_game: ContentLibrary, roll: int, coins: int, loot: int, damage: int
 ) -> None:
-    game = new_game(base_game, players=3, rolls=[roll])
+    game = new_game(base_game, players=3, rolls=[roll], monsters_only=True)
 
     before = [snapshot(player) for player in game.state.players]
 
@@ -541,7 +585,7 @@ def attack_bonus(game: Game, player: int) -> int:
 
 
 def test_the_empress_grants_attack_and_a_better_die(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3, rolls=[3])
+    game = new_game(base_game, players=3, rolls=[3], monsters_only=True)
 
     bless(game, "loot_deck-cards_miscellaneous-base_game-iii_the_empress")
 
@@ -583,7 +627,7 @@ def test_a_roll_bonus_is_added_to_the_die_that_is_rolled(
 def test_the_lovers_grant_hit_points_a_hurt_player_can_use(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     hurt = game.state.player(1)
     hurt.hp = 1
@@ -595,7 +639,7 @@ def test_the_lovers_grant_hit_points_a_hurt_player_can_use(
 
 
 def test_the_chariot_grants_one_of_each(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     blessed = game.state.player(1)
     before = blessed.max_hp
@@ -607,7 +651,7 @@ def test_the_chariot_grants_one_of_each(base_game: ContentLibrary) -> None:
 
 
 def test_strength_allows_another_attack(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     blessed = game.state.player(1)
     before = blessed.attacks_left
@@ -651,7 +695,7 @@ def test_the_third_pills_hurt_on_a_high_roll(
 def test_a_bonus_till_end_of_turn_ends_with_the_turn(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     bless(game, "loot_deck-cards_miscellaneous-base_game-vii_the_chariot")
 
@@ -673,7 +717,7 @@ def test_a_hit_point_bonus_is_taken_back_with_the_hit_points(
     a blessed player ends the turn healed to the larger number and then loses
     the difference — not healed for free, and not hurt twice.
     """
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     blessed = game.state.player(1)
 
@@ -898,7 +942,7 @@ def test_the_bloody_penny_pays_when_anybody_dies(base_game: ContentLibrary) -> N
     loot 1". The engine has no death penalties yet, so the ordering has nothing
     to be before; the loot itself is what is checked here.
     """
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     assert play(game, deal(game, "loot_deck-trinkets-base_game-bloody_penny")).accepted
 
@@ -1104,7 +1148,7 @@ def test_the_high_priestess_deals_what_the_die_shows(
 def test_the_hierophant_absorbs_the_next_damage_only(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     shielded = game.state.player(1)
     toughen(game, shielded)
@@ -1128,7 +1172,7 @@ def test_the_hierophant_absorbs_the_next_damage_only(
 
 
 def test_a_soul_heart_stops_a_single_point(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     shielded = game.state.player(1)
     toughen(game, shielded)
@@ -1144,7 +1188,7 @@ def test_a_soul_heart_stops_a_single_point(base_game: ContentLibrary) -> None:
 
 
 def test_an_unspent_shield_expires_with_the_turn(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     bless(game, "loot_deck-dice_shards_soul_hearts-base_game-soul_heart")
 
@@ -1156,7 +1200,7 @@ def test_an_unspent_shield_expires_with_the_turn(base_game: ContentLibrary) -> N
 
 
 def test_dagaz_can_shield_or_lift_a_curse(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     assert play(game, deal(game, "loot_deck-pills_runes-base_game-dagaz")).accepted
 
@@ -1196,7 +1240,7 @@ def test_lost_soul_becomes_a_soul_rather_than_a_discard(
 def test_the_sun_buries_itself_and_buys_another_turn(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     card = deal(game, "loot_deck-cards_miscellaneous-base_game-xix_the_sun")
 
@@ -1219,7 +1263,7 @@ def test_the_sun_buries_itself_and_buys_another_turn(
 def test_mega_battery_recharges_everything_one_player_has(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     theirs = game.state.player(1).treasures.cards
     mine = game.state.player(0).treasures.cards
@@ -1234,7 +1278,7 @@ def test_mega_battery_recharges_everything_one_player_has(
 
 
 def test_the_world_shows_every_hand_before_drawing(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     hands = [list(player.hand.cards) for player in game.state.players]
     before = game.state.player(0).hand_size
@@ -1257,7 +1301,7 @@ def test_the_world_shows_every_hand_before_drawing(base_game: ContentLibrary) ->
 def test_judgement_only_offers_the_players_with_the_most_souls(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     game.runtime.context.apply("gain_soul", [game.state.player(1)], count=2)
     game.runtime.context.apply("gain_soul", [game.state.player(2)], count=2)
@@ -1322,7 +1366,7 @@ def test_the_devil_pays_an_item_for_an_item(base_game: ContentLibrary) -> None:
 def test_the_fool_sweeps_the_stack_and_ends_the_turn(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     # Something slow to interrupt: a bomb waiting for its target is on the
     # stack, and the Fool is played while it waits.
@@ -1390,7 +1434,7 @@ def test_butter_bean_cancels_the_card_it_answers(base_game: ContentLibrary) -> N
 def test_justice_catches_you_up_with_the_player_you_choose(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     rival = game.state.player(2)
 
@@ -1420,7 +1464,7 @@ def test_justice_gives_nothing_to_a_player_already_ahead(
     "Until you have the same number" is a floor, not a swap: a player who
     already has more keeps what they have.
     """
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     game.runtime.context.apply("draw_loot", [game.state.player(0)], count=5)
     game.runtime.context.apply("gain_coins", [game.state.player(0)], amount=12)
@@ -1444,7 +1488,7 @@ def test_justice_gives_nothing_to_a_player_already_ahead(
 def test_ehwaz_replaces_the_monsters_nobody_is_fighting(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game)
+    game = new_game(base_game, monsters_only=True)
 
     before = list(game.state.active_monsters.cards)
     waiting = len(game.state.monster_deck)
@@ -1785,7 +1829,7 @@ def test_the_potato_peeler_discards_the_top_of_each_deck(
 def test_the_jawbone_takes_three_cents_from_the_player_it_names(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     jawbone = give(game, "treasure_deck-active_items-base_game-jawbone")
 
@@ -1865,7 +1909,7 @@ def slay(game: Game, monster: CardInstance, killer: int = 0) -> None:
 
 
 def test_a_boom_fly_takes_everybody_with_it(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     fly = summon(game, "monster_deck-basic_enemies-base_game-boom_fly")
 
@@ -1882,7 +1926,7 @@ def test_a_boom_fly_takes_everybody_with_it(base_game: ContentLibrary) -> None:
 def test_a_black_bony_hits_the_player_who_killed_it(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     bony = summon(game, "monster_deck-basic_enemies-base_game-black_bony")
 
@@ -1901,7 +1945,7 @@ def test_a_black_bony_hits_the_player_who_killed_it(
 def test_wrath_rolls_for_how_much_it_hurts(
     base_game: ContentLibrary, roll: int, damage: int
 ) -> None:
-    game = new_game(base_game, players=3, rolls=[roll])
+    game = new_game(base_game, players=3, rolls=[roll], monsters_only=True)
 
     wrath = summon(game, "monster_deck-bosses-base_game-wrath")
 
@@ -1918,7 +1962,7 @@ def test_wrath_rolls_for_how_much_it_hurts(
 
 
 def test_a_greedling_charges_the_player_it_names(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     greedling = summon(game, "monster_deck-basic_enemies-base_game-greedling")
 
@@ -1938,7 +1982,7 @@ def test_a_greedling_charges_the_player_it_names(base_game: ContentLibrary) -> N
 def test_sloth_empties_the_hand_of_whoever_killed_it(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     sloth = summon(game, "monster_deck-bosses-base_game-sloth")
 
@@ -2301,7 +2345,10 @@ def clear_a_slot(game: Game) -> None:
 
 
 def test_an_event_happens_when_it_is_revealed(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3, rolls=[6])
+    # A monster lies under the card put on top, so the slot the event leaves
+    # empty is filled by it: the deck holds events too, and with another one
+    # next the refill would play that as well. Seed 1235 deals one.
+    game = new_game(base_game, players=3, seed=1235, rolls=[6])
 
     event = stack_deck(game, "monster_deck-good_events-base_game-chest")
 
@@ -2320,6 +2367,24 @@ def test_a_revealed_curse_attaches_to_the_active_player(
 ) -> None:
     game = new_game(base_game, players=3)
 
+    # The deal seats Eden third, and Eden chooses a starting item as the game
+    # opens (the treasure deck's top three). Blank Card is chosen: it does
+    # nothing unless its owner uses it, so the card under test is still all
+    # that happens to anyone.
+    eden = game.runtime.awaiting_decision
+
+    assert eden is not None and eden.kind is DecisionKind.CHOOSE_CARD
+    assert (
+        game.state.player(eden.player).character.definition.id
+        == "characters-base_game-eden"
+    )
+
+    offered = [card.definition.id for card in eden.options]
+    picked = offered.index("treasure_deck-active_items-base_game-blank_card")
+
+    assert choose(game, eden.player, picked).accepted
+    assert game.runtime.awaiting_decision is None
+
     card = stack_deck(game, "monster_deck-curses-base_game-curse_of_pain")
 
     clear_a_slot(game)
@@ -2332,6 +2397,24 @@ def test_troll_bombs_hurt_only_the_player_who_found_them(
     base_game: ContentLibrary,
 ) -> None:
     game = new_game(base_game, players=3)
+
+    # The deal seats Eden third, and Eden chooses a starting item as the game
+    # opens (the treasure deck's top three). Blank Card is chosen: it does
+    # nothing unless its owner uses it, so the card under test is still all
+    # that happens to anyone.
+    eden = game.runtime.awaiting_decision
+
+    assert eden is not None and eden.kind is DecisionKind.CHOOSE_CARD
+    assert (
+        game.state.player(eden.player).character.definition.id
+        == "characters-base_game-eden"
+    )
+
+    offered = [card.definition.id for card in eden.options]
+    picked = offered.index("treasure_deck-active_items-base_game-blank_card")
+
+    assert choose(game, eden.player, picked).accepted
+    assert game.runtime.awaiting_decision is None
 
     for player in game.state.players:
         toughen(game, player)
@@ -2347,7 +2430,10 @@ def test_troll_bombs_hurt_only_the_player_who_found_them(
 
 
 def test_greed_empties_the_richest_purse(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    # A monster lies under the card put on top, so the slot the event leaves
+    # empty is filled by it: the deck holds events too, and with another one
+    # next the refill would play that as well. Seed 1235 deals one.
+    game = new_game(base_game, players=3, seed=1235)
 
     game.state.player(1).pennies = 12
     game.state.player(2).pennies = 12
@@ -2397,7 +2483,7 @@ def starting_item(game: Game, name: str, player: int = 0) -> CardInstance:
 
 
 def test_yum_heart_stops_an_instance_however_big(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     heart = starting_item(game, "starting_items-base_game-yum_heart")
 
@@ -2599,7 +2685,7 @@ def test_greed_charges_the_table_when_it_lands_a_hit(
 ) -> None:
     # One miss, then three hits: a scripted die that always misses would keep
     # the fight going until somebody died.
-    game = new_game(base_game, players=3, rolls=[1, 6, 6, 6])
+    game = new_game(base_game, players=3, rolls=[1, 6, 6, 6], monsters_only=True)
 
     only_monster(game, "monster_deck-bosses-base_game-greed")
 
@@ -2613,7 +2699,7 @@ def test_greed_charges_the_table_when_it_lands_a_hit(
 
 
 def test_lust_answers_only_the_damage_it_takes(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, rolls=[6])
+    game = new_game(base_game, rolls=[6], monsters_only=True)
 
     lust = only_monster(game, "monster_deck-bosses-base_game-lust", hp=1)
 
@@ -2651,7 +2737,7 @@ def test_a_monster_that_shrugs_off_a_roll_takes_nothing(
 
 
 def test_leaper_doubles_what_it_deals_on_a_one(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, rolls=[1, 6])
+    game = new_game(base_game, rolls=[1, 6], monsters_only=True)
 
     only_monster(game, "monster_deck-basic_enemies-base_game-leaper", hp=1)
 
@@ -2666,7 +2752,7 @@ def test_leaper_doubles_what_it_deals_on_a_one(base_game: ContentLibrary) -> Non
 
 
 def test_evil_twin_shares_the_damage_it_takes(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3, rolls=[6])
+    game = new_game(base_game, players=3, rolls=[6], monsters_only=True)
 
     twin = only_monster(game, "monster_deck-basic_enemies-base_game-evil_twin", hp=1)
 
@@ -2700,7 +2786,7 @@ def test_mulligan_leaves_the_board_wider_than_it_found_it(
 def test_famine_costs_the_player_who_killed_it_a_turn(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     famine = summon(game, "monster_deck-bosses-base_game-famine")
 
@@ -2744,7 +2830,7 @@ def test_delirium_makes_its_neighbours_harder_and_buries_itself(
 def test_the_lamb_hands_a_soul_to_whoever_killed_it(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     lamb = summon(game, "monster_deck-epic_boss-base_game-the_lamb")
 
@@ -2780,7 +2866,7 @@ def test_the_bonus_souls_are_on_the_table_from_the_start(
 def test_the_soul_of_greed_goes_to_the_first_player_who_earns_it(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     soul = next(
         card
@@ -2855,7 +2941,7 @@ def test_bum_bo_levels_up_on_the_coins_it_swallows(base_game: ContentLibrary) ->
 
 
 def test_guppys_paw_is_paid_for_in_blood(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     paw = give(game, "treasure_deck-active_items-base_game-guppy_s_paw")
 
@@ -2990,7 +3076,7 @@ def test_the_compass_lets_its_holder_choose_the_order(
 def test_brimstone_splashes_the_damage_its_holder_deals(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3, rolls=[6])
+    game = new_game(base_game, players=3, rolls=[6], monsters_only=True)
 
     give(game, "treasure_deck-passive_items-base_game-brimstone")
 
@@ -3019,23 +3105,36 @@ def test_brimstone_splashes_the_damage_its_holder_deals(
 
 
 def answering_game(
-    base_game: ContentLibrary, rolls: list[int], players: int = 2
+    base_game: ContentLibrary,
+    rolls: list[int],
+    players: int = 2,
+    *,
+    monsters_only: bool = False,
 ) -> Game:
     """
     A game where rolls stop and wait for the table, as the rules have them do.
 
     The opening loot step is let through first: a turn begins by putting a loot
     into the queue, and with the table answering that is a window of its own.
+
+    ``monsters_only`` deals as `dealt_from_monsters` does.
     """
-    # Dealt on RNG model 1, the deal these tests were written against.
-    game = Game.from_content(
-        base_game,
-        ["Ann", "Bo", "Cy"][:players],
-        seed=1234,
-        rng=FixedRNG(rolls),
-        interactive_priority=True,
-        rng_model="1",
-    )
+    seats = ["Ann", "Bo", "Cy"][:players]
+
+    if monsters_only:
+        game = dealt_from_monsters(
+            base_game, seats, seed=1234, rng=FixedRNG(rolls), interactive_priority=True
+        )
+    else:
+        # Dealt on RNG model 1, the deal these tests were written against.
+        game = Game.from_content(
+            base_game,
+            seats,
+            seed=1234,
+            rng=FixedRNG(rolls),
+            interactive_priority=True,
+            rng_model="1",
+        )
 
     assert game.start().accepted
 
@@ -3161,7 +3260,7 @@ def test_the_magician_names_the_result(base_game: ContentLibrary) -> None:
 
 
 def test_an_attack_roll_may_be_answered_too(base_game: ContentLibrary) -> None:
-    game = answering_game(base_game, [1, 6])
+    game = answering_game(base_game, [1, 6], monsters_only=True)
 
     d6 = starting_item(game, "starting_items-base_game-the_d6")
 
@@ -3236,7 +3335,7 @@ def pick(game: Game, player: int, card: CardInstance) -> Any:
 def test_guppys_head_makes_the_other_player_choose_the_gift(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     head = give(game, "treasure_deck-active_items-base_game-guppy_s_head")
 
@@ -3437,7 +3536,7 @@ def test_the_finger_swaps_items_with_whoever_rolled_a_two(
 def test_the_donation_machine_pays_for_the_item_it_gives_away(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     machine = give(game, "treasure_deck-paid_items-base_game-donation_machine")
     gift = give(game, "treasure_deck-passive_items-base_game-breakfast")
@@ -3466,7 +3565,7 @@ def test_the_donation_machine_pays_for_the_item_it_gives_away(
 def test_incubus_swaps_a_card_out_of_a_hand_it_has_seen(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     incubus = starting_item(game, "starting_items-base_game-incubus")
 
@@ -3576,7 +3675,7 @@ def test_compost_is_spent_by_whoever_loots_first(base_game: ContentLibrary) -> N
 def test_two_of_clubs_doubles_every_loot_the_chosen_player_draws(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     clubs = give(game, "treasure_deck-active_items-base_game-two_of_clubs")
 
@@ -3808,7 +3907,7 @@ def test_the_haunt_counts_from_the_start_of_each_turn(
 def test_chaos_passes_every_hand_one_seat_to_the_left(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     chaos = give(game, "treasure_deck-active_items-base_game-chaos")
 
@@ -4451,7 +4550,7 @@ def test_pestilence_may_put_both_points_on_one_target(
 def test_the_remote_detonator_destroys_what_the_table_voted_for(
     base_game: ContentLibrary,
 ) -> None:
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     detonator = give(game, "treasure_deck-active_items-base_game-remote_detonator")
 
@@ -4714,7 +4813,7 @@ def test_a_haunt_changes_hands_when_its_owner_dies(base_game: ContentLibrary) ->
     """
     "When you die, before paying penalties, give this to another player."
     """
-    game = new_game(base_game, players=3)
+    game = new_game(base_game, players=3, monsters_only=True)
 
     haunt = give(game, "treasure_deck-passive_items-base_game-baby_haunt", player=1)
 
@@ -4805,7 +4904,7 @@ def test_dinga_doubles_its_rewards_on_a_six(base_game: ContentLibrary) -> None:
     """
     "When this dies on an attack roll of 6, double its rewards."
     """
-    game = new_game(base_game, rolls=[6, 6, 6])
+    game = new_game(base_game, rolls=[6, 6, 6], monsters_only=True)
 
     dinga = only_monster(game, "monster_deck-basic_enemies-base_game-dinga", hp=1)
     printed = int(dinga.definition.rewards.get("cents", 0))
@@ -4819,7 +4918,7 @@ def test_dinga_doubles_its_rewards_on_a_six(base_game: ContentLibrary) -> None:
 
 
 def test_dinga_pays_what_it_prints_on_anything_else(base_game: ContentLibrary) -> None:
-    game = new_game(base_game, rolls=[3, 3, 3])
+    game = new_game(base_game, rolls=[3, 3, 3], monsters_only=True)
 
     dinga = only_monster(game, "monster_deck-basic_enemies-base_game-dinga", hp=1)
     printed = int(dinga.definition.rewards.get("cents", 0))

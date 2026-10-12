@@ -313,6 +313,18 @@ def an_attack_that_has_stalled(game: Game, data: dict[str, Any]) -> bool:
     return game.state.combat.active and game.state.combat.stalled_rounds > 0
 
 
+def a_trigger_holding_its_event(game: Game, data: dict[str, Any]) -> bool:
+    """
+    A triggered ability on the stack, with the event it answers inside it.
+
+    The contract reaches `Event` through one of these. Until the monster deck
+    held events and curses, a loot card being played happened to have two on
+    the stack; dealt with them in, it has none, so the position is looked for
+    by name rather than left to the deal.
+    """
+    return any(item.event is not None for item in game.state.stack)
+
+
 def counted(game: Game) -> Game:
     """Counters on a card and on a player, which nothing in an opening sets."""
     card = next(
@@ -349,6 +361,9 @@ def positions_on(everything: ContentLibrary, rng_model: str) -> dict[str, Game]:
         ),
         "an attack that has stalled": first_position(
             everything, 1, an_attack_that_has_stalled, rng_model=rng_model
+        ),
+        "a trigger holding its event": first_position(
+            everything, 0, a_trigger_holding_its_event, rng_model=rng_model
         ),
         "counters on a card and a player": counted(
             first_position(

@@ -18,6 +18,7 @@ from test_official_cards import (
     answer,
     choose,
     deal,
+    dealt_from_monsters,
     give,
     hurt,
     only_monster,
@@ -63,18 +64,24 @@ def new_game(
     players: int = 2,
     seed: int = 1234,
     rolls: list[int] | None = None,
+    *,
+    monsters_only: bool = False,
 ) -> Game:
+    """
+    ``monsters_only`` deals as `dealt_from_monsters` does, for a test of one
+    card that was written against that deal.
+    """
     from test_combat import FixedRNG
 
-    # Dealt on RNG model 1: these tests are about cards, and the deal they were
-    # written against is the one model 1 deals from this seed.
-    game = Game.from_content(
-        alt_art,
-        ["Ann", "Bo", "Cy"][:players],
-        seed=seed,
-        rng=FixedRNG(rolls) if rolls is not None else None,
-        rng_model="1",
-    )
+    seats = ["Ann", "Bo", "Cy"][:players]
+    rng = FixedRNG(rolls) if rolls is not None else None
+
+    if monsters_only:
+        game = dealt_from_monsters(alt_art, seats, seed=seed, rng=rng)
+    else:
+        # Dealt on RNG model 1: these tests are about cards, and the deal they
+        # were written against is the one model 1 deals from this seed.
+        game = Game.from_content(alt_art, seats, seed=seed, rng=rng, rng_model="1")
 
     assert game.start().accepted
 
@@ -313,7 +320,7 @@ def test_the_alternate_dark_one_gains_two_attack(alt_art: ContentLibrary) -> Non
 
 
 def test_daddy_long_legs_arms_every_monster_on_a_one(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art, rolls=[1])
+    game = new_game(alt_art, rolls=[1], monsters_only=True)
 
     legs = only_monster(game, "monster_deck-bosses-alt_art-daddy_long_legs", hp=5)
     other = summon(game, "monster_deck-bosses-base_game-greed")
@@ -351,7 +358,7 @@ def test_the_alternate_pin_shrugs_off_fives_as_well_as_sixes(
 
 
 def test_the_alternate_duke_of_flies_opens_two_slots(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art)
+    game = new_game(alt_art, monsters_only=True)
 
     duke = only_monster(game, "monster_deck-bosses-alt_art-the_duke_of_flies", hp=3)
 
@@ -365,7 +372,7 @@ def test_the_alternate_duke_of_flies_opens_two_slots(alt_art: ContentLibrary) ->
 def test_the_alternate_mulligan_opens_the_slot_it_is_told_to(
     alt_art: ContentLibrary,
 ) -> None:
-    game = new_game(alt_art)
+    game = new_game(alt_art, monsters_only=True)
 
     mulligan = only_monster(
         game, "monster_deck-basic_enemies-alt_art-mulligan", hp=2
@@ -381,7 +388,7 @@ def test_the_alternate_mulligan_opens_the_slot_it_is_told_to(
 
 
 def test_the_alternate_mulliboom_spreads_its_damage(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art)
+    game = new_game(alt_art, monsters_only=True)
 
     boom = only_monster(game, "monster_deck-basic_enemies-alt_art-mulliboom", hp=1)
     bystander = summon(game, "monster_deck-bosses-base_game-greed")
@@ -405,7 +412,7 @@ def test_the_alternate_mulliboom_spreads_its_damage(alt_art: ContentLibrary) -> 
 
 
 def test_the_alternate_famine_empties_a_hand(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art)
+    game = new_game(alt_art, monsters_only=True)
 
     famine = only_monster(game, "monster_deck-bosses-alt_art-famine", hp=3)
 
@@ -417,7 +424,7 @@ def test_the_alternate_famine_empties_a_hand(alt_art: ContentLibrary) -> None:
 
 
 def test_hornfel_lashes_out_at_a_monster(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art)
+    game = new_game(alt_art, monsters_only=True)
 
     hornfel = only_monster(game, "monster_deck-bosses-alt_art-hornfel", hp=2)
     other = summon(game, "monster_deck-bosses-base_game-greed")
@@ -437,7 +444,7 @@ def test_hornfel_lashes_out_at_a_monster(alt_art: ContentLibrary) -> None:
 
 
 def test_the_alternate_monstro_destroys_at_random(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art, rolls=[2])
+    game = new_game(alt_art, rolls=[2], monsters_only=True)
 
     monstro = only_monster(game, "monster_deck-bosses-alt_art-monstro", hp=2)
 
@@ -468,7 +475,7 @@ def test_the_alternate_monstro_spares_on_a_high_roll(alt_art: ContentLibrary) ->
 def test_the_alternate_rag_man_buries_itself_one_card_down(
     alt_art: ContentLibrary,
 ) -> None:
-    game = new_game(alt_art, rolls=[6])
+    game = new_game(alt_art, rolls=[6], monsters_only=True)
 
     rag = only_monster(game, "monster_deck-bosses-alt_art-rag_man", hp=2)
 
@@ -478,7 +485,7 @@ def test_the_alternate_rag_man_buries_itself_one_card_down(
 
 
 def test_moms_hand_ends_the_turn_when_it_connects(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art)
+    game = new_game(alt_art, monsters_only=True)
 
     hand = only_monster(game, "monster_deck-basic_enemies-alt_art-mom_s_hand", hp=2)
 
@@ -496,7 +503,7 @@ def test_moms_hand_ends_the_turn_when_it_connects(alt_art: ContentLibrary) -> No
 def test_the_alternate_pestilence_passes_the_blow_along(
     alt_art: ContentLibrary,
 ) -> None:
-    game = new_game(alt_art, players=3)
+    game = new_game(alt_art, players=3, monsters_only=True)
 
     pestilence = only_monster(game, "monster_deck-bosses-alt_art-pestilence", hp=4)
 
@@ -521,7 +528,7 @@ def test_the_alternate_pestilence_passes_the_blow_along(
 
 
 def test_the_alternate_lamb_takes_two_souls(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art, players=3)
+    game = new_game(alt_art, players=3, monsters_only=True)
 
     lamb = only_monster(game, "monster_deck-epic_boss-alt_art-the_lamb", hp=6)
 
@@ -548,7 +555,7 @@ def test_the_alternate_lamb_takes_two_souls(alt_art: ContentLibrary) -> None:
 def test_the_alternate_epic_fetus_hits_the_room_and_its_owner(
     alt_art: ContentLibrary,
 ) -> None:
-    game = new_game(alt_art)
+    game = new_game(alt_art, monsters_only=True)
 
     fetus = give(game, "treasure_deck-active_items-alt_art-epic_fetus")
 
@@ -599,7 +606,7 @@ def attack_the_first_monster(game: Game) -> Any:
 def test_big_bony_punishes_a_miss(alt_art: ContentLibrary) -> None:
     # A miss, the die Big Bony makes them roll, then the hit that ends the
     # fight: a script that only ever misses would run until somebody died.
-    game = new_game(alt_art, rolls=[1, 2, 6])
+    game = new_game(alt_art, rolls=[1, 2, 6], monsters_only=True)
 
     only_monster(game, "monster_deck-basic_enemies-alt_art-big_bony", hp=1)
 
@@ -615,7 +622,7 @@ def test_big_bony_punishes_a_miss(alt_art: ContentLibrary) -> None:
 
 
 def test_big_bony_says_nothing_about_a_hit(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art, rolls=[6])
+    game = new_game(alt_art, rolls=[6], monsters_only=True)
 
     bony = only_monster(game, "monster_deck-basic_enemies-alt_art-big_bony", hp=1)
 
@@ -633,7 +640,7 @@ def test_big_bony_says_nothing_about_a_hit(alt_art: ContentLibrary) -> None:
 def test_polycephalus_turns_the_next_attack_roll_over(
     alt_art: ContentLibrary,
 ) -> None:
-    game = new_game(alt_art, rolls=[2])
+    game = new_game(alt_art, rolls=[2], monsters_only=True)
 
     poly = only_monster(game, "monster_deck-bosses-alt_art-polycephalus", hp=2)
 
@@ -646,7 +653,7 @@ def test_polycephalus_turns_the_next_attack_roll_over(
 
 
 def test_polycephalus_leaves_an_unhurt_roll_alone(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art, rolls=[2, 6])
+    game = new_game(alt_art, rolls=[2, 6], monsters_only=True)
 
     poly = only_monster(game, "monster_deck-bosses-alt_art-polycephalus", hp=1)
 
@@ -661,7 +668,7 @@ def test_polycephalus_leaves_an_unhurt_roll_alone(alt_art: ContentLibrary) -> No
 
 
 def test_the_alternate_satan_kills_on_the_third_six(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art, rolls=[6, 6, 6])
+    game = new_game(alt_art, rolls=[6, 6, 6], monsters_only=True)
 
     only_monster(game, "monster_deck-epic_boss-alt_art-satan", hp=6)
 
@@ -676,7 +683,7 @@ def test_the_alternate_satan_kills_on_the_third_six(alt_art: ContentLibrary) -> 
 
 
 def test_the_alternate_satan_counts_a_five_as_a_six(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art, rolls=[5, 5, 5])
+    game = new_game(alt_art, rolls=[5, 5, 5], monsters_only=True)
 
     only_monster(game, "monster_deck-epic_boss-alt_art-satan", hp=6)
 
@@ -693,7 +700,7 @@ def test_the_alternate_satan_counts_a_five_as_a_six(alt_art: ContentLibrary) -> 
 def test_the_alternate_satan_spares_a_table_that_rolls_low(
     alt_art: ContentLibrary,
 ) -> None:
-    game = new_game(alt_art, rolls=[4, 4, 4])
+    game = new_game(alt_art, rolls=[4, 4, 4], monsters_only=True)
 
     only_monster(game, "monster_deck-epic_boss-alt_art-satan", hp=6)
 
@@ -708,7 +715,7 @@ def test_the_alternate_satan_spares_a_table_that_rolls_low(
 
 
 def test_ultra_greed_gilds_an_item_and_takes_it(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art, rolls=[6])
+    game = new_game(alt_art, rolls=[6], monsters_only=True)
 
     greed = only_monster(game, "monster_deck-epic_boss-alt_art-ultra_greed", hp=1)
 
@@ -730,7 +737,7 @@ def test_ultra_greed_gilds_an_item_and_takes_it(alt_art: ContentLibrary) -> None
 def test_fistula_hardens_its_neighbours_as_it_is_hurt(
     alt_art: ContentLibrary,
 ) -> None:
-    game = new_game(alt_art)
+    game = new_game(alt_art, monsters_only=True)
 
     fistula = only_monster(game, "monster_deck-bosses-alt_art-fistula", hp=9)
     other = summon(game, "monster_deck-bosses-base_game-greed")
@@ -772,7 +779,7 @@ def test_the_alternate_guppys_paw_pays_hit_points_for_items(
 
 
 def test_dingle_silences_the_item_it_fouls(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art)
+    game = new_game(alt_art, monsters_only=True)
 
     dingle = only_monster(game, "monster_deck-bosses-alt_art-dingle", hp=9)
 
@@ -797,7 +804,7 @@ def test_dingle_silences_the_item_it_fouls(alt_art: ContentLibrary) -> None:
 def test_the_alternate_bloat_kills_on_a_matching_pair(
     alt_art: ContentLibrary,
 ) -> None:
-    game = new_game(alt_art, rolls=[1, 3, 3])
+    game = new_game(alt_art, rolls=[1, 3, 3], monsters_only=True)
 
     only_monster(game, "monster_deck-bosses-alt_art-the_bloat", hp=5)
 
@@ -810,7 +817,7 @@ def test_the_alternate_bloat_kills_on_a_matching_pair(
 
 
 def test_the_alternate_bloat_spares_a_mismatch(alt_art: ContentLibrary) -> None:
-    game = new_game(alt_art, rolls=[1, 3, 4, 6])
+    game = new_game(alt_art, rolls=[1, 3, 4, 6], monsters_only=True)
 
     bloat = only_monster(game, "monster_deck-bosses-alt_art-the_bloat", hp=1)
 

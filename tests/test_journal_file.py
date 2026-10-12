@@ -48,21 +48,25 @@ def played(everything: ContentLibrary) -> Journal:
     """
     A whole game, played the way Watch plays one.
 
-    Seed 4 is chosen for what happens in it rather than at random: it is dealt,
+    Seed 5 is chosen for what happens in it rather than at random: it is dealt,
     fought, bought in, died in, revived from, rewarded and won, so a round trip
     over it is a round trip over every kind of event a reader would notice
     missing. A seed where nobody ever bought anything would let this file pass
     while purchases were being dropped.
+
+    It was seed 4 until events and curses were shuffled into the monster deck;
+    dealt with them in, nobody buys anything in seed 4, and 5 is the first seed
+    from there whose game still has every kind of event below.
     """
     from fsme.lab.bot import HeuristicBot
     from fsme.lab.simulation import ScriptedAgent
     from fsme.lab.simulation.runner import _whose_move
 
-    session = Session(everything, players=2, seed=4)
+    session = Session(everything, players=2, seed=5)
     game = session.game
 
-    bot = HeuristicBot(4)
-    agent = ScriptedAgent(4)
+    bot = HeuristicBot(5)
+    agent = ScriptedAgent(5)
 
     for _ in range(4000):
         if game.is_over:

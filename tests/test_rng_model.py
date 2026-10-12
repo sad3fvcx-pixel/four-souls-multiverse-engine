@@ -520,10 +520,20 @@ def test_model_one_deals_from_one_stream_in_the_order_it_always_did(
     """
     Model 1, re-derived from nothing but ``random.Random(seed)``: loot,
     treasure, monsters, rooms, characters, one stream, in that order.
+
+    The monster deck is shuffled as the one deck it is — its monsters, then its
+    events, then its curses — so it takes as much of the stream as the deal
+    does, and everything dealt after it is read from the same place.
     """
     state = new_game(everything, NAMES, seed=seed, rng_model="1")
     grouped = definitions_by_type(everything)
     stream = random.Random(seed)
+
+    grouped[CardType.MONSTER] = [
+        *grouped[CardType.MONSTER],
+        *grouped.get(CardType.EVENT, []),
+        *grouped.get(CardType.CURSE, []),
+    ]
 
     expected: dict[CardType, list[str]] = {}
 

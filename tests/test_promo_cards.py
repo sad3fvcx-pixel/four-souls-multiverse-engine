@@ -18,6 +18,7 @@ from test_official_cards import (
     answer,
     choose,
     deal,
+    dealt_from_monsters,
     give,
     hurt,
     only_monster,
@@ -61,21 +62,29 @@ def new_game(
     players: int = 2,
     seed: int = 1234,
     rolls: list[int] | None = None,
+    *,
+    monsters_only: bool = False,
 ) -> Game:
+    """
+    ``monsters_only`` deals as `dealt_from_monsters` does, for a test of one
+    card that was written against that deal.
+    """
     from test_combat import FixedRNG
 
     # Who takes the first turn is the deal's business — Cain says he does —
     # and a test about a promo card is not about that, so a deal that seats
     # somebody else first is dealt again.
     for candidate in range(seed, seed + 64):
-        # Dealt on RNG model 1, the deal these tests were written against.
-        game = Game.from_content(
-            library,
-            ["Ann", "Bo", "Cy"][:players],
-            seed=candidate,
-            rng=FixedRNG(rolls) if rolls is not None else None,
-            rng_model="1",
-        )
+        seats = ["Ann", "Bo", "Cy"][:players]
+        rng = FixedRNG(rolls) if rolls is not None else None
+
+        if monsters_only:
+            game = dealt_from_monsters(library, seats, seed=candidate, rng=rng)
+        else:
+            # Dealt on RNG model 1, the deal these tests were written against.
+            game = Game.from_content(
+                library, seats, seed=candidate, rng=rng, rng_model="1"
+            )
 
         assert game.start().accepted
 
@@ -127,7 +136,7 @@ def end_turn(game: Game) -> None:
 
 
 def test_gish_must_be_attacked(promos: Any) -> None:
-    game = new_game(library_with(promos, "gish"))
+    game = new_game(library_with(promos, "gish"), monsters_only=True)
 
     only_monster(game, "monster_deck-bosses-gish-gish", hp=6)
 
@@ -159,7 +168,7 @@ def test_gish_costs_the_killer_a_turn(promos: Any) -> None:
 def test_lil_gish_keeps_an_item_asleep(promos: Any) -> None:
     library = library_with(promos, "gish")
 
-    game = new_game(library)
+    game = new_game(library, monsters_only=True)
 
     lil = give(game, "treasure_deck-active_items-gish-lil_gish")
     theirs = give(game, "treasure_deck-active_items-base_game-decoy", player=1)
@@ -468,7 +477,9 @@ def test_the_bag_of_trash_sells_three_things(promos: Any) -> None:
 
 
 def test_the_dick_knot_grows_with_every_attack(promos: Any) -> None:
-    game = new_game(library_with(promos, "dick_knots"), rolls=[6, 6, 6, 6, 6, 6, 6])
+    game = new_game(
+        library_with(promos, "dick_knots"), rolls=[6, 6, 6, 6, 6, 6, 6], monsters_only=True
+    )
 
     knot = only_monster(
         game, "monster_deck-basic_enemies-dick_knots-dick_knot", hp=9
@@ -485,7 +496,7 @@ def test_the_dick_knot_grows_with_every_attack(promos: Any) -> None:
 
 
 def test_the_dick_knot_takes_the_table_with_it(promos: Any) -> None:
-    game = new_game(library_with(promos, "dick_knots"))
+    game = new_game(library_with(promos, "dick_knots"), monsters_only=True)
 
     knot = only_monster(
         game, "monster_deck-basic_enemies-dick_knots-dick_knot", hp=9

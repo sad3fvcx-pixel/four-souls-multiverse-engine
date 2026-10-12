@@ -143,6 +143,11 @@ def _build_decks(
 
     The decks are shuffled in a fixed order — loot, then treasure, then
     monsters — because the order of RNG calls is part of what a seed means.
+
+    The monster deck is not only monsters. COMPREHENSIVE_RULES.md §2 and §9
+    put events and curses in it, revealed where a monster would be; the reveal
+    already plays them, and they are shuffled in here. They come after the
+    monsters, so every monster is numbered as it was before they were.
     """
     for card_type, zone, kind in (
         (CardType.LOOT, state.loot_deck, "loot"),
@@ -156,6 +161,13 @@ def _build_decks(
                 f"the loaded content has no {card_type} cards; "
                 f"a game cannot be set up without them"
             )
+
+        if card_type is CardType.MONSTER:
+            definitions = [
+                *definitions,
+                *index.get(CardType.EVENT, []),
+                *index.get(CardType.CURSE, []),
+            ]
 
         cards = _instances(definitions, kind, state)
         rng.shuffle_for(f"deal:{kind}", cards)

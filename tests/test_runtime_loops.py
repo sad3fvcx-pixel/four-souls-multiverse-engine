@@ -29,7 +29,7 @@ from fsme.runtime.runtime import _name_of, _what_was_looping
 
 CONTENT_ROOT = Path(__file__).resolve().parents[1] / "content"
 
-LOOPING_SEEDS = (8,)
+LOOPING_SEEDS = (1311,)
 """
 A deal that reaches the loop.
 
@@ -38,6 +38,10 @@ every shuffle in the project, and seed 58 now settles — which is worth saying
 plainly: these seeds are examples of a real defect, not a definition of it. If
 this one ever settles too, the loop has not been fixed; the deal has moved, and
 the search that found this one will find another.
+
+It moved again when events and curses were shuffled into the monster deck: the
+deck grew, every shuffle after it moved, and seed 8 settles. The same search,
+run over seeds 0 to 3999, found the loop at seed 1311 and nowhere else.
 """
 
 GUPPYS_PAW = "treasure_deck-active_items-base_game-guppy_s_paw"

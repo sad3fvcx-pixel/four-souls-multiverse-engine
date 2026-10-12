@@ -24,7 +24,7 @@ import pytest
 from conftest import make_game, monster_definition
 from test_official_cards import activate, choose, give, new_game
 
-from fsme.cards import CardInstance
+from fsme.cards import CardInstance, CardType
 from fsme.commands import Command, CommandType
 from fsme.content import ContentLibrary, ContentLoader
 from fsme.lab.bot import HeuristicBot
@@ -199,6 +199,7 @@ def test_flush_puts_the_monsters_it_swept_into_the_deck_and_nowhere_else(
     assert standing, "there are monsters to sweep"
 
     before = len(state.monster_deck)
+    deck_before = list(state.monster_deck.cards)
 
     flush = give(game, FLUSH)
 
@@ -210,11 +211,27 @@ def test_flush_puts_the_monsters_it_swept_into_the_deck_and_nowhere_else(
         assert monster not in state.active_monsters.cards
         assert times_in_the_deck(state, monster) == 1
 
+    # The refill reveals from the top, and the monster deck also holds events
+    # and curses (COMPREHENSIVE_RULES.md §9): one revealed is played — an event
+    # to the discard, a curse to a player — and leaves the deck without
+    # standing in a slot. Each is accounted for where it went.
+    played = [
+        card
+        for card in deck_before
+        if card.definition.type is not CardType.MONSTER
+        and card not in state.monster_deck.cards
+    ]
+    cursed = [card for player in state.players for card in player.curses.cards]
+
+    for card in played:
+        assert card in state.monster_discard.cards or card in cursed, card.instance_id
+
     # Sweeping empties the slots, and an empty slot refills: the deck gives up
-    # as many as it took back, less the ones now standing again.
+    # as many as it took back, less the ones now standing again and the ones
+    # played on the way.
     assert len(state.monster_deck) == before + len(standing) - len(
         state.active_monsters.cards
-    )
+    ) - len(played)
 
 
 # ----------------------------------------------------------------------
