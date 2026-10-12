@@ -105,15 +105,21 @@ means the card it saves opens again as the same card, which is true of every
 kind. **Being played in full** is a question about the engine, not the
 Constructor, and it has gaps a walked card does not close:
 
-- **Events and curses are not dealt.** The rules put them into the monster
-  deck; the engine's own deck is built from monsters alone, so in an ordinary
-  game neither turns up, yours included. When one is revealed the engine does
-  play it — it is the deck that leaves it out.
 - **A room's rule that answers only to its controller never fires.** A room
   belongs to nobody. What the Constructor offers if you leave "Whose is it?"
   alone is never that, so a room's rule is caught out only by choosing it.
 - **A room that can be attacked is not modelled.** A room prints no health,
   attack or roll here, and the Constructor does not ask for them.
+
+Events and curses are dealt, yours included. The monster deck is built from
+the monsters, then the events, then the curses, and shuffled; that order is how
+the list is put together, not where any card ends up, which is the shuffle's.
+Laying a game out fills the monster slots with monsters, as long as the deck
+has them, and an event or curse it turns over on the way goes under the deck.
+After that, an event or curse revealed where a monster would be — refilling a
+slot, or attacking the deck — is played: an event happens, and a curse is
+attached to the active player. The rules do not say who a revealed curse goes
+to; giving it to the active player is what the engine does, not a settled rule.
 
 ## How it works
 

@@ -45,21 +45,38 @@ seconds whether this is worth installing wants to open one file and see one
 thing, so every block of the tour is also written out on its own.
 """
 
-BROKEN_SEED = 8
-BROKEN_WITHOUT = "treasure_deck-active_items-base_game-guppy_s_paw"
+BROKEN_SEED = 543
 """
 A deal that reaches a pair of cards which copy each other without end.
 
-Taking any card out reshuffles every game, and this seed with this card
-removed lands on Placebo and Rainbow Tapeworm copying one another. It is kept
-as an example on purpose: a tool that only ships its successes is not showing
-you what it does when something is wrong.
+This seed, dealt the way `fsme play` deals it — the shipped content and the
+default RNG model — lands on Placebo and Rainbow Tapeworm copying one another.
+It is kept as an example on purpose: a tool that only ships its successes is
+not showing you what it does when something is wrong.
 
 It is an example of the defect, not a definition of it. Dealing the three cents
 the rules call for changed every shuffle in the project and one of the two
-seeds that used to loop now settles. If this one settles too, the loop has not
-been fixed — the deal has moved, and a short search finds another.
+seeds that used to loop settled. The one that was left, 8 with Guppy's Paw
+taken out, settles from `4adc803` on, which made model 2 the default; on its
+parent, `5207983`, still dealing on model 1, it loops. Events and curses dealt
+into the monster deck (`24e13ba`) then changed the games that follow from the
+deal; 543 is what a search of seeds 0 to 1999 found after that. If this one
+settles too, the loop has not been fixed — what the seed leads to has moved:
+on model 1 the deal itself, on model 2 the deal or only the game after it —
+and a short search finds another.
 """
+
+BROKEN_NOTE = (
+    "`fsme play` deals on the default RNG model, 2. The test that holds the"
+    " engine\n"
+    "to this message, tests/test_runtime_loops.py, deals on model 1 without"
+    " Guppy's\n"
+    "Paw and uses another seed. A seed is an example of the loop, not a"
+    " definition\n"
+    "of it: when the deal, or the game that follows it, changes, the seed that"
+    "\nreaches it moves too."
+)
+"""What the example says under the engine's words, so they are not misread."""
 
 
 def run(argv: list[str]) -> str:
@@ -193,7 +210,7 @@ def _found_a_problem() -> str:
     from fsme.api import load_content
     from fsme.lab.simulation import play_one
 
-    library = load_content(ROOT / "content").without({BROKEN_WITHOUT})
+    library = load_content(ROOT / "content")
 
     try:
         play_one(library, BROKEN_SEED, 2)
@@ -243,7 +260,7 @@ def _examples(
         ),
         "a-problem-found.txt": (
             f"fsme play --seed {BROKEN_SEED} --players 2"
-            f"  # with {BROKEN_WITHOUT} removed",
+            '  # shipped content only, no "my sets"',
             (
                 "A deal the engine refuses to finish, and what it says about"
                 " it.\n"
@@ -256,7 +273,7 @@ def _examples(
                 "happening and stops. Recorded as a gap in"
                 " docs/PROJECT_PLAN.md 11.5."
             ),
-            problem,
+            f"{problem}\n\n{BROKEN_NOTE}",
         ),
     }
 

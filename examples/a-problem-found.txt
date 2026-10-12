@@ -4,6 +4,12 @@ together they copy each other without end. The rules say nothing about
 infinite loops, so no rule was invented: the engine names what kept
 happening and stops. Recorded as a gap in docs/PROJECT_PLAN.md 11.5.
 
-$ fsme play --seed 8 --players 2  # with treasure_deck-active_items-base_game-guppy_s_paw removed
+$ fsme play --seed 543 --players 2  # shipped content only, no "my sets"
 
 StabilityError: game state did not stabilise within 512 steps. Still arriving when it gave up: stack_push(Placebo) ×10, stack_resolve(Rainbow Tapeworm) ×10, stack_push(Rainbow Tapeworm) ×10, stack_resolve(Placebo) ×10
+
+`fsme play` deals on the default RNG model, 2. The test that holds the engine
+to this message, tests/test_runtime_loops.py, deals on model 1 without Guppy's
+Paw and uses another seed. A seed is an example of the loop, not a definition
+of it: when the deal, or the game that follows it, changes, the seed that
+reaches it moves too.

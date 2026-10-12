@@ -329,20 +329,25 @@ tooling gap in §6 and is not fixed in this document's scope.
 
 Nothing here stops a card being made, except a room that can be attacked,
 which has nothing to be made with; the create-from-nothing path in the
-headline was measured with every one of them open. All six sit outside the
+headline was measured with every one of them open. All five sit outside the
 Constructor. Two `may` nodes under one name were here too, and are closed by
-`813917d`. `repeat` with no count was here too, and is closed by `b76482b`;
-so were branching defaults, closed by `c65699d` — what is still undeclared in
-§2 is undeclared on purpose. `promise.when` was here too, and is decided:
-open on purpose, below. `card.tags` was with it, and is drawn as a list of
-words since `55c450f`.
+`813917d`. Events and curses never being dealt was here too, and is closed by
+`24e13ba`: the monster deck is built from the monsters, the events and the
+curses, so the 71 shipped events and curses, and every walked one, turn up in
+an ordinary game. Games changed with it: on RNG model 1 the deal itself
+moves, while on model 2 the opening deal can stay the same and the game that
+follows it changes. The replay reference, which plays model 1, changed in
+`d65e44c`. `repeat` with no count was here too, and is closed by
+`b76482b`; so were branching defaults, closed by `c65699d` — what is still
+undeclared in §2 is undeclared on purpose. `promise.when` was here too, and is
+decided: open on purpose, below. `card.tags` was with it, and is drawn as a
+list of words since `55c450f`.
 
 | Open | Where | Kind |
 | --- | --- | --- |
 | Two modes described identically are accepted | `cards/validator.py` | 0 occurrences in the corpus; the player sees two options they cannot tell apart |
 | The bot observer reads a card's spelling | §5 | `fsme.lab.bot` — playtesting advice, not rules |
 | `runtime.py:122` names `_where_it_stands`, a function that has never existed | `runtime/runtime.py` | One word of documentation; the method is `_where_it_works` |
-| Events and curses are never dealt | `rules/setup.py`, `_build_decks` | The spec puts them in the monster deck and the reveal plays them, but the deck is built from monsters alone; 71 shipped cards, and every walked event and curse, never turn up in an ordinary game. Fixing it changes every dealt game and the replay reference |
 | A room's rule scoped to its controller never fires | `runtime/runtime.py`, `in_scope` | A room has no controller; the default scope is never `controller`. Known as R1 |
 | A room that can be attacked is not modelled | `cards/types.py`, `PRINTED_NUMBERS` | A room prints no health, attack or roll; 0 of 68 shipped rooms carry rules |
 
