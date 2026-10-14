@@ -5,10 +5,10 @@ starting items.
 
 ## Two kinds of file
 
-`cards/` is generated. `tools/import_cards.py` writes it from the verified card
-database and nothing else — names, printed values, rewards and the English
-rules text of every card. Do not edit it by hand; the next import would
-overwrite the edit.
+`cards/` is generated. `tools/import_cards.py` writes it from the fssheet.com
+card database and nothing else — names, printed values, rewards and the English
+rules text of every card. How that source is treated is in `CONTRIBUTING.md`.
+Do not edit it by hand; the next import would overwrite the edit.
 
 `_abilities.json` is written by hand. It maps a card identifier to the
 abilities and statics that make the card *do* something:
