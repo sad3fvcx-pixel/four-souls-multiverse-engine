@@ -1,7 +1,7 @@
 # Base game
 
-The published base set: loot, treasures, monsters, rooms, characters and their
-starting items.
+The published base set: loot, treasures, monsters (including events and curses
+in the Monster Deck), characters and their starting items, and bonus souls.
 
 ## Two kinds of file
 

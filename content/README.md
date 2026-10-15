@@ -47,4 +47,5 @@ library = ContentLoader(engine_vocabulary()).load_root("content")
 It is not Four Souls content and is not meant to be balanced; it exists so the
 pipeline, the setup routine and the tests have something real to work with.
 
-`base_game/` is empty. See its README.
+`base_game/` and `expansions/` contain the official card content. See
+`base_game/README.md` for details about the base set.
