@@ -1,0 +1,8 @@
+{
+  "id": "anniversary_booster_pack",
+  "name": "Anniversary Booster Pack",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Anniversary Booster Pack: 4 cards imported from the card database."
+}

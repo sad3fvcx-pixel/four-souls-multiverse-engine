@@ -1,0 +1,3697 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-base_game-big_spider",
+      "name": "Big Spider",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "When this dies, the active player may attack an additional time."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhen this dies,\nthe active player\nmay attack the\nmonster deck an\nadditional time.\n------------------------------\nRewards: Loot 1",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-big_spider",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-black_bony",
+      "name": "Black Bony",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "When this dies, it deals 1 damage to the player who killed it."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhen this dies, it\ndeals 1 damage to\nthe player who\nkilled it.\n------------------------------\nRewards: Roll- Loot x",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-black_bony",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-boom_fly",
+      "name": "Boom Fly",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "all_players"
+            }
+          ],
+          "description": "When this dies, it deals 1 damage to each player."
+        }
+      ],
+      "health": 1,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 4
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 1\n\nWhen this dies,\nit deals 1 damage\nto each player.\n------------------------------\nRewards: 4¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-boom_fly",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-clotty",
+      "name": "Clotty",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "cents": 4
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\n\"The end of all flesh\nis come before me; for\nthe Earth is filled with\nviolence through them.\"\nGenesis 6:13\n------------------------------\nRewards: 4¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-clotty",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-cod_worm",
+      "name": "Cod Worm",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 0,
+      "roll": 5,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 5+ | AT: 0\n\n\"Their worm will never\ndie, their fire will never\nbe quenched.\"\nMark 9:48\n------------------------------\nRewards: 3¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-cod_worm",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-conjoined_fatty",
+      "name": "Conjoined Fatty",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 2,
+      "roll": 3,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 2\n\n\"When her days to be\ndelivered were fulfilled,\nbehold, there were\ntwins in her womb.\"\nGenesis 25:24\n------------------------------\nRewards: Loot 2",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-conjoined_fatty",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-dank_globin",
+      "name": "Dank Globin",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "targets": [
+            {
+              "target_player": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "discard_loot",
+              "count": 2,
+              "target": "victim"
+            }
+          ],
+          "description": "When this dies, the active player forces a player to discard 2 loot cards."
+        }
+      ],
+      "health": 2,
+      "attack": 2,
+      "roll": 4,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 2\n\nWhen this dies,\nthe active player\nforces a player to\ndiscard 2 loot cards.\n------------------------------\nRewards: Loot 2",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-dank_globin",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-dinga",
+      "name": "Dinga",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "before_rewards",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "effect": "modify_event",
+              "key": "cents",
+              "factor": 2
+            },
+            {
+              "effect": "modify_event",
+              "key": "loot",
+              "factor": 2
+            },
+            {
+              "effect": "modify_event",
+              "key": "treasure",
+              "factor": 2
+            },
+            {
+              "effect": "modify_event",
+              "key": "souls",
+              "factor": 2
+            }
+          ],
+          "description": "When this dies on an attack roll of 6, double its rewards."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nWhen this dies on\nan attack roll of 6,\ndouble its rewards.\n------------------------------\nRewards: Roll- Gain x¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-dinga",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-dip",
+      "name": "Dip",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 1\n\n\"They will be so hungry\nand thirsty that they will\neat their own dung and\ndrink their own urine.\"\nIsaiah 36:12\n------------------------------\nRewards: 1¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-dip",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-dople",
+      "name": "Dople",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_target"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": {
+                "from_event": "amount"
+              },
+              "target": "player_right"
+            }
+          ],
+          "description": "Damage dealt to this is also dealt to the player to the active player's right."
+        }
+      ],
+      "health": 2,
+      "attack": 2,
+      "roll": 4,
+      "rewards": {
+        "cents": 7
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 2\n\nDamage dealt to\nthis is also dealt to\nthe player to the\nactive player's right.\n------------------------------\nRewards: 7¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-dople",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-evil_twin",
+      "name": "Evil Twin",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_target"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": {
+                "from_event": "amount"
+              },
+              "target": "player_left"
+            }
+          ],
+          "description": "Damage dealt to this is also dealt to the player to the active player's left."
+        }
+      ],
+      "health": 3,
+      "attack": 2,
+      "roll": 5,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 5+ | AT: 2\n\nDamage dealt to\nthis is also dealt to\nthe player to the\nactive player's left.\n------------------------------\nRewards: +1 treasure",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-evil_twin",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-fat_bat",
+      "name": "Fat Bat",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 5+ | AT: 1\n\n\"Who are these that fly\nlike a cloud, and like\ndoves to their windows?\"\nIsaiah 60:8\n------------------------------\nRewards: +1 treasure",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-fat_bat",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-fatty",
+      "name": "Fatty",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 2,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 2+ | AT: 1\n\n\"For those who take\ndelight in drink and feasting\nshall become poor.\"\nProverbs 23:21\n------------------------------\nRewards: Loot 1",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-fatty",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-fly",
+      "name": "Fly",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 2,
+      "rewards": {
+        "cents": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 2+ | AT: 1\n\n\"Woe to the land of\nbuzzing insect wings beyond\nthe rivers of Cush.\"\nIsaiah 18:1\n------------------------------\nRewards: 1¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-fly",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-greedling",
+      "name": "Greedling",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "targets": [
+            {
+              "target_player": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "lose_coins",
+              "amount": 7,
+              "target": "victim"
+            }
+          ],
+          "description": "When this dies, the active player chooses a player. They lose 7¢."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "cents": 7
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 5+ | AT: 1\n\nWhen this dies,\nthe active player\nchooses a player.\nThey lose 7¢.\n------------------------------\nRewards: 7¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-greedling",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-hanger",
+      "name": "Hanger",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "expand_slots",
+              "area": "shop",
+              "amount": 1
+            }
+          ],
+          "description": "When this dies, expand the shop slots by 1."
+        }
+      ],
+      "health": 2,
+      "attack": 2,
+      "roll": 4,
+      "rewards": {
+        "cents": 7
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 2\n\nWhen this dies,\nexpand the shop\nslots by 1.\n------------------------------\nRewards: 7¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-hanger",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-hopper",
+      "name": "Hopper",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_target",
+            "combat_damage",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "cancel_event": {}
+            }
+          ],
+          "description": "This takes no combat damage on attack rolls of 6."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nThis takes no combat\ndamage on attack\nrolls of 6.\n------------------------------\nRewards: 3¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-hopper",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-horf",
+      "name": "Horf",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_source",
+            "combat_damage",
+            {
+              "dice_equals": 2
+            }
+          ],
+          "effects": [
+            {
+              "effect": "modify_event",
+              "key": "amount",
+              "delta": 1
+            }
+          ],
+          "description": "Combat damage this deals is increased by 1 on attack rolls of 2."
+        }
+      ],
+      "health": 1,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 1\n\nCombat damage this\ndeals is increased by 1\non attack rolls of 2.\n------------------------------\nRewards: 3¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-horf",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-keeper_head",
+      "name": "Keeper Head",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "lose_coins",
+              "amount": 2,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time this deals combat damage to a player, they lose 2¢."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nEach time this deals\ncombat damage to a\nplayer, they lose 2¢.\n------------------------------\nRewards: Roll- Gain x¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-keeper_head",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-leaper",
+      "name": "Leaper",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_source",
+            "combat_damage",
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "effect": "modify_event",
+              "key": "amount",
+              "factor": 2
+            }
+          ],
+          "description": "Combat damage this deals is doubled on attack rolls of 1."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nCombat damage this\ndeals is doubled on\nattack rolls of 1.\n------------------------------\nRewards: 5¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-leaper",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-leech",
+      "name": "Leech",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 2,
+      "roll": 4,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 2\n\n\"He will take no rest till\nhe has made a meal of\nthose he has overcome,\ndrinking the blood of those\nhe has put to death.\"\nNumbers 23:24\n------------------------------\nRewards: Loot 1",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-leech",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-mom_s_dead_hand",
+      "name": "Mom's Dead Hand",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "steal_treasure",
+                  "target": {
+                    "target_treasure": {
+                      "owner": "opponents",
+                      "exclude_eternal": true,
+                      "as": "spoils"
+                    }
+                  }
+                }
+              ],
+              "prompt": "Steal a non-eternal item another player controls?"
+            }
+          ],
+          "description": "When this dies, the active player may steal a non-eternal item another player controls."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "cents": 4
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 5+ | AT: 1\n\nWhen this dies, the\nactive player may steal\na non-eternal item\nanother player controls.\n------------------------------\nRewards: 4¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-mom_s_dead_hand",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-mom_s_eye",
+      "name": "Mom's Eye",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "reveal_hand",
+                  "target": {
+                    "target_player": {
+                      "as": "shown"
+                    }
+                  }
+                }
+              ],
+              "prompt": "Look at a player's hand?"
+            }
+          ],
+          "description": "When this dies, the active player may look at a player's hand."
+        }
+      ],
+      "health": 1,
+      "attack": 2,
+      "roll": 4,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 2\n\nWhen this dies,\nthe active player\nmay look at a\nplayer's hand.\n------------------------------\nRewards: Loot 1",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-mom_s_eye",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-mom_s_hand",
+      "name": "Mom's Hand",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "effect": "cancel_stack",
+              "target": "all_stack"
+            },
+            {
+              "end_turn": {}
+            }
+          ],
+          "description": "When the attacking player rolls an attack roll of 6, cancel everything that hasn't resolved and end the turn."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 4
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nWhen the attacking player\nrolls an attack roll of 6,\ncancel everything that\nhasn't resolved and\nend the turn.\n------------------------------\nRewards: 4¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-mom_s_hand",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-mulliboom",
+      "name": "Mulliboom",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "targets": [
+            {
+              "target_player": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 3,
+              "target": "victim"
+            }
+          ],
+          "description": "When this dies, the active player deals 3 damage to a player."
+        }
+      ],
+      "health": 1,
+      "attack": 4,
+      "roll": 2,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 2+ | AT: 4!\n\nWhen this dies,\nthe active player\ndeals 3 damage\nto a player.\n------------------------------\nRewards: 6¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-mulliboom",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-mulligan",
+      "name": "Mulligan",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "expand_slots",
+              "area": "monster",
+              "amount": 1
+            }
+          ],
+          "description": "When this dies, expand monster slots by 1."
+        }
+      ],
+      "health": 1,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 3+ | AT: 1\n\nWhen this dies,\nexpand monster\nslots by 1.\n------------------------------\nRewards: 3¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-mulligan",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-pale_fatty",
+      "name": "Pale Fatty",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\n\"His face turned pale, and\nhis thoughts so terrified him\nthat his hip joints shook and\nhis knees knocked together.\"\nDaniel 5:6\n------------------------------\nRewards: 6¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-pale_fatty",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-pooter",
+      "name": "Pooter",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\n\"He spoke, and there\ncame a swarm of\nflies and lice.\"\nPsalm 105:31\n------------------------------\nRewards: Loot 1",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-pooter",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-portal",
+      "name": "Portal",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            },
+            {
+              "require_attack": 1
+            }
+          ],
+          "description": "When this dies, the active player must make an additional attack."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nWhen this dies,\nthe active player\nmust make an\nadditional attack.\n------------------------------\nRewards: 3¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-portal",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-psy_horf",
+      "name": "Psy Horf",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "owned_treasure"
+            }
+          ],
+          "description": "When this dies, the active player recharges each item they control."
+        }
+      ],
+      "health": 1,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 5+ | AT: 1\n\nWhen this dies,\nthe active player\nrecharges each\nitem they control.\n------------------------------\nRewards: Loot 1",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-psy_horf",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-rage_creep",
+      "name": "Rage Creep",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": {
+                "from_event": "amount"
+              },
+              "target": "player_left"
+            }
+          ],
+          "description": "Damage this deals to the active player is also dealt to the player to their left."
+        }
+      ],
+      "health": 1,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 5+ | AT: 1\n\nDamage this deals\nto the active player\nis also dealt to the\nplayer to their left.\n------------------------------\nRewards: Loot 2",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-rage_creep",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-red_host",
+      "name": "Red Host",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 2,
+      "roll": 3,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 2\n\n\"The Sun became as black\nas sackcloth made of\nhair, and the full moon\nbecame blood red.\"\nRevelation 6:12\n------------------------------\nRewards: 5¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-red_host",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-ring_of_flies",
+      "name": "Ring of Flies",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 3
+            }
+          ],
+          "effects": [
+            {
+              "effect": "take_card",
+              "to": "hand",
+              "target": {
+                "random_loot": {
+                  "as": "snatched"
+                }
+              }
+            }
+          ],
+          "description": "Each time the attacking player rolls an attack roll of 3, they steal a loot card from another player at random."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nEach time the attacking\nplayer rolls an attack\nroll of 3, they must steal\na loot card from another\nplayer at random.\n------------------------------\nRewards: 3¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-ring_of_flies",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-spider",
+      "name": "Spider",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 1\n\n\"A spider can be caught\nin your hands, yet it lives\nin kings' palaces.\"\nProverbs 30:28\n------------------------------\nRewards: Loot 1",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-spider",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-squirt",
+      "name": "Squirt",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\n\"Do you know that everything\nentering into the mouth goes\ninto the stomach, and is cast\nout into excrement?\"\nMatthew 15:17\n------------------------------\nRewards: Loot 1",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-squirt",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@rojen241",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-stoney",
+      "name": "Stoney",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "any",
+          "conditions": [
+            {
+              "not": [
+                "is_event_source"
+              ]
+            }
+          ],
+          "effects": [
+            {
+              "effect": "kill",
+              "target": "self"
+            }
+          ],
+          "description": "When another monster dies, this dies."
+        }
+      ],
+      "health": 3,
+      "attack": 0,
+      "roll": 0,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 0 | AT: 0\n\nMonsters have +1 DC.\n------------------------------\nThis can't be attacked.\n------------------------------\nWhen another monster\ndies, this dies.\n------------------------------\nRewards: Loot 1",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-stoney",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "TAR_HEAD",
+        "notes": "Unlocked via dealing 500,000 damage to Delirium during the original Kickstarter."
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 1,
+          "scope": "all_monsters",
+          "description": "Monsters have +1 DC."
+        },
+        {
+          "forbids": "attack",
+          "scope": "self",
+          "description": "This can't be attacked."
+        }
+      ]
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-swarm_of_flies",
+      "name": "Swarm of Flies",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 5
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time the attacking player rolls an attack roll of 5, they take 1 damage."
+        }
+      ],
+      "health": 5,
+      "attack": 1,
+      "roll": 2,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 2+ | AT: 1\n\nEach time the attacking\nplayer rolls an attack\nroll of 5, they take\n1 damage.\n------------------------------\nRewards: 5¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-swarm_of_flies",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-trite",
+      "name": "Trite",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 1,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 5+ | AT: 1\n\n\"The priest is to bring it to\nthe altar to offer it up in\nsmoke.  He is to decapitate it\nand drain its blood on the\nside of the altar.\"\nLeviticus 1:15\n------------------------------\nRewards: Loot 2",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-trite",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-basic_enemies-base_game-wizoob",
+      "name": "Wizoob",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "targets": [
+            {
+              "target_player": {
+                "as": "chosen"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "lose_soul",
+              "count": 1,
+              "target": "chosen"
+            }
+          ],
+          "description": "When this dies, the active player chooses a player. That player destroys a soul they control."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 5+ | AT: 1\n\nWhen this dies, the active\nplayer chooses a player.\nThat player destroys a\nsoul they control.\n------------------------------\nRewards: Loot 3",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-base_game-wizoob",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-carrion_queen",
+      "name": "Carrion Queen",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_target",
+            "combat_damage",
+            {
+              "and": [
+                {
+                  "dice_greater": 3
+                },
+                {
+                  "dice_less": 6
+                }
+              ]
+            }
+          ],
+          "effects": [
+            {
+              "cancel_event": {}
+            }
+          ],
+          "description": "This takes no combat damage on attack rolls of 4 or 5."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nThis takes no combat\ndamage on attack\nrolls of 4 or 5.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-carrion_queen",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-chub",
+      "name": "Chub",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "effect": "heal",
+              "amount": 2,
+              "target": "self"
+            }
+          ],
+          "description": "Each time the attacking player rolls an attack roll of 1, this heals 2 HP."
+        }
+      ],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 7
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nEach time the\nattacking player\nrolls an attack roll\nof 1, this heals 2 HP.\n------------------------------\nRewards: 7¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-chub",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-conquest",
+      "name": "Conquest",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            },
+            {
+              "require_attack": 1
+            }
+          ],
+          "description": "When this dies, the active player must make an additional attack."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nWhen this dies,\nthe active player\nmust make an\nadditional attack.\n------------------------------\nRewards: 6¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-conquest",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-daddy_long_legs",
+      "name": "Daddy Long Legs",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "difficulty",
+              "amount": 1,
+              "target": "all_monsters"
+            }
+          ],
+          "description": "Each time the attacking player rolls an attack roll of 1, each monster gains +1 DC till end of turn."
+        }
+      ],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 7
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nEach time the attacking\nplayer rolls an attack\nroll of 1, each monster\ngains +1 DC till end of turn.\n------------------------------\nRewards: 7¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-daddy_long_legs",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-dark_one",
+      "name": "Dark One",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time this takes damage, it gains +1 AT till end of turn."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEach time this takes\ndamage, it gains +1 AT\ntill end of turn.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-dark_one",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-death",
+      "name": "Death",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "targets": [
+            {
+              "target_player": {
+                "as": "doomed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "kill",
+              "target": "doomed"
+            }
+          ],
+          "description": "When this dies, the active player kills a player."
+        }
+      ],
+      "health": 3,
+      "attack": 2,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 2\n\nWhen this dies,\nthe active player\nkills a player.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-death",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-envy",
+      "name": "Envy",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attacks",
+              "amount": 1,
+              "target": "active_player"
+            },
+            {
+              "require_attack": 1
+            }
+          ],
+          "description": "When this dies, the active player must make an additional attack."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "cents": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 5+ | AT: 1\n\nWhen this dies,\nthe active player\nmust make an\nadditional attack.\n------------------------------\nRewards: 1¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-envy",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-famine",
+      "name": "Famine",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "skip_next_turn",
+              "target": "active_player"
+            }
+          ],
+          "description": "When this dies, the active player skips their next turn."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nWhen this dies,\nthe active player\nskips their next\nturn.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-famine",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-gemini",
+      "name": "Gemini",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhile this is at 1 HP,\nit has +1 AT.\n------------------------------\nRewards: 5¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-gemini",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      },
+      "statics": [
+        {
+          "stat": "attack",
+          "amount": 1,
+          "scope": "self",
+          "conditions": [
+            {
+              "monster_hp": {
+                "operator": "==",
+                "value": 1
+              }
+            }
+          ],
+          "description": "While this is at 1 HP, it has +1 AT."
+        }
+      ]
+    },
+    {
+      "id": "monster_deck-bosses-base_game-gluttony",
+      "name": "Gluttony",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_target",
+            "combat_damage",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "player_left"
+            }
+          ],
+          "description": "Each time this takes combat damage on an attack roll of 6, deal 1 damage to the player to the active player's left."
+        }
+      ],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nEach time this takes combat\ndamage on an attack roll of 6,\ndeal 1 damage to the player\nto the active player's left.\n------------------------------\nRewards: Loot 1\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-gluttony",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-greed",
+      "name": "Greed",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "lose_coins",
+              "amount": 4,
+              "target": "all_players"
+            }
+          ],
+          "description": "Each time this deals combat damage, each player loses 4¢."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 9
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEach time this deals\ncombat damage,each\nplayer loses 4¢.\n------------------------------\nRewards: 9¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-greed",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-gurdy",
+      "name": "Gurdy",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 5,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 7
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 1\n\n\"This water that causeth the\ncurse shall go into thy bowels,\nto make thy belly to swell, and\nthy thigh to rot: And the woman\nshall say, Amen, amen.\"\nNumbers 5:22\n------------------------------\nRewards: 7¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-gurdy",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-gurdy_jr",
+      "name": "Gurdy Jr.",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_activate",
+          "scope": "any",
+          "conditions": [
+            "is_attacked"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time the attacking player activates an item, they take 1 damage."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 5+ | AT: 1\n\nEach time the\nattacking player\nactivates an item,\nthey take 1 damage.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-gurdy_jr",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-larry_jr",
+      "name": "Larry Jr.",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nWhile this is at 2 HP\nor less, it has +1 DC.\n------------------------------\nRewards: 6¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-larry_jr",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 1,
+          "scope": "self",
+          "conditions": [
+            {
+              "monster_hp": {
+                "operator": "<=",
+                "value": 2
+              }
+            }
+          ],
+          "description": "While this is at 2 HP or less, it has +1 DC."
+        }
+      ]
+    },
+    {
+      "id": "monster_deck-bosses-base_game-little_horn",
+      "name": "Little Horn",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "roll": 6,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 6 | AT: 1\n\n\"The little horn had eyes and\nmouth like a man. The eyes\ncould see things the other\nhorns could not and its\nmouth spoke boastfully.\"\nDaniel 7:8\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-little_horn",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-lust",
+      "name": "Lust",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_target",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "active_player"
+            }
+          ],
+          "description": "Each time this takes combat damage, it deals 1 damage to the attacking player."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nEach time this takes\ncombat damage, it\ndeals 1 damage to the\nattacking player.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-lust",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-mask_of_infamy",
+      "name": "Mask of Infamy",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nWhen this is at 1 HP,\nit has +2 DC.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-mask_of_infamy",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 2,
+          "scope": "self",
+          "conditions": [
+            {
+              "monster_hp": {
+                "operator": "==",
+                "value": 1
+              }
+            }
+          ],
+          "description": "When this is at 1 HP, it has +2 DC."
+        }
+      ]
+    },
+    {
+      "id": "monster_deck-bosses-base_game-mega_fatty",
+      "name": "Mega Fatty",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "heal",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time this deals combat damage, it heals 1 HP."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nEach time this deals\ncombat damage,\nit heals 1 HP.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-mega_fatty",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-monstro",
+      "name": "Monstro",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\n\"For no one who has a\ndefect shall approach: A\nblind man, or a lame man, or he\nwho has a disfigured face.\"\nLeviticus 21:18\n------------------------------\nRewards: 6¢\n\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-monstro",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "vanilla": true
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-peep",
+      "name": "Peep",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "targets": [
+            {
+              "target_deck_card": {
+                "deck": "monster",
+                "named": "The Bloat",
+                "as": "bloat",
+                "minimum": 0,
+                "prompt": "Search the monster deck for The Bloat."
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "place_monster",
+              "slot": "unattacked",
+              "target": "bloat"
+            },
+            {
+              "effect": "shuffle_deck",
+              "deck": "monster"
+            }
+          ],
+          "description": "When this dies, search the monster deck for a card named The Bloat and put it in a monster slot not being attacked, then shuffle the monster deck."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhen this dies, search the\nmonster deck for a card\nnamed The Bloat and put it\nin a monster slot not being\nattacked, then shuffle\nthe monster deck.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-peep",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-pestilence",
+      "name": "Pestilence",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "divide_damage",
+              "each": 1,
+              "targets": [
+                {
+                  "target_player_or_monster": {
+                    "as": "first_point",
+                    "prompt": "Where does the first damage go?"
+                  }
+                },
+                {
+                  "target_player_or_monster": {
+                    "as": "second_point",
+                    "prompt": "Where does the second damage go?"
+                  }
+                }
+              ],
+              "target": {
+                "group": {
+                  "of": [
+                    "first_point",
+                    "second_point"
+                  ],
+                  "as": "divided"
+                }
+              }
+            }
+          ],
+          "description": "When this dies, the active player deals 2 damage divided as they choose to any number of monsters or players."
+        }
+      ],
+      "health": 4,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 1\n\nWhen this dies, the active\nplayer deals 2 damage\ndivided as they choose\nto any number of\nmonsters or players.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-pestilence",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-pin",
+      "name": "Pin",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_target",
+            "combat_damage",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "cancel_event": {}
+            }
+          ],
+          "description": "This takes no combat damage on attack rolls of 6."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nThis takes no combat\ndamage on attack\nrolls of 6.\n------------------------------\nRewards: 5¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-pin",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-pride",
+      "name": "Pride",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "attack_start",
+          "scope": "self",
+          "targets": [
+            {
+              "target_player": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "discard_loot",
+              "count": 2,
+              "target": "victim"
+            }
+          ],
+          "description": "When an attack is declared on this, the active player chooses a player. That player discards 2 loot cards."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 5
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nWhen an attack is declared\non this, the active player\nchooses a player. That\nplayer discards 2\nloot cards.\n------------------------------\nRewards: 5¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-pride",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-rag_man",
+      "name": "Rag Man",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "or": [
+                    {
+                      "dice_equals": 1
+                    },
+                    {
+                      "dice_equals": 6
+                    }
+                  ]
+                }
+              ],
+              "then": [
+                {
+                  "effect": "move_cards",
+                  "deck": "monster",
+                  "position": "top",
+                  "target": "self"
+                }
+              ]
+            }
+          ],
+          "description": "When this dies, the active player rolls- 1 or 6: put this on top of the monster deck."
+        }
+      ],
+      "health": 2,
+      "attack": 2,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 3
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 2\n\nWhen this dies, after\ngaining rewards, the\nactive player rolls-\n1 or 6: Put this on top of\nthe monster deck.\n------------------------------\nRewards: Loot 3\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-rag_man",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-scolex",
+      "name": "Scolex",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "discard_loot",
+              "count": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time this deals combat damage to a player, they discard a loot card."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 5,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 5+ | AT: 1\n\nEach time this deals\ncombat damage to a\nplayer, they discard\na loot card.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-scolex",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-sloth",
+      "name": "Sloth",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "discard_loot",
+              "count": {
+                "count": "loot",
+                "of": "controller"
+              },
+              "target": "controller"
+            }
+          ],
+          "description": "When this dies, the player that killed it discards their hand."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "cents": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nWhen this dies, the\nplayer that killed\nit discards their\nhand.\n------------------------------\nRewards: 1¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-sloth",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-the_bloat",
+      "name": "The Bloat",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "damage_dealt",
+          "scope": "self",
+          "conditions": [
+            "is_damage_source",
+            "combat_damage"
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "opponents"
+            }
+          ],
+          "description": "Each time this deals combat damage, it deals 1 damage to each non-active player."
+        }
+      ],
+      "health": 4,
+      "attack": 2,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 4+ | AT: 2\n\nEach time this deals\ncombat damage, it\ndeals 1 damage to each\nnon-active player.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-the_bloat",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-the_duke_of_flies",
+      "name": "The Duke of Flies",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_target"
+          ],
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_equals": 1
+                }
+              ],
+              "then": [
+                {
+                  "cancel_event": {}
+                }
+              ]
+            }
+          ],
+          "description": "Each time this would take damage, the active player rolls- 1: prevent that damage."
+        }
+      ],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nEach time this would take\ndamage, the active player\nrolls-\n1: Prevent that damage.\n------------------------------\nRewards: Loot 2\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-the_duke_of_flies",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-the_haunt",
+      "name": "The Haunt",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "conditions": [
+            {
+              "nth_time_this_turn": {
+                "every": 2
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "difficulty",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Every other time this takes damage each turn, it gains +1 DC till end of turn."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 4+ | AT: 1\n\nEvery other time this\ntakes damage each turn,\nit gains +1 DC till end\nof turn.\n------------------------------\nRewards: +1 treasure\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-the_haunt",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-war",
+      "name": "War",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_damage",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Each time this takes damage, it gains +1 AT till end of turn."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 8
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nEach time this takes\ndamage, it gains +1 AT\ntill end of turn.\n------------------------------\nRewards: 8¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-war",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bosses-base_game-wrath",
+      "name": "Wrath",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "roll_dice": 6
+            },
+            {
+              "if": [
+                {
+                  "dice_less": 4
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 1,
+                  "target": "all_players"
+                }
+              ]
+            },
+            {
+              "if": [
+                {
+                  "dice_greater": 3
+                }
+              ],
+              "then": [
+                {
+                  "effect": "deal_damage",
+                  "amount": 2,
+                  "target": "all_players"
+                }
+              ]
+            }
+          ],
+          "description": "When this dies, the active player rolls- 1-3: each player takes 1 damage. 4-6: each player takes 2 damage."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 6
+      },
+      "tags": [
+        "boss"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nWhen this dies, the\nactive player rolls-\n1-3: Each player takes 1 damage.\n------------------------------\n4-6: Each player takes\n2 damage.\n------------------------------\nRewards: 6¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bosses-base_game-wrath",
+        "subcategory": "Bosses",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-base_game-cursed_fatty",
+      "name": "Cursed Fatty",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 5
+            }
+          ],
+          "effects": [
+            {
+              "effect": "discard_loot",
+              "count": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time a player rolls a 5, they discard a loot card."
+        }
+      ],
+      "health": 4,
+      "attack": 1,
+      "roll": 2,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 2+ | AT: 1\n\nEach time a player\nrolls a 5, they\ndiscard a loot\ncard.\n------------------------------\nRewards: Loot 2",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-base_game-cursed_fatty",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-base_game-cursed_gaper",
+      "name": "Cursed Gaper",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 4
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "all_monsters"
+            }
+          ],
+          "description": "Each time a player rolls a 4, each monster gains +1 AT till end of turn."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nEach time a player\nrolls a 4, each\nmonster gains +1 AT\ntill end of turn.\n------------------------------\nRewards: 3¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-base_game-cursed_gaper",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-base_game-cursed_horf",
+      "name": "Cursed Horf",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 2
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 2,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time a player rolls a 2, they take 2 damage."
+        }
+      ],
+      "health": 1,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 1\n\nEach time a player\nrolls a 2, they\ntake 2 damage.\n------------------------------\nRewards: 3¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-base_game-cursed_horf",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Unlocked via The Depths stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-base_game-cursed_keeper_head",
+      "name": "Cursed Keeper Head",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "effect": "lose_coins",
+              "amount": 2,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time a player rolls a 1, they lose 2¢."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nEach time a player\nrolls a 1, they\nlose 2¢.\n------------------------------\nRewards: Roll- Gain x¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-base_game-cursed_keeper_head",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-base_game-cursed_mom_s_hand",
+      "name": "Cursed Mom's Hand",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "effect": "cancel_stack",
+              "target": "all_stack"
+            },
+            {
+              "end_turn": {}
+            }
+          ],
+          "description": "When the active player rolls a 6, cancel everything that hasn't resolved and end the turn."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 4
+      },
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nWhen the active\nplayer rolls a 6,\ncancel everything\nthat hasn't resolved\nand end the turn.\n------------------------------\nRewards: 4¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-base_game-cursed_mom_s_hand",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-cursed_enemies-base_game-cursed_psy_horf",
+      "name": "Cursed Psy Horf",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_activate",
+          "scope": "any",
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time a player activates an item, they take 1 damage."
+        }
+      ],
+      "health": 1,
+      "attack": 1,
+      "roll": 5,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "cursed"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 5+ | AT: 1\n\nEach time a player\nactivates an item,\nthey take 1 damage.\n------------------------------\nRewards: Loot 2",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-cursed_enemies-base_game-cursed_psy_horf",
+        "subcategory": "Cursed Enemies",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-base_game-delirium",
+      "name": "Delirium",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "move_cards",
+              "deck": "monster",
+              "position": "top",
+              "depth_from": 6,
+              "target": "self"
+            }
+          ],
+          "description": "When this dies, put it in the monster deck 6 cards from the top."
+        }
+      ],
+      "health": 5,
+      "attack": 3,
+      "roll": 4,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 3\n\nOther monsters have +1 DC.\n------------------------------\nWhen this dies, put it\nin the monster deck 6\ncards from the top.\n------------------------------\nRewards: +2 treasure",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-base_game-delirium",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@MikeBurnsAlive",
+        "notes": "Unlocked to celebrate the culmination of all the community's contributions during the original Kickstarter."
+      },
+      "statics": [
+        {
+          "stat": "difficulty",
+          "amount": 1,
+          "scope": "other_monsters",
+          "description": "Other monsters have +1 DC."
+        }
+      ]
+    },
+    {
+      "id": "monster_deck-epic_boss-base_game-mom",
+      "name": "Mom!",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "before_damage",
+          "scope": "self",
+          "replacement": true,
+          "conditions": [
+            "is_damage_source",
+            "combat_damage",
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "effect": "modify_event",
+              "key": "amount",
+              "factor": 2
+            }
+          ],
+          "description": "Combat damage this deals is doubled on attack rolls of 1."
+        },
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "effect": "expand_slots",
+              "area": "monster",
+              "amount": 1
+            }
+          ],
+          "description": "When this dies, expand monster slots by 1."
+        }
+      ],
+      "health": 5,
+      "attack": 2,
+      "roll": 4,
+      "souls": 2,
+      "rewards": {
+        "treasure": 1
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 5 | DC: 4+ | AT: 2\n\nCombat damage this\ndeals is doubled on\nattack rolls of 1.\n------------------------------\nWhen this dies, expand\nmonster slots by 1.\n------------------------------\nRewards: +1 treasure\n(+2 souls)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-base_game-mom",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-base_game-satan",
+      "name": "Satan!",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_attack_roll",
+          "scope": "any",
+          "conditions": [
+            "is_attacked",
+            {
+              "dice_equals": 6
+            }
+          ],
+          "targets": [
+            {
+              "target_player": {
+                "as": "doomed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "kill",
+              "target": "doomed"
+            }
+          ],
+          "description": "Each time the attacking player rolls an attack roll of 6, they choose a living player. That player dies."
+        }
+      ],
+      "health": 6,
+      "attack": 2,
+      "roll": 4,
+      "souls": 2,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 4+ | AT: 2\n\nEach time the attacking\nplayer rolls an attack\nroll of 6, they choose\na living player. That\nplayer dies.\n------------------------------\nRewards: +2 treasure\n(+2 souls)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-base_game-satan",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-epic_boss-base_game-the_lamb",
+      "name": "The Lamb",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "steal_soul",
+                  "target": {
+                    "target_player": {
+                      "exclude_controller": true,
+                      "as": "giver"
+                    }
+                  }
+                }
+              ],
+              "prompt": "Take a soul from another player?"
+            }
+          ],
+          "description": "When this dies, the active player may choose another player. They give you a soul they control."
+        }
+      ],
+      "health": 6,
+      "attack": 6,
+      "roll": 3,
+      "souls": 1,
+      "rewards": {
+        "cents": 3
+      },
+      "tags": [
+        "boss",
+        "epic"
+      ],
+      "metadata": {
+        "text": "HP: 6 | DC: 3+ | AT: 6!\n\nWhen this dies, the active player\nmay choose another player. They\ngive you a soul they control.\n------------------------------\n\"I'll swallow your soul!\"\nNot the Bible\n------------------------------\nRewards: 3¢\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-epic_boss-base_game-the_lamb",
+        "subcategory": "Epic Boss",
+        "version": "Original",
+        "artist": "@MikeBurnsAlive",
+        "notes": "Unlocked via dealing 150,000 damage to Delirium during the original Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-base_game-holy_dinga",
+      "name": "Holy Dinga",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 6
+            }
+          ],
+          "effects": [
+            {
+              "effect": "heal",
+              "amount": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time a player rolls a 6, they heal 1 HP."
+        }
+      ],
+      "health": 3,
+      "attack": 1,
+      "roll": 3,
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 3 | DC: 3+ | AT: 1\n\nEach time a player\nrolls a 6, they\nheal 1 HP.\n------------------------------\nRewards: Roll- Gain x¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-base_game-holy_dinga",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-base_game-holy_dip",
+      "name": "Holy Dip",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 1
+            }
+          ],
+          "effects": [
+            {
+              "effect": "gain_coins",
+              "amount": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time a player rolls a 1, they gain 1¢."
+        }
+      ],
+      "health": 1,
+      "attack": 1,
+      "roll": 4,
+      "rewards": {
+        "cents": 1
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 1\n\nEach time a player\nrolls a 1, they\ngain 1¢.\n------------------------------\nRewards: 1¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-base_game-holy_dip",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-base_game-holy_keeper_head",
+      "name": "Holy Keeper Head",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 4
+            }
+          ],
+          "effects": [
+            {
+              "effect": "gain_coins",
+              "amount": 2,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time a player rolls a 4, they gain 2¢."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 4+ | AT: 1\n\nEach time a player\nrolls a 4, they\ngain 2¢.\n------------------------------\nRewards: Roll- Gain x¢",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-base_game-holy_keeper_head",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-base_game-holy_mom_s_eye",
+      "name": "Holy Mom's Eye",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 2
+            }
+          ],
+          "effects": [
+            {
+              "may": [
+                {
+                  "effect": "recharge",
+                  "target": {
+                    "owned_treasure": {
+                      "as": "theirs"
+                    }
+                  }
+                }
+              ],
+              "prompt": "Recharge an item?"
+            }
+          ],
+          "description": "Each time a player rolls a 2, they may recharge an item."
+        }
+      ],
+      "health": 1,
+      "attack": 2,
+      "roll": 4,
+      "rewards": {
+        "loot": 1
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 1 | DC: 4+ | AT: 2\n\nEach time a player\nrolls a 2, they\nmay recharge\nan item.\n------------------------------\nRewards: Loot 1",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-base_game-holy_mom_s_eye",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    },
+    {
+      "id": "monster_deck-holy_charmed_enemies-base_game-holy_squirt",
+      "name": "Holy Squirt",
+      "type": "monster",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "after_roll",
+          "scope": "any",
+          "conditions": [
+            {
+              "dice_equals": 5
+            }
+          ],
+          "effects": [
+            {
+              "effect": "draw_loot",
+              "count": 1,
+              "target": "event_player"
+            }
+          ],
+          "description": "Each time a player rolls a 5, they loot 1."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "loot": 2
+      },
+      "tags": [
+        "holy"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nEach time a player\nrolls a 5, they\nloot 1.\n------------------------------\nRewards: Loot 2",
+        "set": "Base Game",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-holy_charmed_enemies-base_game-holy_squirt",
+        "subcategory": "Holy / Charmed Enemies",
+        "version": "Original",
+        "artist": "@rojen241"
+      }
+    }
+  ]
+}

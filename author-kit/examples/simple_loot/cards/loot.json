@@ -1,0 +1,24 @@
+{
+  "cards": [
+    {
+      "id": "example_simple_loot-loot-lucky_penny",
+      "name": "Lucky Penny",
+      "type": "loot",
+      "expansion": "example_simple_loot",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_play",
+          "effects": [
+            {"effect": "gain_coins", "amount": 3}
+          ],
+          "description": "Gain 3 cents."
+        }
+      ],
+      "metadata": {
+        "text": "Gain 3¢.",
+        "copies": 2
+      }
+    }
+  ]
+}

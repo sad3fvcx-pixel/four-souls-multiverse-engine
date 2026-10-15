@@ -1,0 +1,93 @@
+{
+  "characters-retro-eden": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      },
+      {
+        "trigger": "game_start",
+        "scope": "any",
+        "targets": [
+          {
+            "target_deck_card": {
+              "deck": "treasure",
+              "from_top": 3,
+              "as": "starting",
+              "prompt": "Choose your starting item."
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "take_card",
+            "to": "treasures",
+            "target": "starting"
+          },
+          {
+            "effect": "make_eternal",
+            "target": "starting"
+          },
+          {
+            "effect": "move_cards",
+            "deck": "treasure",
+            "position": "bottom",
+            "target": {
+              "target_deck_card": {
+                "deck": "treasure",
+                "from_top": 2,
+                "minimum": 2,
+                "maximum": 2,
+                "as": "rest",
+                "prompt": "Put the rest on the bottom of the deck in any order."
+              }
+            }
+          }
+        ],
+        "description": "When you start the game, look at the top 3 cards of the treasure deck, choose one, it becomes your starting item and gains eternal. Put the rest on the bottom of the deck in any order."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-retro-1_up": {
+    "abilities": [
+      {
+        "trigger": "before_death",
+        "scope": "controller",
+        "replacement": true,
+        "conditions": [
+          "player_active"
+        ],
+        "effects": [
+          {
+            "effect": "destroy_treasure",
+            "target": "self"
+          },
+          {
+            "effect": "cancel_event"
+          },
+          {
+            "effect": "heal",
+            "full": true,
+            "target": "controller"
+          },
+          {
+            "end_attack": {}
+          },
+          {
+            "effect": "add_modifier",
+            "stat": "attacks",
+            "amount": 1
+          }
+        ],
+        "description": "If you would die during your turn, destroy this, prevent death, heal to full HP, and cancel your attack if able. You may attack an additional time this turn."
+      }
+    ]
+  }
+}

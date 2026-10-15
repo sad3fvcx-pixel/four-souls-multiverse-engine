@@ -6,11 +6,9 @@ Zone definitions for Four Souls Multiverse Engine.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Generic, Iterator, TypeVar
-
-T = TypeVar("T")
 
 
 class ZoneType(Enum):
@@ -27,13 +25,14 @@ class ZoneType(Enum):
     SOUL = auto()
     MONSTER = auto()
     ROOM = auto()
+    CURSE = auto()
 
     def __str__(self) -> str:
         return self.name.lower()
 
 
 @dataclass(slots=True)
-class Zone(Generic[T]):
+class Zone[T]:
     """
     Generic ordered card container.
 

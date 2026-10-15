@@ -1,0 +1,24 @@
+{
+  "format": "fsme-scenario",
+  "version": 1,
+  "id": "one-rich-player",
+  "name": "One rich player",
+  "description": "Ann opens with nine cents and one card; Bo opens as usual.",
+  "content": {
+    "expansions": [
+      "base_game"
+    ]
+  },
+  "players": [
+    {
+      "name": "Ann",
+      "coins": 9,
+      "loot": 1
+    },
+    {
+      "name": "Bo",
+      "coins": 3,
+      "loot": 3
+    }
+  ]
+}

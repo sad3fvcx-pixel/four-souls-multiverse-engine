@@ -27,7 +27,7 @@ class ValidationResult:
     def ok(
         cls,
         message: str = "",
-    ) -> "ValidationResult":
+    ) -> ValidationResult:
         """
         Create a successful validation result.
         """
@@ -42,7 +42,7 @@ class ValidationResult:
         message: str = "",
         *,
         errors: list[str] | None = None,
-    ) -> "ValidationResult":
+    ) -> ValidationResult:
         """
         Create a failed validation result.
         """

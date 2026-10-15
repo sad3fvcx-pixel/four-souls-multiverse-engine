@@ -1,0 +1,23 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-curses-the_summer_of_isaac-curse_of_envy",
+      "name": "Curse of Envy",
+      "type": "curse",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When you die, each\nother player gains\n+1 treasure.\n------------------------------\n-Curse-\n(When this enters play, give\nthis to a player. When they die,\nthey put this into discard.)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-curses-the_summer_of_isaac-curse_of_envy",
+        "subcategory": "Curses",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Design by @Dicebanned\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    }
+  ]
+}

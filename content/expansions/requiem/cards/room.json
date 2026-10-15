@@ -1,0 +1,1010 @@
+{
+  "cards": [
+    {
+      "id": "room_deck-requiem-all_hallow_s_eve",
+      "name": "All Hallow's Eve",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Players can't gain souls.\n------------------------------\n\"Why standest thou afar off,\no Lord? Why hidest Thou Thyself\nin times of trouble?\"\nPsalm 10:1",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-all_hallow_s_eve",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-angelic_intervention",
+      "name": "Angelic Intervention",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time the active player attacks\nthe top of the monster deck, after\nputting it in a monster slot, they\nmay cancel their attack.\n------------------------------\n\"Angel of God, my guardian dear\"\nThe Angel of God Prayer",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-angelic_intervention",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-battle_royale",
+      "name": "Battle Royale!!!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The active player may attack other\nplayers. Attacked players have 3+ DC.\n------------------------------\nWhen a player dies, if that player was\nattacked this turn, that player gives the\nactive player the item they would destroy\nfor the death penalty.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-battle_royale",
+        "notes": "Art by Private"
+      }
+    },
+    {
+      "id": "room_deck-requiem-battle_royale-v2",
+      "name": "Battle Royale!!!!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The active player may attack other\nplayers. Attacked players have 4+ DC.\n------------------------------\nWhen a player dies, if that player was\nattacked this turn, that player gives the\nactive player the item they would destroy\nfor the death penalty.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-battle_royale",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-battle_royale-v3",
+      "name": "Battle Royale!!!!!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The active player may attack other\nplayers. Attacked players have 5+ DC.\n------------------------------\nWhen a player dies, if that player was\nattacked this turn, that player gives the\nactive player the item they would destroy\nfor the death penalty.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-battle_royale",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-beggar",
+      "name": "Beggar",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 3¢: Roll-\n\n3-4: Gain 2¢  5: Loot 2\n------------------------------\n6: Gain +1 treasure. Put\nthis into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-beggar",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-black_champions",
+      "name": "Black Champions",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Monsters have +1 AT.\n------------------------------\n\"Gird Thy sword upon Thy thigh, O Most\nMighty, with Thy glory and Thy majesty.\"\nPsalm 45:3",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-black_champions",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-blessing_of_gluttony",
+      "name": "Blessing of Gluttony",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The active player loots +1\nduring their loot step.\n------------------------------\n\"For the drunkard and the glutton shall\ncome to poverty: And drowsiness shall\nclothe a man with rags.\"\nProverbs 23:21",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-blessing_of_gluttony",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-blessing_of_greed",
+      "name": "Blessing of Greed",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the start of each turn,\nthe active player gains 3¢.\n------------------------------\n\"Wealth gotten by vanity shall\nbe diminished: But he that gathereth\nby labour shall incrase.\"\nProverbs 13:11",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-blessing_of_greed",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-blessing_of_steam",
+      "name": "Blessing of Steam",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Shop items the active player\npurchases cost 5¢ less.\n------------------------------\n\"Buy the truth, and sell it not; also\nwisdom, and instruction, and understanding.\"\nProverbs 23:23",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-blessing_of_steam",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-blessing_of_the_inner_eye",
+      "name": "Blessing of the Inner Eye",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player declares an\nattack, before choosing what to\nattack, they may look at the top\n3 cards of the monster deck and\nput them back in any order.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-blessing_of_the_inner_eye",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-blessing_of_the_sack",
+      "name": "Blessing of the Sack",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Rewards are doubled.\n------------------------------\n\"Knowing that from the Lord you will\nreceive the inheritance as your reward.\nYou are serving the Lord Christ.\"\nColossians 3:24",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-blessing_of_the_sack",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-blind_rage",
+      "name": "Blind Rage",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The active player must\nattack the monster deck\nonce each turn if able.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-blind_rage",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-blood_donation",
+      "name": "Blood Donation",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 1 HP:\n\nGain 3¢.\n------------------------------\n\"In whom we have redemption through his blood,\nthe forgiveness of sins, according to the riches\nof His grace;\" Ephesians 1:7",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-blood_donation",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-blood_lust",
+      "name": "Blood Lust",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "The active player must\nattack each turn if able.\n------------------------------\nThe first time the active player declares\nan attack each turn, they must attack\nan additional time this turn.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-blood_lust",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-blood_money",
+      "name": "Blood Money",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player dies,\neach other player gains 4¢.\n------------------------------\n\"And said unto them, what will ye give me, and I\nwill deliver Him unto you? And they covenanted\nwith him for thirty pieces of silver.\"\nMatthew 26:15",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-blood_money",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-bomb_bum",
+      "name": "Bomb Bum",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard a loot card: Roll. If\nthe discarded card had \"bomb\"\nin its name, roll 3x instead-\n\n1-4: Deal 1 damage to a\nmonster or player.\n------------------------------\n5-6: Take 1 damage.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-bomb_bum",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-bum_bo_is_loose",
+      "name": "Bum-bo is Loose!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the end of the turn, the\nactive player loses 2¢.\n------------------------------\n\"Bum-bo want coin!\"\nBum-bo",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-bum_bo_is_loose",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-butter_fingers",
+      "name": "Butter Fingers",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the end of the turn, the\nactive player discards a loot card.\n------------------------------\n\"For the churning of milk bringeth forth butter,\nand the wringing of the nose bringeth forth blood;\nso the forcing of wrath bringeth forth strife.\"\nProverbs 30:33",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-butter_fingers",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-challenge_room",
+      "name": "Challenge Room",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a monster dies,\nthe active player rolls-\n\n4-6: They must make an\nadditional attack this turn.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-challenge_room",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-conjoined_twin",
+      "name": "Conjoined Twin",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a monster dies, the player\nwho killed it kills another player.\n------------------------------\n\"Let brotherly love continue.\"\nHebrews 13:1",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-conjoined_twin",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-devil_beggar",
+      "name": "Devil Beggar",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 1 HP: Roll-\n\n1-2: Loot 2.  3-5: Loot 1.\n------------------------------\n6: Take 1 damage.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-devil_beggar",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-dice_room",
+      "name": "Dice Room!!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When this enters play, each player\ndiscards their hand and loots 3.\n------------------------------\nAt the end of the turn,\nput this into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-dice_room",
+        "notes": "Art by Private"
+      }
+    },
+    {
+      "id": "room_deck-requiem-dice_room-v2",
+      "name": "Dice Room!!!!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When this enters play, each player\nrerolls each of their items.\n------------------------------\nAt the end of the turn,\nput this into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-dice_room",
+        "notes": "Art by Private"
+      }
+    },
+    {
+      "id": "room_deck-requiem-dice_room-v3",
+      "name": "Dice Room!!!!!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When this enters play, put each\nmonster into discard.\n------------------------------\nAt the end of the turn,\nput this into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-dice_room",
+        "notes": "Art by Private"
+      }
+    },
+    {
+      "id": "room_deck-requiem-dice_room-v4",
+      "name": "Dice Room!!!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When this enters play, put each\nshop item into discard.\n------------------------------\nAt the end of the turn,\nput this into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-dice_room",
+        "notes": "Art by Private"
+      }
+    },
+    {
+      "id": "room_deck-requiem-dice_room-v5",
+      "name": "Dice Room!!!!!!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When this enters play, reroll each item\nin play, each player discards their hand\nand loots 3, put each monster into discard.\n------------------------------\nAt the end of the turn,\nput this into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-dice_room",
+        "notes": "Art by Private"
+      }
+    },
+    {
+      "id": "room_deck-requiem-dice_room-v6",
+      "name": "Dice Room!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When this enters play, the active\nplayer rerolls each item they control.\n------------------------------\nAt the end of the turn,\nput this into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-dice_room",
+        "notes": "Art by Private"
+      }
+    },
+    {
+      "id": "room_deck-requiem-eden_s_blessing",
+      "name": "Eden's Blessing",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the start of the turn, the\nactive player may reroll an\nitem they control.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-eden_s_blessing",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-equality",
+      "name": "Equality",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "If a player would gain any\nnumber of ¢, instead each\nplayer gains that much ¢.\n------------------------------\n\"The rich and poor meet together:\nThe Lord is the maker of them all.\"\nProverbs 22:2",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-equality",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-eternal_chest",
+      "name": "Eternal Chest",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard a loot card: Roll-\n\n3: Gain 4¢. 4-5: Gain 7¢.\n------------------------------\n6: Gain +1 treasure and loot 1.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-eternal_chest",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-floor_spikes",
+      "name": "Floor Spikes",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player rolls a\n1, they take 1 damage.\n------------------------------\n\"Iron sharpens iron, and\none man sharpens another.\"\nProverbs 27:17",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-floor_spikes",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-fortune_teller",
+      "name": "Fortune Teller",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 3¢: Roll-\n\n3: Loot 1.\n------------------------------\n4: Loot 2.  5: Loot 3.\n------------------------------\n6: Loot 6. Put this into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-fortune_teller",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-greed_looms",
+      "name": "Greed Looms",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the end of the turn, if the\nactive player didn't purchase\na shop item, they discard\ntheir hand.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-greed_looms",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-gus",
+      "name": "Gus",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "HP: 9 | DC: 3+ | AT: 1\n\nThis room can be attacked.\n------------------------------\nWhen an attack is declared on this,\neach non-active player rolls-\n\n4-6: They must make an attack roll against this after\neach attack roll the active player makes this attack.\n------------------------------\nRewards: Each player gains +1 treasure\n\n(+1 soul)",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-gus",
+        "notes": "Art by Private\n\nPart of a fan-submitted card contest."
+      }
+    },
+    {
+      "id": "room_deck-requiem-haunted",
+      "name": "Haunted!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player gains a\nsoul, they skip their next turn.\n------------------------------\n\"Arise then, O invincible prince,\nbring help against the attacks of\nthe lost spirits to the people of\nGod, and bring them the victory.\"\nThe Prayer to Saint Michael",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-haunted",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-heavy_is_the_head",
+      "name": "Heavy is the Head",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Players who control the most\nitems or tied for the most\nmay only recharge one item\nduring the recharge step.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-heavy_is_the_head",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-i_am_error",
+      "name": "I Am Error",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the start of your turn, roll-\n\n1-2: Put a monster into discard and replace\nit with the top card of the monster deck.\n------------------------------\n3-4: Reroll an item you control.\n------------------------------\n5: Discard your hand and loot 3.\n------------------------------\n6: Do all of the above.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-i_am_error",
+        "notes": "Art by Private\n\nUnlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "room_deck-requiem-isaac_s_blessing",
+      "name": "Isaac's Blessing",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player would\nroll a 1 or 6,\nthey may reroll it.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-isaac_s_blessing",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-key_master",
+      "name": "Key Master",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Discard a loot card: Roll.\nIf the discarded card had\n\"key\" in its name, roll 3x instead-\n\n5-6: Gain +1 treasure.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-key_master",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-laser_eye",
+      "name": "Laser Eye!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player loots,\nthey take 1 damage.\n------------------------------\n\"And if thy right eye offend thee, pluck it out,\nand cast it from thee: For it is profitable for\nthee that one of thy members should perish,\nand not that thy whole body should be\ncast into hell.\" Matthew 5:29",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-laser_eye",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-maggy_s_blessing",
+      "name": "Maggy's Blessing",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Players have +1 HP.\n------------------------------\n\"Or do you not know that your body is a\ntemple of the holy spirit within you,\nwhom you have from God? You are not\nyour own, for you were bought with\na price. So glorify God in your body.\"\n1 Corinthians 6:19-20",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-maggy_s_blessing",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-might_for_the_meek",
+      "name": "Might for the Meek",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Players who control the\nfewest souls or tied for fewest\nhave +1 AT and may attack an\nadditional time on their turn.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-might_for_the_meek",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-pity_for_the_poor",
+      "name": "Pity for the Poor",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Players who control the\nfewest souls or tied for fewest\nmay purchase a shop item for\n0¢ on their turn.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-pity_for_the_poor",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-planetarium",
+      "name": "Planetarium",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the start of the turn, the\nactive player may gain +1 treasure.\n------------------------------\n\"He determines the number of the stars;\nHe gives to all of them their names.\"\nPsalm 147:4",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-planetarium",
+        "notes": "Art by Private\n\nUnlocked on the ninth roll against The Beast during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "room_deck-requiem-red_champions",
+      "name": "Red Champions",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Monsters have +1 HP.\n------------------------------\n\"Beloved, I wish above all things that\nthou mayest prosper and be in health,\neven as thy soul prospereth.\"\n3 John 1:2",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-red_champions",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-red_vise",
+      "name": "Red Vise",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the end of the turn, if the\nactive player has 1 or fewer\nloot cards in their hand,\nthey take 1 damage.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-red_vise",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-restock_machine",
+      "name": "Restock Machine",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 2¢:\n\nPut each shop item or\neach monster not being\nattacked into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-restock_machine",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-samson_s_blessing",
+      "name": "Samson's Blessing",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Players have +1 AT.\n------------------------------\n\"Seek the Lord and His strength,\nseek His face continually.\"\n1 Chronicles 16:11",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-samson_s_blessing",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-shadow_of_famine",
+      "name": "Shadow of Famine",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Players can't activate more\nthan one ability each turn.\n------------------------------\nPlayers can't play more than\none loot card each turn.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-shadow_of_famine",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-shadow_of_war",
+      "name": "Shadow of War",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "When a player dies, before\npaying penalties, they must\ndestroy an item they control.\n------------------------------\n\"And ye shall hear of wars and rumours of\nwars: See that ye be not troubled: For all\nthese things must come to pass, but\nthe end is not yet.\" Matthew 24:6",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-shadow_of_war",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-shell_game",
+      "name": "Shell Game",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 3¢: Roll-\n\n3: Gain 1¢.  4: Loot 1.  5: Gain 5¢.\n------------------------------\n6: Gain +1 treasure. Put\nthis into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-shell_game",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-slot_machine",
+      "name": "Slot Machine",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 3¢: Roll-\n\n2: Gain 1¢  3: Gain 2¢.\n------------------------------\n4: Gain 5¢.  5: Gain 7¢\n------------------------------\n6: Gain 15¢. Put this into discard.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-slot_machine",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-social_goals",
+      "name": "Social Goals!",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Note each goal as players\ncomplete them.\n------------------------------\nThis room can't be put into discard\ntill 4 goals are completed.\n------------------------------\n1. Play 5 loot cards.\n2. Kill 3 monsters.\n3. Give at least 6¢ to\nanother player at one time.\n4. Purchase 3 times.\n5. Roll a 6 three times.\n\nWhen 4 goals are completed,\neach player gains +2 treasure.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-social_goals",
+        "notes": "Art by @TikaratheMew\n\nPart of a fan-submitted card contest."
+      }
+    },
+    {
+      "id": "room_deck-requiem-spider_webs",
+      "name": "Spider Webs",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the end of the turn, the\nactive player deactivates\ntheir character.\n------------------------------\n\"They hatch cockatrice' eggs, and weave the spider's\nweb: He that eateth of their eggs dieth, and that which\nis crushed breaketh out into a viper.\" Isaiah 59:5",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-spider_webs",
+        "notes": "Art by @HamBerry_art"
+      }
+    },
+    {
+      "id": "room_deck-requiem-splash_damage",
+      "name": "Splash Damage",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player deals\ndamage to a monster, they deal\n1 damage to the player\nto their left.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-splash_damage",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-spoils_of_war",
+      "name": "Spoils of War",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player dies,\neach other player loots 1.\n------------------------------\n\"Then said Jesus unto him, put up again\nthy sword into his place: For all they\nthat take the sword shall perish with\nthe sword.\" Matthew 26:52",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-spoils_of_war",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-static_shock",
+      "name": "Static Shock",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each time a player activates\nan item, they take 1 damage.\n------------------------------\n\"His lightnings enlightened the world:\nThe Earth saw, and trembled.\"\nPsalm 97:4",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-static_shock",
+        "notes": "Art by @TikaratheMew"
+      }
+    },
+    {
+      "id": "room_deck-requiem-tax_for_the_mighty",
+      "name": "Tax for the Mighty",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "While any player controls a\nsoul, players who control the\nmost souls or tied for the\nmost must pay each other\nplayer 2¢ to attack.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-tax_for_the_mighty",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    },
+    {
+      "id": "room_deck-requiem-the_mirror",
+      "name": "The Mirror",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "At the start of the turn, the\nactive player may pay HP until\nthey have 1 HP. If they do, each time\na monster dies this turn, they\ngain +1 treasure.",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-the_mirror",
+        "notes": "Art by @HamBerry_art\n\nUnlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "room_deck-requiem-white_champions",
+      "name": "White Champions",
+      "type": "room",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Monsters have +1 DC.\n------------------------------\n\"Purge me with hyssop, and I shall be clean:\nWash me, and I shall be whiter than snow.\"\nPsalm 51:7",
+        "set": "Requiem",
+        "deck": "Room Deck",
+        "copies": 1,
+        "source_id": "room_deck-requiem-white_champions",
+        "notes": "Art by @Von_Grimsworth"
+      }
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "cards": [
+    {
+      "id": "characters-four_souls-bum_bo",
+      "name": "Bum-bo",
+      "type": "character",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nBag-o-Trash",
+        "set": "Four Souls+",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-four_souls-bum_bo",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-four_souls-bag_o_trash"
+      }
+    },
+    {
+      "id": "characters-four_souls-dark_judas",
+      "name": "Dark Judas",
+      "type": "character",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nDark Arts",
+        "set": "Four Souls+",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-four_souls-dark_judas",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-four_souls-dark_arts"
+      }
+    },
+    {
+      "id": "characters-four_souls-guppy",
+      "name": "Guppy",
+      "type": "character",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nInfestation",
+        "set": "Four Souls+",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-four_souls-guppy",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-four_souls-infestation"
+      }
+    },
+    {
+      "id": "characters-four_souls-whore_of_babylon",
+      "name": "Whore of Babylon",
+      "type": "character",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nGimpy",
+        "set": "Four Souls+",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-four_souls-whore_of_babylon",
+        "version": "Original",
+        "artist": "@rojen241",
+        "starting_item": "starting_items-four_souls-gimpy"
+      }
+    }
+  ]
+}

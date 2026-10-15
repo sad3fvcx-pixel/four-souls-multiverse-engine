@@ -2,58 +2,37 @@
 
 """
 Card subsystem exports.
+
+Cards are data. A definition describes what a card does; the Runtime decides
+how it happens.
 """
 
-from .card import Card
-from .constants import (
-    DEFAULT_HAND_LIMIT,
-    DEFAULT_MAX_COUNTERS,
-    DEFAULT_MONSTER_SLOTS,
-    DEFAULT_ROOM_SLOTS,
-    DEFAULT_SHOP_SIZE,
-    DEFAULT_SOULS_TO_WIN,
-)
-from .context import CardContext
-from .dispatcher import CardDispatcher
+from .card import CardInstance, SoulToken
+from .definition import Ability, CardDefinition, Static
 from .errors import (
     CardError,
-    CardExecutionError,
-    CardResolutionError,
+    DuplicateCardError,
     InvalidCardError,
     UnknownCardError,
 )
-from .handler import CardHandler
-from .resolver import CardResolver
-from .result import CardResult
+from .loader import CardLoader
+from .registry import CardRegistry
 from .types import CardType
-from .utils import (
-    card_name,
-    ensure_card,
-    ensure_cards,
-    is_card,
-)
+from .validator import validate_card, validate_cards
 
 __all__ = [
-    "Card",
+    "Ability",
+    "CardDefinition",
+    "CardInstance",
+    "CardLoader",
+    "CardRegistry",
     "CardType",
-    "CardContext",
-    "CardDispatcher",
-    "CardHandler",
-    "CardResolver",
-    "CardResult",
+    "SoulToken",
+    "Static",
     "CardError",
-    "CardResolutionError",
-    "CardExecutionError",
+    "DuplicateCardError",
     "InvalidCardError",
     "UnknownCardError",
-    "DEFAULT_HAND_LIMIT",
-    "DEFAULT_SHOP_SIZE",
-    "DEFAULT_MONSTER_SLOTS",
-    "DEFAULT_ROOM_SLOTS",
-    "DEFAULT_SOULS_TO_WIN",
-    "DEFAULT_MAX_COUNTERS",
-    "ensure_card",
-    "ensure_cards",
-    "card_name",
-    "is_card",
+    "validate_card",
+    "validate_cards",
 ]

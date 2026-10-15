@@ -1,0 +1,31 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-anniversary-tainted_spitty",
+      "name": "Tainted Spitty",
+      "type": "monster",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "health": 4,
+      "attack": 1,
+      "roll": 3,
+      "rewards": {
+        "treasure": 2
+      },
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: 4 | DC: 3+ | AT: 1\n\nIf the attacking player would\nroll an attack roll against\nthis, they instead roll x dice,\nwhere x is the number of souls\nthey control plus 1. Choose\nthe lowest as the result.\n------------------------------\nRewards: +2 treasure",
+        "set": "Anniversary",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-basic_enemies-anniversary-tainted_spitty",
+        "subcategory": "Basic Enemies",
+        "version": "Original",
+        "artist": "Private"
+      }
+    }
+  ]
+}

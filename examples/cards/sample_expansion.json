@@ -1,0 +1,76 @@
+{
+  "expansion": "example",
+  "cards": [
+    {
+      "id": "example.penny_pincher",
+      "name": "Penny Pincher",
+      "type": "treasure",
+      "expansion": "example",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "conditions": ["player_alive"],
+          "effects": [{ "gain_coins": 3 }],
+          "description": "Gain 3 cents."
+        }
+      ]
+    },
+    {
+      "id": "example.lucky_die",
+      "name": "Lucky Die",
+      "type": "treasure",
+      "expansion": "example",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            { "roll_dice": 6 },
+            {
+              "if": [{ "dice_greater": 3 }],
+              "then": [{ "gain_coins": 2 }],
+              "else": [{ "gain_coins": 1 }]
+            }
+          ],
+          "description": "Roll a die. On 4 or more gain 2 cents, otherwise 1."
+        }
+      ]
+    },
+    {
+      "id": "example.blood_tax",
+      "name": "Blood Tax",
+      "type": "treasure",
+      "expansion": "example",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "for_each": "opponents",
+              "effects": [{ "deal_damage": 1 }]
+            }
+          ],
+          "description": "Deal 1 damage to each opponent."
+        }
+      ]
+    },
+    {
+      "id": "example.gaper",
+      "name": "Gaper",
+      "type": "monster",
+      "expansion": "example",
+      "health": 2,
+      "attack": 1,
+      "roll": 4,
+      "souls": 1,
+      "tags": ["basic"],
+      "abilities": [
+        {
+          "trigger": "monster_killed",
+          "scope": "self",
+          "effects": [{ "gain_soul": 1 }],
+          "description": "Award a soul to the killer."
+        }
+      ]
+    }
+  ]
+}

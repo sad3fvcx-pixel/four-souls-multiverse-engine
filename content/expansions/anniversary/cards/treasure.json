@@ -1,0 +1,91 @@
+{
+  "cards": [
+    {
+      "id": "treasure_deck-active_items-anniversary-dataminer",
+      "name": "Dataminer",
+      "type": "treasure",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "active"
+      ],
+      "metadata": {
+        "text": "↷: Roll-\n1: Each monsters' AT becomes 1.\n------------------------------\n2: Destroy this. If you do, put 1\nAT counter on your character.\n------------------------------\n3: Deactivate all cards in play.\n------------------------------\n4: Your max hand size becomes 0 till\nthe start of your next turn.\n------------------------------\n5: Each monsters' AT becomes 9.\n------------------------------\n6: Destroy this. If you do, your AT\nbecomes 9 till end of turn.",
+        "set": "Anniversary",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-active_items-anniversary-dataminer",
+        "subcategory": "Active Items",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "treasure_deck-one_use_items-anniversary-booster_pack",
+      "name": "Booster Pack",
+      "type": "treasure",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "one_use"
+      ],
+      "metadata": {
+        "text": "↷:Destroy this. If you\ndo, reveal the top 5\ncards of the loot deck.\nYou may play any number\nof them without using a\nloot play. Put the rest\ninto discard.",
+        "set": "Anniversary",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-one_use_items-anniversary-booster_pack",
+        "subcategory": "One Use Items",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Design by @realSpaggy_"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-anniversary-co_op_baby",
+      "name": "Co-op Baby",
+      "type": "treasure",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "HP: 2 | DC: 3+ | AT: 1\n\nEach time you declare\nan attack, choose another\nplayer. That player teams\nup with you.\n------------------------------\n-Familiar-\n------------------------------\nRewards: Loot 1",
+        "set": "Anniversary",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-anniversary-co_op_baby",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "treasure_deck-passive_items-anniversary-prototype",
+      "name": "Prototype",
+      "type": "treasure",
+      "expansion": "anniversary",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "passive"
+      ],
+      "metadata": {
+        "text": "When you gain this item, choose\none from each list. This item\ngains the chosen text from\neach in that order.",
+        "set": "Anniversary",
+        "deck": "Treasure Deck",
+        "copies": 1,
+        "source_id": "treasure_deck-passive_items-anniversary-prototype",
+        "subcategory": "Passive Items",
+        "version": "Original",
+        "artist": "@TikaratheMew"
+      }
+    }
+  ]
+}

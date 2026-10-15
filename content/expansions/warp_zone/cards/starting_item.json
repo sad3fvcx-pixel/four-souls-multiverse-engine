@@ -1,0 +1,439 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-warp_zone-ball_of_tumors",
+      "name": "Ball of Tumors",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "This starts at level 6.\n------------------------------\nIf this is higher than level 0,\ninstead of paying the death\npenalty, this levels down.\n------------------------------\nLevel 2+: You may play an\nadditional loot card\non your turn.\n------------------------------\nLevel 4+: At the end of your turn,\ndiscard a loot card\nand loot 2.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-ball_of_tumors",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game The End is Nigh.\n\nUnlocked via the Downpour social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-bow_and_arrow",
+      "name": "Bow and Arrow",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Put a bounty counter\non a monster.\n------------------------------\nMonsters with a bounty\ncounter on them have -1 DC.\n------------------------------\nEach time a monster with a bounty\ncounter on it dies, gain 3¢.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-bow_and_arrow",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game TowerFall.\n\nUnlocked via the Home social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-emergency_meeting",
+      "name": "Emergency Meeting!",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Each player votes on\na monster or player.\nEach monster or player\nwith the most votes or tied\nfor the most takes 1 damage.\n------------------------------\nAt the end of your\nturn, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-emergency_meeting",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Among Us.\n\nUnlocked via the Static social goals to-do list during the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-focus",
+      "name": "Focus",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time you gain or are\ngiven a soul, this levels up.\n------------------------------\nLevel 1+: You have +1 AT for your first\nattack roll each turn.\n------------------------------\nLevel 2+: The first time you activate\nyour character each round,\nrecharge it.\n------------------------------\nLevel 3+: Prevent the first instance of\ndamage you would take each turn.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-focus",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Hollow Knight.\n\nUnlocked via the Dross social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-football",
+      "name": "Football",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "At the end of your turn,\neach other player loots 2.\n------------------------------\n↷: Give this to another\nplayer and roll-\n\n1-4: Each player loots 1.\n------------------------------\n5-6: You discard 2 loot cards,\nthen each player who controls a\ncharacter named Johnny loots 2.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-football",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the film The Room.\n\nUnlocked via The Credits social goals to-do list during the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-girlfriend",
+      "name": "Girlfriend",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time you roll the same\nresult twice in a row on each of\nyour turns, put a counter on this.\n------------------------------\nEach time you die, remove half the\ncounters from this rounded down.\n------------------------------\nYou have +1 HP for every\n2 counters on this.\n------------------------------\n↷: Subtract 1 from\na roll.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-girlfriend",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Friday Night Funkin'.\n\nUnlocked via the Ashpit social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-gravity",
+      "name": "Gravity",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Flip a dice roll.\n(The roll becomes\n7 - the current result.)\n------------------------------\nAt the end of your\nturn, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-gravity",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game VVVVVV.\n\nUnlocked via The Planetarium social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-hunky_boys",
+      "name": "Hunky Boys",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "You have +1 HP while\nit's not your turn.\n------------------------------\n-Eternal-\n\"Or do I...?\"",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-hunky_boys",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the film PG: Psycho Goreman.\n\nUnlocked via the Gehenna social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-is_you",
+      "name": "Is You",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "As your turn starts,\nchoose an eternal item\nanother player controls.\nThis gains all of that item's\nabilities till the start\nof your next turn.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-is_you",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Baba Is You.\n\nUnlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-johnny_s_knives",
+      "name": "Johnny's Knives",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Deal 1 damage\nto a monster\nor player.\n------------------------------\nEach time another player\ndies, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-johnny_s_knives",
+        "version": "Original",
+        "artist": "@JhonenV",
+        "notes": "Crossover with the comic book Johnny the Homicidal Maniac.\n\nUnlocked via the Gehenna social goals to-do list during the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-lil_steven",
+      "name": "Lil Steven",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "Each time a monster or player\ndies, put a counter on this.\n------------------------------\n$: Remove 10 counters\nfrom this: The active\nplayer takes an extra\nturn after this one.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-lil_steven",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the video game Time Fcuk.\n\nUnlocked via The White Light social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-lollypop",
+      "name": "Lollypop",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time you gain rewards\nfrom killing monsters, choose\nanother player. They also\ngain the rewards.\n------------------------------\nEach time another player\ngains rewards from killing\nmonsters, you also gain half\nthe rewards rounded down.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-lollypop",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Castle Crashers.\n\nUnlocked via the Ashpit social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-polar_star_booster_v2_0",
+      "name": "Polar Star // Booster v2.0",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose one-\n•Put a counter on this.\n------------------------------\n•Remove any number of counters\nfrom ths. Gain +1 AT for your next\nattack roll this turn for each\ncounter removed in this way.\n------------------------------\n-Eternal-\n\n//\n\n↷: Choose one-\n•Put a counter on this.\n------------------------------\n•Remove any number of\ncounters from this. Add 1\nto a roll for each counter\nremoved in this way.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-polar_star_booster_v2_0",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Cave Story.\n\nUnlocked via the Home social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-pop_pop",
+      "name": "Pop Pop!",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Copy a\nnon-trinket,\nnon-ambush loot\nbeing played.\n------------------------------\n-Eternal-\n(This can't be destroyed\nor put into discard.)",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-pop_pop",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Nuclear Throne.\n\nUnlocked via the Dross social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-possession",
+      "name": "Possession",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "At the start of your turn, you\nmay recharge each item another\nplayer controls. Till end of\nturn you may activate their\nitems as though you control\nthem. At the end of your turn,\nthat player loots 2.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-possession",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Crossover with the video game Oddworld: Abe's Oddysee.\n\nUnlocked via The Credits social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-ring_of_the_snake",
+      "name": "Ring of the Snake",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time you declare\nan attack, recharge your\ncharacter and loot 1.\n------------------------------\n-Eternal-\n(This can't be destroyed\nor put into discard.)",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-ring_of_the_snake",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the video game Slay the Spire.\n\nUnlocked via The Mausoleum social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-rusty_spoons",
+      "name": "Rusty Spoons",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "At the start of your turn\neach player loots 1.\n------------------------------\n↷: Choose a player. They put\na random loot card from\ntheir hand under this. Till end of\nturn, you may play that loot card\nwithout using a loot play.\n------------------------------\nAt the end of your\nturn, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-rusty_spoons",
+        "version": "Original",
+        "artist": "@Von_Grimsworth",
+        "notes": "Crossover with the web series Salad Fingers.\n\nUnlocked via The Corpse social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-spelunking_pack",
+      "name": "Spelunking Pack",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "This starts with 3 counters.\n------------------------------\nEach time you kill a monster\nput 2 counter on this.\n------------------------------\n$: Remove a counter from this:\nChoose one-\n•Add 1 to your roll.  •Gain 3¢\n------------------------------\n•Put a shop item into discard.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-spelunking_pack",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Crossover with the video game Spelunky.\n\nUnlocked via The Mines social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-strange_marble",
+      "name": "Strange Marble",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time a monster or player\ndies, you may recharge an item.\n------------------------------\nAt the start of your turn,\nyou may reveal the top card\nof the loot deck. If it's a non-\ntrinket, non-ambush card, each\nplayer may play a copy of it\nwithout using a loot play.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-strange_marble",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the video game The Legend of Bum-bo.\n\nUnlocked via The White Light social goals to-do list during the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-warp_zone-the_real_left_hand",
+      "name": "The Real Left Hand",
+      "type": "starting_item",
+      "expansion": "warp_zone",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Change a number in\nthe effect text of a\ncard in play or loot being\nplayed by 1 till end of\nturn. The number can't go\nbelow 1 or above 6.\n------------------------------\n-Eternal-",
+        "set": "Warp Zone",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-warp_zone-the_real_left_hand",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via The End social goals to-do list during the Requiem Kickstarter."
+      }
+    }
+  ]
+}

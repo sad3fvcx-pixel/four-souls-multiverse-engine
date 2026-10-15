@@ -1,0 +1,187 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-bad_events-requiem-betrayal",
+      "name": "Betrayal!",
+      "type": "event",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose another player. Roll-\n1-2: Steal 5¢ from them.\n------------------------------\n3-4: Steal a loot card from\nthem at random.\n------------------------------\n5: Steal a non-eternal item\nthey control.\n------------------------------\n6: Steal a soul they control.",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-requiem-betrayal",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-requiem-lust_for_blood",
+      "name": "Lust for Blood!",
+      "type": "event",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player. You\nmust make an additional\nattack against them. They\nhave 4+ DC for the attack.\n------------------------------\nWhen that player dies this\nturn, they give the active\nplayer the item they would\ndestroy for the death penalty.",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-requiem-lust_for_blood",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-requiem-mother_s_shadow",
+      "name": "Mother's Shadow!",
+      "type": "event",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each player who\ncontrols the most items\nor tied for the most\ndies. Put this in the\nmonster deck 6 cards\nfrom the top.",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-requiem-mother_s_shadow",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "Private",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter."
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-requiem-overflow",
+      "name": "Overflow!",
+      "type": "event",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Each player rolls-\n1-2: They skip\ntheir next turn.",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-requiem-overflow",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-requiem-pitfall",
+      "name": "Pitfall!",
+      "type": "event",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "End the turn.\nCancel everything\nthat hasn't resolved.\n------------------------------\n\"Whoever digs a pit will fall\ninto it; if someone rolls a stone,\nit will roll back on them.\"\nProverbs 26:27",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-requiem-pitfall",
+        "subcategory": "Bad Events",
+        "version": "Original",
+        "artist": "@Von_Grimsworth"
+      }
+    },
+    {
+      "id": "monster_deck-bad_events-requiem-troll_bombs",
+      "name": "Troll Bombs",
+      "type": "event",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Take\n2 damage!",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-bad_events-requiem-troll_bombs",
+        "subcategory": "Bad Events",
+        "version": "Alt Art",
+        "artist": "@TikaratheMew"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-requiem-double_treasure",
+      "name": "Double Treasure!",
+      "type": "event",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose another\nplayer. You and that\nplayer each gain\n+1 treasure.\n------------------------------\n\"He that hath pity upon the poor\nlendeth unto the Lord; and that which\nhe hath given will He pay him again.\"\nProverbs 19:17",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-requiem-double_treasure",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-requiem-dressing_table",
+      "name": "Dressing Table",
+      "type": "event",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Reroll any\nnumber of items\nyou control.\n------------------------------\n\"Therefore if any man be in\nChrist, he is a new creature: Old\nthings are passed away; behold,\nall things have become new.\"\n2 Corinthians 5:17",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-requiem-dressing_table",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    },
+    {
+      "id": "monster_deck-good_events-requiem-golden_troll_bomb",
+      "name": "Golden Troll Bomb!",
+      "type": "event",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player.\nThey take 2 damage.\nPut this in the monster\ndeck 4 cards from\nthe top.",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-requiem-golden_troll_bomb",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Unlocked via $6,660,000 total backed on the Requiem Kickstarter.",
+        "effect_3p_plus": true
+      }
+    },
+    {
+      "id": "monster_deck-good_events-requiem-tnt_barrel",
+      "name": "TNT Barrel",
+      "type": "event",
+      "expansion": "requiem",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "Choose a player or\nmonster, then roll-\n1-4: You and that player\nor monster each take\n2 damage.\n------------------------------\n5-6: That player or\nmonster takes 4 damage.",
+        "set": "Requiem",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-requiem-tnt_barrel",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@HamBerry_art"
+      }
+    }
+  ]
+}

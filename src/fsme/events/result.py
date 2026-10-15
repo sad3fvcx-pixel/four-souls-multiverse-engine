@@ -22,7 +22,7 @@ class EventResult:
     cancelled: bool
 
     @classmethod
-    def from_event(cls, event: Event, handlers_called: int) -> "EventResult":
+    def from_event(cls, event: Event, handlers_called: int) -> EventResult:
         return cls(
             event=event,
             handlers_called=handlers_called,

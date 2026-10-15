@@ -29,7 +29,7 @@ class ConfigResult:
         cls,
         value: Any = None,
         message: str = "",
-    ) -> "ConfigResult":
+    ) -> ConfigResult:
         """
         Create a successful configuration result.
         """
@@ -43,7 +43,7 @@ class ConfigResult:
     def failed(
         cls,
         message: str = "",
-    ) -> "ConfigResult":
+    ) -> ConfigResult:
         """
         Create a failed configuration result.
         """

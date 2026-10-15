@@ -52,6 +52,20 @@ class Stack:
 
         return self._items[-1]
 
+    def remove(self, item: StackItem) -> bool:
+        """
+        Take one item off the stack, wherever it is sitting.
+
+        Cancelling is not popping: the thing cancelled is usually underneath
+        whatever cancelled it, so it has to be pulled out of the middle.
+        """
+        for index, existing in enumerate(self._items):
+            if existing is item:
+                del self._items[index]
+                return True
+
+        return False
+
     def clear(self) -> None:
         """
         Remove all items from the stack.

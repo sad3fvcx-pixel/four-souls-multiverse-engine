@@ -1,0 +1,8 @@
+# The cards travel with the source as well as with the wheel: an sdist that
+# cannot deal a game is not a source distribution of a card game engine.
+graft content
+graft spec
+include README.md
+include docs/DEMONSTRATION.md
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]

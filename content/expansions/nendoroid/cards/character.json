@@ -1,0 +1,40 @@
+{
+  "cards": [
+    {
+      "id": "characters-nendoroid-isaac",
+      "name": "Isaac",
+      "type": "character",
+      "expansion": "nendoroid",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nWARNING: CHOKING HAZARD\nSmall parts.  Not suitable for\nchildren under 3 years old.\n------------------------------\nStarting item:\nGuppy's Head",
+        "set": "Nendoroid",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-nendoroid-isaac",
+        "version": "Alt Ability",
+        "artist": "Nendoroid figure designed by Good Smile Company",
+        "notes": "Included with the Nendoroid Isaac figure available for pre-order starting November 5th, 2024.",
+        "starting_item": "starting_items-nendoroid-guppy_s_head"
+      }
+    }
+  ]
+}

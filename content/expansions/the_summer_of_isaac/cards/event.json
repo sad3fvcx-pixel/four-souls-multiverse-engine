@@ -1,0 +1,43 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-good_events-the_summer_of_isaac-hot_potato",
+      "name": "Hot Potato!",
+      "type": "event",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "As this enters play, it becomes\nan item. The active player gains it.\n------------------------------\nWhen this item enters your\ncontrol, gain 2¢, then roll-\n\n1-4: Give this to the player\nto your left.\n------------------------------\n5: Destroy this, then take 3 damage.\n------------------------------\n6: This becomes a soul.\n(+1 soul)",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-the_summer_of_isaac-hot_potato",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@HamBerry_art",
+        "notes": "Design by @Luis_the_person\n\nPart of the Community Booster Pack in The Summer of Isaac, released in August, 2024."
+      }
+    },
+    {
+      "id": "monster_deck-good_events-the_summer_of_isaac-police_lineup",
+      "name": "Police Lineup",
+      "type": "event",
+      "expansion": "the_summer_of_isaac",
+      "schema_version": "1",
+      "abilities": [],
+      "metadata": {
+        "text": "All non-active players\nsecretly decide together on\nwhich non-active player is guilty\ntill end of turn. Then, the active\nplayer chooses a non-active player.\nIf the chosen player is guilty,\nthey die and the active player\ngains +1 treasure. Otherwise, the\nguilty player gains +1 treasure\nand the active player skips\ntheir next turn.",
+        "set": "The Summer of Isaac",
+        "deck": "Monster Deck",
+        "copies": 1,
+        "source_id": "monster_deck-good_events-the_summer_of_isaac-police_lineup",
+        "subcategory": "Good Events",
+        "version": "Original",
+        "artist": "@TikaratheMew",
+        "notes": "Crossover with the video game Fingered.\n\nPart of the Edmund Booster Pack in The Summer of Isaac, released in June, 2024.",
+        "effect_3p_plus": true
+      }
+    }
+  ]
+}

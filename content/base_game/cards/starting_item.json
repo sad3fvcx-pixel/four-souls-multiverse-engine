@@ -1,0 +1,770 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-base_game-blood_lust",
+      "name": "Blood Lust",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "blessed"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "attack",
+              "amount": 1,
+              "target": "blessed"
+            }
+          ],
+          "description": "Choose a player or monster. They gain +1 AT till end of turn."
+        },
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "At the end of your turn, recharge this."
+        }
+      ],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a player or\nmonster. They gain\n+1 AT till end of turn.\n------------------------------\nAt the end of your\nturn, recharge this.\n-------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-blood_lust",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The Basement stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-book_of_belial",
+      "name": "Book of Belial",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Add 1 to the roll.",
+                  "effects": [
+                    {
+                      "modify_roll": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Subtract 1 from the roll.",
+                  "effects": [
+                    {
+                      "modify_roll": -1
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Add or subtract 1 from a roll."
+        },
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "At the end of your turn, recharge this."
+        }
+      ],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Add or subtract\n1 from a roll.\n------------------------------\nAt the end of your\nturn, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-book_of_belial",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "starting_items-base_game-forever_alone",
+      "name": "Forever Alone",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Steal 1¢ from another player.",
+                  "effects": [
+                    {
+                      "effect": "transfer_coins",
+                      "amount": 1,
+                      "target": "controller",
+                      "source_player": {
+                        "player_of": "robbed"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top card of the loot deck.",
+                  "effects": [
+                    {
+                      "effect": "reveal_cards",
+                      "deck": "loot",
+                      "count": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top card of the treasure deck.",
+                  "effects": [
+                    {
+                      "effect": "reveal_cards",
+                      "deck": "treasure",
+                      "count": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top card of the monster deck.",
+                  "effects": [
+                    {
+                      "effect": "reveal_cards",
+                      "deck": "monster",
+                      "count": 1
+                    }
+                  ]
+                },
+                {
+                  "description": "Discard a loot card, then loot 1.",
+                  "effects": [
+                    {
+                      "effect": "discard_cards",
+                      "target": {
+                        "target_loot": {
+                          "as": "dumped"
+                        }
+                      }
+                    },
+                    {
+                      "draw_loot": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "target_player": {
+                "exclude_controller": true,
+                "as": "robbed"
+              }
+            }
+          ],
+          "description": "Choose one: steal 1¢ from another player; look at the top card of a deck; or discard a loot card, then loot 1."
+        },
+        {
+          "trigger": "after_damage",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "Each time you take damage, recharge this."
+        }
+      ],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose one-\n•Steal 1¢ from another player.\n------------------------------\n•Look at the top card of a deck.\n------------------------------\n•Discard a loot card, then loot 1.\n------------------------------\nEach time you take damage,\nrecharge this.\n------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-forever_alone",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The Blue Womb stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-incubus",
+      "name": "Incubus",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Look at a player's hand. You may swap a card from your hand with one of theirs.",
+                  "effects": [
+                    {
+                      "effect": "reveal_hand",
+                      "targets": [
+                        {
+                          "target_player": {
+                            "exclude_controller": true,
+                            "as": "shown"
+                          }
+                        }
+                      ],
+                      "target": "shown"
+                    },
+                    {
+                      "may": [
+                        {
+                          "effect": "swap_cards",
+                          "targets": [
+                            {
+                              "target_loot": {
+                                "as": "mine_card"
+                              }
+                            },
+                            {
+                              "target_loot": {
+                                "of": "shown",
+                                "as": "their_card"
+                              }
+                            }
+                          ],
+                          "target": {
+                            "group": {
+                              "of": [
+                                "mine_card",
+                                "their_card"
+                              ],
+                              "as": "swap_pair"
+                            }
+                          }
+                        }
+                      ],
+                      "prompt": "Swap a card from your hand with one of theirs?"
+                    }
+                  ]
+                },
+                {
+                  "description": "Loot 1, then put a card from your hand on top of the loot deck.",
+                  "effects": [
+                    {
+                      "draw_loot": 1
+                    },
+                    {
+                      "effect": "move_cards",
+                      "deck": "loot",
+                      "position": "top",
+                      "target": {
+                        "target_loot": {
+                          "as": "returned"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Choose one: look at a player's hand and you may swap a card with one of theirs; or loot 1, then put a card from your hand on top of the loot deck."
+        }
+      ],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose one-\n•Look at a player's hand.\nYou may swap a card from\nyour hand with one of theirs.\n------------------------------\n•Loot 1, then put a card\nfrom your hand on top\nof the loot deck.\n------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-incubus",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The Womb stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-lazarus_rags",
+      "name": "Lazarus' Rags",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "player_died",
+          "scope": "controller",
+          "effects": [
+            {
+              "gain_treasure": 1
+            }
+          ],
+          "description": "Each time you die, gain +1 treasure."
+        }
+      ],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time you die,\nafter paying penalties,\ngain +1 treasure.\n------------------------------\n-Eternal-\n(This can't be destroyed\nor put into discard.)",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-lazarus_rags",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via the I Am Error? stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-sleight_of_hand",
+      "name": "Sleight of Hand",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Look at the top 5 cards of the loot deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "loot",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "loot",
+                          "from_top": 5,
+                          "minimum": 5,
+                          "maximum": 5,
+                          "as": "ordered"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top 5 cards of the treasure deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "treasure",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "treasure",
+                          "from_top": 5,
+                          "minimum": 5,
+                          "maximum": 5,
+                          "as": "ordered"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Look at the top 5 cards of the monster deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "monster",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "monster",
+                          "from_top": 5,
+                          "minimum": 5,
+                          "maximum": 5,
+                          "as": "ordered"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Look at the top 5 cards of a deck. Put them back in any order."
+        }
+      ],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Look at the top\n5 cards of a deck.\nPut them back in\nany order.\n------------------------------\n-Eternal-\n(This can't be destroyed\nor put into discard.)",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-sleight_of_hand",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Crossover with the video game, The Legend of Bum-bo."
+      }
+    },
+    {
+      "id": "starting_items-base_game-the_bone",
+      "name": "The Bone",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_counter",
+              "counter": "charge",
+              "amount": 1,
+              "target": "self"
+            }
+          ],
+          "description": "Put a counter on this."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "counters": 1
+          },
+          "effects": [
+            {
+              "modify_roll": 1
+            }
+          ],
+          "description": "Remove 1 counter from this: add 1 to a roll."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "counters": 2
+          },
+          "targets": [
+            {
+              "target_player_or_monster": {
+                "as": "victim"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "deal_damage",
+              "amount": 1,
+              "target": "victim"
+            }
+          ],
+          "description": "Remove 2 counters from this: deal 1 damage to a monster or player."
+        },
+        {
+          "trigger": "on_activate",
+          "cost": {
+            "counters": 5
+          },
+          "effects": [
+            {
+              "effect": "claim_soul",
+              "target": "controller"
+            }
+          ],
+          "description": "Remove 5 counters from this: this becomes a soul and loses all abilities."
+        }
+      ],
+      "tags": [
+        "activated",
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "↷: Put a counter on this.\n------------------------------\n$: Remove 1 counter from this:\nAdd 1 to a roll.\n------------------------------\n$: Remove 2 counters from this: Deal\n1 damage to a monster or player.\n------------------------------\n$: Remove 5 counters from this:\nThis becomes a soul and\nloses all abilities.\n------------------------------\n-Eternal-\n(+1 soul)",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-the_bone",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via reaching $2,000,000 in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-the_curse",
+      "name": "The Curse",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "turn_start",
+          "scope": "controller",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Put the top card of the loot deck into discard.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "loot",
+                      "position": "discard",
+                      "target": {
+                        "deck_top": {
+                          "deck": "loot",
+                          "count": 1,
+                          "as": "top"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Put the top card of the treasure deck into discard.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "treasure",
+                      "position": "discard",
+                      "target": {
+                        "deck_top": {
+                          "deck": "treasure",
+                          "count": 1,
+                          "as": "top"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Put the top card of the monster deck into discard.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "monster",
+                      "position": "discard",
+                      "target": {
+                        "deck_top": {
+                          "deck": "monster",
+                          "count": 1,
+                          "as": "top"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "At the start of your turn, put the top card of a deck into discard."
+        },
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "choose": [
+                {
+                  "description": "Put the top card of the loot discard on top of the loot deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "loot",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "loot",
+                          "pile": "discard",
+                          "from_top": 1,
+                          "as": "raised"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Put the top card of the treasure discard on top of the treasure deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "treasure",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "treasure",
+                          "pile": "discard",
+                          "from_top": 1,
+                          "as": "raised"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "description": "Put the top card of the monster discard on top of the monster deck.",
+                  "effects": [
+                    {
+                      "effect": "move_cards",
+                      "deck": "monster",
+                      "position": "top",
+                      "target": {
+                        "target_deck_card": {
+                          "deck": "monster",
+                          "pile": "discard",
+                          "from_top": 1,
+                          "as": "raised"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "description": "Put the top card of a discard on top of its deck."
+        }
+      ],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "At the start of your\nturn, put the top card\nof a deck into discard.\n------------------------------\n↷: Put the top card\nof a discard on\ntop of its deck.\n------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-the_curse",
+        "version": "Original",
+        "artist": "@KrystalFlamingo",
+        "notes": "Unlocked via The Caves stretch goal in the original Kickstarter."
+      }
+    },
+    {
+      "id": "starting_items-base_game-the_d6",
+      "name": "The D6",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "reroll": 6
+            }
+          ],
+          "description": "Choose a dice roll. Its controller rerolls it."
+        },
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "At the end of your turn, recharge this."
+        }
+      ],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a dice roll.\nIts controller\nrerolls it.\n------------------------------\nAt the end of your\nturn, recharge this.\n-------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-the_d6",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "starting_items-base_game-yum_heart",
+      "name": "Yum Heart",
+      "type": "starting_item",
+      "expansion": "base_game",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "targets": [
+            {
+              "target_player": {
+                "as": "shielded"
+              }
+            }
+          ],
+          "effects": [
+            {
+              "effect": "prevent_next_damage",
+              "target": "shielded"
+            }
+          ],
+          "description": "Choose a player. Prevent the next instance of damage they would take this turn."
+        },
+        {
+          "trigger": "turn_end",
+          "scope": "controller",
+          "effects": [
+            {
+              "effect": "recharge",
+              "target": "self"
+            }
+          ],
+          "description": "At the end of your turn, recharge this."
+        }
+      ],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Choose a player or\nmonster. Prevent the\nnext instance of damage\nthey would take this turn.\n------------------------------\nAt the end of your\nturn, recharge this.\n------------------------------\n-Eternal-",
+        "set": "Base Game",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-base_game-yum_heart",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    }
+  ]
+}

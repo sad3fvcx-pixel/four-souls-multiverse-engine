@@ -1,0 +1,8 @@
+{
+  "id": "youtooz",
+  "name": "Youtooz",
+  "version": "1.0.0",
+  "schema_version": "1",
+  "official": true,
+  "description": "Youtooz: 2 cards imported from the card database."
+}

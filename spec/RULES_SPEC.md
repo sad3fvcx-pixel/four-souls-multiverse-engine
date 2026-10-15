@@ -27,6 +27,13 @@ The following sources are considered authoritative:
 
 If multiple sources conflict, the newest official clarification has priority.
 
+`COMPREHENSIVE_RULES.md` records what those sources say in the places the
+engine had to know and previously did not: the turn sequence step by step,
+purchase, attack, dice, the death of a monster and of a player, refilling
+slots, and what cancels or fizzles an effect. It is a transcription, not a
+design: where it is silent the engine is silent too, and the gap is listed in
+`PROJECT_PLAN.md` §11.5.
+
 ---
 
 # 3. Engine Philosophy

@@ -1,0 +1,26 @@
+{
+  "cards": [
+    {
+      "id": "monster_deck-basic_enemies-challenges-blank_canvas",
+      "name": "Blank Canvas",
+      "type": "monster",
+      "expansion": "challenges",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "basic"
+      ],
+      "metadata": {
+        "text": "HP: ? | DC: ? | AT: ?\n\nAs this enters play, reveal cards from\nthe top of the monster deck until you\nreveal 3 non-event monster cards. This\nhas the HP, DC, and AT of the first, gains\nthe abilities of the second, and has the\nrewards of the third. Put the revealed\ncards outside the game. When this\nleaves play, put them into discard.\n------------------------------\nRewards: ?",
+        "set": "Challenges",
+        "deck": "Monster Deck",
+        "copies": 2,
+        "source_id": "monster_deck-basic_enemies-challenges-blank_canvas",
+        "subcategory": "Basic Enemies",
+        "version": "Alt Art",
+        "artist": "@orisghost",
+        "notes": "This minion card is part of the Day of the Doodler challenge, included with The Unboxing of Isaac #13 for May, 2023, which was given as a free bonus to anyone who subscribed to all of the previous Unboxing boxes."
+      }
+    }
+  ]
+}

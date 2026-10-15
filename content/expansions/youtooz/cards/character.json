@@ -1,0 +1,40 @@
+{
+  "cards": [
+    {
+      "id": "characters-youtooz-guppy",
+      "name": "Guppy",
+      "type": "character",
+      "expansion": "youtooz",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
+      "health": 2,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 2 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nInfestation",
+        "set": "Youtooz",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-youtooz-guppy",
+        "version": "Alt Art",
+        "artist": "@therealracckun",
+        "notes": "Included with the Guppy Youtooz figure available for pre-order starting February 2nd, 2024.",
+        "starting_item": "starting_items-four_souls-infestation"
+      }
+    }
+  ]
+}

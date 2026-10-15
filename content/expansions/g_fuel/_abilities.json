@@ -1,0 +1,145 @@
+{
+  "treasure_deck-active_items-g_fuel-g_fuel": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "targets": [
+          {
+            "target_character": {
+              "as": "woken"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "recharge",
+            "target": "woken"
+          }
+        ],
+        "description": "Recharge a character."
+      },
+      {
+        "trigger": "turn_end",
+        "scope": "controller",
+        "effects": [
+          {
+            "may": [
+              {
+                "effect": "recharge",
+                "targets": [
+                  {
+                    "target_treasure": {
+                      "as": "revived"
+                    }
+                  }
+                ],
+                "target": "revived"
+              }
+            ],
+            "prompt": "Recharge an item?"
+          }
+        ],
+        "description": "At the end of your turn, you may recharge an item."
+      }
+    ]
+  },
+  "treasure_deck-paid_items-g_fuel-isaac_s_tears": {
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "controller",
+        "effects": [
+          {
+            "effect": "add_counter",
+            "counter": "tear",
+            "amount": 1,
+            "target": "self"
+          }
+        ],
+        "description": "Each time you roll a dice, put a counter on this."
+      },
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "counters": {
+            "counter": "tear",
+            "amount": 6
+          }
+        },
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "opponents"
+          },
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "all_monsters"
+          }
+        ],
+        "description": "Remove 6 counters from this: deal 1 damage to each other player and each monster."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-g_fuel-brimstone": {
+    "statics": [
+      {
+        "stat": "attack",
+        "amount": 1,
+        "scope": "controller",
+        "description": "+1 AT"
+      }
+    ],
+    "abilities": [
+      {
+        "trigger": "after_roll",
+        "scope": "controller",
+        "conditions": [
+          {
+            "dice_equals": 6
+          }
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "targets": [
+              {
+                "target_player_or_monster": {
+                  "exclude_controller": true,
+                  "as": "struck"
+                }
+              }
+            ],
+            "target": "struck"
+          }
+        ],
+        "description": "Each time you roll a 6, deal 1 damage to a monster or another player."
+      }
+    ]
+  },
+  "treasure_deck-passive_items-g_fuel-g_fuel": {
+    "statics": [
+      {
+        "stat": "max_hp",
+        "amount": 1,
+        "scope": "controller",
+        "description": "+1 HP"
+      }
+    ],
+    "abilities": [
+      {
+        "trigger": "turn_end",
+        "scope": "controller",
+        "effects": [
+          {
+            "effect": "recharge",
+            "target": "character"
+          }
+        ],
+        "description": "At the end of your turn, recharge your character."
+      }
+    ]
+  }
+}

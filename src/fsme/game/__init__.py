@@ -2,18 +2,11 @@
 
 """
 Game subsystem exports.
+
+Turn structure, phases and victory are rules, and they live in ``fsme.rules``.
+What remains here is the session facade external systems talk to.
 """
 
-from .constants import (
-    DEFAULT_MAX_PLAYERS,
-    DEFAULT_MAX_TURNS,
-    DEFAULT_MIN_PLAYERS,
-    DEFAULT_STARTING_COINS,
-    DEFAULT_STARTING_LOOT,
-    DEFAULT_STARTING_TREASURES,
-)
-from .context import GameContext
-from .dispatcher import GameDispatcher
 from .errors import (
     GameError,
     GameExecutionError,
@@ -22,34 +15,12 @@ from .errors import (
     InvalidGameStateError,
 )
 from .game import Game
-from .handler import GameHandler
-from .resolver import GameResolver
-from .result import GameResult
-from .utils import (
-    ensure_game,
-    game_name,
-    is_game,
-)
 
 __all__ = [
     "Game",
-    "GameContext",
-    "GameDispatcher",
-    "GameHandler",
-    "GameResolver",
-    "GameResult",
     "GameError",
-    "GameInitializationError",
     "GameExecutionError",
-    "InvalidGameStateError",
+    "GameInitializationError",
     "GameOverError",
-    "DEFAULT_MIN_PLAYERS",
-    "DEFAULT_MAX_PLAYERS",
-    "DEFAULT_STARTING_COINS",
-    "DEFAULT_STARTING_LOOT",
-    "DEFAULT_STARTING_TREASURES",
-    "DEFAULT_MAX_TURNS",
-    "ensure_game",
-    "game_name",
-    "is_game",
+    "InvalidGameStateError",
 ]

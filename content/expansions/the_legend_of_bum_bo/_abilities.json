@@ -1,0 +1,68 @@
+{
+  "characters-the_legend_of_bum_bo-bum_bo": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Play an additional loot card this turn."
+      }
+    ]
+  },
+  "starting_items-the_legend_of_bum_bo-bag_o_trash": {
+    "abilities": [
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "coins": 3
+        },
+        "effects": [
+          {
+            "effect": "add_modifier",
+            "stat": "loot_plays",
+            "amount": 1
+          }
+        ],
+        "description": "Pay 3¢: play an additional loot card this turn."
+      },
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "coins": 4
+        },
+        "effects": [
+          {
+            "draw_loot": 1
+          }
+        ],
+        "description": "Pay 4¢: loot 1."
+      },
+      {
+        "trigger": "on_activate",
+        "cost": {
+          "coins": 6
+        },
+        "targets": [
+          {
+            "target_player_or_monster": {
+              "as": "struck"
+            }
+          }
+        ],
+        "effects": [
+          {
+            "effect": "deal_damage",
+            "amount": 1,
+            "target": "struck"
+          }
+        ],
+        "description": "Pay 6¢: deal 1 damage to a monster or player."
+      }
+    ]
+  }
+}

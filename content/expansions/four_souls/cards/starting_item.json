@@ -1,0 +1,86 @@
+{
+  "cards": [
+    {
+      "id": "starting_items-four_souls-bag_o_trash",
+      "name": "Bag-o-Trash",
+      "type": "starting_item",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal",
+        "paid"
+      ],
+      "metadata": {
+        "text": "$: Pay 3¢:\nPlay an additional\nloot card this turn.\n------------------------------\n$: Pay 4¢: Loot 1.\n------------------------------\n$: Pay 6¢: Deal 1 damage\nto a monster or player.\n------------------------------\n-Eternal-",
+        "set": "Four Souls+",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-four_souls-bag_o_trash",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "starting_items-four_souls-dark_arts",
+      "name": "Dark Arts",
+      "type": "starting_item",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time a player\nrolls a 6, gain 2¢.\n------------------------------\nEach time another\nplayer dies, loot 1.\n------------------------------\n-Eternal-",
+        "set": "Four Souls+",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-four_souls-dark_arts",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "starting_items-four_souls-gimpy",
+      "name": "Gimpy",
+      "type": "starting_item",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "eternal"
+      ],
+      "metadata": {
+        "text": "Each time you take\ndamage, choose one-\n•Gain 2¢.\n------------------------------\n•Loot 1, then discard\na loot card.\n------------------------------\n•Gain +2 AT till end of turn.\n------------------------------\n-Eternal-",
+        "set": "Four Souls+",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-four_souls-gimpy",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    },
+    {
+      "id": "starting_items-four_souls-infestation",
+      "name": "Infestation",
+      "type": "starting_item",
+      "expansion": "four_souls",
+      "schema_version": "1",
+      "abilities": [],
+      "tags": [
+        "activated",
+        "eternal"
+      ],
+      "metadata": {
+        "text": "↷: Loot 2, then\ndiscard 1\nloot card.\n------------------------------\n-Eternal-\n(This can't be destroyed\nor put into discard.)",
+        "set": "Four Souls+",
+        "deck": "Starting Items",
+        "copies": 1,
+        "source_id": "starting_items-four_souls-infestation",
+        "version": "Original",
+        "artist": "@KrystalFlamingo"
+      }
+    }
+  ]
+}

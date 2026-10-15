@@ -1,0 +1,40 @@
+{
+  "cards": [
+    {
+      "id": "characters-mewgenics-stacy_704891",
+      "name": "Stacy 704891",
+      "type": "character",
+      "expansion": "mewgenics",
+      "schema_version": "1",
+      "abilities": [
+        {
+          "trigger": "on_activate",
+          "effects": [
+            {
+              "effect": "add_modifier",
+              "stat": "loot_plays",
+              "amount": 1
+            }
+          ],
+          "description": "Play an additional loot card this turn."
+        }
+      ],
+      "health": 1,
+      "attack": 1,
+      "tags": [
+        "activated"
+      ],
+      "metadata": {
+        "text": "HP: 1 | AT: 1\n\n↷: Play an additional\nloot card this turn.\nThis can be done on any player's\nturn in response to any action.\n------------------------------\nStarting item:\nStacy's Extra Head",
+        "set": "Mewgenics",
+        "deck": "Characters",
+        "copies": 1,
+        "source_id": "characters-mewgenics-stacy_704891",
+        "version": "Original",
+        "artist": "@rojen241",
+        "notes": "Included with The Mewgenics Collectible Cat Carrier bundle to celebrate the release of the Mewgenics video game.",
+        "starting_item": "starting_items-mewgenics-stacy_s_extra_head"
+      }
+    }
+  ]
+}
